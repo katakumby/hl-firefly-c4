@@ -34,17 +34,24 @@ for v in views:
         r=rels[rref["id"]]
         check(r["sourceId"] in vis and r["destinationId"] in vis,v["key"]+":"+r["id"]+": endpoints visible")
         check(bool(r.get("description")) and bool(r.get("technology")),v["key"]+":"+r["id"]+": action and protocol present")
-for r in rels.values():
-    src,dst=logical(r["sourceId"]),logical(r["destinationId"])
-    if dst.split(".")[0] in "abc" and "." in dst and dst.split(".")[1] in ("pg","pgReplica","blobs","ipfsRepo","secrets"):
-        if src.split(".")[0] in "abc" and "." in src:
-            check(src[0]==dst[0],f"No cross-member private-state relationship: {src} -> {dst}")
 inst=[x for x in elements.values() if "containerId" in x]
+member=lambda x:x.get("properties",{}).get("member")
+def member_instances(owner,container):
+    return [x for x in inst if member(x)==owner and arch(x["containerId"])=="firefly."+container]
+for r in rels.values():
+    src,dst=elements[r["sourceId"]],elements[r["destinationId"]]
+    if "containerId" in src and "containerId" in dst:
+        source_logical,dest_logical=logical(src["id"]),logical(dst["id"])
+        if source_logical.startswith("firefly.") and dest_logical.startswith("firefly."):
+            peer=source_logical==dest_logical and source_logical in ("firefly.dx","firefly.ipfs")
+            check(peer or member(src)==member(dst),f"Isolated member runtime/state: {arch(src['id'])} -> {arch(dst['id'])}")
+        if source_logical=="firefly.signer" and dest_logical=="besu.node":
+            check(dst["properties"]["role"].startswith("rpc"),"Signer connections target RPC nodes only")
 for m in "abc":
     for c in ("core","evm","signer","dx","erc20","erc1155","ipfs"):
-        matches=[x for x in inst if arch(x["containerId"])==m+"."+c]
+        matches=member_instances(m,c)
         check(len(matches)==1,f"Member {m}: one active {c} instance")
-    pg=[x for x in inst if arch(x["containerId"]) in (m+".pg",m+".pgReplica")]
+    pg=member_instances(m,"pg")+member_instances(m,"pgReplica")
     check(len(pg)==3 and {x["properties"]["zone"] for x in pg}=={"1","2","3"},f"Member {m}: PostgreSQL spans all zones")
     check(sum(x["properties"]["role"]=="primary" for x in pg)==1,f"Member {m}: exactly one PostgreSQL primary")
 validators=[x for x in inst if x.get("properties",{}).get("role")=="validator"]
@@ -66,11 +73,11 @@ for v in w["views"]["deploymentViews"]:
 # Verify the actual persistent-state paths, not only element naming/placement.
 for m in "abc":
     for runtime,store in (("core","pg"),("evm","pg"),("dx","blobs"),("ipfs","ipfsRepo"),("signer","secrets")):
-        src=next(x for x in inst if arch(x["containerId"])==m+"."+runtime)
-        targets=[r["destinationId"] for r in rels.values() if r["sourceId"]==src["id"] and logical(r["destinationId"])==m+"."+store]
-        check(len(targets)==1,f"Member {m}: deployed {runtime} has one member-owned {store} persistence path")
-    primary=next(x for x in inst if arch(x["containerId"])==m+".pg")
-    replicas={x["id"] for x in inst if arch(x["containerId"])==m+".pgReplica"}
+        src=member_instances(m,runtime)[0]
+        targets=[r["destinationId"] for r in rels.values() if r["sourceId"]==src["id"] and logical(r["destinationId"])=="firefly."+store]
+        check(len(targets)==1 and member(elements[targets[0]])==m,f"Member {m}: deployed {runtime} has one member-owned {store} persistence path")
+    primary=member_instances(m,"pg")[0]
+    replicas={x["id"] for x in member_instances(m,"pgReplica")}
     replication={r["destinationId"] for r in rels.values() if r["sourceId"]==primary["id"] and "replication" in r.get("technology","")}
     check(replicas<=replication,f"Member {m}: primary WAL reaches both independent standbys")
 volumes=[]
@@ -88,11 +95,25 @@ check(len(rpcs)==3 and {x["properties"]["zone"] for x in rpcs}=={"1","2","3"},"N
 boot=[x for x in rpcs if "bootnode" in x["properties"]["role"]]
 check(len({x["properties"]["zone"] for x in boot})>=2,"Discovery endpoints survive any one zone loss")
 
-# Member component definitions must remain isomorphic after expansion.
-shapes=[]
-for m in "abc":
-    shapes.append({arch(id)[2:]:elements[id]["name"] for id in component_ids if arch(id).startswith(m+".")})
-check(shapes[0]==shapes[1]==shapes[2],"Three member component structures are identical")
+# Reuse is structural: every member instantiates the same container definitions.
+check(len([e for e in w["model"]["softwareSystems"] if arch(e["id"])=="firefly"])==1,"Exactly one logical FireFly software system")
+check(not any(arch(e["id"]) in ("a","b","c") for e in w["model"]["softwareSystems"]),"No copied member software systems")
+for c in ("core","evm","signer","dx","erc20","erc1155","ipfs","pg","pgReplica","blobs","ipfsRepo","secrets"):
+    check(len({member_instances(m,c)[0]["containerId"] for m in "abc"})==1,f"Three members reuse one {c} definition")
+check(len({x["containerId"] for x in inst if logical(x["id"])=="besu.node"})==1,"Nine Besu deployments reuse one node definition")
+for c in ("dx","ipfs"):
+    for m in "abc":
+        src=member_instances(m,c)[0]
+        peers={member(elements[r["destinationId"]]) for r in rels.values() if r["sourceId"]==src["id"] and logical(r["destinationId"])=="firefly."+c and r["destinationId"]!=src["id"]}
+        check(peers==set("abc")-{m},f"Member {m}: {c} reaches both consortium peers")
+besu_nodes=[x for x in inst if logical(x["id"])=="besu.node"]
+for src in besu_nodes:
+    peers={r["destinationId"] for r in rels.values() if r["sourceId"]==src["id"] and logical(r["destinationId"])=="besu.node" and r["destinationId"]!=src["id"]}
+    check(len(peers)==8,arch(src["id"])+": Besu peer connectivity retained")
+import re
+dsl=(ROOT/"workspace.dsl").read_text(encoding="utf-8")
+check(not re.search(r"^\s*[rd]\d+\s*=",dsl,re.M),"DSL has no numbered relationship aliases")
+check(not re.search(r"^\s*\w+(?:\.\w+)*\s*->",dsl,re.M),"DSL relationships use the source element scope")
 if "--svg" in sys.argv:
     for v in views:
         path=ROOT/"exports/svg"/(v["key"]+".svg")

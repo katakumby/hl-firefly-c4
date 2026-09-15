@@ -8,7 +8,9 @@ A source-backed Structurizr workspace with C4 levels 1–3 and a three-member, t
 
 Open [Structurizr on localhost](http://localhost:8080). The viewer binds only to 127.0.0.1:8080 and serves the exported JSON, including deployment layouts and embedded documentation.
 
-Start with **01-landscape**, member **10/11** container views, focused **20–51** component views, and finally **80–82** deployment details and **99-deployment-complete**. The complete map is intended for zooming; detail views isolate readable dataflows.
+Start with **01-landscape**, reusable FireFly **10/11** container views, focused **20–51** component views, and finally **80–82** deployment details and **99-deployment-complete**. The complete map is intended for zooming; detail views isolate readable dataflows.
+
+FireFly and Besu's node implementation are each defined once. Members A, B and C reuse the FireFly containers through deployment instances; member deployment groups isolate their databases, keys and private storage. Besu instance roles select validators or RPC/discovery nodes. Scoped `-> destination` relationships stay beside their source elements, and views select endpoints without numbered relationship aliases.
 
 ## Files
 
@@ -36,7 +38,7 @@ Standalone inspection:
     docker compose run --rm cli inspect -workspace exports/workspace.json
     docker compose run --rm cli inspect -workspace exports/workspace.json -severity error,warning
 
-The full inspect command returns **4**, reflecting four retained informational scope findings. Structurizr recommends one system per workspace; this requested deliverable includes the whole consortium. Only workspace.scope is classified informational. The error/warning gate returns **0**. No blanket suppression is used.
+The full inspect command returns a nonzero status for four retained informational scope findings. Structurizr recommends one system per workspace; this requested deliverable includes the whole consortium. Only workspace.scope is classified informational. The error/warning gate returns **0**. No blanket suppression is used.
 
 Edit scripts/model_data.py for reusable components and flows, and scripts/build_workspace.py for systems, deployment and views. Run validation to regenerate artifacts. scripts/capture_sources.py refreshes official snapshots deliberately; normal rebuilds use the captured revisions.
 

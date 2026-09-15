@@ -20,7 +20,7 @@ support={
 unmapped=[]
 for path in s["repositories"]["firefly"]["paths"]:
     if path.startswith("internal/") and path.count("/")==1:
-        found=[e["id"] for e in m["elements"] if e["id"].startswith("a.core.") and ("/"+path in e["source"])]
+        found=[e["id"] for e in m["elements"] if e["id"].startswith("firefly.core.") and ("/"+path in e["source"])]
         result=", ".join(found) if found else support.get(path)
         if not result:unmapped.append(path);result="UNMAPPED"
         out.append(f"| {path} | {result} |")

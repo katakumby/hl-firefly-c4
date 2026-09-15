@@ -21,7 +21,11 @@ walk(w["model"])
 def arch(id):return elements[id].get("properties",{}).get("architecture.id","")
 def logical(id):
     e=elements[id]
-    return arch(e["containerId"]) if "containerId" in e else arch(id)
+    if "containerId" not in e:return arch(id)
+    container=arch(e["containerId"])
+    if container.startswith("firefly."):return e["properties"]["member"]+container[len("firefly"):]
+    if container=="besu.node":return "besu."+re.search(r"\.besu([^.]+)\.",arch(id))[1]
+    return container
 def full_position(a):
     common={"azure.control":(450,400),"azure.lb":(1650,400),"azure.secrets":(2850,400),"azure.csi":(4050,400),"azure.rpc":(5250,400)}
     if a in common:return common[a]

@@ -12,7 +12,7 @@ A parser-valid diagram can still omit a component, connect the wrong member data
 
 ## Decision
 
-Pin official source revisions, retain element-to-view coverage, generate all three members consistently, run Docker validate and inspect, audit the rendered JSON, and inspect SVG layouts. Use workspace scope none because this deliverable intentionally includes several software systems at all three C4 levels.
+Pin official source revisions, retain element-to-view coverage, define each logical implementation once and instantiate it for the three members, run Docker validate and inspect, audit the rendered JSON, and inspect SVG layouts. Use workspace scope none because this deliverable intentionally includes several software systems at all three C4 levels.
 
 ## Consequences
 

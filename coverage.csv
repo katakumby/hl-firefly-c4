@@ -1,427 +1,122 @@
 element,level,name,source,classification,views
 developer,person,Application developer,https://learn.microsoft.com/en-us/azure/aks/reliability-availability-zones-configure,Reference choice,01-landscape;61-tools
-operator,person,Consortium operator,https://learn.microsoft.com/en-us/azure/aks/reliability-availability-zones-configure,Reference choice,01-landscape;02-context-a;02-context-b;02-context-c;63-operations
+operator,person,Consortium operator,https://learn.microsoft.com/en-us/azure/aks/reliability-availability-zones-configure,Reference choice,01-landscape;02-context-firefly;63-operations
 business,person,Business user,https://learn.microsoft.com/en-us/azure/aks/reliability-availability-zones-configure,Reference choice,01-landscape;60-applications
-a,softwareSystem,Member A FireFly,https://github.com/hyperledger-firefly/firefly/tree/2acb871a5a85eca774fd49d07ac9b925218f3d7d,Implementation,01-landscape;02-context-a;02-context-b;02-context-c;03-context-besu;04-alternatives
-a.core,container,FireFly Core,https://github.com/hyperledger-firefly/firefly/tree/2acb871a5a85eca774fd49d07ac9b925218f3d7d/internal/orchestrator,Implementation,10-a-runtime;11-a-state;30-a-evm-events;40-a-erc20;40-a-erc1155;60-applications;61-tools;62-sandbox;63-operations
-a.evm,container,EVMConnect + FFTM,https://github.com/hyperledger-firefly/evmconnect/tree/cd3115124c50f8215df1423749f22b558f83b559/cmd/evmconnect.go,Implementation,10-a-runtime;11-a-state;20-a-core-contracts;40-a-erc20;40-a-erc1155
-a.signer,container,FireFly Signer,https://github.com/hyperledger-firefly/signer/tree/cfafd71fb4d2c3061a946f6466269877c3f04d9d/internal/rpcserver,Implementation,10-a-runtime;11-a-state;30-a-evm-transactions;30-a-evm-events
-a.dx,container,HTTPS Data Exchange,https://github.com/hyperledger-firefly/dataexchange-https/tree/b6a212d531da1ff1c24e762e7156e2593c73d052/src,Implementation,10-a-runtime;11-a-state;20-a-core-messaging;10-b-runtime;10-c-runtime
-a.erc20,container,ERC-20 / ERC-721 connector,https://github.com/hyperledger-firefly/tokens-erc20-erc721/tree/7993b308284a396950587b5206370f7f254073d9/src,Implementation,10-a-runtime;20-a-core-contracts
-a.erc1155,container,ERC-1155 connector,https://github.com/hyperledger-firefly/tokens-erc1155/tree/0355a0eb11fd12e311829a41bcbfea6148e52469/src,Implementation,10-a-runtime;20-a-core-contracts
-a.ipfs,container,IPFS Kubo,https://docs.ipfs.tech/concepts/how-ipfs-works/,Implementation,10-a-runtime;11-a-state;20-a-core-messaging;20-a-core-persistence;11-b-state;11-c-state
-a.pg,container,PostgreSQL primary,https://cloudnative-pg.io/docs/1.28/replication/,Implementation,10-a-runtime;11-a-state;20-a-core-persistence;30-a-evm-transactions;30-a-evm-events;63-operations
-a.pgReplica,container,PostgreSQL standby,https://cloudnative-pg.io/docs/1.28/replication/,Implementation,11-a-state
-a.blobs,container,Private blob and peer store,https://github.com/hyperledger-firefly/dataexchange-https/tree/b6a212d531da1ff1c24e762e7156e2593c73d052/src/handlers/blobs.ts,Implementation,11-a-state;40-a-dx
-a.ipfsRepo,container,IPFS repository,https://docs.ipfs.tech/concepts/how-ipfs-works/,Implementation,11-a-state
-a.secrets,container,Member keys and configuration,https://github.com/hyperledger-firefly/signer/tree/cfafd71fb4d2c3061a946f6466269877c3f04d9d/pkg/fswallet,Implementation,11-a-state;40-a-signer;40-a-dx
-a.core.api,component,REST API and routing,https://github.com/hyperledger-firefly/firefly/tree/2acb871a5a85eca774fd49d07ac9b925218f3d7d/internal/apiserver,Implementation,20-a-core-api
-a.core.explorer,component,Explorer UI,https://github.com/hyperledger-firefly/firefly/tree/2acb871a5a85eca774fd49d07ac9b925218f3d7d/Dockerfile,Implementation,20-a-core-api
-a.core.auth,component,API authentication,https://github.com/hyperledger-firefly/firefly/tree/2acb871a5a85eca774fd49d07ac9b925218f3d7d/doc-site/docs/overview/key_components/security.md,Implementation,20-a-core-api
-a.core.namespaces,component,Namespace manager,https://github.com/hyperledger-firefly/firefly/tree/2acb871a5a85eca774fd49d07ac9b925218f3d7d/internal/namespace,Implementation,20-a-core-api
-a.core.orchestrator,component,Orchestrator,https://github.com/hyperledger-firefly/firefly/tree/2acb871a5a85eca774fd49d07ac9b925218f3d7d/internal/orchestrator,Implementation,20-a-core-api;20-a-core-identity;20-a-core-messaging;20-a-core-contracts;20-a-core-persistence
-a.core.identity,component,Identity manager,https://github.com/hyperledger-firefly/firefly/tree/2acb871a5a85eca774fd49d07ac9b925218f3d7d/internal/identity,Implementation,20-a-core-identity
-a.core.networkmap,component,Network map,https://github.com/hyperledger-firefly/firefly/tree/2acb871a5a85eca774fd49d07ac9b925218f3d7d/internal/networkmap,Implementation,20-a-core-identity
-a.core.definitions,component,Definition exchange,https://github.com/hyperledger-firefly/firefly/tree/2acb871a5a85eca774fd49d07ac9b925218f3d7d/internal/definitions,Implementation,20-a-core-identity
-a.core.data,component,Data manager,https://github.com/hyperledger-firefly/firefly/tree/2acb871a5a85eca774fd49d07ac9b925218f3d7d/internal/data,Implementation,20-a-core-messaging;20-a-core-persistence
-a.core.schema,component,Schema validation,https://github.com/hyperledger-firefly/firefly/tree/2acb871a5a85eca774fd49d07ac9b925218f3d7d/internal/data,Implementation,20-a-core-messaging
-a.core.batch,component,Batch manager,https://github.com/hyperledger-firefly/firefly/tree/2acb871a5a85eca774fd49d07ac9b925218f3d7d/internal/batch,Implementation,20-a-core-messaging
-a.core.batchprocessor,component,Batch processor,https://github.com/hyperledger-firefly/firefly/tree/2acb871a5a85eca774fd49d07ac9b925218f3d7d/internal/batch,Implementation,20-a-core-messaging
-a.core.broadcast,component,Broadcast manager,https://github.com/hyperledger-firefly/firefly/tree/2acb871a5a85eca774fd49d07ac9b925218f3d7d/internal/broadcast,Implementation,20-a-core-identity;20-a-core-messaging
-a.core.private,component,Private messaging and groups,https://github.com/hyperledger-firefly/firefly/tree/2acb871a5a85eca774fd49d07ac9b925218f3d7d/internal/privatemessaging,Implementation,20-a-core-messaging
-a.core.multiparty,component,Multiparty manager,https://github.com/hyperledger-firefly/firefly/tree/2acb871a5a85eca774fd49d07ac9b925218f3d7d/internal/multiparty,Implementation,20-a-core-identity;20-a-core-messaging
-a.core.download,component,Shared download manager,https://github.com/hyperledger-firefly/firefly/tree/2acb871a5a85eca774fd49d07ac9b925218f3d7d/internal/shareddownload,Implementation,20-a-core-events;20-a-core-persistence
-a.core.contracts,component,Contract manager,https://github.com/hyperledger-firefly/firefly/tree/2acb871a5a85eca774fd49d07ac9b925218f3d7d/internal/contracts,Implementation,20-a-core-contracts;20-a-core-persistence
-a.core.assets,component,Asset manager,https://github.com/hyperledger-firefly/firefly/tree/2acb871a5a85eca774fd49d07ac9b925218f3d7d/internal/assets,Implementation,20-a-core-contracts
-a.core.operations,component,Operations manager,https://github.com/hyperledger-firefly/firefly/tree/2acb871a5a85eca774fd49d07ac9b925218f3d7d/internal/operations,Implementation,20-a-core-contracts;20-a-core-persistence
-a.core.txhelper,component,Transaction helper,https://github.com/hyperledger-firefly/firefly/tree/2acb871a5a85eca774fd49d07ac9b925218f3d7d/internal/txcommon,Implementation,20-a-core-contracts
-a.core.txwriter,component,Transaction writer,https://github.com/hyperledger-firefly/firefly/tree/2acb871a5a85eca774fd49d07ac9b925218f3d7d/internal/txwriter,Implementation,20-a-core-contracts;20-a-core-persistence
-a.core.aggregator,component,Inbound event aggregator,https://github.com/hyperledger-firefly/firefly/tree/2acb871a5a85eca774fd49d07ac9b925218f3d7d/internal/events/aggregator.go,Implementation,20-a-core-events
-a.core.subscriptions,component,Subscription manager,https://github.com/hyperledger-firefly/firefly/tree/2acb871a5a85eca774fd49d07ac9b925218f3d7d/internal/events/subscription_manager.go,Implementation,20-a-core-events
-a.core.dispatcher,component,Event dispatcher,https://github.com/hyperledger-firefly/firefly/tree/2acb871a5a85eca774fd49d07ac9b925218f3d7d/internal/events/event_dispatcher.go,Implementation,20-a-core-events
-a.core.syncasync,component,Sync/async bridge,https://github.com/hyperledger-firefly/firefly/tree/2acb871a5a85eca774fd49d07ac9b925218f3d7d/internal/syncasync,Implementation,20-a-core-api;20-a-core-events
-a.core.cache,component,Cache manager,https://github.com/hyperledger-firefly/firefly/tree/2acb871a5a85eca774fd49d07ac9b925218f3d7d/internal/cache,Implementation,20-a-core-persistence
-a.core.metrics,component,Metrics,https://github.com/hyperledger-firefly/firefly/tree/2acb871a5a85eca774fd49d07ac9b925218f3d7d/internal/metrics,Implementation,20-a-core-persistence
-a.core.spievents,component,SPI event manager,https://github.com/hyperledger-firefly/firefly/tree/2acb871a5a85eca774fd49d07ac9b925218f3d7d/internal/spievents,Implementation,20-a-core-api
-a.core.blockchain,component,Blockchain plugin,https://github.com/hyperledger-firefly/firefly/tree/2acb871a5a85eca774fd49d07ac9b925218f3d7d/internal/blockchain,Implementation,20-a-core-identity;20-a-core-contracts;20-a-core-events
-a.core.database,component,Database plugin,https://github.com/hyperledger-firefly/firefly/tree/2acb871a5a85eca774fd49d07ac9b925218f3d7d/internal/database,Implementation,20-a-core-contracts;20-a-core-events;20-a-core-persistence
-a.core.dataexchange,component,Data exchange plugin,https://github.com/hyperledger-firefly/firefly/tree/2acb871a5a85eca774fd49d07ac9b925218f3d7d/internal/dataexchange,Implementation,20-a-core-messaging;20-a-core-events
-a.core.sharedstorage,component,Shared storage plugin,https://github.com/hyperledger-firefly/firefly/tree/2acb871a5a85eca774fd49d07ac9b925218f3d7d/internal/sharedstorage,Implementation,20-a-core-messaging;20-a-core-persistence
-a.core.tokens,component,Token plugin,https://github.com/hyperledger-firefly/firefly/tree/2acb871a5a85eca774fd49d07ac9b925218f3d7d/internal/tokens,Implementation,20-a-core-contracts;20-a-core-events
-a.core.identityplugin,component,Identity plugin,https://github.com/hyperledger-firefly/firefly/tree/2acb871a5a85eca774fd49d07ac9b925218f3d7d/pkg/identity,Implementation,20-a-core-identity
-a.core.eventplugin,component,Event transport plugins,https://github.com/hyperledger-firefly/firefly/tree/2acb871a5a85eca774fd49d07ac9b925218f3d7d/internal/events,Implementation,20-a-core-api;20-a-core-events
-a.evm.api,component,Connector REST API,https://github.com/hyperledger-firefly/evmconnect/tree/cd3115124c50f8215df1423749f22b558f83b559/cmd/evmconnect.go,Implementation,30-a-evm-transactions
-a.evm.manager,component,Transaction manager,https://github.com/hyperledger-firefly/transaction-manager/tree/35e3ade41cb20b3c778dd5b60ab6af2d56e1b286/pkg/fftm,Implementation,30-a-evm-transactions;30-a-evm-events
-a.evm.handler,component,Transaction policy handler,https://github.com/hyperledger-firefly/transaction-manager/tree/35e3ade41cb20b3c778dd5b60ab6af2d56e1b286/pkg/txhandler,Implementation,30-a-evm-transactions
-a.evm.nonce,component,Nonce allocation,https://github.com/hyperledger-firefly/transaction-manager/tree/35e3ade41cb20b3c778dd5b60ab6af2d56e1b286/internal/persistence,Implementation,30-a-evm-transactions
-a.evm.abi,component,EVM API adapter,https://github.com/hyperledger-firefly/evmconnect/tree/cd3115124c50f8215df1423749f22b558f83b559/internal/ethereum,Implementation,30-a-evm-transactions
-a.evm.rpc,component,Ethereum JSON-RPC client,https://github.com/hyperledger-firefly/evmconnect/tree/cd3115124c50f8215df1423749f22b558f83b559/pkg/ethrpc,Implementation,30-a-evm-transactions;30-a-evm-events
-a.evm.blocks,component,Block listener,https://github.com/hyperledger-firefly/evmconnect/tree/cd3115124c50f8215df1423749f22b558f83b559/pkg/ethblocklistener,Implementation,30-a-evm-events
-a.evm.receipts,component,Receipt tracking,https://github.com/hyperledger-firefly/transaction-manager/tree/35e3ade41cb20b3c778dd5b60ab6af2d56e1b286/pkg/fftm,Implementation,30-a-evm-events
-a.evm.confirmations,component,Confirmation manager,https://github.com/hyperledger-firefly/transaction-manager/tree/35e3ade41cb20b3c778dd5b60ab6af2d56e1b286/internal/confirmations,Implementation,30-a-evm-events
-a.evm.streams,component,Event streams,https://github.com/hyperledger-firefly/transaction-manager/tree/35e3ade41cb20b3c778dd5b60ab6af2d56e1b286/internal/events,Implementation,30-a-evm-events
-a.evm.delivery,component,WebSocket and webhook delivery,https://github.com/hyperledger-firefly/transaction-manager/tree/35e3ade41cb20b3c778dd5b60ab6af2d56e1b286/internal/ws,Implementation,30-a-evm-events
-a.evm.persistence,component,Persistence adapter,https://github.com/hyperledger-firefly/transaction-manager/tree/35e3ade41cb20b3c778dd5b60ab6af2d56e1b286/internal/persistence,Implementation,30-a-evm-transactions;30-a-evm-events
-a.signer.proxy,component,JSON-RPC proxy,https://github.com/hyperledger-firefly/signer/tree/cfafd71fb4d2c3061a946f6466269877c3f04d9d/internal/rpcserver,Implementation,40-a-signer
-a.signer.wallet,component,Filesystem wallet,https://github.com/hyperledger-firefly/signer/tree/cfafd71fb4d2c3061a946f6466269877c3f04d9d/pkg/fswallet,Implementation,40-a-signer
-a.signer.keystore,component,Keystore V3 decoder,https://github.com/hyperledger-firefly/signer/tree/cfafd71fb4d2c3061a946f6466269877c3f04d9d/pkg/keystorev3,Implementation,40-a-signer
-a.signer.signing,component,Ethereum signing,https://github.com/hyperledger-firefly/signer/tree/cfafd71fb4d2c3061a946f6466269877c3f04d9d/pkg/ethsigner,Implementation,40-a-signer
-a.signer.backend,component,RPC backend,https://github.com/hyperledger-firefly/signer/tree/cfafd71fb4d2c3061a946f6466269877c3f04d9d/pkg/rpcbackend,Implementation,40-a-signer
-a.dx.api,component,Internal REST API,https://github.com/hyperledger-firefly/dataexchange-https/tree/b6a212d531da1ff1c24e762e7156e2593c73d052/src/routers/api.ts,Implementation,40-a-dx
-a.dx.peers,component,Peer and certificate registry,https://github.com/hyperledger-firefly/dataexchange-https/tree/b6a212d531da1ff1c24e762e7156e2593c73d052/src/lib,Implementation,40-a-dx
-a.dx.p2p,component,Mutual TLS peer endpoint,https://github.com/hyperledger-firefly/dataexchange-https/tree/b6a212d531da1ff1c24e762e7156e2593c73d052/src/routers/p2p.ts,Implementation,40-a-dx
-a.dx.messages,component,Message transfer handler,https://github.com/hyperledger-firefly/dataexchange-https/tree/b6a212d531da1ff1c24e762e7156e2593c73d052/src/handlers/messages.ts,Implementation,40-a-dx
-a.dx.blobs,component,Blob transfer handler,https://github.com/hyperledger-firefly/dataexchange-https/tree/b6a212d531da1ff1c24e762e7156e2593c73d052/src/handlers/blobs.ts,Implementation,40-a-dx
-a.dx.events,component,Event queue and acknowledgements,https://github.com/hyperledger-firefly/dataexchange-https/tree/b6a212d531da1ff1c24e762e7156e2593c73d052/src/handlers/events.ts,Implementation,40-a-dx
-a.erc20.api,component,Token REST controller,https://github.com/hyperledger-firefly/tokens-erc20-erc721/tree/7993b308284a396950587b5206370f7f254073d9/src/tokens/tokens.controller.ts,Implementation,40-a-erc20
-a.erc20.service,component,Token service,https://github.com/hyperledger-firefly/tokens-erc20-erc721/tree/7993b308284a396950587b5206370f7f254073d9/src/tokens/tokens.service.ts,Implementation,40-a-erc20
-a.erc20.mapper,component,ABI and standard adapters,https://github.com/hyperledger-firefly/tokens-erc20-erc721/tree/7993b308284a396950587b5206370f7f254073d9/src/tokens,Implementation,40-a-erc20
-a.erc20.blockchain,component,Blockchain connector client,https://github.com/hyperledger-firefly/tokens-erc20-erc721/tree/7993b308284a396950587b5206370f7f254073d9/src/tokens/blockchain.service.ts,Implementation,40-a-erc20
-a.erc20.listener,component,Token event listener,https://github.com/hyperledger-firefly/tokens-erc20-erc721/tree/7993b308284a396950587b5206370f7f254073d9/src/tokens/tokens.listener.ts,Implementation,40-a-erc20
-a.erc20.stream,component,Connector event stream,https://github.com/hyperledger-firefly/tokens-erc20-erc721/tree/7993b308284a396950587b5206370f7f254073d9/src/event-stream,Implementation,40-a-erc20
-a.erc20.proxy,component,Core event proxy,https://github.com/hyperledger-firefly/tokens-erc20-erc721/tree/7993b308284a396950587b5206370f7f254073d9/src/eventstream-proxy,Implementation,40-a-erc20
-a.erc1155.api,component,Token REST controller,https://github.com/hyperledger-firefly/tokens-erc1155/tree/0355a0eb11fd12e311829a41bcbfea6148e52469/src/tokens/tokens.controller.ts,Implementation,40-a-erc1155
-a.erc1155.service,component,Token service,https://github.com/hyperledger-firefly/tokens-erc1155/tree/0355a0eb11fd12e311829a41bcbfea6148e52469/src/tokens/tokens.service.ts,Implementation,40-a-erc1155
-a.erc1155.mapper,component,ABI and standard adapters,https://github.com/hyperledger-firefly/tokens-erc1155/tree/0355a0eb11fd12e311829a41bcbfea6148e52469/src/tokens,Implementation,40-a-erc1155
-a.erc1155.blockchain,component,Blockchain connector client,https://github.com/hyperledger-firefly/tokens-erc1155/tree/0355a0eb11fd12e311829a41bcbfea6148e52469/src/tokens/blockchain.service.ts,Implementation,40-a-erc1155
-a.erc1155.listener,component,Token event listener,https://github.com/hyperledger-firefly/tokens-erc1155/tree/0355a0eb11fd12e311829a41bcbfea6148e52469/src/tokens/tokens.listener.ts,Implementation,40-a-erc1155
-a.erc1155.stream,component,Connector event stream,https://github.com/hyperledger-firefly/tokens-erc1155/tree/0355a0eb11fd12e311829a41bcbfea6148e52469/src/event-stream,Implementation,40-a-erc1155
-a.erc1155.proxy,component,Core event proxy,https://github.com/hyperledger-firefly/tokens-erc1155/tree/0355a0eb11fd12e311829a41bcbfea6148e52469/src/eventstream-proxy,Implementation,40-a-erc1155
-b,softwareSystem,Member B FireFly,https://github.com/hyperledger-firefly/firefly/tree/2acb871a5a85eca774fd49d07ac9b925218f3d7d,Implementation,01-landscape;02-context-a;02-context-b;02-context-c;03-context-besu
-b.core,container,FireFly Core,https://github.com/hyperledger-firefly/firefly/tree/2acb871a5a85eca774fd49d07ac9b925218f3d7d/internal/orchestrator,Implementation,10-b-runtime;11-b-state;30-b-evm-events;40-b-erc20;40-b-erc1155;60-applications;63-operations
-b.evm,container,EVMConnect + FFTM,https://github.com/hyperledger-firefly/evmconnect/tree/cd3115124c50f8215df1423749f22b558f83b559/cmd/evmconnect.go,Implementation,10-b-runtime;11-b-state;20-b-core-contracts;40-b-erc20;40-b-erc1155
-b.signer,container,FireFly Signer,https://github.com/hyperledger-firefly/signer/tree/cfafd71fb4d2c3061a946f6466269877c3f04d9d/internal/rpcserver,Implementation,10-b-runtime;11-b-state;30-b-evm-transactions;30-b-evm-events
-b.dx,container,HTTPS Data Exchange,https://github.com/hyperledger-firefly/dataexchange-https/tree/b6a212d531da1ff1c24e762e7156e2593c73d052/src,Implementation,10-a-runtime;10-b-runtime;11-b-state;20-b-core-messaging;10-c-runtime
-b.erc20,container,ERC-20 / ERC-721 connector,https://github.com/hyperledger-firefly/tokens-erc20-erc721/tree/7993b308284a396950587b5206370f7f254073d9/src,Implementation,10-b-runtime;20-b-core-contracts
-b.erc1155,container,ERC-1155 connector,https://github.com/hyperledger-firefly/tokens-erc1155/tree/0355a0eb11fd12e311829a41bcbfea6148e52469/src,Implementation,10-b-runtime;20-b-core-contracts
-b.ipfs,container,IPFS Kubo,https://docs.ipfs.tech/concepts/how-ipfs-works/,Implementation,11-a-state;10-b-runtime;11-b-state;20-b-core-messaging;20-b-core-persistence;11-c-state
-b.pg,container,PostgreSQL primary,https://cloudnative-pg.io/docs/1.28/replication/,Implementation,10-b-runtime;11-b-state;20-b-core-persistence;30-b-evm-transactions;30-b-evm-events;63-operations
-b.pgReplica,container,PostgreSQL standby,https://cloudnative-pg.io/docs/1.28/replication/,Implementation,11-b-state
-b.blobs,container,Private blob and peer store,https://github.com/hyperledger-firefly/dataexchange-https/tree/b6a212d531da1ff1c24e762e7156e2593c73d052/src/handlers/blobs.ts,Implementation,11-b-state;40-b-dx
-b.ipfsRepo,container,IPFS repository,https://docs.ipfs.tech/concepts/how-ipfs-works/,Implementation,11-b-state
-b.secrets,container,Member keys and configuration,https://github.com/hyperledger-firefly/signer/tree/cfafd71fb4d2c3061a946f6466269877c3f04d9d/pkg/fswallet,Implementation,11-b-state;40-b-signer;40-b-dx
-b.core.api,component,REST API and routing,https://github.com/hyperledger-firefly/firefly/tree/2acb871a5a85eca774fd49d07ac9b925218f3d7d/internal/apiserver,Implementation,20-b-core-api
-b.core.explorer,component,Explorer UI,https://github.com/hyperledger-firefly/firefly/tree/2acb871a5a85eca774fd49d07ac9b925218f3d7d/Dockerfile,Implementation,20-b-core-api
-b.core.auth,component,API authentication,https://github.com/hyperledger-firefly/firefly/tree/2acb871a5a85eca774fd49d07ac9b925218f3d7d/doc-site/docs/overview/key_components/security.md,Implementation,20-b-core-api
-b.core.namespaces,component,Namespace manager,https://github.com/hyperledger-firefly/firefly/tree/2acb871a5a85eca774fd49d07ac9b925218f3d7d/internal/namespace,Implementation,20-b-core-api
-b.core.orchestrator,component,Orchestrator,https://github.com/hyperledger-firefly/firefly/tree/2acb871a5a85eca774fd49d07ac9b925218f3d7d/internal/orchestrator,Implementation,20-b-core-api;20-b-core-identity;20-b-core-messaging;20-b-core-contracts;20-b-core-persistence
-b.core.identity,component,Identity manager,https://github.com/hyperledger-firefly/firefly/tree/2acb871a5a85eca774fd49d07ac9b925218f3d7d/internal/identity,Implementation,20-b-core-identity
-b.core.networkmap,component,Network map,https://github.com/hyperledger-firefly/firefly/tree/2acb871a5a85eca774fd49d07ac9b925218f3d7d/internal/networkmap,Implementation,20-b-core-identity
-b.core.definitions,component,Definition exchange,https://github.com/hyperledger-firefly/firefly/tree/2acb871a5a85eca774fd49d07ac9b925218f3d7d/internal/definitions,Implementation,20-b-core-identity
-b.core.data,component,Data manager,https://github.com/hyperledger-firefly/firefly/tree/2acb871a5a85eca774fd49d07ac9b925218f3d7d/internal/data,Implementation,20-b-core-messaging;20-b-core-persistence
-b.core.schema,component,Schema validation,https://github.com/hyperledger-firefly/firefly/tree/2acb871a5a85eca774fd49d07ac9b925218f3d7d/internal/data,Implementation,20-b-core-messaging
-b.core.batch,component,Batch manager,https://github.com/hyperledger-firefly/firefly/tree/2acb871a5a85eca774fd49d07ac9b925218f3d7d/internal/batch,Implementation,20-b-core-messaging
-b.core.batchprocessor,component,Batch processor,https://github.com/hyperledger-firefly/firefly/tree/2acb871a5a85eca774fd49d07ac9b925218f3d7d/internal/batch,Implementation,20-b-core-messaging
-b.core.broadcast,component,Broadcast manager,https://github.com/hyperledger-firefly/firefly/tree/2acb871a5a85eca774fd49d07ac9b925218f3d7d/internal/broadcast,Implementation,20-b-core-identity;20-b-core-messaging
-b.core.private,component,Private messaging and groups,https://github.com/hyperledger-firefly/firefly/tree/2acb871a5a85eca774fd49d07ac9b925218f3d7d/internal/privatemessaging,Implementation,20-b-core-messaging
-b.core.multiparty,component,Multiparty manager,https://github.com/hyperledger-firefly/firefly/tree/2acb871a5a85eca774fd49d07ac9b925218f3d7d/internal/multiparty,Implementation,20-b-core-identity;20-b-core-messaging
-b.core.download,component,Shared download manager,https://github.com/hyperledger-firefly/firefly/tree/2acb871a5a85eca774fd49d07ac9b925218f3d7d/internal/shareddownload,Implementation,20-b-core-events;20-b-core-persistence
-b.core.contracts,component,Contract manager,https://github.com/hyperledger-firefly/firefly/tree/2acb871a5a85eca774fd49d07ac9b925218f3d7d/internal/contracts,Implementation,20-b-core-contracts;20-b-core-persistence
-b.core.assets,component,Asset manager,https://github.com/hyperledger-firefly/firefly/tree/2acb871a5a85eca774fd49d07ac9b925218f3d7d/internal/assets,Implementation,20-b-core-contracts
-b.core.operations,component,Operations manager,https://github.com/hyperledger-firefly/firefly/tree/2acb871a5a85eca774fd49d07ac9b925218f3d7d/internal/operations,Implementation,20-b-core-contracts;20-b-core-persistence
-b.core.txhelper,component,Transaction helper,https://github.com/hyperledger-firefly/firefly/tree/2acb871a5a85eca774fd49d07ac9b925218f3d7d/internal/txcommon,Implementation,20-b-core-contracts
-b.core.txwriter,component,Transaction writer,https://github.com/hyperledger-firefly/firefly/tree/2acb871a5a85eca774fd49d07ac9b925218f3d7d/internal/txwriter,Implementation,20-b-core-contracts;20-b-core-persistence
-b.core.aggregator,component,Inbound event aggregator,https://github.com/hyperledger-firefly/firefly/tree/2acb871a5a85eca774fd49d07ac9b925218f3d7d/internal/events/aggregator.go,Implementation,20-b-core-events
-b.core.subscriptions,component,Subscription manager,https://github.com/hyperledger-firefly/firefly/tree/2acb871a5a85eca774fd49d07ac9b925218f3d7d/internal/events/subscription_manager.go,Implementation,20-b-core-events
-b.core.dispatcher,component,Event dispatcher,https://github.com/hyperledger-firefly/firefly/tree/2acb871a5a85eca774fd49d07ac9b925218f3d7d/internal/events/event_dispatcher.go,Implementation,20-b-core-events
-b.core.syncasync,component,Sync/async bridge,https://github.com/hyperledger-firefly/firefly/tree/2acb871a5a85eca774fd49d07ac9b925218f3d7d/internal/syncasync,Implementation,20-b-core-api;20-b-core-events
-b.core.cache,component,Cache manager,https://github.com/hyperledger-firefly/firefly/tree/2acb871a5a85eca774fd49d07ac9b925218f3d7d/internal/cache,Implementation,20-b-core-persistence
-b.core.metrics,component,Metrics,https://github.com/hyperledger-firefly/firefly/tree/2acb871a5a85eca774fd49d07ac9b925218f3d7d/internal/metrics,Implementation,20-b-core-persistence
-b.core.spievents,component,SPI event manager,https://github.com/hyperledger-firefly/firefly/tree/2acb871a5a85eca774fd49d07ac9b925218f3d7d/internal/spievents,Implementation,20-b-core-api
-b.core.blockchain,component,Blockchain plugin,https://github.com/hyperledger-firefly/firefly/tree/2acb871a5a85eca774fd49d07ac9b925218f3d7d/internal/blockchain,Implementation,20-b-core-identity;20-b-core-contracts;20-b-core-events
-b.core.database,component,Database plugin,https://github.com/hyperledger-firefly/firefly/tree/2acb871a5a85eca774fd49d07ac9b925218f3d7d/internal/database,Implementation,20-b-core-contracts;20-b-core-events;20-b-core-persistence
-b.core.dataexchange,component,Data exchange plugin,https://github.com/hyperledger-firefly/firefly/tree/2acb871a5a85eca774fd49d07ac9b925218f3d7d/internal/dataexchange,Implementation,20-b-core-messaging;20-b-core-events
-b.core.sharedstorage,component,Shared storage plugin,https://github.com/hyperledger-firefly/firefly/tree/2acb871a5a85eca774fd49d07ac9b925218f3d7d/internal/sharedstorage,Implementation,20-b-core-messaging;20-b-core-persistence
-b.core.tokens,component,Token plugin,https://github.com/hyperledger-firefly/firefly/tree/2acb871a5a85eca774fd49d07ac9b925218f3d7d/internal/tokens,Implementation,20-b-core-contracts;20-b-core-events
-b.core.identityplugin,component,Identity plugin,https://github.com/hyperledger-firefly/firefly/tree/2acb871a5a85eca774fd49d07ac9b925218f3d7d/pkg/identity,Implementation,20-b-core-identity
-b.core.eventplugin,component,Event transport plugins,https://github.com/hyperledger-firefly/firefly/tree/2acb871a5a85eca774fd49d07ac9b925218f3d7d/internal/events,Implementation,20-b-core-api;20-b-core-events
-b.evm.api,component,Connector REST API,https://github.com/hyperledger-firefly/evmconnect/tree/cd3115124c50f8215df1423749f22b558f83b559/cmd/evmconnect.go,Implementation,30-b-evm-transactions
-b.evm.manager,component,Transaction manager,https://github.com/hyperledger-firefly/transaction-manager/tree/35e3ade41cb20b3c778dd5b60ab6af2d56e1b286/pkg/fftm,Implementation,30-b-evm-transactions;30-b-evm-events
-b.evm.handler,component,Transaction policy handler,https://github.com/hyperledger-firefly/transaction-manager/tree/35e3ade41cb20b3c778dd5b60ab6af2d56e1b286/pkg/txhandler,Implementation,30-b-evm-transactions
-b.evm.nonce,component,Nonce allocation,https://github.com/hyperledger-firefly/transaction-manager/tree/35e3ade41cb20b3c778dd5b60ab6af2d56e1b286/internal/persistence,Implementation,30-b-evm-transactions
-b.evm.abi,component,EVM API adapter,https://github.com/hyperledger-firefly/evmconnect/tree/cd3115124c50f8215df1423749f22b558f83b559/internal/ethereum,Implementation,30-b-evm-transactions
-b.evm.rpc,component,Ethereum JSON-RPC client,https://github.com/hyperledger-firefly/evmconnect/tree/cd3115124c50f8215df1423749f22b558f83b559/pkg/ethrpc,Implementation,30-b-evm-transactions;30-b-evm-events
-b.evm.blocks,component,Block listener,https://github.com/hyperledger-firefly/evmconnect/tree/cd3115124c50f8215df1423749f22b558f83b559/pkg/ethblocklistener,Implementation,30-b-evm-events
-b.evm.receipts,component,Receipt tracking,https://github.com/hyperledger-firefly/transaction-manager/tree/35e3ade41cb20b3c778dd5b60ab6af2d56e1b286/pkg/fftm,Implementation,30-b-evm-events
-b.evm.confirmations,component,Confirmation manager,https://github.com/hyperledger-firefly/transaction-manager/tree/35e3ade41cb20b3c778dd5b60ab6af2d56e1b286/internal/confirmations,Implementation,30-b-evm-events
-b.evm.streams,component,Event streams,https://github.com/hyperledger-firefly/transaction-manager/tree/35e3ade41cb20b3c778dd5b60ab6af2d56e1b286/internal/events,Implementation,30-b-evm-events
-b.evm.delivery,component,WebSocket and webhook delivery,https://github.com/hyperledger-firefly/transaction-manager/tree/35e3ade41cb20b3c778dd5b60ab6af2d56e1b286/internal/ws,Implementation,30-b-evm-events
-b.evm.persistence,component,Persistence adapter,https://github.com/hyperledger-firefly/transaction-manager/tree/35e3ade41cb20b3c778dd5b60ab6af2d56e1b286/internal/persistence,Implementation,30-b-evm-transactions;30-b-evm-events
-b.signer.proxy,component,JSON-RPC proxy,https://github.com/hyperledger-firefly/signer/tree/cfafd71fb4d2c3061a946f6466269877c3f04d9d/internal/rpcserver,Implementation,40-b-signer
-b.signer.wallet,component,Filesystem wallet,https://github.com/hyperledger-firefly/signer/tree/cfafd71fb4d2c3061a946f6466269877c3f04d9d/pkg/fswallet,Implementation,40-b-signer
-b.signer.keystore,component,Keystore V3 decoder,https://github.com/hyperledger-firefly/signer/tree/cfafd71fb4d2c3061a946f6466269877c3f04d9d/pkg/keystorev3,Implementation,40-b-signer
-b.signer.signing,component,Ethereum signing,https://github.com/hyperledger-firefly/signer/tree/cfafd71fb4d2c3061a946f6466269877c3f04d9d/pkg/ethsigner,Implementation,40-b-signer
-b.signer.backend,component,RPC backend,https://github.com/hyperledger-firefly/signer/tree/cfafd71fb4d2c3061a946f6466269877c3f04d9d/pkg/rpcbackend,Implementation,40-b-signer
-b.dx.api,component,Internal REST API,https://github.com/hyperledger-firefly/dataexchange-https/tree/b6a212d531da1ff1c24e762e7156e2593c73d052/src/routers/api.ts,Implementation,40-b-dx
-b.dx.peers,component,Peer and certificate registry,https://github.com/hyperledger-firefly/dataexchange-https/tree/b6a212d531da1ff1c24e762e7156e2593c73d052/src/lib,Implementation,40-b-dx
-b.dx.p2p,component,Mutual TLS peer endpoint,https://github.com/hyperledger-firefly/dataexchange-https/tree/b6a212d531da1ff1c24e762e7156e2593c73d052/src/routers/p2p.ts,Implementation,40-b-dx
-b.dx.messages,component,Message transfer handler,https://github.com/hyperledger-firefly/dataexchange-https/tree/b6a212d531da1ff1c24e762e7156e2593c73d052/src/handlers/messages.ts,Implementation,40-b-dx
-b.dx.blobs,component,Blob transfer handler,https://github.com/hyperledger-firefly/dataexchange-https/tree/b6a212d531da1ff1c24e762e7156e2593c73d052/src/handlers/blobs.ts,Implementation,40-b-dx
-b.dx.events,component,Event queue and acknowledgements,https://github.com/hyperledger-firefly/dataexchange-https/tree/b6a212d531da1ff1c24e762e7156e2593c73d052/src/handlers/events.ts,Implementation,40-b-dx
-b.erc20.api,component,Token REST controller,https://github.com/hyperledger-firefly/tokens-erc20-erc721/tree/7993b308284a396950587b5206370f7f254073d9/src/tokens/tokens.controller.ts,Implementation,40-b-erc20
-b.erc20.service,component,Token service,https://github.com/hyperledger-firefly/tokens-erc20-erc721/tree/7993b308284a396950587b5206370f7f254073d9/src/tokens/tokens.service.ts,Implementation,40-b-erc20
-b.erc20.mapper,component,ABI and standard adapters,https://github.com/hyperledger-firefly/tokens-erc20-erc721/tree/7993b308284a396950587b5206370f7f254073d9/src/tokens,Implementation,40-b-erc20
-b.erc20.blockchain,component,Blockchain connector client,https://github.com/hyperledger-firefly/tokens-erc20-erc721/tree/7993b308284a396950587b5206370f7f254073d9/src/tokens/blockchain.service.ts,Implementation,40-b-erc20
-b.erc20.listener,component,Token event listener,https://github.com/hyperledger-firefly/tokens-erc20-erc721/tree/7993b308284a396950587b5206370f7f254073d9/src/tokens/tokens.listener.ts,Implementation,40-b-erc20
-b.erc20.stream,component,Connector event stream,https://github.com/hyperledger-firefly/tokens-erc20-erc721/tree/7993b308284a396950587b5206370f7f254073d9/src/event-stream,Implementation,40-b-erc20
-b.erc20.proxy,component,Core event proxy,https://github.com/hyperledger-firefly/tokens-erc20-erc721/tree/7993b308284a396950587b5206370f7f254073d9/src/eventstream-proxy,Implementation,40-b-erc20
-b.erc1155.api,component,Token REST controller,https://github.com/hyperledger-firefly/tokens-erc1155/tree/0355a0eb11fd12e311829a41bcbfea6148e52469/src/tokens/tokens.controller.ts,Implementation,40-b-erc1155
-b.erc1155.service,component,Token service,https://github.com/hyperledger-firefly/tokens-erc1155/tree/0355a0eb11fd12e311829a41bcbfea6148e52469/src/tokens/tokens.service.ts,Implementation,40-b-erc1155
-b.erc1155.mapper,component,ABI and standard adapters,https://github.com/hyperledger-firefly/tokens-erc1155/tree/0355a0eb11fd12e311829a41bcbfea6148e52469/src/tokens,Implementation,40-b-erc1155
-b.erc1155.blockchain,component,Blockchain connector client,https://github.com/hyperledger-firefly/tokens-erc1155/tree/0355a0eb11fd12e311829a41bcbfea6148e52469/src/tokens/blockchain.service.ts,Implementation,40-b-erc1155
-b.erc1155.listener,component,Token event listener,https://github.com/hyperledger-firefly/tokens-erc1155/tree/0355a0eb11fd12e311829a41bcbfea6148e52469/src/tokens/tokens.listener.ts,Implementation,40-b-erc1155
-b.erc1155.stream,component,Connector event stream,https://github.com/hyperledger-firefly/tokens-erc1155/tree/0355a0eb11fd12e311829a41bcbfea6148e52469/src/event-stream,Implementation,40-b-erc1155
-b.erc1155.proxy,component,Core event proxy,https://github.com/hyperledger-firefly/tokens-erc1155/tree/0355a0eb11fd12e311829a41bcbfea6148e52469/src/eventstream-proxy,Implementation,40-b-erc1155
-c,softwareSystem,Member C FireFly,https://github.com/hyperledger-firefly/firefly/tree/2acb871a5a85eca774fd49d07ac9b925218f3d7d,Implementation,01-landscape;02-context-a;02-context-b;02-context-c;03-context-besu
-c.core,container,FireFly Core,https://github.com/hyperledger-firefly/firefly/tree/2acb871a5a85eca774fd49d07ac9b925218f3d7d/internal/orchestrator,Implementation,10-c-runtime;11-c-state;30-c-evm-events;40-c-erc20;40-c-erc1155;60-applications;63-operations
-c.evm,container,EVMConnect + FFTM,https://github.com/hyperledger-firefly/evmconnect/tree/cd3115124c50f8215df1423749f22b558f83b559/cmd/evmconnect.go,Implementation,10-c-runtime;11-c-state;20-c-core-contracts;40-c-erc20;40-c-erc1155
-c.signer,container,FireFly Signer,https://github.com/hyperledger-firefly/signer/tree/cfafd71fb4d2c3061a946f6466269877c3f04d9d/internal/rpcserver,Implementation,10-c-runtime;11-c-state;30-c-evm-transactions;30-c-evm-events
-c.dx,container,HTTPS Data Exchange,https://github.com/hyperledger-firefly/dataexchange-https/tree/b6a212d531da1ff1c24e762e7156e2593c73d052/src,Implementation,10-a-runtime;10-b-runtime;10-c-runtime;11-c-state;20-c-core-messaging
-c.erc20,container,ERC-20 / ERC-721 connector,https://github.com/hyperledger-firefly/tokens-erc20-erc721/tree/7993b308284a396950587b5206370f7f254073d9/src,Implementation,10-c-runtime;20-c-core-contracts
-c.erc1155,container,ERC-1155 connector,https://github.com/hyperledger-firefly/tokens-erc1155/tree/0355a0eb11fd12e311829a41bcbfea6148e52469/src,Implementation,10-c-runtime;20-c-core-contracts
-c.ipfs,container,IPFS Kubo,https://docs.ipfs.tech/concepts/how-ipfs-works/,Implementation,11-a-state;11-b-state;10-c-runtime;11-c-state;20-c-core-messaging;20-c-core-persistence
-c.pg,container,PostgreSQL primary,https://cloudnative-pg.io/docs/1.28/replication/,Implementation,10-c-runtime;11-c-state;20-c-core-persistence;30-c-evm-transactions;30-c-evm-events;63-operations
-c.pgReplica,container,PostgreSQL standby,https://cloudnative-pg.io/docs/1.28/replication/,Implementation,11-c-state
-c.blobs,container,Private blob and peer store,https://github.com/hyperledger-firefly/dataexchange-https/tree/b6a212d531da1ff1c24e762e7156e2593c73d052/src/handlers/blobs.ts,Implementation,11-c-state;40-c-dx
-c.ipfsRepo,container,IPFS repository,https://docs.ipfs.tech/concepts/how-ipfs-works/,Implementation,11-c-state
-c.secrets,container,Member keys and configuration,https://github.com/hyperledger-firefly/signer/tree/cfafd71fb4d2c3061a946f6466269877c3f04d9d/pkg/fswallet,Implementation,11-c-state;40-c-signer;40-c-dx
-c.core.api,component,REST API and routing,https://github.com/hyperledger-firefly/firefly/tree/2acb871a5a85eca774fd49d07ac9b925218f3d7d/internal/apiserver,Implementation,20-c-core-api
-c.core.explorer,component,Explorer UI,https://github.com/hyperledger-firefly/firefly/tree/2acb871a5a85eca774fd49d07ac9b925218f3d7d/Dockerfile,Implementation,20-c-core-api
-c.core.auth,component,API authentication,https://github.com/hyperledger-firefly/firefly/tree/2acb871a5a85eca774fd49d07ac9b925218f3d7d/doc-site/docs/overview/key_components/security.md,Implementation,20-c-core-api
-c.core.namespaces,component,Namespace manager,https://github.com/hyperledger-firefly/firefly/tree/2acb871a5a85eca774fd49d07ac9b925218f3d7d/internal/namespace,Implementation,20-c-core-api
-c.core.orchestrator,component,Orchestrator,https://github.com/hyperledger-firefly/firefly/tree/2acb871a5a85eca774fd49d07ac9b925218f3d7d/internal/orchestrator,Implementation,20-c-core-api;20-c-core-identity;20-c-core-messaging;20-c-core-contracts;20-c-core-persistence
-c.core.identity,component,Identity manager,https://github.com/hyperledger-firefly/firefly/tree/2acb871a5a85eca774fd49d07ac9b925218f3d7d/internal/identity,Implementation,20-c-core-identity
-c.core.networkmap,component,Network map,https://github.com/hyperledger-firefly/firefly/tree/2acb871a5a85eca774fd49d07ac9b925218f3d7d/internal/networkmap,Implementation,20-c-core-identity
-c.core.definitions,component,Definition exchange,https://github.com/hyperledger-firefly/firefly/tree/2acb871a5a85eca774fd49d07ac9b925218f3d7d/internal/definitions,Implementation,20-c-core-identity
-c.core.data,component,Data manager,https://github.com/hyperledger-firefly/firefly/tree/2acb871a5a85eca774fd49d07ac9b925218f3d7d/internal/data,Implementation,20-c-core-messaging;20-c-core-persistence
-c.core.schema,component,Schema validation,https://github.com/hyperledger-firefly/firefly/tree/2acb871a5a85eca774fd49d07ac9b925218f3d7d/internal/data,Implementation,20-c-core-messaging
-c.core.batch,component,Batch manager,https://github.com/hyperledger-firefly/firefly/tree/2acb871a5a85eca774fd49d07ac9b925218f3d7d/internal/batch,Implementation,20-c-core-messaging
-c.core.batchprocessor,component,Batch processor,https://github.com/hyperledger-firefly/firefly/tree/2acb871a5a85eca774fd49d07ac9b925218f3d7d/internal/batch,Implementation,20-c-core-messaging
-c.core.broadcast,component,Broadcast manager,https://github.com/hyperledger-firefly/firefly/tree/2acb871a5a85eca774fd49d07ac9b925218f3d7d/internal/broadcast,Implementation,20-c-core-identity;20-c-core-messaging
-c.core.private,component,Private messaging and groups,https://github.com/hyperledger-firefly/firefly/tree/2acb871a5a85eca774fd49d07ac9b925218f3d7d/internal/privatemessaging,Implementation,20-c-core-messaging
-c.core.multiparty,component,Multiparty manager,https://github.com/hyperledger-firefly/firefly/tree/2acb871a5a85eca774fd49d07ac9b925218f3d7d/internal/multiparty,Implementation,20-c-core-identity;20-c-core-messaging
-c.core.download,component,Shared download manager,https://github.com/hyperledger-firefly/firefly/tree/2acb871a5a85eca774fd49d07ac9b925218f3d7d/internal/shareddownload,Implementation,20-c-core-events;20-c-core-persistence
-c.core.contracts,component,Contract manager,https://github.com/hyperledger-firefly/firefly/tree/2acb871a5a85eca774fd49d07ac9b925218f3d7d/internal/contracts,Implementation,20-c-core-contracts;20-c-core-persistence
-c.core.assets,component,Asset manager,https://github.com/hyperledger-firefly/firefly/tree/2acb871a5a85eca774fd49d07ac9b925218f3d7d/internal/assets,Implementation,20-c-core-contracts
-c.core.operations,component,Operations manager,https://github.com/hyperledger-firefly/firefly/tree/2acb871a5a85eca774fd49d07ac9b925218f3d7d/internal/operations,Implementation,20-c-core-contracts;20-c-core-persistence
-c.core.txhelper,component,Transaction helper,https://github.com/hyperledger-firefly/firefly/tree/2acb871a5a85eca774fd49d07ac9b925218f3d7d/internal/txcommon,Implementation,20-c-core-contracts
-c.core.txwriter,component,Transaction writer,https://github.com/hyperledger-firefly/firefly/tree/2acb871a5a85eca774fd49d07ac9b925218f3d7d/internal/txwriter,Implementation,20-c-core-contracts;20-c-core-persistence
-c.core.aggregator,component,Inbound event aggregator,https://github.com/hyperledger-firefly/firefly/tree/2acb871a5a85eca774fd49d07ac9b925218f3d7d/internal/events/aggregator.go,Implementation,20-c-core-events
-c.core.subscriptions,component,Subscription manager,https://github.com/hyperledger-firefly/firefly/tree/2acb871a5a85eca774fd49d07ac9b925218f3d7d/internal/events/subscription_manager.go,Implementation,20-c-core-events
-c.core.dispatcher,component,Event dispatcher,https://github.com/hyperledger-firefly/firefly/tree/2acb871a5a85eca774fd49d07ac9b925218f3d7d/internal/events/event_dispatcher.go,Implementation,20-c-core-events
-c.core.syncasync,component,Sync/async bridge,https://github.com/hyperledger-firefly/firefly/tree/2acb871a5a85eca774fd49d07ac9b925218f3d7d/internal/syncasync,Implementation,20-c-core-api;20-c-core-events
-c.core.cache,component,Cache manager,https://github.com/hyperledger-firefly/firefly/tree/2acb871a5a85eca774fd49d07ac9b925218f3d7d/internal/cache,Implementation,20-c-core-persistence
-c.core.metrics,component,Metrics,https://github.com/hyperledger-firefly/firefly/tree/2acb871a5a85eca774fd49d07ac9b925218f3d7d/internal/metrics,Implementation,20-c-core-persistence
-c.core.spievents,component,SPI event manager,https://github.com/hyperledger-firefly/firefly/tree/2acb871a5a85eca774fd49d07ac9b925218f3d7d/internal/spievents,Implementation,20-c-core-api
-c.core.blockchain,component,Blockchain plugin,https://github.com/hyperledger-firefly/firefly/tree/2acb871a5a85eca774fd49d07ac9b925218f3d7d/internal/blockchain,Implementation,20-c-core-identity;20-c-core-contracts;20-c-core-events
-c.core.database,component,Database plugin,https://github.com/hyperledger-firefly/firefly/tree/2acb871a5a85eca774fd49d07ac9b925218f3d7d/internal/database,Implementation,20-c-core-contracts;20-c-core-events;20-c-core-persistence
-c.core.dataexchange,component,Data exchange plugin,https://github.com/hyperledger-firefly/firefly/tree/2acb871a5a85eca774fd49d07ac9b925218f3d7d/internal/dataexchange,Implementation,20-c-core-messaging;20-c-core-events
-c.core.sharedstorage,component,Shared storage plugin,https://github.com/hyperledger-firefly/firefly/tree/2acb871a5a85eca774fd49d07ac9b925218f3d7d/internal/sharedstorage,Implementation,20-c-core-messaging;20-c-core-persistence
-c.core.tokens,component,Token plugin,https://github.com/hyperledger-firefly/firefly/tree/2acb871a5a85eca774fd49d07ac9b925218f3d7d/internal/tokens,Implementation,20-c-core-contracts;20-c-core-events
-c.core.identityplugin,component,Identity plugin,https://github.com/hyperledger-firefly/firefly/tree/2acb871a5a85eca774fd49d07ac9b925218f3d7d/pkg/identity,Implementation,20-c-core-identity
-c.core.eventplugin,component,Event transport plugins,https://github.com/hyperledger-firefly/firefly/tree/2acb871a5a85eca774fd49d07ac9b925218f3d7d/internal/events,Implementation,20-c-core-api;20-c-core-events
-c.evm.api,component,Connector REST API,https://github.com/hyperledger-firefly/evmconnect/tree/cd3115124c50f8215df1423749f22b558f83b559/cmd/evmconnect.go,Implementation,30-c-evm-transactions
-c.evm.manager,component,Transaction manager,https://github.com/hyperledger-firefly/transaction-manager/tree/35e3ade41cb20b3c778dd5b60ab6af2d56e1b286/pkg/fftm,Implementation,30-c-evm-transactions;30-c-evm-events
-c.evm.handler,component,Transaction policy handler,https://github.com/hyperledger-firefly/transaction-manager/tree/35e3ade41cb20b3c778dd5b60ab6af2d56e1b286/pkg/txhandler,Implementation,30-c-evm-transactions
-c.evm.nonce,component,Nonce allocation,https://github.com/hyperledger-firefly/transaction-manager/tree/35e3ade41cb20b3c778dd5b60ab6af2d56e1b286/internal/persistence,Implementation,30-c-evm-transactions
-c.evm.abi,component,EVM API adapter,https://github.com/hyperledger-firefly/evmconnect/tree/cd3115124c50f8215df1423749f22b558f83b559/internal/ethereum,Implementation,30-c-evm-transactions
-c.evm.rpc,component,Ethereum JSON-RPC client,https://github.com/hyperledger-firefly/evmconnect/tree/cd3115124c50f8215df1423749f22b558f83b559/pkg/ethrpc,Implementation,30-c-evm-transactions;30-c-evm-events
-c.evm.blocks,component,Block listener,https://github.com/hyperledger-firefly/evmconnect/tree/cd3115124c50f8215df1423749f22b558f83b559/pkg/ethblocklistener,Implementation,30-c-evm-events
-c.evm.receipts,component,Receipt tracking,https://github.com/hyperledger-firefly/transaction-manager/tree/35e3ade41cb20b3c778dd5b60ab6af2d56e1b286/pkg/fftm,Implementation,30-c-evm-events
-c.evm.confirmations,component,Confirmation manager,https://github.com/hyperledger-firefly/transaction-manager/tree/35e3ade41cb20b3c778dd5b60ab6af2d56e1b286/internal/confirmations,Implementation,30-c-evm-events
-c.evm.streams,component,Event streams,https://github.com/hyperledger-firefly/transaction-manager/tree/35e3ade41cb20b3c778dd5b60ab6af2d56e1b286/internal/events,Implementation,30-c-evm-events
-c.evm.delivery,component,WebSocket and webhook delivery,https://github.com/hyperledger-firefly/transaction-manager/tree/35e3ade41cb20b3c778dd5b60ab6af2d56e1b286/internal/ws,Implementation,30-c-evm-events
-c.evm.persistence,component,Persistence adapter,https://github.com/hyperledger-firefly/transaction-manager/tree/35e3ade41cb20b3c778dd5b60ab6af2d56e1b286/internal/persistence,Implementation,30-c-evm-transactions;30-c-evm-events
-c.signer.proxy,component,JSON-RPC proxy,https://github.com/hyperledger-firefly/signer/tree/cfafd71fb4d2c3061a946f6466269877c3f04d9d/internal/rpcserver,Implementation,40-c-signer
-c.signer.wallet,component,Filesystem wallet,https://github.com/hyperledger-firefly/signer/tree/cfafd71fb4d2c3061a946f6466269877c3f04d9d/pkg/fswallet,Implementation,40-c-signer
-c.signer.keystore,component,Keystore V3 decoder,https://github.com/hyperledger-firefly/signer/tree/cfafd71fb4d2c3061a946f6466269877c3f04d9d/pkg/keystorev3,Implementation,40-c-signer
-c.signer.signing,component,Ethereum signing,https://github.com/hyperledger-firefly/signer/tree/cfafd71fb4d2c3061a946f6466269877c3f04d9d/pkg/ethsigner,Implementation,40-c-signer
-c.signer.backend,component,RPC backend,https://github.com/hyperledger-firefly/signer/tree/cfafd71fb4d2c3061a946f6466269877c3f04d9d/pkg/rpcbackend,Implementation,40-c-signer
-c.dx.api,component,Internal REST API,https://github.com/hyperledger-firefly/dataexchange-https/tree/b6a212d531da1ff1c24e762e7156e2593c73d052/src/routers/api.ts,Implementation,40-c-dx
-c.dx.peers,component,Peer and certificate registry,https://github.com/hyperledger-firefly/dataexchange-https/tree/b6a212d531da1ff1c24e762e7156e2593c73d052/src/lib,Implementation,40-c-dx
-c.dx.p2p,component,Mutual TLS peer endpoint,https://github.com/hyperledger-firefly/dataexchange-https/tree/b6a212d531da1ff1c24e762e7156e2593c73d052/src/routers/p2p.ts,Implementation,40-c-dx
-c.dx.messages,component,Message transfer handler,https://github.com/hyperledger-firefly/dataexchange-https/tree/b6a212d531da1ff1c24e762e7156e2593c73d052/src/handlers/messages.ts,Implementation,40-c-dx
-c.dx.blobs,component,Blob transfer handler,https://github.com/hyperledger-firefly/dataexchange-https/tree/b6a212d531da1ff1c24e762e7156e2593c73d052/src/handlers/blobs.ts,Implementation,40-c-dx
-c.dx.events,component,Event queue and acknowledgements,https://github.com/hyperledger-firefly/dataexchange-https/tree/b6a212d531da1ff1c24e762e7156e2593c73d052/src/handlers/events.ts,Implementation,40-c-dx
-c.erc20.api,component,Token REST controller,https://github.com/hyperledger-firefly/tokens-erc20-erc721/tree/7993b308284a396950587b5206370f7f254073d9/src/tokens/tokens.controller.ts,Implementation,40-c-erc20
-c.erc20.service,component,Token service,https://github.com/hyperledger-firefly/tokens-erc20-erc721/tree/7993b308284a396950587b5206370f7f254073d9/src/tokens/tokens.service.ts,Implementation,40-c-erc20
-c.erc20.mapper,component,ABI and standard adapters,https://github.com/hyperledger-firefly/tokens-erc20-erc721/tree/7993b308284a396950587b5206370f7f254073d9/src/tokens,Implementation,40-c-erc20
-c.erc20.blockchain,component,Blockchain connector client,https://github.com/hyperledger-firefly/tokens-erc20-erc721/tree/7993b308284a396950587b5206370f7f254073d9/src/tokens/blockchain.service.ts,Implementation,40-c-erc20
-c.erc20.listener,component,Token event listener,https://github.com/hyperledger-firefly/tokens-erc20-erc721/tree/7993b308284a396950587b5206370f7f254073d9/src/tokens/tokens.listener.ts,Implementation,40-c-erc20
-c.erc20.stream,component,Connector event stream,https://github.com/hyperledger-firefly/tokens-erc20-erc721/tree/7993b308284a396950587b5206370f7f254073d9/src/event-stream,Implementation,40-c-erc20
-c.erc20.proxy,component,Core event proxy,https://github.com/hyperledger-firefly/tokens-erc20-erc721/tree/7993b308284a396950587b5206370f7f254073d9/src/eventstream-proxy,Implementation,40-c-erc20
-c.erc1155.api,component,Token REST controller,https://github.com/hyperledger-firefly/tokens-erc1155/tree/0355a0eb11fd12e311829a41bcbfea6148e52469/src/tokens/tokens.controller.ts,Implementation,40-c-erc1155
-c.erc1155.service,component,Token service,https://github.com/hyperledger-firefly/tokens-erc1155/tree/0355a0eb11fd12e311829a41bcbfea6148e52469/src/tokens/tokens.service.ts,Implementation,40-c-erc1155
-c.erc1155.mapper,component,ABI and standard adapters,https://github.com/hyperledger-firefly/tokens-erc1155/tree/0355a0eb11fd12e311829a41bcbfea6148e52469/src/tokens,Implementation,40-c-erc1155
-c.erc1155.blockchain,component,Blockchain connector client,https://github.com/hyperledger-firefly/tokens-erc1155/tree/0355a0eb11fd12e311829a41bcbfea6148e52469/src/tokens/blockchain.service.ts,Implementation,40-c-erc1155
-c.erc1155.listener,component,Token event listener,https://github.com/hyperledger-firefly/tokens-erc1155/tree/0355a0eb11fd12e311829a41bcbfea6148e52469/src/tokens/tokens.listener.ts,Implementation,40-c-erc1155
-c.erc1155.stream,component,Connector event stream,https://github.com/hyperledger-firefly/tokens-erc1155/tree/0355a0eb11fd12e311829a41bcbfea6148e52469/src/event-stream,Implementation,40-c-erc1155
-c.erc1155.proxy,component,Core event proxy,https://github.com/hyperledger-firefly/tokens-erc1155/tree/0355a0eb11fd12e311829a41bcbfea6148e52469/src/eventstream-proxy,Implementation,40-c-erc1155
-besu,softwareSystem,Private Besu network,https://github.com/besu-eth/besu/tree/18c4d62e446cea67050756b001d92fdbc97d01cc,Implementation,01-landscape;02-context-a;02-context-b;02-context-c;03-context-besu
-besu.a1,container,Besu validator A1,https://github.com/besu-eth/besu/tree/18c4d62e446cea67050756b001d92fdbc97d01cc,Implementation,50-besu-network;63-operations
-besu.a1.rpc,component,JSON-RPC and subscriptions,https://github.com/besu-eth/besu/tree/18c4d62e446cea67050756b001d92fdbc97d01cc/ethereum/api,Implementation,51-a1-network;51-a1-execution
-besu.a1.permissioning,component,Node and account permissioning,https://github.com/besu-eth/besu/tree/18c4d62e446cea67050756b001d92fdbc97d01cc/ethereum/permissioning,Implementation,51-a1-network
-besu.a1.discovery,component,Peer discovery,https://github.com/besu-eth/besu/tree/18c4d62e446cea67050756b001d92fdbc97d01cc/ethereum/p2p,Implementation,51-a1-network
-besu.a1.p2p,component,DevP2P transport,https://github.com/besu-eth/besu/tree/18c4d62e446cea67050756b001d92fdbc97d01cc/ethereum/p2p,Implementation,51-a1-network;51-a1-consensus
-besu.a1.txpool,component,Transaction pool,https://github.com/besu-eth/besu/tree/18c4d62e446cea67050756b001d92fdbc97d01cc/ethereum/eth,Implementation,51-a1-network;51-a1-consensus
-besu.a1.sync,component,Chain synchronization,https://github.com/besu-eth/besu/tree/18c4d62e446cea67050756b001d92fdbc97d01cc/ethereum/eth,Implementation,51-a1-network;51-a1-consensus
-besu.a1.blockprocessor,component,Block processor,https://github.com/besu-eth/besu/tree/18c4d62e446cea67050756b001d92fdbc97d01cc/ethereum/core,Implementation,51-a1-consensus;51-a1-execution
-besu.a1.qbft,component,QBFT consensus,https://github.com/besu-eth/besu/tree/18c4d62e446cea67050756b001d92fdbc97d01cc/consensus/qbft,Implementation,51-a1-consensus
-besu.a1.evm,component,EVM execution,https://github.com/besu-eth/besu/tree/18c4d62e446cea67050756b001d92fdbc97d01cc/evm,Implementation,51-a1-execution
-besu.a1.worldstate,component,World state and trie,https://github.com/besu-eth/besu/tree/18c4d62e446cea67050756b001d92fdbc97d01cc/ethereum/trie,Implementation,51-a1-execution
-besu.a1.storage,component,Storage provider,https://github.com/besu-eth/besu/tree/18c4d62e446cea67050756b001d92fdbc97d01cc/plugins/rocksdb,Implementation,51-a1-execution
-besu.a1.keys,component,Node key and security module,https://github.com/besu-eth/besu/tree/18c4d62e446cea67050756b001d92fdbc97d01cc/plugin-api,Implementation,51-a1-consensus
-besu.a1.metrics,component,Metrics and health,https://github.com/besu-eth/besu/tree/18c4d62e446cea67050756b001d92fdbc97d01cc/metrics,Implementation,51-a1-consensus
-besu.a1.fireflycontract,component,FireFly multiparty contract,https://github.com/hyperledger-firefly/firefly/tree/2acb871a5a85eca774fd49d07ac9b925218f3d7d/smart_contracts/ethereum/solidity_firefly/contracts/Firefly.sol,Implementation,51-a1-execution
-besu.a1.tokencontracts,component,Token contracts,https://github.com/hyperledger-firefly/tokens-erc20-erc721/tree/7993b308284a396950587b5206370f7f254073d9/src/abi,Implementation,51-a1-execution
-besu.a1.businesscontracts,component,Application contracts,https://learn.microsoft.com/en-us/azure/aks/reliability-availability-zones-configure,Reference choice,51-a1-execution
-besu.b1,container,Besu validator B1,https://github.com/besu-eth/besu/tree/18c4d62e446cea67050756b001d92fdbc97d01cc,Implementation,50-besu-network
-besu.b1.rpc,component,JSON-RPC and subscriptions,https://github.com/besu-eth/besu/tree/18c4d62e446cea67050756b001d92fdbc97d01cc/ethereum/api,Implementation,51-b1-network;51-b1-execution
-besu.b1.permissioning,component,Node and account permissioning,https://github.com/besu-eth/besu/tree/18c4d62e446cea67050756b001d92fdbc97d01cc/ethereum/permissioning,Implementation,51-b1-network
-besu.b1.discovery,component,Peer discovery,https://github.com/besu-eth/besu/tree/18c4d62e446cea67050756b001d92fdbc97d01cc/ethereum/p2p,Implementation,51-b1-network
-besu.b1.p2p,component,DevP2P transport,https://github.com/besu-eth/besu/tree/18c4d62e446cea67050756b001d92fdbc97d01cc/ethereum/p2p,Implementation,51-b1-network;51-b1-consensus
-besu.b1.txpool,component,Transaction pool,https://github.com/besu-eth/besu/tree/18c4d62e446cea67050756b001d92fdbc97d01cc/ethereum/eth,Implementation,51-b1-network;51-b1-consensus
-besu.b1.sync,component,Chain synchronization,https://github.com/besu-eth/besu/tree/18c4d62e446cea67050756b001d92fdbc97d01cc/ethereum/eth,Implementation,51-b1-network;51-b1-consensus
-besu.b1.blockprocessor,component,Block processor,https://github.com/besu-eth/besu/tree/18c4d62e446cea67050756b001d92fdbc97d01cc/ethereum/core,Implementation,51-b1-consensus;51-b1-execution
-besu.b1.qbft,component,QBFT consensus,https://github.com/besu-eth/besu/tree/18c4d62e446cea67050756b001d92fdbc97d01cc/consensus/qbft,Implementation,51-b1-consensus
-besu.b1.evm,component,EVM execution,https://github.com/besu-eth/besu/tree/18c4d62e446cea67050756b001d92fdbc97d01cc/evm,Implementation,51-b1-execution
-besu.b1.worldstate,component,World state and trie,https://github.com/besu-eth/besu/tree/18c4d62e446cea67050756b001d92fdbc97d01cc/ethereum/trie,Implementation,51-b1-execution
-besu.b1.storage,component,Storage provider,https://github.com/besu-eth/besu/tree/18c4d62e446cea67050756b001d92fdbc97d01cc/plugins/rocksdb,Implementation,51-b1-execution
-besu.b1.keys,component,Node key and security module,https://github.com/besu-eth/besu/tree/18c4d62e446cea67050756b001d92fdbc97d01cc/plugin-api,Implementation,51-b1-consensus
-besu.b1.metrics,component,Metrics and health,https://github.com/besu-eth/besu/tree/18c4d62e446cea67050756b001d92fdbc97d01cc/metrics,Implementation,51-b1-consensus
-besu.b1.fireflycontract,component,FireFly multiparty contract,https://github.com/hyperledger-firefly/firefly/tree/2acb871a5a85eca774fd49d07ac9b925218f3d7d/smart_contracts/ethereum/solidity_firefly/contracts/Firefly.sol,Implementation,51-b1-execution
-besu.b1.tokencontracts,component,Token contracts,https://github.com/hyperledger-firefly/tokens-erc20-erc721/tree/7993b308284a396950587b5206370f7f254073d9/src/abi,Implementation,51-b1-execution
-besu.b1.businesscontracts,component,Application contracts,https://learn.microsoft.com/en-us/azure/aks/reliability-availability-zones-configure,Reference choice,51-b1-execution
-besu.b2,container,Besu validator B2,https://github.com/besu-eth/besu/tree/18c4d62e446cea67050756b001d92fdbc97d01cc,Implementation,50-besu-network
-besu.b2.rpc,component,JSON-RPC and subscriptions,https://github.com/besu-eth/besu/tree/18c4d62e446cea67050756b001d92fdbc97d01cc/ethereum/api,Implementation,51-b2-network;51-b2-execution
-besu.b2.permissioning,component,Node and account permissioning,https://github.com/besu-eth/besu/tree/18c4d62e446cea67050756b001d92fdbc97d01cc/ethereum/permissioning,Implementation,51-b2-network
-besu.b2.discovery,component,Peer discovery,https://github.com/besu-eth/besu/tree/18c4d62e446cea67050756b001d92fdbc97d01cc/ethereum/p2p,Implementation,51-b2-network
-besu.b2.p2p,component,DevP2P transport,https://github.com/besu-eth/besu/tree/18c4d62e446cea67050756b001d92fdbc97d01cc/ethereum/p2p,Implementation,51-b2-network;51-b2-consensus
-besu.b2.txpool,component,Transaction pool,https://github.com/besu-eth/besu/tree/18c4d62e446cea67050756b001d92fdbc97d01cc/ethereum/eth,Implementation,51-b2-network;51-b2-consensus
-besu.b2.sync,component,Chain synchronization,https://github.com/besu-eth/besu/tree/18c4d62e446cea67050756b001d92fdbc97d01cc/ethereum/eth,Implementation,51-b2-network;51-b2-consensus
-besu.b2.blockprocessor,component,Block processor,https://github.com/besu-eth/besu/tree/18c4d62e446cea67050756b001d92fdbc97d01cc/ethereum/core,Implementation,51-b2-consensus;51-b2-execution
-besu.b2.qbft,component,QBFT consensus,https://github.com/besu-eth/besu/tree/18c4d62e446cea67050756b001d92fdbc97d01cc/consensus/qbft,Implementation,51-b2-consensus
-besu.b2.evm,component,EVM execution,https://github.com/besu-eth/besu/tree/18c4d62e446cea67050756b001d92fdbc97d01cc/evm,Implementation,51-b2-execution
-besu.b2.worldstate,component,World state and trie,https://github.com/besu-eth/besu/tree/18c4d62e446cea67050756b001d92fdbc97d01cc/ethereum/trie,Implementation,51-b2-execution
-besu.b2.storage,component,Storage provider,https://github.com/besu-eth/besu/tree/18c4d62e446cea67050756b001d92fdbc97d01cc/plugins/rocksdb,Implementation,51-b2-execution
-besu.b2.keys,component,Node key and security module,https://github.com/besu-eth/besu/tree/18c4d62e446cea67050756b001d92fdbc97d01cc/plugin-api,Implementation,51-b2-consensus
-besu.b2.metrics,component,Metrics and health,https://github.com/besu-eth/besu/tree/18c4d62e446cea67050756b001d92fdbc97d01cc/metrics,Implementation,51-b2-consensus
-besu.b2.fireflycontract,component,FireFly multiparty contract,https://github.com/hyperledger-firefly/firefly/tree/2acb871a5a85eca774fd49d07ac9b925218f3d7d/smart_contracts/ethereum/solidity_firefly/contracts/Firefly.sol,Implementation,51-b2-execution
-besu.b2.tokencontracts,component,Token contracts,https://github.com/hyperledger-firefly/tokens-erc20-erc721/tree/7993b308284a396950587b5206370f7f254073d9/src/abi,Implementation,51-b2-execution
-besu.b2.businesscontracts,component,Application contracts,https://learn.microsoft.com/en-us/azure/aks/reliability-availability-zones-configure,Reference choice,51-b2-execution
-besu.c1,container,Besu validator C1,https://github.com/besu-eth/besu/tree/18c4d62e446cea67050756b001d92fdbc97d01cc,Implementation,50-besu-network
-besu.c1.rpc,component,JSON-RPC and subscriptions,https://github.com/besu-eth/besu/tree/18c4d62e446cea67050756b001d92fdbc97d01cc/ethereum/api,Implementation,51-c1-network;51-c1-execution
-besu.c1.permissioning,component,Node and account permissioning,https://github.com/besu-eth/besu/tree/18c4d62e446cea67050756b001d92fdbc97d01cc/ethereum/permissioning,Implementation,51-c1-network
-besu.c1.discovery,component,Peer discovery,https://github.com/besu-eth/besu/tree/18c4d62e446cea67050756b001d92fdbc97d01cc/ethereum/p2p,Implementation,51-c1-network
-besu.c1.p2p,component,DevP2P transport,https://github.com/besu-eth/besu/tree/18c4d62e446cea67050756b001d92fdbc97d01cc/ethereum/p2p,Implementation,51-c1-network;51-c1-consensus
-besu.c1.txpool,component,Transaction pool,https://github.com/besu-eth/besu/tree/18c4d62e446cea67050756b001d92fdbc97d01cc/ethereum/eth,Implementation,51-c1-network;51-c1-consensus
-besu.c1.sync,component,Chain synchronization,https://github.com/besu-eth/besu/tree/18c4d62e446cea67050756b001d92fdbc97d01cc/ethereum/eth,Implementation,51-c1-network;51-c1-consensus
-besu.c1.blockprocessor,component,Block processor,https://github.com/besu-eth/besu/tree/18c4d62e446cea67050756b001d92fdbc97d01cc/ethereum/core,Implementation,51-c1-consensus;51-c1-execution
-besu.c1.qbft,component,QBFT consensus,https://github.com/besu-eth/besu/tree/18c4d62e446cea67050756b001d92fdbc97d01cc/consensus/qbft,Implementation,51-c1-consensus
-besu.c1.evm,component,EVM execution,https://github.com/besu-eth/besu/tree/18c4d62e446cea67050756b001d92fdbc97d01cc/evm,Implementation,51-c1-execution
-besu.c1.worldstate,component,World state and trie,https://github.com/besu-eth/besu/tree/18c4d62e446cea67050756b001d92fdbc97d01cc/ethereum/trie,Implementation,51-c1-execution
-besu.c1.storage,component,Storage provider,https://github.com/besu-eth/besu/tree/18c4d62e446cea67050756b001d92fdbc97d01cc/plugins/rocksdb,Implementation,51-c1-execution
-besu.c1.keys,component,Node key and security module,https://github.com/besu-eth/besu/tree/18c4d62e446cea67050756b001d92fdbc97d01cc/plugin-api,Implementation,51-c1-consensus
-besu.c1.metrics,component,Metrics and health,https://github.com/besu-eth/besu/tree/18c4d62e446cea67050756b001d92fdbc97d01cc/metrics,Implementation,51-c1-consensus
-besu.c1.fireflycontract,component,FireFly multiparty contract,https://github.com/hyperledger-firefly/firefly/tree/2acb871a5a85eca774fd49d07ac9b925218f3d7d/smart_contracts/ethereum/solidity_firefly/contracts/Firefly.sol,Implementation,51-c1-execution
-besu.c1.tokencontracts,component,Token contracts,https://github.com/hyperledger-firefly/tokens-erc20-erc721/tree/7993b308284a396950587b5206370f7f254073d9/src/abi,Implementation,51-c1-execution
-besu.c1.businesscontracts,component,Application contracts,https://learn.microsoft.com/en-us/azure/aks/reliability-availability-zones-configure,Reference choice,51-c1-execution
-besu.c2,container,Besu validator C2,https://github.com/besu-eth/besu/tree/18c4d62e446cea67050756b001d92fdbc97d01cc,Implementation,50-besu-network
-besu.c2.rpc,component,JSON-RPC and subscriptions,https://github.com/besu-eth/besu/tree/18c4d62e446cea67050756b001d92fdbc97d01cc/ethereum/api,Implementation,51-c2-network;51-c2-execution
-besu.c2.permissioning,component,Node and account permissioning,https://github.com/besu-eth/besu/tree/18c4d62e446cea67050756b001d92fdbc97d01cc/ethereum/permissioning,Implementation,51-c2-network
-besu.c2.discovery,component,Peer discovery,https://github.com/besu-eth/besu/tree/18c4d62e446cea67050756b001d92fdbc97d01cc/ethereum/p2p,Implementation,51-c2-network
-besu.c2.p2p,component,DevP2P transport,https://github.com/besu-eth/besu/tree/18c4d62e446cea67050756b001d92fdbc97d01cc/ethereum/p2p,Implementation,51-c2-network;51-c2-consensus
-besu.c2.txpool,component,Transaction pool,https://github.com/besu-eth/besu/tree/18c4d62e446cea67050756b001d92fdbc97d01cc/ethereum/eth,Implementation,51-c2-network;51-c2-consensus
-besu.c2.sync,component,Chain synchronization,https://github.com/besu-eth/besu/tree/18c4d62e446cea67050756b001d92fdbc97d01cc/ethereum/eth,Implementation,51-c2-network;51-c2-consensus
-besu.c2.blockprocessor,component,Block processor,https://github.com/besu-eth/besu/tree/18c4d62e446cea67050756b001d92fdbc97d01cc/ethereum/core,Implementation,51-c2-consensus;51-c2-execution
-besu.c2.qbft,component,QBFT consensus,https://github.com/besu-eth/besu/tree/18c4d62e446cea67050756b001d92fdbc97d01cc/consensus/qbft,Implementation,51-c2-consensus
-besu.c2.evm,component,EVM execution,https://github.com/besu-eth/besu/tree/18c4d62e446cea67050756b001d92fdbc97d01cc/evm,Implementation,51-c2-execution
-besu.c2.worldstate,component,World state and trie,https://github.com/besu-eth/besu/tree/18c4d62e446cea67050756b001d92fdbc97d01cc/ethereum/trie,Implementation,51-c2-execution
-besu.c2.storage,component,Storage provider,https://github.com/besu-eth/besu/tree/18c4d62e446cea67050756b001d92fdbc97d01cc/plugins/rocksdb,Implementation,51-c2-execution
-besu.c2.keys,component,Node key and security module,https://github.com/besu-eth/besu/tree/18c4d62e446cea67050756b001d92fdbc97d01cc/plugin-api,Implementation,51-c2-consensus
-besu.c2.metrics,component,Metrics and health,https://github.com/besu-eth/besu/tree/18c4d62e446cea67050756b001d92fdbc97d01cc/metrics,Implementation,51-c2-consensus
-besu.c2.fireflycontract,component,FireFly multiparty contract,https://github.com/hyperledger-firefly/firefly/tree/2acb871a5a85eca774fd49d07ac9b925218f3d7d/smart_contracts/ethereum/solidity_firefly/contracts/Firefly.sol,Implementation,51-c2-execution
-besu.c2.tokencontracts,component,Token contracts,https://github.com/hyperledger-firefly/tokens-erc20-erc721/tree/7993b308284a396950587b5206370f7f254073d9/src/abi,Implementation,51-c2-execution
-besu.c2.businesscontracts,component,Application contracts,https://learn.microsoft.com/en-us/azure/aks/reliability-availability-zones-configure,Reference choice,51-c2-execution
-besu.a2,container,Besu validator A2,https://github.com/besu-eth/besu/tree/18c4d62e446cea67050756b001d92fdbc97d01cc,Implementation,50-besu-network
-besu.a2.rpc,component,JSON-RPC and subscriptions,https://github.com/besu-eth/besu/tree/18c4d62e446cea67050756b001d92fdbc97d01cc/ethereum/api,Implementation,51-a2-network;51-a2-execution
-besu.a2.permissioning,component,Node and account permissioning,https://github.com/besu-eth/besu/tree/18c4d62e446cea67050756b001d92fdbc97d01cc/ethereum/permissioning,Implementation,51-a2-network
-besu.a2.discovery,component,Peer discovery,https://github.com/besu-eth/besu/tree/18c4d62e446cea67050756b001d92fdbc97d01cc/ethereum/p2p,Implementation,51-a2-network
-besu.a2.p2p,component,DevP2P transport,https://github.com/besu-eth/besu/tree/18c4d62e446cea67050756b001d92fdbc97d01cc/ethereum/p2p,Implementation,51-a2-network;51-a2-consensus
-besu.a2.txpool,component,Transaction pool,https://github.com/besu-eth/besu/tree/18c4d62e446cea67050756b001d92fdbc97d01cc/ethereum/eth,Implementation,51-a2-network;51-a2-consensus
-besu.a2.sync,component,Chain synchronization,https://github.com/besu-eth/besu/tree/18c4d62e446cea67050756b001d92fdbc97d01cc/ethereum/eth,Implementation,51-a2-network;51-a2-consensus
-besu.a2.blockprocessor,component,Block processor,https://github.com/besu-eth/besu/tree/18c4d62e446cea67050756b001d92fdbc97d01cc/ethereum/core,Implementation,51-a2-consensus;51-a2-execution
-besu.a2.qbft,component,QBFT consensus,https://github.com/besu-eth/besu/tree/18c4d62e446cea67050756b001d92fdbc97d01cc/consensus/qbft,Implementation,51-a2-consensus
-besu.a2.evm,component,EVM execution,https://github.com/besu-eth/besu/tree/18c4d62e446cea67050756b001d92fdbc97d01cc/evm,Implementation,51-a2-execution
-besu.a2.worldstate,component,World state and trie,https://github.com/besu-eth/besu/tree/18c4d62e446cea67050756b001d92fdbc97d01cc/ethereum/trie,Implementation,51-a2-execution
-besu.a2.storage,component,Storage provider,https://github.com/besu-eth/besu/tree/18c4d62e446cea67050756b001d92fdbc97d01cc/plugins/rocksdb,Implementation,51-a2-execution
-besu.a2.keys,component,Node key and security module,https://github.com/besu-eth/besu/tree/18c4d62e446cea67050756b001d92fdbc97d01cc/plugin-api,Implementation,51-a2-consensus
-besu.a2.metrics,component,Metrics and health,https://github.com/besu-eth/besu/tree/18c4d62e446cea67050756b001d92fdbc97d01cc/metrics,Implementation,51-a2-consensus
-besu.a2.fireflycontract,component,FireFly multiparty contract,https://github.com/hyperledger-firefly/firefly/tree/2acb871a5a85eca774fd49d07ac9b925218f3d7d/smart_contracts/ethereum/solidity_firefly/contracts/Firefly.sol,Implementation,51-a2-execution
-besu.a2.tokencontracts,component,Token contracts,https://github.com/hyperledger-firefly/tokens-erc20-erc721/tree/7993b308284a396950587b5206370f7f254073d9/src/abi,Implementation,51-a2-execution
-besu.a2.businesscontracts,component,Application contracts,https://learn.microsoft.com/en-us/azure/aks/reliability-availability-zones-configure,Reference choice,51-a2-execution
-besu.rpc1,container,Besu RPC node 1,https://github.com/besu-eth/besu/tree/18c4d62e446cea67050756b001d92fdbc97d01cc,Implementation,10-a-runtime;40-a-signer;10-b-runtime;40-b-signer;10-c-runtime;40-c-signer;50-besu-network
-besu.rpc1.rpc,component,JSON-RPC and subscriptions,https://github.com/besu-eth/besu/tree/18c4d62e446cea67050756b001d92fdbc97d01cc/ethereum/api,Implementation,51-rpc1-network;51-rpc1-execution
-besu.rpc1.permissioning,component,Node and account permissioning,https://github.com/besu-eth/besu/tree/18c4d62e446cea67050756b001d92fdbc97d01cc/ethereum/permissioning,Implementation,51-rpc1-network
-besu.rpc1.discovery,component,Peer discovery,https://github.com/besu-eth/besu/tree/18c4d62e446cea67050756b001d92fdbc97d01cc/ethereum/p2p,Implementation,51-rpc1-network;51-rpc1-consensus
-besu.rpc1.p2p,component,DevP2P transport,https://github.com/besu-eth/besu/tree/18c4d62e446cea67050756b001d92fdbc97d01cc/ethereum/p2p,Implementation,51-rpc1-network;51-rpc1-consensus
-besu.rpc1.txpool,component,Transaction pool,https://github.com/besu-eth/besu/tree/18c4d62e446cea67050756b001d92fdbc97d01cc/ethereum/eth,Implementation,51-rpc1-network
-besu.rpc1.sync,component,Chain synchronization,https://github.com/besu-eth/besu/tree/18c4d62e446cea67050756b001d92fdbc97d01cc/ethereum/eth,Implementation,51-rpc1-network;51-rpc1-consensus
-besu.rpc1.blockprocessor,component,Block processor,https://github.com/besu-eth/besu/tree/18c4d62e446cea67050756b001d92fdbc97d01cc/ethereum/core,Implementation,51-rpc1-consensus;51-rpc1-execution
-besu.rpc1.evm,component,EVM execution,https://github.com/besu-eth/besu/tree/18c4d62e446cea67050756b001d92fdbc97d01cc/evm,Implementation,51-rpc1-execution
-besu.rpc1.worldstate,component,World state and trie,https://github.com/besu-eth/besu/tree/18c4d62e446cea67050756b001d92fdbc97d01cc/ethereum/trie,Implementation,51-rpc1-execution
-besu.rpc1.storage,component,Storage provider,https://github.com/besu-eth/besu/tree/18c4d62e446cea67050756b001d92fdbc97d01cc/plugins/rocksdb,Implementation,51-rpc1-execution
-besu.rpc1.keys,component,Node key and security module,https://github.com/besu-eth/besu/tree/18c4d62e446cea67050756b001d92fdbc97d01cc/plugin-api,Implementation,51-rpc1-consensus
-besu.rpc1.metrics,component,Metrics and health,https://github.com/besu-eth/besu/tree/18c4d62e446cea67050756b001d92fdbc97d01cc/metrics,Implementation,51-rpc1-consensus
-besu.rpc1.fireflycontract,component,FireFly multiparty contract,https://github.com/hyperledger-firefly/firefly/tree/2acb871a5a85eca774fd49d07ac9b925218f3d7d/smart_contracts/ethereum/solidity_firefly/contracts/Firefly.sol,Implementation,51-rpc1-execution
-besu.rpc1.tokencontracts,component,Token contracts,https://github.com/hyperledger-firefly/tokens-erc20-erc721/tree/7993b308284a396950587b5206370f7f254073d9/src/abi,Implementation,51-rpc1-execution
-besu.rpc1.businesscontracts,component,Application contracts,https://learn.microsoft.com/en-us/azure/aks/reliability-availability-zones-configure,Reference choice,51-rpc1-execution
-besu.rpc2,container,Besu RPC node 2,https://github.com/besu-eth/besu/tree/18c4d62e446cea67050756b001d92fdbc97d01cc,Implementation,50-besu-network
-besu.rpc2.rpc,component,JSON-RPC and subscriptions,https://github.com/besu-eth/besu/tree/18c4d62e446cea67050756b001d92fdbc97d01cc/ethereum/api,Implementation,51-rpc2-network;51-rpc2-execution
-besu.rpc2.permissioning,component,Node and account permissioning,https://github.com/besu-eth/besu/tree/18c4d62e446cea67050756b001d92fdbc97d01cc/ethereum/permissioning,Implementation,51-rpc2-network
-besu.rpc2.discovery,component,Peer discovery,https://github.com/besu-eth/besu/tree/18c4d62e446cea67050756b001d92fdbc97d01cc/ethereum/p2p,Implementation,51-rpc2-network;51-rpc2-consensus
-besu.rpc2.p2p,component,DevP2P transport,https://github.com/besu-eth/besu/tree/18c4d62e446cea67050756b001d92fdbc97d01cc/ethereum/p2p,Implementation,51-rpc2-network;51-rpc2-consensus
-besu.rpc2.txpool,component,Transaction pool,https://github.com/besu-eth/besu/tree/18c4d62e446cea67050756b001d92fdbc97d01cc/ethereum/eth,Implementation,51-rpc2-network
-besu.rpc2.sync,component,Chain synchronization,https://github.com/besu-eth/besu/tree/18c4d62e446cea67050756b001d92fdbc97d01cc/ethereum/eth,Implementation,51-rpc2-network;51-rpc2-consensus
-besu.rpc2.blockprocessor,component,Block processor,https://github.com/besu-eth/besu/tree/18c4d62e446cea67050756b001d92fdbc97d01cc/ethereum/core,Implementation,51-rpc2-consensus;51-rpc2-execution
-besu.rpc2.evm,component,EVM execution,https://github.com/besu-eth/besu/tree/18c4d62e446cea67050756b001d92fdbc97d01cc/evm,Implementation,51-rpc2-execution
-besu.rpc2.worldstate,component,World state and trie,https://github.com/besu-eth/besu/tree/18c4d62e446cea67050756b001d92fdbc97d01cc/ethereum/trie,Implementation,51-rpc2-execution
-besu.rpc2.storage,component,Storage provider,https://github.com/besu-eth/besu/tree/18c4d62e446cea67050756b001d92fdbc97d01cc/plugins/rocksdb,Implementation,51-rpc2-execution
-besu.rpc2.keys,component,Node key and security module,https://github.com/besu-eth/besu/tree/18c4d62e446cea67050756b001d92fdbc97d01cc/plugin-api,Implementation,51-rpc2-consensus
-besu.rpc2.metrics,component,Metrics and health,https://github.com/besu-eth/besu/tree/18c4d62e446cea67050756b001d92fdbc97d01cc/metrics,Implementation,51-rpc2-consensus
-besu.rpc2.fireflycontract,component,FireFly multiparty contract,https://github.com/hyperledger-firefly/firefly/tree/2acb871a5a85eca774fd49d07ac9b925218f3d7d/smart_contracts/ethereum/solidity_firefly/contracts/Firefly.sol,Implementation,51-rpc2-execution
-besu.rpc2.tokencontracts,component,Token contracts,https://github.com/hyperledger-firefly/tokens-erc20-erc721/tree/7993b308284a396950587b5206370f7f254073d9/src/abi,Implementation,51-rpc2-execution
-besu.rpc2.businesscontracts,component,Application contracts,https://learn.microsoft.com/en-us/azure/aks/reliability-availability-zones-configure,Reference choice,51-rpc2-execution
-besu.rpc3,container,Besu RPC node 3,https://github.com/besu-eth/besu/tree/18c4d62e446cea67050756b001d92fdbc97d01cc,Implementation,50-besu-network
-besu.rpc3.rpc,component,JSON-RPC and subscriptions,https://github.com/besu-eth/besu/tree/18c4d62e446cea67050756b001d92fdbc97d01cc/ethereum/api,Implementation,51-rpc3-network;51-rpc3-execution
-besu.rpc3.permissioning,component,Node and account permissioning,https://github.com/besu-eth/besu/tree/18c4d62e446cea67050756b001d92fdbc97d01cc/ethereum/permissioning,Implementation,51-rpc3-network
-besu.rpc3.discovery,component,Peer discovery,https://github.com/besu-eth/besu/tree/18c4d62e446cea67050756b001d92fdbc97d01cc/ethereum/p2p,Implementation,51-rpc3-network;51-rpc3-consensus
-besu.rpc3.p2p,component,DevP2P transport,https://github.com/besu-eth/besu/tree/18c4d62e446cea67050756b001d92fdbc97d01cc/ethereum/p2p,Implementation,51-rpc3-network;51-rpc3-consensus
-besu.rpc3.txpool,component,Transaction pool,https://github.com/besu-eth/besu/tree/18c4d62e446cea67050756b001d92fdbc97d01cc/ethereum/eth,Implementation,51-rpc3-network
-besu.rpc3.sync,component,Chain synchronization,https://github.com/besu-eth/besu/tree/18c4d62e446cea67050756b001d92fdbc97d01cc/ethereum/eth,Implementation,51-rpc3-network;51-rpc3-consensus
-besu.rpc3.blockprocessor,component,Block processor,https://github.com/besu-eth/besu/tree/18c4d62e446cea67050756b001d92fdbc97d01cc/ethereum/core,Implementation,51-rpc3-consensus;51-rpc3-execution
-besu.rpc3.evm,component,EVM execution,https://github.com/besu-eth/besu/tree/18c4d62e446cea67050756b001d92fdbc97d01cc/evm,Implementation,51-rpc3-execution
-besu.rpc3.worldstate,component,World state and trie,https://github.com/besu-eth/besu/tree/18c4d62e446cea67050756b001d92fdbc97d01cc/ethereum/trie,Implementation,51-rpc3-execution
-besu.rpc3.storage,component,Storage provider,https://github.com/besu-eth/besu/tree/18c4d62e446cea67050756b001d92fdbc97d01cc/plugins/rocksdb,Implementation,51-rpc3-execution
-besu.rpc3.keys,component,Node key and security module,https://github.com/besu-eth/besu/tree/18c4d62e446cea67050756b001d92fdbc97d01cc/plugin-api,Implementation,51-rpc3-consensus
-besu.rpc3.metrics,component,Metrics and health,https://github.com/besu-eth/besu/tree/18c4d62e446cea67050756b001d92fdbc97d01cc/metrics,Implementation,51-rpc3-consensus
-besu.rpc3.fireflycontract,component,FireFly multiparty contract,https://github.com/hyperledger-firefly/firefly/tree/2acb871a5a85eca774fd49d07ac9b925218f3d7d/smart_contracts/ethereum/solidity_firefly/contracts/Firefly.sol,Implementation,51-rpc3-execution
-besu.rpc3.tokencontracts,component,Token contracts,https://github.com/hyperledger-firefly/tokens-erc20-erc721/tree/7993b308284a396950587b5206370f7f254073d9/src/abi,Implementation,51-rpc3-execution
-besu.rpc3.businesscontracts,component,Application contracts,https://learn.microsoft.com/en-us/azure/aks/reliability-availability-zones-configure,Reference choice,51-rpc3-execution
-apps,softwareSystem,Member applications,https://learn.microsoft.com/en-us/azure/aks/reliability-availability-zones-configure,Reference choice,01-landscape;02-context-a;02-context-b;02-context-c
-apps.a,container,Member A business application,https://learn.microsoft.com/en-us/azure/aks/reliability-availability-zones-configure,Reference choice,10-a-runtime;20-a-core-api;20-a-core-events;60-applications
-apps.b,container,Member B business application,https://learn.microsoft.com/en-us/azure/aks/reliability-availability-zones-configure,Reference choice,10-b-runtime;20-b-core-api;20-b-core-events;60-applications
-apps.c,container,Member C business application,https://learn.microsoft.com/en-us/azure/aks/reliability-availability-zones-configure,Reference choice,10-c-runtime;20-c-core-api;20-c-core-events;60-applications
-tools,softwareSystem,FireFly developer tools,https://github.com/hyperledger-firefly/firefly/tree/2acb871a5a85eca774fd49d07ac9b925218f3d7d/doc-site/docs/overview/key_components/tools.md,Implementation,01-landscape;02-context-a
+firefly,softwareSystem,Hyperledger FireFly,https://github.com/hyperledger-firefly/firefly/tree/2acb871a5a85eca774fd49d07ac9b925218f3d7d,Implementation,01-landscape;02-context-firefly;03-context-besu;04-alternatives
+firefly.core,container,FireFly Core,https://github.com/hyperledger-firefly/firefly/tree/2acb871a5a85eca774fd49d07ac9b925218f3d7d/internal/orchestrator,Implementation,10-firefly-runtime;11-firefly-state;30-firefly-evm-events;40-firefly-erc20;40-firefly-erc1155;60-applications;61-tools;62-sandbox;63-operations
+firefly.evm,container,EVMConnect + FFTM,https://github.com/hyperledger-firefly/evmconnect/tree/cd3115124c50f8215df1423749f22b558f83b559/cmd/evmconnect.go,Implementation,10-firefly-runtime;11-firefly-state;20-firefly-core-contracts;40-firefly-erc20;40-firefly-erc1155
+firefly.signer,container,FireFly Signer,https://github.com/hyperledger-firefly/signer/tree/cfafd71fb4d2c3061a946f6466269877c3f04d9d/internal/rpcserver,Implementation,10-firefly-runtime;11-firefly-state;30-firefly-evm-transactions;30-firefly-evm-events;50-besu-network
+firefly.dx,container,HTTPS Data Exchange,https://github.com/hyperledger-firefly/dataexchange-https/tree/b6a212d531da1ff1c24e762e7156e2593c73d052/src,Implementation,10-firefly-runtime;11-firefly-state;20-firefly-core-messaging
+firefly.erc20,container,ERC-20 / ERC-721 connector,https://github.com/hyperledger-firefly/tokens-erc20-erc721/tree/7993b308284a396950587b5206370f7f254073d9/src,Implementation,10-firefly-runtime;20-firefly-core-contracts
+firefly.erc1155,container,ERC-1155 connector,https://github.com/hyperledger-firefly/tokens-erc1155/tree/0355a0eb11fd12e311829a41bcbfea6148e52469/src,Implementation,10-firefly-runtime;20-firefly-core-contracts
+firefly.ipfs,container,IPFS Kubo,https://docs.ipfs.tech/concepts/how-ipfs-works/,Implementation,10-firefly-runtime;11-firefly-state;20-firefly-core-messaging;20-firefly-core-persistence
+firefly.pg,container,PostgreSQL primary,https://cloudnative-pg.io/docs/1.28/replication/,Implementation,10-firefly-runtime;11-firefly-state;20-firefly-core-persistence;30-firefly-evm-transactions;30-firefly-evm-events;63-operations
+firefly.pgReplica,container,PostgreSQL standby,https://cloudnative-pg.io/docs/1.28/replication/,Implementation,11-firefly-state
+firefly.blobs,container,Private blob and peer store,https://github.com/hyperledger-firefly/dataexchange-https/tree/b6a212d531da1ff1c24e762e7156e2593c73d052/src/handlers/blobs.ts,Implementation,11-firefly-state;40-firefly-dx
+firefly.ipfsRepo,container,IPFS repository,https://docs.ipfs.tech/concepts/how-ipfs-works/,Implementation,11-firefly-state
+firefly.secrets,container,Member keys and configuration,https://github.com/hyperledger-firefly/signer/tree/cfafd71fb4d2c3061a946f6466269877c3f04d9d/pkg/fswallet,Implementation,11-firefly-state;40-firefly-signer;40-firefly-dx
+firefly.core.api,component,REST API and routing,https://github.com/hyperledger-firefly/firefly/tree/2acb871a5a85eca774fd49d07ac9b925218f3d7d/internal/apiserver,Implementation,20-firefly-core-api
+firefly.core.explorer,component,Explorer UI,https://github.com/hyperledger-firefly/firefly/tree/2acb871a5a85eca774fd49d07ac9b925218f3d7d/Dockerfile,Implementation,20-firefly-core-api
+firefly.core.auth,component,API authentication,https://github.com/hyperledger-firefly/firefly/tree/2acb871a5a85eca774fd49d07ac9b925218f3d7d/doc-site/docs/overview/key_components/security.md,Implementation,20-firefly-core-api
+firefly.core.namespaces,component,Namespace manager,https://github.com/hyperledger-firefly/firefly/tree/2acb871a5a85eca774fd49d07ac9b925218f3d7d/internal/namespace,Implementation,20-firefly-core-api
+firefly.core.orchestrator,component,Orchestrator,https://github.com/hyperledger-firefly/firefly/tree/2acb871a5a85eca774fd49d07ac9b925218f3d7d/internal/orchestrator,Implementation,20-firefly-core-api;20-firefly-core-identity;20-firefly-core-messaging;20-firefly-core-contracts;20-firefly-core-persistence
+firefly.core.identity,component,Identity manager,https://github.com/hyperledger-firefly/firefly/tree/2acb871a5a85eca774fd49d07ac9b925218f3d7d/internal/identity,Implementation,20-firefly-core-identity
+firefly.core.networkmap,component,Network map,https://github.com/hyperledger-firefly/firefly/tree/2acb871a5a85eca774fd49d07ac9b925218f3d7d/internal/networkmap,Implementation,20-firefly-core-identity
+firefly.core.definitions,component,Definition exchange,https://github.com/hyperledger-firefly/firefly/tree/2acb871a5a85eca774fd49d07ac9b925218f3d7d/internal/definitions,Implementation,20-firefly-core-identity
+firefly.core.data,component,Data manager,https://github.com/hyperledger-firefly/firefly/tree/2acb871a5a85eca774fd49d07ac9b925218f3d7d/internal/data,Implementation,20-firefly-core-messaging;20-firefly-core-persistence
+firefly.core.schema,component,Schema validation,https://github.com/hyperledger-firefly/firefly/tree/2acb871a5a85eca774fd49d07ac9b925218f3d7d/internal/data,Implementation,20-firefly-core-messaging
+firefly.core.batch,component,Batch manager,https://github.com/hyperledger-firefly/firefly/tree/2acb871a5a85eca774fd49d07ac9b925218f3d7d/internal/batch,Implementation,20-firefly-core-messaging
+firefly.core.batchprocessor,component,Batch processor,https://github.com/hyperledger-firefly/firefly/tree/2acb871a5a85eca774fd49d07ac9b925218f3d7d/internal/batch,Implementation,20-firefly-core-messaging
+firefly.core.broadcast,component,Broadcast manager,https://github.com/hyperledger-firefly/firefly/tree/2acb871a5a85eca774fd49d07ac9b925218f3d7d/internal/broadcast,Implementation,20-firefly-core-identity;20-firefly-core-messaging
+firefly.core.private,component,Private messaging and groups,https://github.com/hyperledger-firefly/firefly/tree/2acb871a5a85eca774fd49d07ac9b925218f3d7d/internal/privatemessaging,Implementation,20-firefly-core-messaging
+firefly.core.multiparty,component,Multiparty manager,https://github.com/hyperledger-firefly/firefly/tree/2acb871a5a85eca774fd49d07ac9b925218f3d7d/internal/multiparty,Implementation,20-firefly-core-identity;20-firefly-core-messaging
+firefly.core.download,component,Shared download manager,https://github.com/hyperledger-firefly/firefly/tree/2acb871a5a85eca774fd49d07ac9b925218f3d7d/internal/shareddownload,Implementation,20-firefly-core-events;20-firefly-core-persistence
+firefly.core.contracts,component,Contract manager,https://github.com/hyperledger-firefly/firefly/tree/2acb871a5a85eca774fd49d07ac9b925218f3d7d/internal/contracts,Implementation,20-firefly-core-contracts;20-firefly-core-persistence
+firefly.core.assets,component,Asset manager,https://github.com/hyperledger-firefly/firefly/tree/2acb871a5a85eca774fd49d07ac9b925218f3d7d/internal/assets,Implementation,20-firefly-core-contracts
+firefly.core.operations,component,Operations manager,https://github.com/hyperledger-firefly/firefly/tree/2acb871a5a85eca774fd49d07ac9b925218f3d7d/internal/operations,Implementation,20-firefly-core-contracts;20-firefly-core-persistence
+firefly.core.txhelper,component,Transaction helper,https://github.com/hyperledger-firefly/firefly/tree/2acb871a5a85eca774fd49d07ac9b925218f3d7d/internal/txcommon,Implementation,20-firefly-core-contracts
+firefly.core.txwriter,component,Transaction writer,https://github.com/hyperledger-firefly/firefly/tree/2acb871a5a85eca774fd49d07ac9b925218f3d7d/internal/txwriter,Implementation,20-firefly-core-contracts;20-firefly-core-persistence
+firefly.core.aggregator,component,Inbound event aggregator,https://github.com/hyperledger-firefly/firefly/tree/2acb871a5a85eca774fd49d07ac9b925218f3d7d/internal/events/aggregator.go,Implementation,20-firefly-core-events
+firefly.core.subscriptions,component,Subscription manager,https://github.com/hyperledger-firefly/firefly/tree/2acb871a5a85eca774fd49d07ac9b925218f3d7d/internal/events/subscription_manager.go,Implementation,20-firefly-core-events
+firefly.core.dispatcher,component,Event dispatcher,https://github.com/hyperledger-firefly/firefly/tree/2acb871a5a85eca774fd49d07ac9b925218f3d7d/internal/events/event_dispatcher.go,Implementation,20-firefly-core-events
+firefly.core.syncasync,component,Sync/async bridge,https://github.com/hyperledger-firefly/firefly/tree/2acb871a5a85eca774fd49d07ac9b925218f3d7d/internal/syncasync,Implementation,20-firefly-core-api;20-firefly-core-events
+firefly.core.cache,component,Cache manager,https://github.com/hyperledger-firefly/firefly/tree/2acb871a5a85eca774fd49d07ac9b925218f3d7d/internal/cache,Implementation,20-firefly-core-persistence
+firefly.core.metrics,component,Metrics,https://github.com/hyperledger-firefly/firefly/tree/2acb871a5a85eca774fd49d07ac9b925218f3d7d/internal/metrics,Implementation,20-firefly-core-persistence
+firefly.core.spievents,component,SPI event manager,https://github.com/hyperledger-firefly/firefly/tree/2acb871a5a85eca774fd49d07ac9b925218f3d7d/internal/spievents,Implementation,20-firefly-core-api
+firefly.core.blockchain,component,Blockchain plugin,https://github.com/hyperledger-firefly/firefly/tree/2acb871a5a85eca774fd49d07ac9b925218f3d7d/internal/blockchain,Implementation,20-firefly-core-identity;20-firefly-core-contracts;20-firefly-core-events
+firefly.core.database,component,Database plugin,https://github.com/hyperledger-firefly/firefly/tree/2acb871a5a85eca774fd49d07ac9b925218f3d7d/internal/database,Implementation,20-firefly-core-contracts;20-firefly-core-events;20-firefly-core-persistence
+firefly.core.dataexchange,component,Data exchange plugin,https://github.com/hyperledger-firefly/firefly/tree/2acb871a5a85eca774fd49d07ac9b925218f3d7d/internal/dataexchange,Implementation,20-firefly-core-messaging;20-firefly-core-events
+firefly.core.sharedstorage,component,Shared storage plugin,https://github.com/hyperledger-firefly/firefly/tree/2acb871a5a85eca774fd49d07ac9b925218f3d7d/internal/sharedstorage,Implementation,20-firefly-core-messaging;20-firefly-core-persistence
+firefly.core.tokens,component,Token plugin,https://github.com/hyperledger-firefly/firefly/tree/2acb871a5a85eca774fd49d07ac9b925218f3d7d/internal/tokens,Implementation,20-firefly-core-contracts;20-firefly-core-events
+firefly.core.identityplugin,component,Identity plugin,https://github.com/hyperledger-firefly/firefly/tree/2acb871a5a85eca774fd49d07ac9b925218f3d7d/pkg/identity,Implementation,20-firefly-core-identity
+firefly.core.eventplugin,component,Event transport plugins,https://github.com/hyperledger-firefly/firefly/tree/2acb871a5a85eca774fd49d07ac9b925218f3d7d/internal/events,Implementation,20-firefly-core-api;20-firefly-core-events
+firefly.evm.api,component,Connector REST API,https://github.com/hyperledger-firefly/evmconnect/tree/cd3115124c50f8215df1423749f22b558f83b559/cmd/evmconnect.go,Implementation,30-firefly-evm-transactions
+firefly.evm.manager,component,Transaction manager,https://github.com/hyperledger-firefly/transaction-manager/tree/35e3ade41cb20b3c778dd5b60ab6af2d56e1b286/pkg/fftm,Implementation,30-firefly-evm-transactions;30-firefly-evm-events
+firefly.evm.handler,component,Transaction policy handler,https://github.com/hyperledger-firefly/transaction-manager/tree/35e3ade41cb20b3c778dd5b60ab6af2d56e1b286/pkg/txhandler,Implementation,30-firefly-evm-transactions
+firefly.evm.nonce,component,Nonce allocation,https://github.com/hyperledger-firefly/transaction-manager/tree/35e3ade41cb20b3c778dd5b60ab6af2d56e1b286/internal/persistence,Implementation,30-firefly-evm-transactions
+firefly.evm.abi,component,EVM API adapter,https://github.com/hyperledger-firefly/evmconnect/tree/cd3115124c50f8215df1423749f22b558f83b559/internal/ethereum,Implementation,30-firefly-evm-transactions
+firefly.evm.rpc,component,Ethereum JSON-RPC client,https://github.com/hyperledger-firefly/evmconnect/tree/cd3115124c50f8215df1423749f22b558f83b559/pkg/ethrpc,Implementation,30-firefly-evm-transactions;30-firefly-evm-events
+firefly.evm.blocks,component,Block listener,https://github.com/hyperledger-firefly/evmconnect/tree/cd3115124c50f8215df1423749f22b558f83b559/pkg/ethblocklistener,Implementation,30-firefly-evm-events
+firefly.evm.receipts,component,Receipt tracking,https://github.com/hyperledger-firefly/transaction-manager/tree/35e3ade41cb20b3c778dd5b60ab6af2d56e1b286/pkg/fftm,Implementation,30-firefly-evm-events
+firefly.evm.confirmations,component,Confirmation manager,https://github.com/hyperledger-firefly/transaction-manager/tree/35e3ade41cb20b3c778dd5b60ab6af2d56e1b286/internal/confirmations,Implementation,30-firefly-evm-events
+firefly.evm.streams,component,Event streams,https://github.com/hyperledger-firefly/transaction-manager/tree/35e3ade41cb20b3c778dd5b60ab6af2d56e1b286/internal/events,Implementation,30-firefly-evm-events
+firefly.evm.delivery,component,WebSocket and webhook delivery,https://github.com/hyperledger-firefly/transaction-manager/tree/35e3ade41cb20b3c778dd5b60ab6af2d56e1b286/internal/ws,Implementation,30-firefly-evm-events
+firefly.evm.persistence,component,Persistence adapter,https://github.com/hyperledger-firefly/transaction-manager/tree/35e3ade41cb20b3c778dd5b60ab6af2d56e1b286/internal/persistence,Implementation,30-firefly-evm-transactions;30-firefly-evm-events
+firefly.signer.proxy,component,JSON-RPC proxy,https://github.com/hyperledger-firefly/signer/tree/cfafd71fb4d2c3061a946f6466269877c3f04d9d/internal/rpcserver,Implementation,40-firefly-signer
+firefly.signer.wallet,component,Filesystem wallet,https://github.com/hyperledger-firefly/signer/tree/cfafd71fb4d2c3061a946f6466269877c3f04d9d/pkg/fswallet,Implementation,40-firefly-signer
+firefly.signer.keystore,component,Keystore V3 decoder,https://github.com/hyperledger-firefly/signer/tree/cfafd71fb4d2c3061a946f6466269877c3f04d9d/pkg/keystorev3,Implementation,40-firefly-signer
+firefly.signer.signing,component,Ethereum signing,https://github.com/hyperledger-firefly/signer/tree/cfafd71fb4d2c3061a946f6466269877c3f04d9d/pkg/ethsigner,Implementation,40-firefly-signer
+firefly.signer.backend,component,RPC backend,https://github.com/hyperledger-firefly/signer/tree/cfafd71fb4d2c3061a946f6466269877c3f04d9d/pkg/rpcbackend,Implementation,40-firefly-signer
+firefly.dx.api,component,Internal REST API,https://github.com/hyperledger-firefly/dataexchange-https/tree/b6a212d531da1ff1c24e762e7156e2593c73d052/src/routers/api.ts,Implementation,40-firefly-dx
+firefly.dx.peers,component,Peer and certificate registry,https://github.com/hyperledger-firefly/dataexchange-https/tree/b6a212d531da1ff1c24e762e7156e2593c73d052/src/lib,Implementation,40-firefly-dx
+firefly.dx.p2p,component,Mutual TLS peer endpoint,https://github.com/hyperledger-firefly/dataexchange-https/tree/b6a212d531da1ff1c24e762e7156e2593c73d052/src/routers/p2p.ts,Implementation,40-firefly-dx
+firefly.dx.messages,component,Message transfer handler,https://github.com/hyperledger-firefly/dataexchange-https/tree/b6a212d531da1ff1c24e762e7156e2593c73d052/src/handlers/messages.ts,Implementation,40-firefly-dx
+firefly.dx.blobs,component,Blob transfer handler,https://github.com/hyperledger-firefly/dataexchange-https/tree/b6a212d531da1ff1c24e762e7156e2593c73d052/src/handlers/blobs.ts,Implementation,40-firefly-dx
+firefly.dx.events,component,Event queue and acknowledgements,https://github.com/hyperledger-firefly/dataexchange-https/tree/b6a212d531da1ff1c24e762e7156e2593c73d052/src/handlers/events.ts,Implementation,40-firefly-dx
+firefly.erc20.api,component,Token REST controller,https://github.com/hyperledger-firefly/tokens-erc20-erc721/tree/7993b308284a396950587b5206370f7f254073d9/src/tokens/tokens.controller.ts,Implementation,40-firefly-erc20
+firefly.erc20.service,component,Token service,https://github.com/hyperledger-firefly/tokens-erc20-erc721/tree/7993b308284a396950587b5206370f7f254073d9/src/tokens/tokens.service.ts,Implementation,40-firefly-erc20
+firefly.erc20.mapper,component,ABI and standard adapters,https://github.com/hyperledger-firefly/tokens-erc20-erc721/tree/7993b308284a396950587b5206370f7f254073d9/src/tokens,Implementation,40-firefly-erc20
+firefly.erc20.blockchain,component,Blockchain connector client,https://github.com/hyperledger-firefly/tokens-erc20-erc721/tree/7993b308284a396950587b5206370f7f254073d9/src/tokens/blockchain.service.ts,Implementation,40-firefly-erc20
+firefly.erc20.listener,component,Token event listener,https://github.com/hyperledger-firefly/tokens-erc20-erc721/tree/7993b308284a396950587b5206370f7f254073d9/src/tokens/tokens.listener.ts,Implementation,40-firefly-erc20
+firefly.erc20.stream,component,Connector event stream,https://github.com/hyperledger-firefly/tokens-erc20-erc721/tree/7993b308284a396950587b5206370f7f254073d9/src/event-stream,Implementation,40-firefly-erc20
+firefly.erc20.proxy,component,Core event proxy,https://github.com/hyperledger-firefly/tokens-erc20-erc721/tree/7993b308284a396950587b5206370f7f254073d9/src/eventstream-proxy,Implementation,40-firefly-erc20
+firefly.erc1155.api,component,Token REST controller,https://github.com/hyperledger-firefly/tokens-erc1155/tree/0355a0eb11fd12e311829a41bcbfea6148e52469/src/tokens/tokens.controller.ts,Implementation,40-firefly-erc1155
+firefly.erc1155.service,component,Token service,https://github.com/hyperledger-firefly/tokens-erc1155/tree/0355a0eb11fd12e311829a41bcbfea6148e52469/src/tokens/tokens.service.ts,Implementation,40-firefly-erc1155
+firefly.erc1155.mapper,component,ABI and standard adapters,https://github.com/hyperledger-firefly/tokens-erc1155/tree/0355a0eb11fd12e311829a41bcbfea6148e52469/src/tokens,Implementation,40-firefly-erc1155
+firefly.erc1155.blockchain,component,Blockchain connector client,https://github.com/hyperledger-firefly/tokens-erc1155/tree/0355a0eb11fd12e311829a41bcbfea6148e52469/src/tokens/blockchain.service.ts,Implementation,40-firefly-erc1155
+firefly.erc1155.listener,component,Token event listener,https://github.com/hyperledger-firefly/tokens-erc1155/tree/0355a0eb11fd12e311829a41bcbfea6148e52469/src/tokens/tokens.listener.ts,Implementation,40-firefly-erc1155
+firefly.erc1155.stream,component,Connector event stream,https://github.com/hyperledger-firefly/tokens-erc1155/tree/0355a0eb11fd12e311829a41bcbfea6148e52469/src/event-stream,Implementation,40-firefly-erc1155
+firefly.erc1155.proxy,component,Core event proxy,https://github.com/hyperledger-firefly/tokens-erc1155/tree/0355a0eb11fd12e311829a41bcbfea6148e52469/src/eventstream-proxy,Implementation,40-firefly-erc1155
+besu,softwareSystem,Private Besu network,https://github.com/besu-eth/besu/tree/18c4d62e446cea67050756b001d92fdbc97d01cc,Implementation,01-landscape;02-context-firefly;03-context-besu
+besu.node,container,Besu node,https://github.com/besu-eth/besu/tree/18c4d62e446cea67050756b001d92fdbc97d01cc,Implementation,10-firefly-runtime;40-firefly-signer;50-besu-network;63-operations
+besu.node.rpc,component,JSON-RPC and subscriptions,https://github.com/besu-eth/besu/tree/18c4d62e446cea67050756b001d92fdbc97d01cc/ethereum/api,Implementation,51-besu-network;51-besu-execution
+besu.node.permissioning,component,Node and account permissioning,https://github.com/besu-eth/besu/tree/18c4d62e446cea67050756b001d92fdbc97d01cc/ethereum/permissioning,Implementation,51-besu-network
+besu.node.discovery,component,Peer discovery,https://github.com/besu-eth/besu/tree/18c4d62e446cea67050756b001d92fdbc97d01cc/ethereum/p2p,Implementation,51-besu-network
+besu.node.p2p,component,DevP2P transport,https://github.com/besu-eth/besu/tree/18c4d62e446cea67050756b001d92fdbc97d01cc/ethereum/p2p,Implementation,51-besu-network;51-besu-consensus
+besu.node.txpool,component,Transaction pool,https://github.com/besu-eth/besu/tree/18c4d62e446cea67050756b001d92fdbc97d01cc/ethereum/eth,Implementation,51-besu-network;51-besu-consensus
+besu.node.sync,component,Chain synchronization,https://github.com/besu-eth/besu/tree/18c4d62e446cea67050756b001d92fdbc97d01cc/ethereum/eth,Implementation,51-besu-network;51-besu-consensus
+besu.node.blockprocessor,component,Block processor,https://github.com/besu-eth/besu/tree/18c4d62e446cea67050756b001d92fdbc97d01cc/ethereum/core,Implementation,51-besu-consensus;51-besu-execution
+besu.node.qbft,component,QBFT consensus,https://github.com/besu-eth/besu/tree/18c4d62e446cea67050756b001d92fdbc97d01cc/consensus/qbft,Implementation,51-besu-consensus
+besu.node.evm,component,EVM execution,https://github.com/besu-eth/besu/tree/18c4d62e446cea67050756b001d92fdbc97d01cc/evm,Implementation,51-besu-execution
+besu.node.worldstate,component,World state and trie,https://github.com/besu-eth/besu/tree/18c4d62e446cea67050756b001d92fdbc97d01cc/ethereum/trie,Implementation,51-besu-execution
+besu.node.storage,component,Storage provider,https://github.com/besu-eth/besu/tree/18c4d62e446cea67050756b001d92fdbc97d01cc/plugins/rocksdb,Implementation,51-besu-execution
+besu.node.keys,component,Node key and security module,https://github.com/besu-eth/besu/tree/18c4d62e446cea67050756b001d92fdbc97d01cc/plugin-api,Implementation,51-besu-consensus
+besu.node.metrics,component,Metrics and health,https://github.com/besu-eth/besu/tree/18c4d62e446cea67050756b001d92fdbc97d01cc/metrics,Implementation,51-besu-consensus
+besu.node.fireflycontract,component,FireFly multiparty contract,https://github.com/hyperledger-firefly/firefly/tree/2acb871a5a85eca774fd49d07ac9b925218f3d7d/smart_contracts/ethereum/solidity_firefly/contracts/Firefly.sol,Implementation,51-besu-execution
+besu.node.tokencontracts,component,Token contracts,https://github.com/hyperledger-firefly/tokens-erc20-erc721/tree/7993b308284a396950587b5206370f7f254073d9/src/abi,Implementation,51-besu-execution
+besu.node.businesscontracts,component,Application contracts,https://learn.microsoft.com/en-us/azure/aks/reliability-availability-zones-configure,Reference choice,51-besu-execution
+apps,softwareSystem,Member applications,https://learn.microsoft.com/en-us/azure/aks/reliability-availability-zones-configure,Reference choice,01-landscape;02-context-firefly
+apps.client,container,Member business application,https://learn.microsoft.com/en-us/azure/aks/reliability-availability-zones-configure,Reference choice,10-firefly-runtime;20-firefly-core-api;20-firefly-core-events;60-applications
+tools,softwareSystem,FireFly developer tools,https://github.com/hyperledger-firefly/firefly/tree/2acb871a5a85eca774fd49d07ac9b925218f3d7d/doc-site/docs/overview/key_components/tools.md,Implementation,01-landscape;02-context-firefly
 tools.cli,container,FireFly CLI,https://github.com/hyperledger-firefly/firefly/tree/2acb871a5a85eca774fd49d07ac9b925218f3d7d/doc-site/docs/overview/key_components/tools.md,Implementation,61-tools
 tools.sandbox,container,FireFly Sandbox,https://github.com/hyperledger-firefly/sandbox/tree/ef7f240b8acf9c79c8fdf5a8bccb73e9de482069,Implementation,61-tools
 tools.sandbox.frontend,component,Sandbox frontend,https://github.com/hyperledger-firefly/sandbox/tree/ef7f240b8acf9c79c8fdf5a8bccb73e9de482069,Implementation,62-sandbox
 tools.sandbox.backend,component,Sandbox backend,https://github.com/hyperledger-firefly/sandbox/tree/ef7f240b8acf9c79c8fdf5a8bccb73e9de482069,Implementation,62-sandbox
 tools.sandbox.sdk,component,FireFly Node.js SDK,https://github.com/hyperledger-firefly/sandbox/tree/ef7f240b8acf9c79c8fdf5a8bccb73e9de482069,Implementation,62-sandbox
-ops,softwareSystem,Platform operations,https://learn.microsoft.com/en-us/azure/aks/reliability-availability-zones-configure,Reference choice,01-landscape;02-context-a;02-context-b;02-context-c;03-context-besu
+ops,softwareSystem,Platform operations,https://learn.microsoft.com/en-us/azure/aks/reliability-availability-zones-configure,Reference choice,01-landscape;02-context-firefly;03-context-besu
 ops.gateway,container,Gateway / ingress,https://learn.microsoft.com/en-us/azure/aks/reliability-availability-zones-configure,Reference choice,63-operations
 ops.cnpg,container,PostgreSQL operator,https://cloudnative-pg.io/docs/1.28/replication/,Reference choice,63-operations
-ops.prometheus,container,Metrics collector,https://learn.microsoft.com/en-us/azure/aks/reliability-availability-zones-configure,Reference choice,63-operations
+ops.prometheus,container,Metrics collector,https://learn.microsoft.com/en-us/azure/aks/reliability-availability-zones-configure,Reference choice,50-besu-network;63-operations
 ops.grafana,container,Operations dashboard,https://learn.microsoft.com/en-us/azure/aks/reliability-availability-zones-configure,Reference choice,63-operations
 ethconnect,softwareSystem,EthConnect / Ethereum,https://github.com/hyperledger-firefly/firefly/tree/2acb871a5a85eca774fd49d07ac9b925218f3d7d/README.md,Alternative,04-alternatives
 fabric,softwareSystem,Fabric / FabConnect,https://github.com/hyperledger-firefly/firefly/tree/2acb871a5a85eca774fd49d07ac9b925218f3d7d/internal/blockchain/fabric,Alternative,04-alternatives

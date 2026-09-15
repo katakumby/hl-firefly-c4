@@ -1,6 +1,6 @@
- Container firefly-architecture-cli-run-036075db11b3 Creating 
- Container firefly-architecture-cli-run-036075db11b3 Created 
-20:53:04.311 [main] INFO com.structurizr.command.ExportCommand -- Exporting workspace from workspace.dsl
-20:53:05.888 [main] INFO com.structurizr.command.ExportCommand -- Exporting with JsonWorkspaceExporter
-20:53:06.273 [main] INFO com.structurizr.command.ExportCommand -- Writing /usr/local/structurizr/exports/workspace.json
-20:53:06.341 [main] INFO com.structurizr.command.ExportCommand -- Finished
+ Container firefly-architecture-cli-run-fafffce452ea Creating 
+ Container firefly-architecture-cli-run-fafffce452ea Created 
+21:20:31.024 [main] INFO com.structurizr.command.ExportCommand -- Exporting workspace from workspace.dsl
+21:20:32.005 [main] INFO com.structurizr.command.ExportCommand -- Exporting with JsonWorkspaceExporter
+21:20:32.413 [main] INFO com.structurizr.command.ExportCommand -- Writing /usr/local/structurizr/exports/workspace.json
+21:20:32.447 [main] INFO com.structurizr.command.ExportCommand -- Finished

@@ -8,6 +8,8 @@ Use the ordered diagram keys: **01–04** for context and alternatives; **10–1
 
 Members A, B and C each have an independent identity, Core database, FFTM database, keystore, mTLS identity, blob store and IPFS identity. They share the private chain and the AKS administrative boundary. Namespaces are logical isolation, not protection against a malicious cluster administrator.
 
+The logical architecture defines FireFly once and Besu's node implementation once. Member and node identities belong to deployment instances, where roles, namespaces, storage and keys differ. Member deployment groups constrain relationship replication; dedicated peer groups allow private Data Exchange, shared IPFS and Besu traffic. Logical diagrams describe the reusable architecture; deployment diagrams show all three members explicitly.
+
 ## C4 modeling rules
 
 A container is a runtime or data store, not necessarily a Docker container. Explorer is served by Core and appears inside its component boundary. EVMConnect embeds FireFly Transaction Manager; FFTM is not another pod. PostgreSQL primary and standby containers distinguish deployment roles of the same database implementation. Smart contracts are deployed artifacts executed inside Besu's EVM, not separate AKS processes.

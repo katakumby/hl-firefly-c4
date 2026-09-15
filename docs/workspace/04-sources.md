@@ -40,36 +40,36 @@ Every top-level runtime package is represented by a component group. Non-runtime
 
 | Source package | Representation |
 |---|---|
-| internal/apiserver | a.core.api |
-| internal/assets | a.core.assets |
-| internal/batch | a.core.batch, a.core.batchprocessor |
-| internal/blockchain | a.core.blockchain |
-| internal/broadcast | a.core.broadcast |
-| internal/cache | a.core.cache |
-| internal/contracts | a.core.contracts |
+| internal/apiserver | firefly.core.api |
+| internal/assets | firefly.core.assets |
+| internal/batch | firefly.core.batch, firefly.core.batchprocessor |
+| internal/blockchain | firefly.core.blockchain |
+| internal/broadcast | firefly.core.broadcast |
+| internal/cache | firefly.core.cache |
+| internal/contracts | firefly.core.contracts |
 | internal/coreconfig | Configuration definitions consumed by namespace/plugin initialization. |
 | internal/coremsgs | Shared message/error constants consumed by the modeled subsystems. |
-| internal/data | a.core.data, a.core.schema, a.core.database, a.core.dataexchange |
-| internal/database | a.core.database |
-| internal/dataexchange | a.core.dataexchange |
-| internal/definitions | a.core.definitions |
-| internal/events | a.core.aggregator, a.core.subscriptions, a.core.dispatcher, a.core.eventplugin |
-| internal/identity | a.core.identity |
-| internal/metrics | a.core.metrics |
-| internal/multiparty | a.core.multiparty |
-| internal/namespace | a.core.namespaces |
-| internal/networkmap | a.core.networkmap |
-| internal/operations | a.core.operations |
-| internal/orchestrator | a.core.orchestrator |
-| internal/privatemessaging | a.core.private |
+| internal/data | firefly.core.data, firefly.core.schema, firefly.core.database, firefly.core.dataexchange |
+| internal/database | firefly.core.database |
+| internal/dataexchange | firefly.core.dataexchange |
+| internal/definitions | firefly.core.definitions |
+| internal/events | firefly.core.aggregator, firefly.core.subscriptions, firefly.core.dispatcher, firefly.core.eventplugin |
+| internal/identity | firefly.core.identity |
+| internal/metrics | firefly.core.metrics |
+| internal/multiparty | firefly.core.multiparty |
+| internal/namespace | firefly.core.namespaces |
+| internal/networkmap | firefly.core.networkmap |
+| internal/operations | firefly.core.operations |
+| internal/orchestrator | firefly.core.orchestrator |
+| internal/privatemessaging | firefly.core.private |
 | internal/reference | API/configuration reference generation; build/documentation support. |
-| internal/shareddownload | a.core.download |
-| internal/sharedstorage | a.core.sharedstorage |
-| internal/spievents | a.core.spievents |
-| internal/syncasync | a.core.syncasync |
-| internal/tokens | a.core.tokens |
-| internal/txcommon | a.core.txhelper |
-| internal/txwriter | a.core.txwriter |
+| internal/shareddownload | firefly.core.download |
+| internal/sharedstorage | firefly.core.sharedstorage |
+| internal/spievents | firefly.core.spievents |
+| internal/syncasync | firefly.core.syncasync |
+| internal/tokens | firefly.core.tokens |
+| internal/txcommon | firefly.core.txhelper |
+| internal/txwriter | firefly.core.txwriter |
 
 ## Alternatives and boundaries
 

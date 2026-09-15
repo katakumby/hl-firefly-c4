@@ -16,7 +16,7 @@ f"- {a['assertions']:,} parsed-model and SVG assertions passed.",
 '- Member database, signing-key and private-storage relationships are isolated. Dedicated PostgreSQL/Besu volumes, WAL paths, RPC/discovery placement and validator quorum checks passed.',
 '- A loss of any one zone leaves four of six validators. Additional unavailable-validator headroom: zero.',
 f"- Source audit: {s['captured_repositories']} official repositories, {s['captured_documents']} captured source documents, {s['official_pages']} official documentation pages; no unmapped top-level FireFly Core runtime packages.",
-'- All 86 SVGs and 86 notation keys were exported by the pinned official Playwright image.',
+f"- All {a['views']} SVGs and {a['views']} notation keys were exported by the pinned official Playwright image.",
 '', '## Rendered geometry','', '| Check | Findings |','|---|---|']
 for k,v in issues.items():lines.append(f"| {k.replace('_',' ')} | {v} |")
 lines+=['','Diagram review uses the SVG exports and PNG contact sheets. The full deployment is a zoomable reference map; focused deployment views separate member state, blockchain and operations. Geometry checks measure labels and protocols, exclude intentionally enclosing C4 boundaries, and retain detailed per-view results.','',

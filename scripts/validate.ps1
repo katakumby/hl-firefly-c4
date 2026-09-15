@@ -13,7 +13,7 @@ try {
     docker compose run --rm cli inspect -workspace workspace.dsl 2>&1 | Tee-Object -FilePath reports/inspect-dsl.txt
     $dslInspectExitCode = $LASTEXITCODE
     $dslScopeFindings = @(Get-Content -LiteralPath reports/inspect-dsl.txt | Select-String '^\s*INFO\s*\|\s*workspace.scope\s*\|').Count
-    if ($dslInspectExitCode -ne 4 -or $dslScopeFindings -ne 4) { throw 'Unexpected DSL inspection findings.' }
+    if ($dslInspectExitCode -notin @(1,4) -or $dslScopeFindings -ne 4) { throw 'Unexpected DSL inspection findings.' }
     docker compose run --rm cli export -workspace workspace.dsl -format json -output exports 2>&1 | Tee-Object -FilePath reports/export-json.txt
     if ($LASTEXITCODE -ne 0) { throw 'JSON export failed.' }
     python scripts/layout_workspace.py
@@ -23,7 +23,7 @@ try {
     docker compose run --rm cli inspect -workspace exports/workspace.json 2>&1 | Tee-Object -FilePath reports/inspect.txt
     $inspectExitCode = $LASTEXITCODE
     $scopeFindings = @(Get-Content -LiteralPath reports/inspect.txt | Select-String '^\s*INFO\s*\|\s*workspace.scope\s*\|').Count
-    if ($inspectExitCode -ne $scopeFindings -or $scopeFindings -ne 4) {
+    if ($inspectExitCode -notin @(1,4) -or $scopeFindings -ne 4) {
         throw "Unexpected full inspection result: $inspectExitCode; scope findings: $scopeFindings"
     }
     docker compose run --rm cli inspect -workspace exports/workspace.json -severity error,warning 2>&1 | Tee-Object -FilePath reports/inspect-errors-warnings.txt

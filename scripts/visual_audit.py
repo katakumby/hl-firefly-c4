@@ -73,7 +73,7 @@ for p in sorted((ROOT/"exports/svg").glob("*.svg")):
 (ROOT/"reports/visual-geometry.json").write_text(json.dumps(results,indent=2)+"\n",encoding="utf-8")
 if "--contact-sheets" in sys.argv:
     from PIL import Image,ImageDraw,ImageFont
-    previews=sorted((ROOT/".cache/previews").glob("*.png"))
+    previews=[ROOT/".cache/previews"/(v["view"]+".png") for v in results]
     out=ROOT/".cache/contact-sheets";out.mkdir(parents=True,exist_ok=True)
     font=ImageFont.truetype("C:/Windows/Fonts/arial.ttf",22)
     for start in range(0,len(previews),8):

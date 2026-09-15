@@ -1,332 +1,124 @@
 {
-  "20-a-core-messaging": {
-    "a.dx": [
+  "20-firefly-core-messaging": {
+    "firefly.dx": [
       5279,
       1276
     ],
-    "a.ipfs": [
+    "firefly.ipfs": [
       5279,
       1696
     ],
-    "a.core.orchestrator": [
+    "firefly.core.orchestrator": [
       299,
       570
     ],
-    "a.core.data": [
+    "firefly.core.data": [
       3179,
       243
     ],
-    "a.core.schema": [
+    "firefly.core.schema": [
       4139,
       243
     ],
-    "a.core.batch": [
+    "firefly.core.batch": [
       1259,
       836
     ],
-    "a.core.batchprocessor": [
+    "firefly.core.batchprocessor": [
       2219,
       836
     ],
-    "a.core.broadcast": [
+    "firefly.core.broadcast": [
       3179,
       836
     ],
-    "a.core.private": [
+    "firefly.core.private": [
       3179,
       1312
     ],
-    "a.core.multiparty": [
+    "firefly.core.multiparty": [
       4139,
       703
     ],
-    "a.core.dataexchange": [
+    "firefly.core.dataexchange": [
       4139,
       1276
     ],
-    "a.core.sharedstorage": [
+    "firefly.core.sharedstorage": [
       4139,
       1696
     ]
   },
-  "20-b-core-messaging": {
-    "b.dx": [
-      5279,
-      1276
-    ],
-    "b.ipfs": [
-      5279,
-      1696
-    ],
-    "b.core.orchestrator": [
-      299,
-      570
-    ],
-    "b.core.data": [
-      3179,
-      243
-    ],
-    "b.core.schema": [
-      4139,
-      243
-    ],
-    "b.core.batch": [
-      1259,
-      836
-    ],
-    "b.core.batchprocessor": [
-      2219,
-      836
-    ],
-    "b.core.broadcast": [
-      3179,
-      836
-    ],
-    "b.core.private": [
-      3179,
-      1312
-    ],
-    "b.core.multiparty": [
-      4139,
-      703
-    ],
-    "b.core.dataexchange": [
-      4139,
-      1276
-    ],
-    "b.core.sharedstorage": [
-      4139,
-      1696
-    ]
-  },
-  "20-c-core-messaging": {
-    "c.dx": [
-      5279,
-      1276
-    ],
-    "c.ipfs": [
-      5279,
-      1696
-    ],
-    "c.core.orchestrator": [
-      299,
-      570
-    ],
-    "c.core.data": [
-      3179,
-      243
-    ],
-    "c.core.schema": [
-      4139,
-      243
-    ],
-    "c.core.batch": [
-      1259,
-      836
-    ],
-    "c.core.batchprocessor": [
-      2219,
-      836
-    ],
-    "c.core.broadcast": [
-      3179,
-      836
-    ],
-    "c.core.private": [
-      3179,
-      1312
-    ],
-    "c.core.multiparty": [
-      4139,
-      703
-    ],
-    "c.core.dataexchange": [
-      4139,
-      1276
-    ],
-    "c.core.sharedstorage": [
-      4139,
-      1696
-    ]
-  },
-  "51-a2-consensus": {
-    "besu.a2.p2p": [
+  "51-besu-consensus": {
+    "besu.node.p2p": [
       299,
       718
     ],
-    "besu.a2.txpool": [
+    "besu.node.txpool": [
       1259,
       585
     ],
-    "besu.a2.sync": [
+    "besu.node.sync": [
       2219,
       242
     ],
-    "besu.a2.blockprocessor": [
+    "besu.node.blockprocessor": [
       3179,
       242
     ],
-    "besu.a2.qbft": [
+    "besu.node.qbft": [
       2219,
       718
     ],
-    "besu.a2.keys": [
+    "besu.node.keys": [
       3179,
       718
     ],
-    "besu.a2.metrics": [
+    "besu.node.metrics": [
       3179,
       1138
     ]
   },
-  "11-a-state": {
-    "a.core": [
+  "11-firefly-state": {
+    "firefly.core": [
       249,
       889
     ],
-    "a.evm": [
+    "firefly.evm": [
       1209,
       546
     ],
-    "a.signer": [
+    "firefly.signer": [
       2349,
       613
     ],
-    "a.dx": [
+    "firefly.dx": [
       1209,
       1292
     ],
-    "a.ipfs": [
+    "firefly.ipfs": [
       1209,
       2204
     ],
-    "a.pg": [
+    "firefly.pg": [
       2349,
       193
     ],
-    "a.pgReplica": [
+    "firefly.pgReplica": [
       3669,
       193
     ],
-    "a.blobs": [
+    "firefly.blobs": [
       2349,
       1033
     ],
-    "a.ipfsRepo": [
+    "firefly.ipfsRepo": [
       2349,
       1453
     ],
-    "a.secrets": [
+    "firefly.secrets": [
       3669,
       1753
-    ],
-    "b.ipfs": [
-      2349,
-      2773
-    ],
-    "c.ipfs": [
-      3669,
-      2763
-    ]
-  },
-  "11-b-state": {
-    "a.ipfs": [
-      249,
-      2697
-    ],
-    "b.core": [
-      249,
-      878
-    ],
-    "b.evm": [
-      1389,
-      545
-    ],
-    "b.signer": [
-      2529,
-      612
-    ],
-    "b.dx": [
-      1389,
-      1364
-    ],
-    "b.ipfs": [
-      1389,
-      2136
-    ],
-    "b.pg": [
-      2529,
-      192
-    ],
-    "b.pgReplica": [
-      3669,
-      192
-    ],
-    "b.blobs": [
-      2529,
-      1032
-    ],
-    "b.ipfsRepo": [
-      2529,
-      1452
-    ],
-    "b.secrets": [
-      3669,
-      1835
-    ],
-    "c.ipfs": [
-      2529,
-      2762
-    ]
-  },
-  "11-c-state": {
-    "a.ipfs": [
-      249,
-      2496
-    ],
-    "b.ipfs": [
-      1569,
-      2776
-    ],
-    "c.core": [
-      1569,
-      1051
-    ],
-    "c.evm": [
-      2709,
-      1230
-    ],
-    "c.signer": [
-      3669,
-      1760
-    ],
-    "c.dx": [
-      2709,
-      587
-    ],
-    "c.ipfs": [
-      2709,
-      2180
-    ],
-    "c.pg": [
-      3669,
-      1340
-    ],
-    "c.pgReplica": [
-      4629,
-      1423
-    ],
-    "c.blobs": [
-      3669,
-      720
-    ],
-    "c.ipfsRepo": [
-      3669,
-      2180
-    ],
-    "c.secrets": [
-      4629,
-      539
     ]
   },
   "63-operations": {
@@ -334,31 +126,15 @@
       200,
       1030
     ],
-    "a.core": [
+    "firefly.core": [
       3620,
       193
     ],
-    "a.pg": [
+    "firefly.pg": [
       4760,
       326
     ],
-    "b.core": [
-      3620,
-      1564
-    ],
-    "b.pg": [
-      4760,
-      1774
-    ],
-    "c.core": [
-      3620,
-      2483
-    ],
-    "c.pg": [
-      4760,
-      2672
-    ],
-    "besu.a1": [
+    "besu.node": [
       3620,
       902
     ],
@@ -392,17 +168,9 @@
       200,
       1505
     ],
-    "a": [
+    "firefly": [
       2120,
       233
-    ],
-    "b": [
-      3080,
-      989
-    ],
-    "c": [
-      4040,
-      1887
     ],
     "besu": [
       5000,
@@ -419,6 +187,212 @@
     "ops": [
       1160,
       1582
+    ]
+  },
+  "20-firefly-core-persistence": {
+    "firefly.ipfs": [
+      2219,
+      2345
+    ],
+    "firefly.pg": [
+      4319,
+      1123
+    ],
+    "firefly.core.orchestrator": [
+      299,
+      517
+    ],
+    "firefly.core.data": [
+      1259,
+      1455
+    ],
+    "firefly.core.download": [
+      299,
+      1875
+    ],
+    "firefly.core.contracts": [
+      1259,
+      574
+    ],
+    "firefly.core.operations": [
+      2219,
+      518
+    ],
+    "firefly.core.txwriter": [
+      2219,
+      1358
+    ],
+    "firefly.core.cache": [
+      2219,
+      938
+    ],
+    "firefly.core.metrics": [
+      3179,
+      243
+    ],
+    "firefly.core.database": [
+      3179,
+      1123
+    ],
+    "firefly.core.sharedstorage": [
+      1259,
+      1875
+    ]
+  },
+  "30-firefly-evm-events": {
+    "firefly.core": [
+      6239,
+      1190
+    ],
+    "firefly.signer": [
+      2219,
+      2090
+    ],
+    "firefly.pg": [
+      7199,
+      1002
+    ],
+    "firefly.evm.manager": [
+      3179,
+      1125
+    ],
+    "firefly.evm.rpc": [
+      1259,
+      1091
+    ],
+    "firefly.evm.blocks": [
+      2219,
+      1002
+    ],
+    "firefly.evm.receipts": [
+      299,
+      608
+    ],
+    "firefly.evm.confirmations": [
+      3179,
+      453
+    ],
+    "firefly.evm.streams": [
+      4139,
+      1125
+    ],
+    "firefly.evm.delivery": [
+      5099,
+      1190
+    ],
+    "firefly.evm.persistence": [
+      5099,
+      389
+    ]
+  },
+  "40-firefly-dx": {
+    "firefly.blobs": [
+      4140,
+      1399
+    ],
+    "firefly.secrets": [
+      3180,
+      1399
+    ],
+    "firefly.dx.api": [
+      300,
+      631
+    ],
+    "firefly.dx.peers": [
+      2220,
+      929
+    ],
+    "firefly.dx.p2p": [
+      2220,
+      375
+    ],
+    "firefly.dx.messages": [
+      1260,
+      375
+    ],
+    "firefly.dx.blobs": [
+      3180,
+      375
+    ],
+    "firefly.dx.events": [
+      4140,
+      319
+    ]
+  },
+  "40-firefly-erc20": {
+    "firefly.core": [
+      249,
+      1388
+    ],
+    "firefly.evm": [
+      1209,
+      1097
+    ],
+    "firefly.erc20.api": [
+      3309,
+      243
+    ],
+    "firefly.erc20.service": [
+      4269,
+      294
+    ],
+    "firefly.erc20.mapper": [
+      5229,
+      294
+    ],
+    "firefly.erc20.blockchain": [
+      6189,
+      847
+    ],
+    "firefly.erc20.listener": [
+      3309,
+      663
+    ],
+    "firefly.erc20.stream": [
+      2349,
+      898
+    ],
+    "firefly.erc20.proxy": [
+      4269,
+      1165
+    ]
+  },
+  "40-firefly-erc1155": {
+    "firefly.core": [
+      249,
+      1388
+    ],
+    "firefly.evm": [
+      1209,
+      1097
+    ],
+    "firefly.erc1155.api": [
+      3309,
+      243
+    ],
+    "firefly.erc1155.service": [
+      4269,
+      294
+    ],
+    "firefly.erc1155.mapper": [
+      5229,
+      294
+    ],
+    "firefly.erc1155.blockchain": [
+      6189,
+      847
+    ],
+    "firefly.erc1155.listener": [
+      3309,
+      663
+    ],
+    "firefly.erc1155.stream": [
+      2349,
+      898
+    ],
+    "firefly.erc1155.proxy": [
+      4269,
+      1165
     ]
   }
 }

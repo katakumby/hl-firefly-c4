@@ -1,7 +1,7 @@
- Container firefly-architecture-cli-run-f11e901de25f Creating 
- Container firefly-architecture-cli-run-f11e901de25f Created 
+ Container firefly-architecture-cli-run-ffb412d1839f Creating 
+ Container firefly-architecture-cli-run-ffb412d1839f Created 
 INFO   | workspace.scope | This workspace has no defined scope. It is recommended that the workspace scope is set to "Landscape" or "SoftwareSystem".
-INFO   | workspace.scope | This workspace describes the internal details of 7 software systems. It is recommended that a workspace contains the model, views, and documentation for a single software system only.
-INFO   | workspace.scope | System context views exist for 4 software systems. It is recommended that a workspace includes system context views for a single software system only.
-INFO   | workspace.scope | Container views exist for 7 software systems. It is recommended that a workspace includes container views for a single software system only.
+INFO   | workspace.scope | This workspace describes the internal details of 5 software systems. It is recommended that a workspace contains the model, views, and documentation for a single software system only.
+INFO   | workspace.scope | System context views exist for 2 software systems. It is recommended that a workspace includes system context views for a single software system only.
+INFO   | workspace.scope | Container views exist for 5 software systems. It is recommended that a workspace includes container views for a single software system only.
 

@@ -1,0 +1,2 @@
+ Container firefly-architecture-cli-run-5aafe5fbe6fb Creating 
+ Container firefly-architecture-cli-run-5aafe5fbe6fb Created 

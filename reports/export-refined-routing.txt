@@ -1,0 +1,23 @@
+ Container firefly-architecture-export-run-4550f81f2494 Creating 
+ Container firefly-architecture-export-run-4550f81f2494 Created 
+20:50:24.632 [main] INFO com.structurizr.command.StaticSiteExporter -- Writing static site to /tmp/structurizr12214032752801233895
+20:50:24.889 [main] INFO com.structurizr.command.StaticSiteExporter -- Writing /tmp/structurizr12214032752801233895/workspace.js
+20:50:26.489 [main] INFO com.structurizr.command.PlaywrightExporterImpl -- Visiting file:///tmp/structurizr12214032752801233895/index.html
+20:50:31.195 [main] INFO com.structurizr.command.PlaywrightExporterImpl -- Writing /usr/local/structurizr/.cache/routing-svg/01-landscape.svg
+20:50:31.210 [main] INFO com.structurizr.command.PlaywrightExporterImpl -- Writing /usr/local/structurizr/.cache/routing-svg/01-landscape-key.svg
+20:50:31.219 [main] INFO com.structurizr.command.PlaywrightExporterImpl -- Writing /usr/local/structurizr/.cache/routing-svg/11-a-state.svg
+20:50:31.233 [main] INFO com.structurizr.command.PlaywrightExporterImpl -- Writing /usr/local/structurizr/.cache/routing-svg/11-a-state-key.svg
+20:50:31.241 [main] INFO com.structurizr.command.PlaywrightExporterImpl -- Writing /usr/local/structurizr/.cache/routing-svg/11-b-state.svg
+20:50:31.255 [main] INFO com.structurizr.command.PlaywrightExporterImpl -- Writing /usr/local/structurizr/.cache/routing-svg/11-b-state-key.svg
+20:50:31.263 [main] INFO com.structurizr.command.PlaywrightExporterImpl -- Writing /usr/local/structurizr/.cache/routing-svg/11-c-state.svg
+20:50:31.275 [main] INFO com.structurizr.command.PlaywrightExporterImpl -- Writing /usr/local/structurizr/.cache/routing-svg/11-c-state-key.svg
+20:50:31.283 [main] INFO com.structurizr.command.PlaywrightExporterImpl -- Writing /usr/local/structurizr/.cache/routing-svg/20-a-core-messaging.svg
+20:50:31.294 [main] INFO com.structurizr.command.PlaywrightExporterImpl -- Writing /usr/local/structurizr/.cache/routing-svg/20-a-core-messaging-key.svg
+20:50:31.301 [main] INFO com.structurizr.command.PlaywrightExporterImpl -- Writing /usr/local/structurizr/.cache/routing-svg/20-b-core-messaging.svg
+20:50:31.312 [main] INFO com.structurizr.command.PlaywrightExporterImpl -- Writing /usr/local/structurizr/.cache/routing-svg/20-b-core-messaging-key.svg
+20:50:31.319 [main] INFO com.structurizr.command.PlaywrightExporterImpl -- Writing /usr/local/structurizr/.cache/routing-svg/20-c-core-messaging.svg
+20:50:31.329 [main] INFO com.structurizr.command.PlaywrightExporterImpl -- Writing /usr/local/structurizr/.cache/routing-svg/20-c-core-messaging-key.svg
+20:50:31.336 [main] INFO com.structurizr.command.PlaywrightExporterImpl -- Writing /usr/local/structurizr/.cache/routing-svg/51-a2-consensus.svg
+20:50:31.345 [main] INFO com.structurizr.command.PlaywrightExporterImpl -- Writing /usr/local/structurizr/.cache/routing-svg/51-a2-consensus-key.svg
+20:50:31.352 [main] INFO com.structurizr.command.PlaywrightExporterImpl -- Writing /usr/local/structurizr/.cache/routing-svg/63-operations.svg
+20:50:31.363 [main] INFO com.structurizr.command.PlaywrightExporterImpl -- Writing /usr/local/structurizr/.cache/routing-svg/63-operations-key.svg

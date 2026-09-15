@@ -1,0 +1,11 @@
+{
+  "version": 1,
+  "skills": {
+    "structurizr-dsl": {
+      "source": "fedemagnani/structurizr-dsl",
+      "sourceType": "github",
+      "skillPath": "SKILL.md",
+      "computedHash": "2561ad279aa54e146323723db4958a6396712b201bde0b286a9d9668685b92cc"
+    }
+  }
+}

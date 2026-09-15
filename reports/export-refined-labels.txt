@@ -1,0 +1,9 @@
+ Container firefly-architecture-export-run-ba1063733821 Creating 
+ Container firefly-architecture-export-run-ba1063733821 Created 
+20:45:39.083 [main] INFO com.structurizr.command.StaticSiteExporter -- Writing static site to /tmp/structurizr7429381806354545972
+20:45:39.362 [main] INFO com.structurizr.command.StaticSiteExporter -- Writing /tmp/structurizr7429381806354545972/workspace.js
+20:45:40.997 [main] INFO com.structurizr.command.PlaywrightExporterImpl -- Visiting file:///tmp/structurizr7429381806354545972/index.html
+20:49:58.874 [main] INFO com.structurizr.command.PlaywrightExporterImpl -- Writing /usr/local/structurizr/exports/svg/11-c-state.svg
+20:49:58.886 [main] INFO com.structurizr.command.PlaywrightExporterImpl -- Writing /usr/local/structurizr/exports/svg/11-c-state-key.svg
+20:49:58.891 [main] INFO com.structurizr.command.PlaywrightExporterImpl -- Writing /usr/local/structurizr/exports/svg/99-deployment-complete.svg
+20:49:58.966 [main] INFO com.structurizr.command.PlaywrightExporterImpl -- Writing /usr/local/structurizr/exports/svg/99-deployment-complete-key.svg

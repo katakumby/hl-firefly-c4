@@ -1,0 +1,170 @@
+{
+  "started_at": "2026-09-18T21:29:39.253508+00:00",
+  "completed_at": "2026-09-18T21:29:48.942575+00:00",
+  "passed": true,
+  "image": "structurizr/structurizr:2026.06.28-noble",
+  "commands": [
+    {
+      "name": "docker-readiness",
+      "command": [
+        "docker",
+        "version",
+        "--format",
+        "{{.Server.Version}}"
+      ],
+      "exit_code": 0,
+      "report": "docker-readiness.txt"
+    },
+    {
+      "name": "generate",
+      "command": [
+        "C:\\Users\\katak\\AppData\\Local\\Programs\\Python\\Python310\\python.exe",
+        "-B",
+        "scripts/build_workspace.py"
+      ],
+      "exit_code": 0,
+      "report": "generate.txt"
+    },
+    {
+      "name": "source-inventory",
+      "command": [
+        "C:\\Users\\katak\\AppData\\Local\\Programs\\Python\\Python310\\python.exe",
+        "-B",
+        "scripts/static_source_inventory.py"
+      ],
+      "exit_code": 0,
+      "report": "source-inventory.txt"
+    },
+    {
+      "name": "validate",
+      "command": [
+        "docker",
+        "run",
+        "--rm",
+        "--mount",
+        "type=bind,source=C:\\Users\\katak\\Documents\\ChatGPT\\DLT Ecosystem,target=/usr/local/structurizr",
+        "structurizr/structurizr:2026.06.28-noble",
+        "validate",
+        "-workspace",
+        "workspace-static.dsl"
+      ],
+      "exit_code": 0,
+      "report": "validate.txt"
+    },
+    {
+      "name": "inspect",
+      "command": [
+        "docker",
+        "run",
+        "--rm",
+        "--mount",
+        "type=bind,source=C:\\Users\\katak\\Documents\\ChatGPT\\DLT Ecosystem,target=/usr/local/structurizr",
+        "structurizr/structurizr:2026.06.28-noble",
+        "inspect",
+        "-workspace",
+        "workspace-static.dsl"
+      ],
+      "exit_code": 4,
+      "report": "inspect.txt"
+    },
+    {
+      "name": "inspect-errors-warnings",
+      "command": [
+        "docker",
+        "run",
+        "--rm",
+        "--mount",
+        "type=bind,source=C:\\Users\\katak\\Documents\\ChatGPT\\DLT Ecosystem,target=/usr/local/structurizr",
+        "structurizr/structurizr:2026.06.28-noble",
+        "inspect",
+        "-workspace",
+        "workspace-static.dsl",
+        "-severity",
+        "error,warning"
+      ],
+      "exit_code": 0,
+      "report": "inspect-errors-warnings.txt"
+    },
+    {
+      "name": "parse-json",
+      "command": [
+        "docker",
+        "run",
+        "--rm",
+        "--mount",
+        "type=bind,source=C:\\Users\\katak\\Documents\\ChatGPT\\DLT Ecosystem,target=/usr/local/structurizr",
+        "structurizr/structurizr:2026.06.28-noble",
+        "export",
+        "-workspace",
+        "workspace-static.dsl",
+        "-format",
+        "json",
+        "-output",
+        ".cache/static-validation/d128f8f3a4bf42a8838647fa7d2782af"
+      ],
+      "exit_code": 0,
+      "report": "parse-json.txt"
+    },
+    {
+      "name": "validator-tests",
+      "command": [
+        "C:\\Users\\katak\\AppData\\Local\\Programs\\Python\\Python310\\python.exe",
+        "-B",
+        "-m",
+        "unittest",
+        "discover",
+        "-s",
+        "scripts",
+        "-p",
+        "test_static_validation.py"
+      ],
+      "exit_code": 0,
+      "report": "validator-tests.txt"
+    },
+    {
+      "name": "image",
+      "command": [
+        "docker",
+        "image",
+        "inspect",
+        "structurizr/structurizr:2026.06.28-noble",
+        "--format",
+        "{{json .RepoDigests}}"
+      ],
+      "exit_code": 0,
+      "report": "image.txt"
+    }
+  ],
+  "inspection": {
+    "passed": true,
+    "exit_code": 4,
+    "findings": [
+      {
+        "severity": "INFO",
+        "type": "workspace.scope",
+        "message": "This workspace has no defined scope. It is recommended that the workspace scope is set to \"Landscape\" or \"SoftwareSystem\"."
+      },
+      {
+        "severity": "INFO",
+        "type": "workspace.scope",
+        "message": "This workspace describes the internal details of 5 software systems. It is recommended that a workspace contains the model, views, and documentation for a single software system only."
+      },
+      {
+        "severity": "INFO",
+        "type": "workspace.scope",
+        "message": "System context views exist for 2 software systems. It is recommended that a workspace includes system context views for a single software system only."
+      },
+      {
+        "severity": "INFO",
+        "type": "workspace.scope",
+        "message": "Container views exist for 5 software systems. It is recommended that a workspace includes container views for a single software system only."
+      }
+    ],
+    "unexpected": []
+  },
+  "failure": null,
+  "parsed_workspace": ".cache\\static-validation\\d128f8f3a4bf42a8838647fa7d2782af\\workspace-static.json",
+  "workspace_sha256": "f390205a8efd2a351c771ce0ae6e9226409a4e2bf07510664f7831196ab1ce4f",
+  "deployment_validation": "NOT RUN",
+  "diagram_exports": "NOT RUN"
+}

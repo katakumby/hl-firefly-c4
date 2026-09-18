@@ -1,63 +1,74 @@
-# FireFly + Besu architecture workspace
+# FireFly ecosystem + private Besu C4 workspace
 
-A source-backed Structurizr workspace with C4 levels 1–3 and a three-member, three-zone AKS reference.
+The current review corrects and validates **C4 levels 1–3** across the documented
+open-source FireFly ecosystem, using private Besu as the worked example. Every
+view includes directional, labeled static dataflows. Component detail covers
+FireFly and Besu; other infrastructure stops at its integration boundary.
 
-## Open the diagrams
+## Current deliverables
 
-    docker compose up -d structurizr
+- [Static workspace](workspace-static.dsl): the validated entrypoint, with no deployment definitions or views.
+- [Full workspace](workspace.dsl): the same corrected logical model plus preserved deployment definitions for the next review.
+- [Validation report](reports/static/validation-summary.md): fresh Docker results, accepted advisories, coverage and deferred checks.
+- [Official source inventory](reports/static/source-inventory.md), [source coverage](reports/static/source-coverage.csv), [relationship evidence](reports/static/relationship-evidence.csv), and [element/view coverage](coverage.csv).
+- [Logical architecture](docs/static/workspace/01-logical-architecture.md), [dataflows](docs/static/workspace/02-static-dataflows.md), and [decisions](docs/static/decisions).
 
-Open [Structurizr on localhost](http://localhost:8080). The viewer binds only to 127.0.0.1:8080 and serves the exported JSON, including deployment layouts and embedded documentation.
+## Validate static C4 only
 
-Start with **01-landscape**, reusable FireFly **10/11** container views, focused **20–51** component views, and finally **80–82** deployment details and **99-deployment-complete**. The complete map is intended for zooming; detail views isolate readable dataflows.
+Requires Docker Desktop with Linux containers, Python 3.10+ and PowerShell:
 
-FireFly and Besu's node implementation are each defined once. Members A, B and C reuse the FireFly containers through deployment instances; member deployment groups isolate their databases, keys and private storage. Besu instance roles select validators or RPC/discovery nodes. Scoped `-> destination` relationships stay beside their source elements, and views select endpoints without numbered relationship aliases.
+```powershell
+./scripts/validate.ps1 -StaticOnly
+```
 
-## Files
-
-- [workspace.dsl](workspace.dsl): complete generated DSL; no remote includes or runtime plugins.
-- [Exported workspace](exports/workspace.json): parsed model, embedded documentation and deployment layouts.
-- [SVG gallery](exports/index.html): offline diagram browsing; each diagram has a separate notation key.
-- [Architecture](docs/workspace/01-overview.md), [dataflows](docs/workspace/02-dataflows.md), [deployment and recovery](docs/workspace/03-deployment.md), [official sources](docs/workspace/04-sources.md).
-- [Decisions](decisions): runtime boundaries, Besu, recovery and validation.
-- [Coverage](coverage.csv), [source revisions](sources.json), [model catalog](model-catalog.json).
-- [Validation summary](reports/validation-summary.md), [architecture audit](reports/architecture-audit.json) and [complete inspect report](reports/inspect.txt).
-
-## Rebuild and verify
-
-Requires Docker Desktop with Linux containers, Docker Compose, Python 3.10+ and PowerShell.
-
-    ./scripts/validate.ps1
-    docker compose up -d structurizr
-
-The script generates the model, audits source coverage, validates DSL, exports JSON, applies deployment layouts, runs inspect, checks component coverage/member isolation/quorum and exports SVGs. Use -SkipRender for model-only checks.
+This generates both DSL entrypoints from one logical model, inventories source
+coverage, runs Docker `validate` and `inspect` on `workspace-static.dsl`, and
+audits a fresh parsed workspace in `.cache`. It uses the pinned official image
+`structurizr/structurizr:2026.06.28-noble`. It does not run deployment validation,
+deployment layouts, rendered-diagram checks, galleries or diagram exports.
 
 Standalone inspection:
 
-    docker compose run --rm cli validate -workspace workspace.dsl
-    docker compose run --rm cli inspect -workspace workspace.dsl
-    docker compose run --rm cli inspect -workspace exports/workspace.json
-    docker compose run --rm cli inspect -workspace exports/workspace.json -severity error,warning
+```powershell
+docker compose run --rm --no-deps cli validate -workspace workspace-static.dsl
+docker compose run --rm --no-deps cli inspect -workspace workspace-static.dsl
+docker compose run --rm --no-deps cli inspect -workspace workspace-static.dsl -severity error,warning
+```
 
-The full inspect command returns a nonzero status for four retained informational scope findings. Structurizr recommends one system per workspace; this requested deliverable includes the whole consortium. Only workspace.scope is classified informational. The error/warning gate returns **0**. No blanket suppression is used.
+The full inspection retains informational `workspace.scope` advisories because
+this requested ecosystem model contains details of multiple systems. Its exit
+code records displayed findings (Compose can collapse a positive code to 1).
+The error/warning gate must return zero. Other categories are not suppressed.
 
-Edit scripts/model_data.py for reusable components and flows, and scripts/build_workspace.py for systems, deployment and views. Run validation to regenerate artifacts. scripts/capture_sources.py refreshes official snapshots deliberately; normal rebuilds use the captured revisions.
+## Sources and maintenance
 
-## Reference design limits
+Edit the model generators and component definitions in `scripts`; regenerate
+with static validation. Do not hand-edit generated DSL or catalogs. Sources
+include the official FireFly head documentation, official FireFly repositories,
+Besu documentation and Structurizr documentation. Commit SHAs, retrieval times,
+content fingerprints and selected embedded dependency versions are recorded in
+`sources.json`.
 
-Application runtimes, databases and signing services are on AKS. Azure's managed control plane, load balancer and CSI-backed storage remain infrastructure dependencies. No cloud resources or live FireFly/Besu network are provisioned.
+To deliberately refresh the evidence, run `python scripts/capture_static_sources.py`
+and then `python scripts/capture_component_sources.py`. These fetch official
+source snapshots; normal validation uses the recorded inventory without network
+source refreshes. Source changes can require model updates.
 
-Six validators are distributed two per zone; losing one zone leaves the four required for quorum. Stateful member services recover as single writers. Safe fencing and volume reattachment are prerequisites, and Data Exchange's in-memory notifications require reconciliation. These design objectives are distinguished from proven automatic failover or measured recovery times.
+After validation, run fault-injection checks with:
 
+```powershell
+python -B -m unittest discover -s scripts -p test_static_validation.py
+```
 
-## Visual review
+## Deferred work
 
-SVGs retain vector text and arrows at full zoom. The complete deployment is a large reference map; use its detail views to trace individual flows. Browser zoom and the offline gallery both preserve SVG detail.
+Deployment diagrams, AKS placement, validator counts, quorum sizing, recovery
+and availability are **not validated in this pass**. Existing exports are kept
+byte-for-byte unchanged and describe the earlier model. The Compose viewer
+still serves those historical exports; it is not a preview of this new static
+workspace. Rendering and visual-layout QA are deferred.
 
-    python scripts/visual_audit.py
-
-This checks rendered node clipping, shape/text fit, node collisions and relationship-label collisions (including protocols). To recreate preview PNGs/contact sheets, install Sharp for Node and Pillow for Python, then run:
-
-    node scripts/render_previews.cjs
-    python scripts/visual_audit.py --contact-sheets
-
-Set SHARP_MODULE to an existing Sharp module path if it is not installed locally. The previews are disposable review artifacts in .cache; the deliverables are the SVGs and their notation keys.
+Earlier reports outside `reports/static` are historical. The original full
+validation pipeline is retained for later deployment/export work; use
+`-StaticOnly` for this phase. No FireFly/Besu network or cloud resources are
+provisioned by this task.

@@ -1,6 +1,24 @@
 {
   "version": 1,
   "skills": {
+    "azure-kubernetes": {
+      "source": "microsoft/azure-skills",
+      "sourceType": "github",
+      "skillPath": "skills/azure-kubernetes/SKILL.md",
+      "computedHash": "390f198d1c2033953729996bd3fa70dc3d9cef9775207dae150d8bc93182f07c"
+    },
+    "azure-messaging": {
+      "source": "microsoft/azure-skills",
+      "sourceType": "github",
+      "skillPath": "skills/azure-messaging/SKILL.md",
+      "computedHash": "a20a13d893dd74ee286ded71972c25057a514cc12c02f87ddf7cbc599cb4f43a"
+    },
+    "domain-driven-design": {
+      "source": "wondelai/skills",
+      "sourceType": "github",
+      "skillPath": "domain-driven-design/SKILL.md",
+      "computedHash": "3a84c4c48b3d1bcdf07e6ba096749679f97915dd6b4f9c87ab8a715b936fed30"
+    },
     "structurizr-dsl": {
       "source": "fedemagnani/structurizr-dsl",
       "sourceType": "github",

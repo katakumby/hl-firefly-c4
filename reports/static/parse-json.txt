@@ -1,0 +1,4 @@
+21:29:46.813 [main] INFO com.structurizr.command.ExportCommand -- Exporting workspace from workspace-static.dsl
+21:29:47.581 [main] INFO com.structurizr.command.ExportCommand -- Exporting with JsonWorkspaceExporter
+21:29:47.858 [main] INFO com.structurizr.command.ExportCommand -- Writing /usr/local/structurizr/.cache/static-validation/d128f8f3a4bf42a8838647fa7d2782af/workspace-static.json
+21:29:47.884 [main] INFO com.structurizr.command.ExportCommand -- Finished

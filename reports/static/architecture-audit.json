@@ -1,0 +1,4177 @@
+{
+  "passed": true,
+  "elements": 234,
+  "components": 177,
+  "relationships": 418,
+  "views": 51,
+  "assertions": 1041,
+  "errors": [],
+  "deployment_validation": "DEFERRED (preservation comparisons only)",
+  "diagram_exports": "NOT RUN",
+  "checks": [
+    {
+      "check": "Every parsed element retains its architecture identifier",
+      "passed": true
+    },
+    {
+      "check": "Parsed architecture identifiers are unique",
+      "passed": true
+    },
+    {
+      "check": "Every authored logical element survives parsing",
+      "passed": true
+    },
+    {
+      "check": "Static input contains no deployment nodes",
+      "passed": true
+    },
+    {
+      "check": "Only static C4 view types are present",
+      "passed": true
+    },
+    {
+      "check": "developer: name and responsibility present",
+      "passed": true
+    },
+    {
+      "check": "operator: name and responsibility present",
+      "passed": true
+    },
+    {
+      "check": "business: name and responsibility present",
+      "passed": true
+    },
+    {
+      "check": "firefly: name and responsibility present",
+      "passed": true
+    },
+    {
+      "check": "firefly.core: name and responsibility present",
+      "passed": true
+    },
+    {
+      "check": "firefly.core: implementation technology present",
+      "passed": true
+    },
+    {
+      "check": "firefly.core: correct C4 parent",
+      "passed": true
+    },
+    {
+      "check": "firefly.core.api: name and responsibility present",
+      "passed": true
+    },
+    {
+      "check": "firefly.core.api: implementation technology present",
+      "passed": true
+    },
+    {
+      "check": "firefly.core.api: correct C4 parent",
+      "passed": true
+    },
+    {
+      "check": "firefly.core.explorer: name and responsibility present",
+      "passed": true
+    },
+    {
+      "check": "firefly.core.explorer: implementation technology present",
+      "passed": true
+    },
+    {
+      "check": "firefly.core.explorer: correct C4 parent",
+      "passed": true
+    },
+    {
+      "check": "firefly.core.auth: name and responsibility present",
+      "passed": true
+    },
+    {
+      "check": "firefly.core.auth: implementation technology present",
+      "passed": true
+    },
+    {
+      "check": "firefly.core.auth: correct C4 parent",
+      "passed": true
+    },
+    {
+      "check": "firefly.core.namespaces: name and responsibility present",
+      "passed": true
+    },
+    {
+      "check": "firefly.core.namespaces: implementation technology present",
+      "passed": true
+    },
+    {
+      "check": "firefly.core.namespaces: correct C4 parent",
+      "passed": true
+    },
+    {
+      "check": "firefly.core.orchestrator: name and responsibility present",
+      "passed": true
+    },
+    {
+      "check": "firefly.core.orchestrator: implementation technology present",
+      "passed": true
+    },
+    {
+      "check": "firefly.core.orchestrator: correct C4 parent",
+      "passed": true
+    },
+    {
+      "check": "firefly.core.identity: name and responsibility present",
+      "passed": true
+    },
+    {
+      "check": "firefly.core.identity: implementation technology present",
+      "passed": true
+    },
+    {
+      "check": "firefly.core.identity: correct C4 parent",
+      "passed": true
+    },
+    {
+      "check": "firefly.core.networkmap: name and responsibility present",
+      "passed": true
+    },
+    {
+      "check": "firefly.core.networkmap: implementation technology present",
+      "passed": true
+    },
+    {
+      "check": "firefly.core.networkmap: correct C4 parent",
+      "passed": true
+    },
+    {
+      "check": "firefly.core.definitions: name and responsibility present",
+      "passed": true
+    },
+    {
+      "check": "firefly.core.definitions: implementation technology present",
+      "passed": true
+    },
+    {
+      "check": "firefly.core.definitions: correct C4 parent",
+      "passed": true
+    },
+    {
+      "check": "firefly.core.data: name and responsibility present",
+      "passed": true
+    },
+    {
+      "check": "firefly.core.data: implementation technology present",
+      "passed": true
+    },
+    {
+      "check": "firefly.core.data: correct C4 parent",
+      "passed": true
+    },
+    {
+      "check": "firefly.core.schema: name and responsibility present",
+      "passed": true
+    },
+    {
+      "check": "firefly.core.schema: implementation technology present",
+      "passed": true
+    },
+    {
+      "check": "firefly.core.schema: correct C4 parent",
+      "passed": true
+    },
+    {
+      "check": "firefly.core.batch: name and responsibility present",
+      "passed": true
+    },
+    {
+      "check": "firefly.core.batch: implementation technology present",
+      "passed": true
+    },
+    {
+      "check": "firefly.core.batch: correct C4 parent",
+      "passed": true
+    },
+    {
+      "check": "firefly.core.batchprocessor: name and responsibility present",
+      "passed": true
+    },
+    {
+      "check": "firefly.core.batchprocessor: implementation technology present",
+      "passed": true
+    },
+    {
+      "check": "firefly.core.batchprocessor: correct C4 parent",
+      "passed": true
+    },
+    {
+      "check": "firefly.core.broadcast: name and responsibility present",
+      "passed": true
+    },
+    {
+      "check": "firefly.core.broadcast: implementation technology present",
+      "passed": true
+    },
+    {
+      "check": "firefly.core.broadcast: correct C4 parent",
+      "passed": true
+    },
+    {
+      "check": "firefly.core.private: name and responsibility present",
+      "passed": true
+    },
+    {
+      "check": "firefly.core.private: implementation technology present",
+      "passed": true
+    },
+    {
+      "check": "firefly.core.private: correct C4 parent",
+      "passed": true
+    },
+    {
+      "check": "firefly.core.multiparty: name and responsibility present",
+      "passed": true
+    },
+    {
+      "check": "firefly.core.multiparty: implementation technology present",
+      "passed": true
+    },
+    {
+      "check": "firefly.core.multiparty: correct C4 parent",
+      "passed": true
+    },
+    {
+      "check": "firefly.core.download: name and responsibility present",
+      "passed": true
+    },
+    {
+      "check": "firefly.core.download: implementation technology present",
+      "passed": true
+    },
+    {
+      "check": "firefly.core.download: correct C4 parent",
+      "passed": true
+    },
+    {
+      "check": "firefly.core.contracts: name and responsibility present",
+      "passed": true
+    },
+    {
+      "check": "firefly.core.contracts: implementation technology present",
+      "passed": true
+    },
+    {
+      "check": "firefly.core.contracts: correct C4 parent",
+      "passed": true
+    },
+    {
+      "check": "firefly.core.assets: name and responsibility present",
+      "passed": true
+    },
+    {
+      "check": "firefly.core.assets: implementation technology present",
+      "passed": true
+    },
+    {
+      "check": "firefly.core.assets: correct C4 parent",
+      "passed": true
+    },
+    {
+      "check": "firefly.core.operations: name and responsibility present",
+      "passed": true
+    },
+    {
+      "check": "firefly.core.operations: implementation technology present",
+      "passed": true
+    },
+    {
+      "check": "firefly.core.operations: correct C4 parent",
+      "passed": true
+    },
+    {
+      "check": "firefly.core.txhelper: name and responsibility present",
+      "passed": true
+    },
+    {
+      "check": "firefly.core.txhelper: implementation technology present",
+      "passed": true
+    },
+    {
+      "check": "firefly.core.txhelper: correct C4 parent",
+      "passed": true
+    },
+    {
+      "check": "firefly.core.txwriter: name and responsibility present",
+      "passed": true
+    },
+    {
+      "check": "firefly.core.txwriter: implementation technology present",
+      "passed": true
+    },
+    {
+      "check": "firefly.core.txwriter: correct C4 parent",
+      "passed": true
+    },
+    {
+      "check": "firefly.core.aggregator: name and responsibility present",
+      "passed": true
+    },
+    {
+      "check": "firefly.core.aggregator: implementation technology present",
+      "passed": true
+    },
+    {
+      "check": "firefly.core.aggregator: correct C4 parent",
+      "passed": true
+    },
+    {
+      "check": "firefly.core.subscriptions: name and responsibility present",
+      "passed": true
+    },
+    {
+      "check": "firefly.core.subscriptions: implementation technology present",
+      "passed": true
+    },
+    {
+      "check": "firefly.core.subscriptions: correct C4 parent",
+      "passed": true
+    },
+    {
+      "check": "firefly.core.dispatcher: name and responsibility present",
+      "passed": true
+    },
+    {
+      "check": "firefly.core.dispatcher: implementation technology present",
+      "passed": true
+    },
+    {
+      "check": "firefly.core.dispatcher: correct C4 parent",
+      "passed": true
+    },
+    {
+      "check": "firefly.core.syncasync: name and responsibility present",
+      "passed": true
+    },
+    {
+      "check": "firefly.core.syncasync: implementation technology present",
+      "passed": true
+    },
+    {
+      "check": "firefly.core.syncasync: correct C4 parent",
+      "passed": true
+    },
+    {
+      "check": "firefly.core.cache: name and responsibility present",
+      "passed": true
+    },
+    {
+      "check": "firefly.core.cache: implementation technology present",
+      "passed": true
+    },
+    {
+      "check": "firefly.core.cache: correct C4 parent",
+      "passed": true
+    },
+    {
+      "check": "firefly.core.metrics: name and responsibility present",
+      "passed": true
+    },
+    {
+      "check": "firefly.core.metrics: implementation technology present",
+      "passed": true
+    },
+    {
+      "check": "firefly.core.metrics: correct C4 parent",
+      "passed": true
+    },
+    {
+      "check": "firefly.core.spievents: name and responsibility present",
+      "passed": true
+    },
+    {
+      "check": "firefly.core.spievents: implementation technology present",
+      "passed": true
+    },
+    {
+      "check": "firefly.core.spievents: correct C4 parent",
+      "passed": true
+    },
+    {
+      "check": "firefly.core.blockchain: name and responsibility present",
+      "passed": true
+    },
+    {
+      "check": "firefly.core.blockchain: implementation technology present",
+      "passed": true
+    },
+    {
+      "check": "firefly.core.blockchain: correct C4 parent",
+      "passed": true
+    },
+    {
+      "check": "firefly.core.database: name and responsibility present",
+      "passed": true
+    },
+    {
+      "check": "firefly.core.database: implementation technology present",
+      "passed": true
+    },
+    {
+      "check": "firefly.core.database: correct C4 parent",
+      "passed": true
+    },
+    {
+      "check": "firefly.core.dataexchange: name and responsibility present",
+      "passed": true
+    },
+    {
+      "check": "firefly.core.dataexchange: implementation technology present",
+      "passed": true
+    },
+    {
+      "check": "firefly.core.dataexchange: correct C4 parent",
+      "passed": true
+    },
+    {
+      "check": "firefly.core.sharedstorage: name and responsibility present",
+      "passed": true
+    },
+    {
+      "check": "firefly.core.sharedstorage: implementation technology present",
+      "passed": true
+    },
+    {
+      "check": "firefly.core.sharedstorage: correct C4 parent",
+      "passed": true
+    },
+    {
+      "check": "firefly.core.tokens: name and responsibility present",
+      "passed": true
+    },
+    {
+      "check": "firefly.core.tokens: implementation technology present",
+      "passed": true
+    },
+    {
+      "check": "firefly.core.tokens: correct C4 parent",
+      "passed": true
+    },
+    {
+      "check": "firefly.core.identityplugin: name and responsibility present",
+      "passed": true
+    },
+    {
+      "check": "firefly.core.identityplugin: implementation technology present",
+      "passed": true
+    },
+    {
+      "check": "firefly.core.identityplugin: correct C4 parent",
+      "passed": true
+    },
+    {
+      "check": "firefly.core.eventplugin: name and responsibility present",
+      "passed": true
+    },
+    {
+      "check": "firefly.core.eventplugin: implementation technology present",
+      "passed": true
+    },
+    {
+      "check": "firefly.core.eventplugin: correct C4 parent",
+      "passed": true
+    },
+    {
+      "check": "firefly.core.config: name and responsibility present",
+      "passed": true
+    },
+    {
+      "check": "firefly.core.config: implementation technology present",
+      "passed": true
+    },
+    {
+      "check": "firefly.core.config: correct C4 parent",
+      "passed": true
+    },
+    {
+      "check": "firefly.core.basicAuth: name and responsibility present",
+      "passed": true
+    },
+    {
+      "check": "firefly.core.basicAuth: implementation technology present",
+      "passed": true
+    },
+    {
+      "check": "firefly.core.basicAuth: correct C4 parent",
+      "passed": true
+    },
+    {
+      "check": "firefly.core.ethereum: name and responsibility present",
+      "passed": true
+    },
+    {
+      "check": "firefly.core.ethereum: implementation technology present",
+      "passed": true
+    },
+    {
+      "check": "firefly.core.ethereum: correct C4 parent",
+      "passed": true
+    },
+    {
+      "check": "firefly.core.fabricAdapter: name and responsibility present",
+      "passed": true
+    },
+    {
+      "check": "firefly.core.fabricAdapter: implementation technology present",
+      "passed": true
+    },
+    {
+      "check": "firefly.core.fabricAdapter: correct C4 parent",
+      "passed": true
+    },
+    {
+      "check": "firefly.core.tezosAdapter: name and responsibility present",
+      "passed": true
+    },
+    {
+      "check": "firefly.core.tezosAdapter: implementation technology present",
+      "passed": true
+    },
+    {
+      "check": "firefly.core.tezosAdapter: correct C4 parent",
+      "passed": true
+    },
+    {
+      "check": "firefly.core.cardanoAdapter: name and responsibility present",
+      "passed": true
+    },
+    {
+      "check": "firefly.core.cardanoAdapter: implementation technology present",
+      "passed": true
+    },
+    {
+      "check": "firefly.core.cardanoAdapter: correct C4 parent",
+      "passed": true
+    },
+    {
+      "check": "firefly.core.postgres: name and responsibility present",
+      "passed": true
+    },
+    {
+      "check": "firefly.core.postgres: implementation technology present",
+      "passed": true
+    },
+    {
+      "check": "firefly.core.postgres: correct C4 parent",
+      "passed": true
+    },
+    {
+      "check": "firefly.core.sqlite: name and responsibility present",
+      "passed": true
+    },
+    {
+      "check": "firefly.core.sqlite: implementation technology present",
+      "passed": true
+    },
+    {
+      "check": "firefly.core.sqlite: correct C4 parent",
+      "passed": true
+    },
+    {
+      "check": "firefly.core.sql: name and responsibility present",
+      "passed": true
+    },
+    {
+      "check": "firefly.core.sql: implementation technology present",
+      "passed": true
+    },
+    {
+      "check": "firefly.core.sql: correct C4 parent",
+      "passed": true
+    },
+    {
+      "check": "firefly.core.ffdx: name and responsibility present",
+      "passed": true
+    },
+    {
+      "check": "firefly.core.ffdx: implementation technology present",
+      "passed": true
+    },
+    {
+      "check": "firefly.core.ffdx: correct C4 parent",
+      "passed": true
+    },
+    {
+      "check": "firefly.core.ipfs: name and responsibility present",
+      "passed": true
+    },
+    {
+      "check": "firefly.core.ipfs: implementation technology present",
+      "passed": true
+    },
+    {
+      "check": "firefly.core.ipfs: correct C4 parent",
+      "passed": true
+    },
+    {
+      "check": "firefly.core.fftokens: name and responsibility present",
+      "passed": true
+    },
+    {
+      "check": "firefly.core.fftokens: implementation technology present",
+      "passed": true
+    },
+    {
+      "check": "firefly.core.fftokens: correct C4 parent",
+      "passed": true
+    },
+    {
+      "check": "firefly.core.websockets: name and responsibility present",
+      "passed": true
+    },
+    {
+      "check": "firefly.core.websockets: implementation technology present",
+      "passed": true
+    },
+    {
+      "check": "firefly.core.websockets: correct C4 parent",
+      "passed": true
+    },
+    {
+      "check": "firefly.core.webhooks: name and responsibility present",
+      "passed": true
+    },
+    {
+      "check": "firefly.core.webhooks: implementation technology present",
+      "passed": true
+    },
+    {
+      "check": "firefly.core.webhooks: correct C4 parent",
+      "passed": true
+    },
+    {
+      "check": "firefly.core.systemEvents: name and responsibility present",
+      "passed": true
+    },
+    {
+      "check": "firefly.core.systemEvents: implementation technology present",
+      "passed": true
+    },
+    {
+      "check": "firefly.core.systemEvents: correct C4 parent",
+      "passed": true
+    },
+    {
+      "check": "firefly.evm: name and responsibility present",
+      "passed": true
+    },
+    {
+      "check": "firefly.evm: implementation technology present",
+      "passed": true
+    },
+    {
+      "check": "firefly.evm: correct C4 parent",
+      "passed": true
+    },
+    {
+      "check": "firefly.evm.api: name and responsibility present",
+      "passed": true
+    },
+    {
+      "check": "firefly.evm.api: implementation technology present",
+      "passed": true
+    },
+    {
+      "check": "firefly.evm.api: correct C4 parent",
+      "passed": true
+    },
+    {
+      "check": "firefly.evm.manager: name and responsibility present",
+      "passed": true
+    },
+    {
+      "check": "firefly.evm.manager: implementation technology present",
+      "passed": true
+    },
+    {
+      "check": "firefly.evm.manager: correct C4 parent",
+      "passed": true
+    },
+    {
+      "check": "firefly.evm.handler: name and responsibility present",
+      "passed": true
+    },
+    {
+      "check": "firefly.evm.handler: implementation technology present",
+      "passed": true
+    },
+    {
+      "check": "firefly.evm.handler: correct C4 parent",
+      "passed": true
+    },
+    {
+      "check": "firefly.evm.nonce: name and responsibility present",
+      "passed": true
+    },
+    {
+      "check": "firefly.evm.nonce: implementation technology present",
+      "passed": true
+    },
+    {
+      "check": "firefly.evm.nonce: correct C4 parent",
+      "passed": true
+    },
+    {
+      "check": "firefly.evm.abi: name and responsibility present",
+      "passed": true
+    },
+    {
+      "check": "firefly.evm.abi: implementation technology present",
+      "passed": true
+    },
+    {
+      "check": "firefly.evm.abi: correct C4 parent",
+      "passed": true
+    },
+    {
+      "check": "firefly.evm.rpc: name and responsibility present",
+      "passed": true
+    },
+    {
+      "check": "firefly.evm.rpc: implementation technology present",
+      "passed": true
+    },
+    {
+      "check": "firefly.evm.rpc: correct C4 parent",
+      "passed": true
+    },
+    {
+      "check": "firefly.evm.blocks: name and responsibility present",
+      "passed": true
+    },
+    {
+      "check": "firefly.evm.blocks: implementation technology present",
+      "passed": true
+    },
+    {
+      "check": "firefly.evm.blocks: correct C4 parent",
+      "passed": true
+    },
+    {
+      "check": "firefly.evm.receipts: name and responsibility present",
+      "passed": true
+    },
+    {
+      "check": "firefly.evm.receipts: implementation technology present",
+      "passed": true
+    },
+    {
+      "check": "firefly.evm.receipts: correct C4 parent",
+      "passed": true
+    },
+    {
+      "check": "firefly.evm.confirmations: name and responsibility present",
+      "passed": true
+    },
+    {
+      "check": "firefly.evm.confirmations: implementation technology present",
+      "passed": true
+    },
+    {
+      "check": "firefly.evm.confirmations: correct C4 parent",
+      "passed": true
+    },
+    {
+      "check": "firefly.evm.streams: name and responsibility present",
+      "passed": true
+    },
+    {
+      "check": "firefly.evm.streams: implementation technology present",
+      "passed": true
+    },
+    {
+      "check": "firefly.evm.streams: correct C4 parent",
+      "passed": true
+    },
+    {
+      "check": "firefly.evm.delivery: name and responsibility present",
+      "passed": true
+    },
+    {
+      "check": "firefly.evm.delivery: implementation technology present",
+      "passed": true
+    },
+    {
+      "check": "firefly.evm.delivery: correct C4 parent",
+      "passed": true
+    },
+    {
+      "check": "firefly.evm.persistence: name and responsibility present",
+      "passed": true
+    },
+    {
+      "check": "firefly.evm.persistence: implementation technology present",
+      "passed": true
+    },
+    {
+      "check": "firefly.evm.persistence: correct C4 parent",
+      "passed": true
+    },
+    {
+      "check": "firefly.evm.postgres: name and responsibility present",
+      "passed": true
+    },
+    {
+      "check": "firefly.evm.postgres: implementation technology present",
+      "passed": true
+    },
+    {
+      "check": "firefly.evm.postgres: correct C4 parent",
+      "passed": true
+    },
+    {
+      "check": "firefly.evm.leveldb: name and responsibility present",
+      "passed": true
+    },
+    {
+      "check": "firefly.evm.leveldb: implementation technology present",
+      "passed": true
+    },
+    {
+      "check": "firefly.evm.leveldb: correct C4 parent",
+      "passed": true
+    },
+    {
+      "check": "firefly.evm.blocklistener: name and responsibility present",
+      "passed": true
+    },
+    {
+      "check": "firefly.evm.blocklistener: implementation technology present",
+      "passed": true
+    },
+    {
+      "check": "firefly.evm.blocklistener: correct C4 parent",
+      "passed": true
+    },
+    {
+      "check": "firefly.evm.metrics: name and responsibility present",
+      "passed": true
+    },
+    {
+      "check": "firefly.evm.metrics: implementation technology present",
+      "passed": true
+    },
+    {
+      "check": "firefly.evm.metrics: correct C4 parent",
+      "passed": true
+    },
+    {
+      "check": "firefly.evm.webhook: name and responsibility present",
+      "passed": true
+    },
+    {
+      "check": "firefly.evm.webhook: implementation technology present",
+      "passed": true
+    },
+    {
+      "check": "firefly.evm.webhook: correct C4 parent",
+      "passed": true
+    },
+    {
+      "check": "firefly.signer: name and responsibility present",
+      "passed": true
+    },
+    {
+      "check": "firefly.signer: implementation technology present",
+      "passed": true
+    },
+    {
+      "check": "firefly.signer: correct C4 parent",
+      "passed": true
+    },
+    {
+      "check": "firefly.signer.proxy: name and responsibility present",
+      "passed": true
+    },
+    {
+      "check": "firefly.signer.proxy: implementation technology present",
+      "passed": true
+    },
+    {
+      "check": "firefly.signer.proxy: correct C4 parent",
+      "passed": true
+    },
+    {
+      "check": "firefly.signer.wallet: name and responsibility present",
+      "passed": true
+    },
+    {
+      "check": "firefly.signer.wallet: implementation technology present",
+      "passed": true
+    },
+    {
+      "check": "firefly.signer.wallet: correct C4 parent",
+      "passed": true
+    },
+    {
+      "check": "firefly.signer.keystore: name and responsibility present",
+      "passed": true
+    },
+    {
+      "check": "firefly.signer.keystore: implementation technology present",
+      "passed": true
+    },
+    {
+      "check": "firefly.signer.keystore: correct C4 parent",
+      "passed": true
+    },
+    {
+      "check": "firefly.signer.signing: name and responsibility present",
+      "passed": true
+    },
+    {
+      "check": "firefly.signer.signing: implementation technology present",
+      "passed": true
+    },
+    {
+      "check": "firefly.signer.signing: correct C4 parent",
+      "passed": true
+    },
+    {
+      "check": "firefly.signer.backend: name and responsibility present",
+      "passed": true
+    },
+    {
+      "check": "firefly.signer.backend: implementation technology present",
+      "passed": true
+    },
+    {
+      "check": "firefly.signer.backend: correct C4 parent",
+      "passed": true
+    },
+    {
+      "check": "firefly.dx: name and responsibility present",
+      "passed": true
+    },
+    {
+      "check": "firefly.dx: implementation technology present",
+      "passed": true
+    },
+    {
+      "check": "firefly.dx: correct C4 parent",
+      "passed": true
+    },
+    {
+      "check": "firefly.dx.api: name and responsibility present",
+      "passed": true
+    },
+    {
+      "check": "firefly.dx.api: implementation technology present",
+      "passed": true
+    },
+    {
+      "check": "firefly.dx.api: correct C4 parent",
+      "passed": true
+    },
+    {
+      "check": "firefly.dx.peers: name and responsibility present",
+      "passed": true
+    },
+    {
+      "check": "firefly.dx.peers: implementation technology present",
+      "passed": true
+    },
+    {
+      "check": "firefly.dx.peers: correct C4 parent",
+      "passed": true
+    },
+    {
+      "check": "firefly.dx.p2p: name and responsibility present",
+      "passed": true
+    },
+    {
+      "check": "firefly.dx.p2p: implementation technology present",
+      "passed": true
+    },
+    {
+      "check": "firefly.dx.p2p: correct C4 parent",
+      "passed": true
+    },
+    {
+      "check": "firefly.dx.messages: name and responsibility present",
+      "passed": true
+    },
+    {
+      "check": "firefly.dx.messages: implementation technology present",
+      "passed": true
+    },
+    {
+      "check": "firefly.dx.messages: correct C4 parent",
+      "passed": true
+    },
+    {
+      "check": "firefly.dx.blobs: name and responsibility present",
+      "passed": true
+    },
+    {
+      "check": "firefly.dx.blobs: implementation technology present",
+      "passed": true
+    },
+    {
+      "check": "firefly.dx.blobs: correct C4 parent",
+      "passed": true
+    },
+    {
+      "check": "firefly.dx.events: name and responsibility present",
+      "passed": true
+    },
+    {
+      "check": "firefly.dx.events: implementation technology present",
+      "passed": true
+    },
+    {
+      "check": "firefly.dx.events: correct C4 parent",
+      "passed": true
+    },
+    {
+      "check": "firefly.erc20: name and responsibility present",
+      "passed": true
+    },
+    {
+      "check": "firefly.erc20: implementation technology present",
+      "passed": true
+    },
+    {
+      "check": "firefly.erc20: correct C4 parent",
+      "passed": true
+    },
+    {
+      "check": "firefly.erc20.api: name and responsibility present",
+      "passed": true
+    },
+    {
+      "check": "firefly.erc20.api: implementation technology present",
+      "passed": true
+    },
+    {
+      "check": "firefly.erc20.api: correct C4 parent",
+      "passed": true
+    },
+    {
+      "check": "firefly.erc20.service: name and responsibility present",
+      "passed": true
+    },
+    {
+      "check": "firefly.erc20.service: implementation technology present",
+      "passed": true
+    },
+    {
+      "check": "firefly.erc20.service: correct C4 parent",
+      "passed": true
+    },
+    {
+      "check": "firefly.erc20.mapper: name and responsibility present",
+      "passed": true
+    },
+    {
+      "check": "firefly.erc20.mapper: implementation technology present",
+      "passed": true
+    },
+    {
+      "check": "firefly.erc20.mapper: correct C4 parent",
+      "passed": true
+    },
+    {
+      "check": "firefly.erc20.blockchain: name and responsibility present",
+      "passed": true
+    },
+    {
+      "check": "firefly.erc20.blockchain: implementation technology present",
+      "passed": true
+    },
+    {
+      "check": "firefly.erc20.blockchain: correct C4 parent",
+      "passed": true
+    },
+    {
+      "check": "firefly.erc20.listener: name and responsibility present",
+      "passed": true
+    },
+    {
+      "check": "firefly.erc20.listener: implementation technology present",
+      "passed": true
+    },
+    {
+      "check": "firefly.erc20.listener: correct C4 parent",
+      "passed": true
+    },
+    {
+      "check": "firefly.erc20.stream: name and responsibility present",
+      "passed": true
+    },
+    {
+      "check": "firefly.erc20.stream: implementation technology present",
+      "passed": true
+    },
+    {
+      "check": "firefly.erc20.stream: correct C4 parent",
+      "passed": true
+    },
+    {
+      "check": "firefly.erc20.proxy: name and responsibility present",
+      "passed": true
+    },
+    {
+      "check": "firefly.erc20.proxy: implementation technology present",
+      "passed": true
+    },
+    {
+      "check": "firefly.erc20.proxy: correct C4 parent",
+      "passed": true
+    },
+    {
+      "check": "firefly.erc1155: name and responsibility present",
+      "passed": true
+    },
+    {
+      "check": "firefly.erc1155: implementation technology present",
+      "passed": true
+    },
+    {
+      "check": "firefly.erc1155: correct C4 parent",
+      "passed": true
+    },
+    {
+      "check": "firefly.erc1155.api: name and responsibility present",
+      "passed": true
+    },
+    {
+      "check": "firefly.erc1155.api: implementation technology present",
+      "passed": true
+    },
+    {
+      "check": "firefly.erc1155.api: correct C4 parent",
+      "passed": true
+    },
+    {
+      "check": "firefly.erc1155.service: name and responsibility present",
+      "passed": true
+    },
+    {
+      "check": "firefly.erc1155.service: implementation technology present",
+      "passed": true
+    },
+    {
+      "check": "firefly.erc1155.service: correct C4 parent",
+      "passed": true
+    },
+    {
+      "check": "firefly.erc1155.mapper: name and responsibility present",
+      "passed": true
+    },
+    {
+      "check": "firefly.erc1155.mapper: implementation technology present",
+      "passed": true
+    },
+    {
+      "check": "firefly.erc1155.mapper: correct C4 parent",
+      "passed": true
+    },
+    {
+      "check": "firefly.erc1155.blockchain: name and responsibility present",
+      "passed": true
+    },
+    {
+      "check": "firefly.erc1155.blockchain: implementation technology present",
+      "passed": true
+    },
+    {
+      "check": "firefly.erc1155.blockchain: correct C4 parent",
+      "passed": true
+    },
+    {
+      "check": "firefly.erc1155.listener: name and responsibility present",
+      "passed": true
+    },
+    {
+      "check": "firefly.erc1155.listener: implementation technology present",
+      "passed": true
+    },
+    {
+      "check": "firefly.erc1155.listener: correct C4 parent",
+      "passed": true
+    },
+    {
+      "check": "firefly.erc1155.stream: name and responsibility present",
+      "passed": true
+    },
+    {
+      "check": "firefly.erc1155.stream: implementation technology present",
+      "passed": true
+    },
+    {
+      "check": "firefly.erc1155.stream: correct C4 parent",
+      "passed": true
+    },
+    {
+      "check": "firefly.erc1155.proxy: name and responsibility present",
+      "passed": true
+    },
+    {
+      "check": "firefly.erc1155.proxy: implementation technology present",
+      "passed": true
+    },
+    {
+      "check": "firefly.erc1155.proxy: correct C4 parent",
+      "passed": true
+    },
+    {
+      "check": "firefly.ipfs: name and responsibility present",
+      "passed": true
+    },
+    {
+      "check": "firefly.ipfs: implementation technology present",
+      "passed": true
+    },
+    {
+      "check": "firefly.ipfs: correct C4 parent",
+      "passed": true
+    },
+    {
+      "check": "firefly.pg: name and responsibility present",
+      "passed": true
+    },
+    {
+      "check": "firefly.pg: implementation technology present",
+      "passed": true
+    },
+    {
+      "check": "firefly.pg: correct C4 parent",
+      "passed": true
+    },
+    {
+      "check": "firefly.pgReplica: name and responsibility present",
+      "passed": true
+    },
+    {
+      "check": "firefly.pgReplica: implementation technology present",
+      "passed": true
+    },
+    {
+      "check": "firefly.pgReplica: correct C4 parent",
+      "passed": true
+    },
+    {
+      "check": "firefly.blobs: name and responsibility present",
+      "passed": true
+    },
+    {
+      "check": "firefly.blobs: implementation technology present",
+      "passed": true
+    },
+    {
+      "check": "firefly.blobs: correct C4 parent",
+      "passed": true
+    },
+    {
+      "check": "firefly.ipfsRepo: name and responsibility present",
+      "passed": true
+    },
+    {
+      "check": "firefly.ipfsRepo: implementation technology present",
+      "passed": true
+    },
+    {
+      "check": "firefly.ipfsRepo: correct C4 parent",
+      "passed": true
+    },
+    {
+      "check": "firefly.secrets: name and responsibility present",
+      "passed": true
+    },
+    {
+      "check": "firefly.secrets: implementation technology present",
+      "passed": true
+    },
+    {
+      "check": "firefly.secrets: correct C4 parent",
+      "passed": true
+    },
+    {
+      "check": "firefly.sqlite: name and responsibility present",
+      "passed": true
+    },
+    {
+      "check": "firefly.sqlite: implementation technology present",
+      "passed": true
+    },
+    {
+      "check": "firefly.sqlite: correct C4 parent",
+      "passed": true
+    },
+    {
+      "check": "firefly.leveldb: name and responsibility present",
+      "passed": true
+    },
+    {
+      "check": "firefly.leveldb: implementation technology present",
+      "passed": true
+    },
+    {
+      "check": "firefly.leveldb: correct C4 parent",
+      "passed": true
+    },
+    {
+      "check": "firefly.ethconnect: name and responsibility present",
+      "passed": true
+    },
+    {
+      "check": "firefly.ethconnect: implementation technology present",
+      "passed": true
+    },
+    {
+      "check": "firefly.ethconnect: correct C4 parent",
+      "passed": true
+    },
+    {
+      "check": "firefly.ethconnect.rest: name and responsibility present",
+      "passed": true
+    },
+    {
+      "check": "firefly.ethconnect.rest: implementation technology present",
+      "passed": true
+    },
+    {
+      "check": "firefly.ethconnect.rest: correct C4 parent",
+      "passed": true
+    },
+    {
+      "check": "firefly.ethconnect.auth: name and responsibility present",
+      "passed": true
+    },
+    {
+      "check": "firefly.ethconnect.auth: implementation technology present",
+      "passed": true
+    },
+    {
+      "check": "firefly.ethconnect.auth: correct C4 parent",
+      "passed": true
+    },
+    {
+      "check": "firefly.ethconnect.contracts: name and responsibility present",
+      "passed": true
+    },
+    {
+      "check": "firefly.ethconnect.contracts: implementation technology present",
+      "passed": true
+    },
+    {
+      "check": "firefly.ethconnect.contracts: correct C4 parent",
+      "passed": true
+    },
+    {
+      "check": "firefly.ethconnect.registry: name and responsibility present",
+      "passed": true
+    },
+    {
+      "check": "firefly.ethconnect.registry: implementation technology present",
+      "passed": true
+    },
+    {
+      "check": "firefly.ethconnect.registry: correct C4 parent",
+      "passed": true
+    },
+    {
+      "check": "firefly.ethconnect.openapi: name and responsibility present",
+      "passed": true
+    },
+    {
+      "check": "firefly.ethconnect.openapi: implementation technology present",
+      "passed": true
+    },
+    {
+      "check": "firefly.ethconnect.openapi: correct C4 parent",
+      "passed": true
+    },
+    {
+      "check": "firefly.ethconnect.transactions: name and responsibility present",
+      "passed": true
+    },
+    {
+      "check": "firefly.ethconnect.transactions: implementation technology present",
+      "passed": true
+    },
+    {
+      "check": "firefly.ethconnect.transactions: correct C4 parent",
+      "passed": true
+    },
+    {
+      "check": "firefly.ethconnect.rpc: name and responsibility present",
+      "passed": true
+    },
+    {
+      "check": "firefly.ethconnect.rpc: implementation technology present",
+      "passed": true
+    },
+    {
+      "check": "firefly.ethconnect.rpc: correct C4 parent",
+      "passed": true
+    },
+    {
+      "check": "firefly.ethconnect.events: name and responsibility present",
+      "passed": true
+    },
+    {
+      "check": "firefly.ethconnect.events: implementation technology present",
+      "passed": true
+    },
+    {
+      "check": "firefly.ethconnect.events: correct C4 parent",
+      "passed": true
+    },
+    {
+      "check": "firefly.ethconnect.websockets: name and responsibility present",
+      "passed": true
+    },
+    {
+      "check": "firefly.ethconnect.websockets: implementation technology present",
+      "passed": true
+    },
+    {
+      "check": "firefly.ethconnect.websockets: correct C4 parent",
+      "passed": true
+    },
+    {
+      "check": "firefly.ethconnect.kafka: name and responsibility present",
+      "passed": true
+    },
+    {
+      "check": "firefly.ethconnect.kafka: implementation technology present",
+      "passed": true
+    },
+    {
+      "check": "firefly.ethconnect.kafka: correct C4 parent",
+      "passed": true
+    },
+    {
+      "check": "firefly.ethconnect.receipts: name and responsibility present",
+      "passed": true
+    },
+    {
+      "check": "firefly.ethconnect.receipts: implementation technology present",
+      "passed": true
+    },
+    {
+      "check": "firefly.ethconnect.receipts: correct C4 parent",
+      "passed": true
+    },
+    {
+      "check": "firefly.ethconnect.kv: name and responsibility present",
+      "passed": true
+    },
+    {
+      "check": "firefly.ethconnect.kv: implementation technology present",
+      "passed": true
+    },
+    {
+      "check": "firefly.ethconnect.kv: correct C4 parent",
+      "passed": true
+    },
+    {
+      "check": "firefly.ethconnectState: name and responsibility present",
+      "passed": true
+    },
+    {
+      "check": "firefly.ethconnectState: implementation technology present",
+      "passed": true
+    },
+    {
+      "check": "firefly.ethconnectState: correct C4 parent",
+      "passed": true
+    },
+    {
+      "check": "firefly.fabconnect: name and responsibility present",
+      "passed": true
+    },
+    {
+      "check": "firefly.fabconnect: implementation technology present",
+      "passed": true
+    },
+    {
+      "check": "firefly.fabconnect: correct C4 parent",
+      "passed": true
+    },
+    {
+      "check": "firefly.fabconnect.rest: name and responsibility present",
+      "passed": true
+    },
+    {
+      "check": "firefly.fabconnect.rest: implementation technology present",
+      "passed": true
+    },
+    {
+      "check": "firefly.fabconnect.rest: correct C4 parent",
+      "passed": true
+    },
+    {
+      "check": "firefly.fabconnect.auth: name and responsibility present",
+      "passed": true
+    },
+    {
+      "check": "firefly.fabconnect.auth: implementation technology present",
+      "passed": true
+    },
+    {
+      "check": "firefly.fabconnect.auth: correct C4 parent",
+      "passed": true
+    },
+    {
+      "check": "firefly.fabconnect.identity: name and responsibility present",
+      "passed": true
+    },
+    {
+      "check": "firefly.fabconnect.identity: implementation technology present",
+      "passed": true
+    },
+    {
+      "check": "firefly.fabconnect.identity: correct C4 parent",
+      "passed": true
+    },
+    {
+      "check": "firefly.fabconnect.transactions: name and responsibility present",
+      "passed": true
+    },
+    {
+      "check": "firefly.fabconnect.transactions: implementation technology present",
+      "passed": true
+    },
+    {
+      "check": "firefly.fabconnect.transactions: correct C4 parent",
+      "passed": true
+    },
+    {
+      "check": "firefly.fabconnect.client: name and responsibility present",
+      "passed": true
+    },
+    {
+      "check": "firefly.fabconnect.client: implementation technology present",
+      "passed": true
+    },
+    {
+      "check": "firefly.fabconnect.client: correct C4 parent",
+      "passed": true
+    },
+    {
+      "check": "firefly.fabconnect.events: name and responsibility present",
+      "passed": true
+    },
+    {
+      "check": "firefly.fabconnect.events: implementation technology present",
+      "passed": true
+    },
+    {
+      "check": "firefly.fabconnect.events: correct C4 parent",
+      "passed": true
+    },
+    {
+      "check": "firefly.fabconnect.websockets: name and responsibility present",
+      "passed": true
+    },
+    {
+      "check": "firefly.fabconnect.websockets: implementation technology present",
+      "passed": true
+    },
+    {
+      "check": "firefly.fabconnect.websockets: correct C4 parent",
+      "passed": true
+    },
+    {
+      "check": "firefly.fabconnect.kafka: name and responsibility present",
+      "passed": true
+    },
+    {
+      "check": "firefly.fabconnect.kafka: implementation technology present",
+      "passed": true
+    },
+    {
+      "check": "firefly.fabconnect.kafka: correct C4 parent",
+      "passed": true
+    },
+    {
+      "check": "firefly.fabconnect.receipts: name and responsibility present",
+      "passed": true
+    },
+    {
+      "check": "firefly.fabconnect.receipts: implementation technology present",
+      "passed": true
+    },
+    {
+      "check": "firefly.fabconnect.receipts: correct C4 parent",
+      "passed": true
+    },
+    {
+      "check": "firefly.fabconnect.kv: name and responsibility present",
+      "passed": true
+    },
+    {
+      "check": "firefly.fabconnect.kv: implementation technology present",
+      "passed": true
+    },
+    {
+      "check": "firefly.fabconnect.kv: correct C4 parent",
+      "passed": true
+    },
+    {
+      "check": "firefly.fabricState: name and responsibility present",
+      "passed": true
+    },
+    {
+      "check": "firefly.fabricState: implementation technology present",
+      "passed": true
+    },
+    {
+      "check": "firefly.fabricState: correct C4 parent",
+      "passed": true
+    },
+    {
+      "check": "firefly.tezosconnect: name and responsibility present",
+      "passed": true
+    },
+    {
+      "check": "firefly.tezosconnect: implementation technology present",
+      "passed": true
+    },
+    {
+      "check": "firefly.tezosconnect: correct C4 parent",
+      "passed": true
+    },
+    {
+      "check": "firefly.tezosconnect.api: name and responsibility present",
+      "passed": true
+    },
+    {
+      "check": "firefly.tezosconnect.api: implementation technology present",
+      "passed": true
+    },
+    {
+      "check": "firefly.tezosconnect.api: correct C4 parent",
+      "passed": true
+    },
+    {
+      "check": "firefly.tezosconnect.policy: name and responsibility present",
+      "passed": true
+    },
+    {
+      "check": "firefly.tezosconnect.policy: implementation technology present",
+      "passed": true
+    },
+    {
+      "check": "firefly.tezosconnect.policy: correct C4 parent",
+      "passed": true
+    },
+    {
+      "check": "firefly.tezosconnect.adapter: name and responsibility present",
+      "passed": true
+    },
+    {
+      "check": "firefly.tezosconnect.adapter: implementation technology present",
+      "passed": true
+    },
+    {
+      "check": "firefly.tezosconnect.adapter: correct C4 parent",
+      "passed": true
+    },
+    {
+      "check": "firefly.tezosconnect.signing: name and responsibility present",
+      "passed": true
+    },
+    {
+      "check": "firefly.tezosconnect.signing: implementation technology present",
+      "passed": true
+    },
+    {
+      "check": "firefly.tezosconnect.signing: correct C4 parent",
+      "passed": true
+    },
+    {
+      "check": "firefly.tezosconnect.blocks: name and responsibility present",
+      "passed": true
+    },
+    {
+      "check": "firefly.tezosconnect.blocks: implementation technology present",
+      "passed": true
+    },
+    {
+      "check": "firefly.tezosconnect.blocks: correct C4 parent",
+      "passed": true
+    },
+    {
+      "check": "firefly.tezosconnect.events: name and responsibility present",
+      "passed": true
+    },
+    {
+      "check": "firefly.tezosconnect.events: implementation technology present",
+      "passed": true
+    },
+    {
+      "check": "firefly.tezosconnect.events: correct C4 parent",
+      "passed": true
+    },
+    {
+      "check": "firefly.tezosconnect.streams: name and responsibility present",
+      "passed": true
+    },
+    {
+      "check": "firefly.tezosconnect.streams: implementation technology present",
+      "passed": true
+    },
+    {
+      "check": "firefly.tezosconnect.streams: correct C4 parent",
+      "passed": true
+    },
+    {
+      "check": "firefly.tezosconnect.persistence: name and responsibility present",
+      "passed": true
+    },
+    {
+      "check": "firefly.tezosconnect.persistence: implementation technology present",
+      "passed": true
+    },
+    {
+      "check": "firefly.tezosconnect.persistence: correct C4 parent",
+      "passed": true
+    },
+    {
+      "check": "firefly.tezosState: name and responsibility present",
+      "passed": true
+    },
+    {
+      "check": "firefly.tezosState: implementation technology present",
+      "passed": true
+    },
+    {
+      "check": "firefly.tezosState: correct C4 parent",
+      "passed": true
+    },
+    {
+      "check": "firefly.cardanoconnect: name and responsibility present",
+      "passed": true
+    },
+    {
+      "check": "firefly.cardanoconnect: implementation technology present",
+      "passed": true
+    },
+    {
+      "check": "firefly.cardanoconnect: correct C4 parent",
+      "passed": true
+    },
+    {
+      "check": "firefly.cardanoconnect.api: name and responsibility present",
+      "passed": true
+    },
+    {
+      "check": "firefly.cardanoconnect.api: implementation technology present",
+      "passed": true
+    },
+    {
+      "check": "firefly.cardanoconnect.api: correct C4 parent",
+      "passed": true
+    },
+    {
+      "check": "firefly.cardanoconnect.operations: name and responsibility present",
+      "passed": true
+    },
+    {
+      "check": "firefly.cardanoconnect.operations: implementation technology present",
+      "passed": true
+    },
+    {
+      "check": "firefly.cardanoconnect.operations: correct C4 parent",
+      "passed": true
+    },
+    {
+      "check": "firefly.cardanoconnect.blockchain: name and responsibility present",
+      "passed": true
+    },
+    {
+      "check": "firefly.cardanoconnect.blockchain: implementation technology present",
+      "passed": true
+    },
+    {
+      "check": "firefly.cardanoconnect.blockchain: correct C4 parent",
+      "passed": true
+    },
+    {
+      "check": "firefly.cardanoconnect.blockfrost: name and responsibility present",
+      "passed": true
+    },
+    {
+      "check": "firefly.cardanoconnect.blockfrost: implementation technology present",
+      "passed": true
+    },
+    {
+      "check": "firefly.cardanoconnect.blockfrost: correct C4 parent",
+      "passed": true
+    },
+    {
+      "check": "firefly.cardanoconnect.n2c: name and responsibility present",
+      "passed": true
+    },
+    {
+      "check": "firefly.cardanoconnect.n2c: implementation technology present",
+      "passed": true
+    },
+    {
+      "check": "firefly.cardanoconnect.n2c: correct C4 parent",
+      "passed": true
+    },
+    {
+      "check": "firefly.cardanoconnect.signer: name and responsibility present",
+      "passed": true
+    },
+    {
+      "check": "firefly.cardanoconnect.signer: implementation technology present",
+      "passed": true
+    },
+    {
+      "check": "firefly.cardanoconnect.signer: correct C4 parent",
+      "passed": true
+    },
+    {
+      "check": "firefly.cardanoconnect.contracts: name and responsibility present",
+      "passed": true
+    },
+    {
+      "check": "firefly.cardanoconnect.contracts: implementation technology present",
+      "passed": true
+    },
+    {
+      "check": "firefly.cardanoconnect.contracts: correct C4 parent",
+      "passed": true
+    },
+    {
+      "check": "firefly.cardanoconnect.balius: name and responsibility present",
+      "passed": true
+    },
+    {
+      "check": "firefly.cardanoconnect.balius: implementation technology present",
+      "passed": true
+    },
+    {
+      "check": "firefly.cardanoconnect.balius: correct C4 parent",
+      "passed": true
+    },
+    {
+      "check": "firefly.cardanoconnect.streams: name and responsibility present",
+      "passed": true
+    },
+    {
+      "check": "firefly.cardanoconnect.streams: implementation technology present",
+      "passed": true
+    },
+    {
+      "check": "firefly.cardanoconnect.streams: correct C4 parent",
+      "passed": true
+    },
+    {
+      "check": "firefly.cardanoconnect.persistence: name and responsibility present",
+      "passed": true
+    },
+    {
+      "check": "firefly.cardanoconnect.persistence: implementation technology present",
+      "passed": true
+    },
+    {
+      "check": "firefly.cardanoconnect.persistence: correct C4 parent",
+      "passed": true
+    },
+    {
+      "check": "firefly.cardanoconnect.server: name and responsibility present",
+      "passed": true
+    },
+    {
+      "check": "firefly.cardanoconnect.server: implementation technology present",
+      "passed": true
+    },
+    {
+      "check": "firefly.cardanoconnect.server: correct C4 parent",
+      "passed": true
+    },
+    {
+      "check": "firefly.cardanosigner: name and responsibility present",
+      "passed": true
+    },
+    {
+      "check": "firefly.cardanosigner: implementation technology present",
+      "passed": true
+    },
+    {
+      "check": "firefly.cardanosigner: correct C4 parent",
+      "passed": true
+    },
+    {
+      "check": "firefly.cardanosigner.api: name and responsibility present",
+      "passed": true
+    },
+    {
+      "check": "firefly.cardanosigner.api: implementation technology present",
+      "passed": true
+    },
+    {
+      "check": "firefly.cardanosigner.api: correct C4 parent",
+      "passed": true
+    },
+    {
+      "check": "firefly.cardanosigner.keys: name and responsibility present",
+      "passed": true
+    },
+    {
+      "check": "firefly.cardanosigner.keys: implementation technology present",
+      "passed": true
+    },
+    {
+      "check": "firefly.cardanosigner.keys: correct C4 parent",
+      "passed": true
+    },
+    {
+      "check": "firefly.cardanosigner.crypto: name and responsibility present",
+      "passed": true
+    },
+    {
+      "check": "firefly.cardanosigner.crypto: implementation technology present",
+      "passed": true
+    },
+    {
+      "check": "firefly.cardanosigner.crypto: correct C4 parent",
+      "passed": true
+    },
+    {
+      "check": "firefly.cardanosigner.server: name and responsibility present",
+      "passed": true
+    },
+    {
+      "check": "firefly.cardanosigner.server: implementation technology present",
+      "passed": true
+    },
+    {
+      "check": "firefly.cardanosigner.server: correct C4 parent",
+      "passed": true
+    },
+    {
+      "check": "firefly.cardanoState: name and responsibility present",
+      "passed": true
+    },
+    {
+      "check": "firefly.cardanoState: implementation technology present",
+      "passed": true
+    },
+    {
+      "check": "firefly.cardanoState: correct C4 parent",
+      "passed": true
+    },
+    {
+      "check": "firefly.cardanoKeys: name and responsibility present",
+      "passed": true
+    },
+    {
+      "check": "firefly.cardanoKeys: implementation technology present",
+      "passed": true
+    },
+    {
+      "check": "firefly.cardanoKeys: correct C4 parent",
+      "passed": true
+    },
+    {
+      "check": "firefly.cordaconnect: name and responsibility present",
+      "passed": true
+    },
+    {
+      "check": "firefly.cordaconnect: implementation technology present",
+      "passed": true
+    },
+    {
+      "check": "firefly.cordaconnect: correct C4 parent",
+      "passed": true
+    },
+    {
+      "check": "firefly.cordaconnect.api: name and responsibility present",
+      "passed": true
+    },
+    {
+      "check": "firefly.cordaconnect.api: implementation technology present",
+      "passed": true
+    },
+    {
+      "check": "firefly.cordaconnect.api: correct C4 parent",
+      "passed": true
+    },
+    {
+      "check": "firefly.cordaconnect.flows: name and responsibility present",
+      "passed": true
+    },
+    {
+      "check": "firefly.cordaconnect.flows: implementation technology present",
+      "passed": true
+    },
+    {
+      "check": "firefly.cordaconnect.flows: correct C4 parent",
+      "passed": true
+    },
+    {
+      "check": "firefly.cordaconnect.events: name and responsibility present",
+      "passed": true
+    },
+    {
+      "check": "firefly.cordaconnect.events: implementation technology present",
+      "passed": true
+    },
+    {
+      "check": "firefly.cordaconnect.events: correct C4 parent",
+      "passed": true
+    },
+    {
+      "check": "firefly.cordaconnect.websockets: name and responsibility present",
+      "passed": true
+    },
+    {
+      "check": "firefly.cordaconnect.websockets: implementation technology present",
+      "passed": true
+    },
+    {
+      "check": "firefly.cordaconnect.websockets: correct C4 parent",
+      "passed": true
+    },
+    {
+      "check": "firefly.cordaconnect.persistence: name and responsibility present",
+      "passed": true
+    },
+    {
+      "check": "firefly.cordaconnect.persistence: implementation technology present",
+      "passed": true
+    },
+    {
+      "check": "firefly.cordaconnect.persistence: correct C4 parent",
+      "passed": true
+    },
+    {
+      "check": "firefly.cordaState: name and responsibility present",
+      "passed": true
+    },
+    {
+      "check": "firefly.cordaState: implementation technology present",
+      "passed": true
+    },
+    {
+      "check": "firefly.cordaState: correct C4 parent",
+      "passed": true
+    },
+    {
+      "check": "besu: name and responsibility present",
+      "passed": true
+    },
+    {
+      "check": "besu.node: name and responsibility present",
+      "passed": true
+    },
+    {
+      "check": "besu.node: implementation technology present",
+      "passed": true
+    },
+    {
+      "check": "besu.node: correct C4 parent",
+      "passed": true
+    },
+    {
+      "check": "besu.node.rpc: name and responsibility present",
+      "passed": true
+    },
+    {
+      "check": "besu.node.rpc: implementation technology present",
+      "passed": true
+    },
+    {
+      "check": "besu.node.rpc: correct C4 parent",
+      "passed": true
+    },
+    {
+      "check": "besu.node.permissioning: name and responsibility present",
+      "passed": true
+    },
+    {
+      "check": "besu.node.permissioning: implementation technology present",
+      "passed": true
+    },
+    {
+      "check": "besu.node.permissioning: correct C4 parent",
+      "passed": true
+    },
+    {
+      "check": "besu.node.discovery: name and responsibility present",
+      "passed": true
+    },
+    {
+      "check": "besu.node.discovery: implementation technology present",
+      "passed": true
+    },
+    {
+      "check": "besu.node.discovery: correct C4 parent",
+      "passed": true
+    },
+    {
+      "check": "besu.node.p2p: name and responsibility present",
+      "passed": true
+    },
+    {
+      "check": "besu.node.p2p: implementation technology present",
+      "passed": true
+    },
+    {
+      "check": "besu.node.p2p: correct C4 parent",
+      "passed": true
+    },
+    {
+      "check": "besu.node.txpool: name and responsibility present",
+      "passed": true
+    },
+    {
+      "check": "besu.node.txpool: implementation technology present",
+      "passed": true
+    },
+    {
+      "check": "besu.node.txpool: correct C4 parent",
+      "passed": true
+    },
+    {
+      "check": "besu.node.sync: name and responsibility present",
+      "passed": true
+    },
+    {
+      "check": "besu.node.sync: implementation technology present",
+      "passed": true
+    },
+    {
+      "check": "besu.node.sync: correct C4 parent",
+      "passed": true
+    },
+    {
+      "check": "besu.node.blockprocessor: name and responsibility present",
+      "passed": true
+    },
+    {
+      "check": "besu.node.blockprocessor: implementation technology present",
+      "passed": true
+    },
+    {
+      "check": "besu.node.blockprocessor: correct C4 parent",
+      "passed": true
+    },
+    {
+      "check": "besu.node.qbft: name and responsibility present",
+      "passed": true
+    },
+    {
+      "check": "besu.node.qbft: implementation technology present",
+      "passed": true
+    },
+    {
+      "check": "besu.node.qbft: correct C4 parent",
+      "passed": true
+    },
+    {
+      "check": "besu.node.evm: name and responsibility present",
+      "passed": true
+    },
+    {
+      "check": "besu.node.evm: implementation technology present",
+      "passed": true
+    },
+    {
+      "check": "besu.node.evm: correct C4 parent",
+      "passed": true
+    },
+    {
+      "check": "besu.node.worldstate: name and responsibility present",
+      "passed": true
+    },
+    {
+      "check": "besu.node.worldstate: implementation technology present",
+      "passed": true
+    },
+    {
+      "check": "besu.node.worldstate: correct C4 parent",
+      "passed": true
+    },
+    {
+      "check": "besu.node.storage: name and responsibility present",
+      "passed": true
+    },
+    {
+      "check": "besu.node.storage: implementation technology present",
+      "passed": true
+    },
+    {
+      "check": "besu.node.storage: correct C4 parent",
+      "passed": true
+    },
+    {
+      "check": "besu.node.keys: name and responsibility present",
+      "passed": true
+    },
+    {
+      "check": "besu.node.keys: implementation technology present",
+      "passed": true
+    },
+    {
+      "check": "besu.node.keys: correct C4 parent",
+      "passed": true
+    },
+    {
+      "check": "besu.node.metrics: name and responsibility present",
+      "passed": true
+    },
+    {
+      "check": "besu.node.metrics: implementation technology present",
+      "passed": true
+    },
+    {
+      "check": "besu.node.metrics: correct C4 parent",
+      "passed": true
+    },
+    {
+      "check": "besu.node.fireflycontract: name and responsibility present",
+      "passed": true
+    },
+    {
+      "check": "besu.node.fireflycontract: implementation technology present",
+      "passed": true
+    },
+    {
+      "check": "besu.node.fireflycontract: correct C4 parent",
+      "passed": true
+    },
+    {
+      "check": "besu.node.tokencontracts: name and responsibility present",
+      "passed": true
+    },
+    {
+      "check": "besu.node.tokencontracts: implementation technology present",
+      "passed": true
+    },
+    {
+      "check": "besu.node.tokencontracts: correct C4 parent",
+      "passed": true
+    },
+    {
+      "check": "besu.node.businesscontracts: name and responsibility present",
+      "passed": true
+    },
+    {
+      "check": "besu.node.businesscontracts: implementation technology present",
+      "passed": true
+    },
+    {
+      "check": "besu.node.businesscontracts: correct C4 parent",
+      "passed": true
+    },
+    {
+      "check": "apps: name and responsibility present",
+      "passed": true
+    },
+    {
+      "check": "apps.client: name and responsibility present",
+      "passed": true
+    },
+    {
+      "check": "apps.client: implementation technology present",
+      "passed": true
+    },
+    {
+      "check": "apps.client: correct C4 parent",
+      "passed": true
+    },
+    {
+      "check": "tools: name and responsibility present",
+      "passed": true
+    },
+    {
+      "check": "tools.cli: name and responsibility present",
+      "passed": true
+    },
+    {
+      "check": "tools.cli: implementation technology present",
+      "passed": true
+    },
+    {
+      "check": "tools.cli: correct C4 parent",
+      "passed": true
+    },
+    {
+      "check": "tools.cli.commands: name and responsibility present",
+      "passed": true
+    },
+    {
+      "check": "tools.cli.commands: implementation technology present",
+      "passed": true
+    },
+    {
+      "check": "tools.cli.commands: correct C4 parent",
+      "passed": true
+    },
+    {
+      "check": "tools.cli.stacks: name and responsibility present",
+      "passed": true
+    },
+    {
+      "check": "tools.cli.stacks: implementation technology present",
+      "passed": true
+    },
+    {
+      "check": "tools.cli.stacks: correct C4 parent",
+      "passed": true
+    },
+    {
+      "check": "tools.cli.docker: name and responsibility present",
+      "passed": true
+    },
+    {
+      "check": "tools.cli.docker: implementation technology present",
+      "passed": true
+    },
+    {
+      "check": "tools.cli.docker: correct C4 parent",
+      "passed": true
+    },
+    {
+      "check": "tools.cli.blockchains: name and responsibility present",
+      "passed": true
+    },
+    {
+      "check": "tools.cli.blockchains: implementation technology present",
+      "passed": true
+    },
+    {
+      "check": "tools.cli.blockchains: correct C4 parent",
+      "passed": true
+    },
+    {
+      "check": "tools.cli.tokens: name and responsibility present",
+      "passed": true
+    },
+    {
+      "check": "tools.cli.tokens: implementation technology present",
+      "passed": true
+    },
+    {
+      "check": "tools.cli.tokens: correct C4 parent",
+      "passed": true
+    },
+    {
+      "check": "tools.cli.core: name and responsibility present",
+      "passed": true
+    },
+    {
+      "check": "tools.cli.core: implementation technology present",
+      "passed": true
+    },
+    {
+      "check": "tools.cli.core: correct C4 parent",
+      "passed": true
+    },
+    {
+      "check": "tools.sandbox: name and responsibility present",
+      "passed": true
+    },
+    {
+      "check": "tools.sandbox: implementation technology present",
+      "passed": true
+    },
+    {
+      "check": "tools.sandbox: correct C4 parent",
+      "passed": true
+    },
+    {
+      "check": "tools.sandbox.frontend: name and responsibility present",
+      "passed": true
+    },
+    {
+      "check": "tools.sandbox.frontend: implementation technology present",
+      "passed": true
+    },
+    {
+      "check": "tools.sandbox.frontend: correct C4 parent",
+      "passed": true
+    },
+    {
+      "check": "tools.sandbox.backend: name and responsibility present",
+      "passed": true
+    },
+    {
+      "check": "tools.sandbox.backend: implementation technology present",
+      "passed": true
+    },
+    {
+      "check": "tools.sandbox.backend: correct C4 parent",
+      "passed": true
+    },
+    {
+      "check": "tools.sandbox.sdk: name and responsibility present",
+      "passed": true
+    },
+    {
+      "check": "tools.sandbox.sdk: implementation technology present",
+      "passed": true
+    },
+    {
+      "check": "tools.sandbox.sdk: correct C4 parent",
+      "passed": true
+    },
+    {
+      "check": "tools.sandbox.sdkHttp: name and responsibility present",
+      "passed": true
+    },
+    {
+      "check": "tools.sandbox.sdkHttp: implementation technology present",
+      "passed": true
+    },
+    {
+      "check": "tools.sandbox.sdkHttp: correct C4 parent",
+      "passed": true
+    },
+    {
+      "check": "tools.sandbox.sdkEvents: name and responsibility present",
+      "passed": true
+    },
+    {
+      "check": "tools.sandbox.sdkEvents: implementation technology present",
+      "passed": true
+    },
+    {
+      "check": "tools.sandbox.sdkEvents: correct C4 parent",
+      "passed": true
+    },
+    {
+      "check": "tools.perf: name and responsibility present",
+      "passed": true
+    },
+    {
+      "check": "tools.perf: implementation technology present",
+      "passed": true
+    },
+    {
+      "check": "tools.perf: correct C4 parent",
+      "passed": true
+    },
+    {
+      "check": "tools.perf.commands: name and responsibility present",
+      "passed": true
+    },
+    {
+      "check": "tools.perf.commands: implementation technology present",
+      "passed": true
+    },
+    {
+      "check": "tools.perf.commands: correct C4 parent",
+      "passed": true
+    },
+    {
+      "check": "tools.perf.runner: name and responsibility present",
+      "passed": true
+    },
+    {
+      "check": "tools.perf.runner: implementation technology present",
+      "passed": true
+    },
+    {
+      "check": "tools.perf.runner: correct C4 parent",
+      "passed": true
+    },
+    {
+      "check": "tools.perf.server: name and responsibility present",
+      "passed": true
+    },
+    {
+      "check": "tools.perf.server: implementation technology present",
+      "passed": true
+    },
+    {
+      "check": "tools.perf.server: correct C4 parent",
+      "passed": true
+    },
+    {
+      "check": "tools.perf.report: name and responsibility present",
+      "passed": true
+    },
+    {
+      "check": "tools.perf.report: implementation technology present",
+      "passed": true
+    },
+    {
+      "check": "tools.perf.report: correct C4 parent",
+      "passed": true
+    },
+    {
+      "check": "tools.eventAudit: name and responsibility present",
+      "passed": true
+    },
+    {
+      "check": "tools.eventAudit: implementation technology present",
+      "passed": true
+    },
+    {
+      "check": "tools.eventAudit: correct C4 parent",
+      "passed": true
+    },
+    {
+      "check": "tools.eventAudit.reader: name and responsibility present",
+      "passed": true
+    },
+    {
+      "check": "tools.eventAudit.reader: implementation technology present",
+      "passed": true
+    },
+    {
+      "check": "tools.eventAudit.reader: correct C4 parent",
+      "passed": true
+    },
+    {
+      "check": "tools.eventAudit.ordering: name and responsibility present",
+      "passed": true
+    },
+    {
+      "check": "tools.eventAudit.ordering: implementation technology present",
+      "passed": true
+    },
+    {
+      "check": "tools.eventAudit.ordering: correct C4 parent",
+      "passed": true
+    },
+    {
+      "check": "tools.config: name and responsibility present",
+      "passed": true
+    },
+    {
+      "check": "tools.config: implementation technology present",
+      "passed": true
+    },
+    {
+      "check": "tools.config: correct C4 parent",
+      "passed": true
+    },
+    {
+      "check": "tools.config.commands: name and responsibility present",
+      "passed": true
+    },
+    {
+      "check": "tools.config.commands: implementation technology present",
+      "passed": true
+    },
+    {
+      "check": "tools.config.commands: correct C4 parent",
+      "passed": true
+    },
+    {
+      "check": "tools.config.migration: name and responsibility present",
+      "passed": true
+    },
+    {
+      "check": "tools.config.migration: implementation technology present",
+      "passed": true
+    },
+    {
+      "check": "tools.config.migration: correct C4 parent",
+      "passed": true
+    },
+    {
+      "check": "ops: name and responsibility present",
+      "passed": true
+    },
+    {
+      "check": "ops.gateway: name and responsibility present",
+      "passed": true
+    },
+    {
+      "check": "ops.gateway: implementation technology present",
+      "passed": true
+    },
+    {
+      "check": "ops.gateway: correct C4 parent",
+      "passed": true
+    },
+    {
+      "check": "ops.cnpg: name and responsibility present",
+      "passed": true
+    },
+    {
+      "check": "ops.cnpg: implementation technology present",
+      "passed": true
+    },
+    {
+      "check": "ops.cnpg: correct C4 parent",
+      "passed": true
+    },
+    {
+      "check": "ops.prometheus: name and responsibility present",
+      "passed": true
+    },
+    {
+      "check": "ops.prometheus: implementation technology present",
+      "passed": true
+    },
+    {
+      "check": "ops.prometheus: correct C4 parent",
+      "passed": true
+    },
+    {
+      "check": "ops.grafana: name and responsibility present",
+      "passed": true
+    },
+    {
+      "check": "ops.grafana: implementation technology present",
+      "passed": true
+    },
+    {
+      "check": "ops.grafana: correct C4 parent",
+      "passed": true
+    },
+    {
+      "check": "fabric: name and responsibility present",
+      "passed": true
+    },
+    {
+      "check": "tezos: name and responsibility present",
+      "passed": true
+    },
+    {
+      "check": "cardano: name and responsibility present",
+      "passed": true
+    },
+    {
+      "check": "corda: name and responsibility present",
+      "passed": true
+    },
+    {
+      "check": "peerMembers: name and responsibility present",
+      "passed": true
+    },
+    {
+      "check": "evmNetworks: name and responsibility present",
+      "passed": true
+    },
+    {
+      "check": "kafkaBroker: name and responsibility present",
+      "passed": true
+    },
+    {
+      "check": "mongo: name and responsibility present",
+      "passed": true
+    },
+    {
+      "check": "fabricCA: name and responsibility present",
+      "passed": true
+    },
+    {
+      "check": "signatory: name and responsibility present",
+      "passed": true
+    },
+    {
+      "check": "blockfrostService: name and responsibility present",
+      "passed": true
+    },
+    {
+      "check": "dockerEngine: name and responsibility present",
+      "passed": true
+    },
+    {
+      "check": "Parsed relationships exactly match authored endpoints, labels and mechanisms",
+      "passed": true
+    },
+    {
+      "check": "Every relationship has source evidence and an inference classification",
+      "passed": true
+    },
+    {
+      "check": "All authored static view keys survive parsing",
+      "passed": true
+    },
+    {
+      "check": "Static view keys are unique",
+      "passed": true
+    },
+    {
+      "check": "20-firefly-core-api: visible static dataflow exists",
+      "passed": true
+    },
+    {
+      "check": "20-firefly-core-api: every arrow has visible endpoints",
+      "passed": true
+    },
+    {
+      "check": "20-firefly-core-api: every arrow names its action and mechanism",
+      "passed": true
+    },
+    {
+      "check": "20-firefly-core-api: no disconnected boxes",
+      "passed": true
+    },
+    {
+      "check": "20-firefly-core-api: parsed view includes exactly its intended elements",
+      "passed": true
+    },
+    {
+      "check": "20-firefly-core-api: every selected dataflow survives view filtering",
+      "passed": true
+    },
+    {
+      "check": "20-firefly-core-api: components belong to the scoped container",
+      "passed": true
+    },
+    {
+      "check": "20-firefly-core-identity: visible static dataflow exists",
+      "passed": true
+    },
+    {
+      "check": "20-firefly-core-identity: every arrow has visible endpoints",
+      "passed": true
+    },
+    {
+      "check": "20-firefly-core-identity: every arrow names its action and mechanism",
+      "passed": true
+    },
+    {
+      "check": "20-firefly-core-identity: no disconnected boxes",
+      "passed": true
+    },
+    {
+      "check": "20-firefly-core-identity: parsed view includes exactly its intended elements",
+      "passed": true
+    },
+    {
+      "check": "20-firefly-core-identity: every selected dataflow survives view filtering",
+      "passed": true
+    },
+    {
+      "check": "20-firefly-core-identity: components belong to the scoped container",
+      "passed": true
+    },
+    {
+      "check": "20-firefly-core-messaging: visible static dataflow exists",
+      "passed": true
+    },
+    {
+      "check": "20-firefly-core-messaging: every arrow has visible endpoints",
+      "passed": true
+    },
+    {
+      "check": "20-firefly-core-messaging: every arrow names its action and mechanism",
+      "passed": true
+    },
+    {
+      "check": "20-firefly-core-messaging: no disconnected boxes",
+      "passed": true
+    },
+    {
+      "check": "20-firefly-core-messaging: parsed view includes exactly its intended elements",
+      "passed": true
+    },
+    {
+      "check": "20-firefly-core-messaging: every selected dataflow survives view filtering",
+      "passed": true
+    },
+    {
+      "check": "20-firefly-core-messaging: components belong to the scoped container",
+      "passed": true
+    },
+    {
+      "check": "20-firefly-core-contracts: visible static dataflow exists",
+      "passed": true
+    },
+    {
+      "check": "20-firefly-core-contracts: every arrow has visible endpoints",
+      "passed": true
+    },
+    {
+      "check": "20-firefly-core-contracts: every arrow names its action and mechanism",
+      "passed": true
+    },
+    {
+      "check": "20-firefly-core-contracts: no disconnected boxes",
+      "passed": true
+    },
+    {
+      "check": "20-firefly-core-contracts: parsed view includes exactly its intended elements",
+      "passed": true
+    },
+    {
+      "check": "20-firefly-core-contracts: every selected dataflow survives view filtering",
+      "passed": true
+    },
+    {
+      "check": "20-firefly-core-contracts: components belong to the scoped container",
+      "passed": true
+    },
+    {
+      "check": "20-firefly-core-events: visible static dataflow exists",
+      "passed": true
+    },
+    {
+      "check": "20-firefly-core-events: every arrow has visible endpoints",
+      "passed": true
+    },
+    {
+      "check": "20-firefly-core-events: every arrow names its action and mechanism",
+      "passed": true
+    },
+    {
+      "check": "20-firefly-core-events: no disconnected boxes",
+      "passed": true
+    },
+    {
+      "check": "20-firefly-core-events: parsed view includes exactly its intended elements",
+      "passed": true
+    },
+    {
+      "check": "20-firefly-core-events: every selected dataflow survives view filtering",
+      "passed": true
+    },
+    {
+      "check": "20-firefly-core-events: components belong to the scoped container",
+      "passed": true
+    },
+    {
+      "check": "20-firefly-core-persistence: visible static dataflow exists",
+      "passed": true
+    },
+    {
+      "check": "20-firefly-core-persistence: every arrow has visible endpoints",
+      "passed": true
+    },
+    {
+      "check": "20-firefly-core-persistence: every arrow names its action and mechanism",
+      "passed": true
+    },
+    {
+      "check": "20-firefly-core-persistence: no disconnected boxes",
+      "passed": true
+    },
+    {
+      "check": "20-firefly-core-persistence: parsed view includes exactly its intended elements",
+      "passed": true
+    },
+    {
+      "check": "20-firefly-core-persistence: every selected dataflow survives view filtering",
+      "passed": true
+    },
+    {
+      "check": "20-firefly-core-persistence: components belong to the scoped container",
+      "passed": true
+    },
+    {
+      "check": "30-firefly-evm-transactions: visible static dataflow exists",
+      "passed": true
+    },
+    {
+      "check": "30-firefly-evm-transactions: every arrow has visible endpoints",
+      "passed": true
+    },
+    {
+      "check": "30-firefly-evm-transactions: every arrow names its action and mechanism",
+      "passed": true
+    },
+    {
+      "check": "30-firefly-evm-transactions: no disconnected boxes",
+      "passed": true
+    },
+    {
+      "check": "30-firefly-evm-transactions: parsed view includes exactly its intended elements",
+      "passed": true
+    },
+    {
+      "check": "30-firefly-evm-transactions: every selected dataflow survives view filtering",
+      "passed": true
+    },
+    {
+      "check": "30-firefly-evm-transactions: components belong to the scoped container",
+      "passed": true
+    },
+    {
+      "check": "30-firefly-evm-events: visible static dataflow exists",
+      "passed": true
+    },
+    {
+      "check": "30-firefly-evm-events: every arrow has visible endpoints",
+      "passed": true
+    },
+    {
+      "check": "30-firefly-evm-events: every arrow names its action and mechanism",
+      "passed": true
+    },
+    {
+      "check": "30-firefly-evm-events: no disconnected boxes",
+      "passed": true
+    },
+    {
+      "check": "30-firefly-evm-events: parsed view includes exactly its intended elements",
+      "passed": true
+    },
+    {
+      "check": "30-firefly-evm-events: every selected dataflow survives view filtering",
+      "passed": true
+    },
+    {
+      "check": "30-firefly-evm-events: components belong to the scoped container",
+      "passed": true
+    },
+    {
+      "check": "40-firefly-signer: visible static dataflow exists",
+      "passed": true
+    },
+    {
+      "check": "40-firefly-signer: every arrow has visible endpoints",
+      "passed": true
+    },
+    {
+      "check": "40-firefly-signer: every arrow names its action and mechanism",
+      "passed": true
+    },
+    {
+      "check": "40-firefly-signer: no disconnected boxes",
+      "passed": true
+    },
+    {
+      "check": "40-firefly-signer: parsed view includes exactly its intended elements",
+      "passed": true
+    },
+    {
+      "check": "40-firefly-signer: every selected dataflow survives view filtering",
+      "passed": true
+    },
+    {
+      "check": "40-firefly-signer: components belong to the scoped container",
+      "passed": true
+    },
+    {
+      "check": "40-firefly-dx: visible static dataflow exists",
+      "passed": true
+    },
+    {
+      "check": "40-firefly-dx: every arrow has visible endpoints",
+      "passed": true
+    },
+    {
+      "check": "40-firefly-dx: every arrow names its action and mechanism",
+      "passed": true
+    },
+    {
+      "check": "40-firefly-dx: no disconnected boxes",
+      "passed": true
+    },
+    {
+      "check": "40-firefly-dx: parsed view includes exactly its intended elements",
+      "passed": true
+    },
+    {
+      "check": "40-firefly-dx: every selected dataflow survives view filtering",
+      "passed": true
+    },
+    {
+      "check": "40-firefly-dx: components belong to the scoped container",
+      "passed": true
+    },
+    {
+      "check": "40-firefly-erc20: visible static dataflow exists",
+      "passed": true
+    },
+    {
+      "check": "40-firefly-erc20: every arrow has visible endpoints",
+      "passed": true
+    },
+    {
+      "check": "40-firefly-erc20: every arrow names its action and mechanism",
+      "passed": true
+    },
+    {
+      "check": "40-firefly-erc20: no disconnected boxes",
+      "passed": true
+    },
+    {
+      "check": "40-firefly-erc20: parsed view includes exactly its intended elements",
+      "passed": true
+    },
+    {
+      "check": "40-firefly-erc20: every selected dataflow survives view filtering",
+      "passed": true
+    },
+    {
+      "check": "40-firefly-erc20: components belong to the scoped container",
+      "passed": true
+    },
+    {
+      "check": "40-firefly-erc1155: visible static dataflow exists",
+      "passed": true
+    },
+    {
+      "check": "40-firefly-erc1155: every arrow has visible endpoints",
+      "passed": true
+    },
+    {
+      "check": "40-firefly-erc1155: every arrow names its action and mechanism",
+      "passed": true
+    },
+    {
+      "check": "40-firefly-erc1155: no disconnected boxes",
+      "passed": true
+    },
+    {
+      "check": "40-firefly-erc1155: parsed view includes exactly its intended elements",
+      "passed": true
+    },
+    {
+      "check": "40-firefly-erc1155: every selected dataflow survives view filtering",
+      "passed": true
+    },
+    {
+      "check": "40-firefly-erc1155: components belong to the scoped container",
+      "passed": true
+    },
+    {
+      "check": "51-besu-network: visible static dataflow exists",
+      "passed": true
+    },
+    {
+      "check": "51-besu-network: every arrow has visible endpoints",
+      "passed": true
+    },
+    {
+      "check": "51-besu-network: every arrow names its action and mechanism",
+      "passed": true
+    },
+    {
+      "check": "51-besu-network: no disconnected boxes",
+      "passed": true
+    },
+    {
+      "check": "51-besu-network: parsed view includes exactly its intended elements",
+      "passed": true
+    },
+    {
+      "check": "51-besu-network: every selected dataflow survives view filtering",
+      "passed": true
+    },
+    {
+      "check": "51-besu-network: components belong to the scoped container",
+      "passed": true
+    },
+    {
+      "check": "51-besu-consensus: visible static dataflow exists",
+      "passed": true
+    },
+    {
+      "check": "51-besu-consensus: every arrow has visible endpoints",
+      "passed": true
+    },
+    {
+      "check": "51-besu-consensus: every arrow names its action and mechanism",
+      "passed": true
+    },
+    {
+      "check": "51-besu-consensus: no disconnected boxes",
+      "passed": true
+    },
+    {
+      "check": "51-besu-consensus: parsed view includes exactly its intended elements",
+      "passed": true
+    },
+    {
+      "check": "51-besu-consensus: every selected dataflow survives view filtering",
+      "passed": true
+    },
+    {
+      "check": "51-besu-consensus: components belong to the scoped container",
+      "passed": true
+    },
+    {
+      "check": "51-besu-execution: visible static dataflow exists",
+      "passed": true
+    },
+    {
+      "check": "51-besu-execution: every arrow has visible endpoints",
+      "passed": true
+    },
+    {
+      "check": "51-besu-execution: every arrow names its action and mechanism",
+      "passed": true
+    },
+    {
+      "check": "51-besu-execution: no disconnected boxes",
+      "passed": true
+    },
+    {
+      "check": "51-besu-execution: parsed view includes exactly its intended elements",
+      "passed": true
+    },
+    {
+      "check": "51-besu-execution: every selected dataflow survives view filtering",
+      "passed": true
+    },
+    {
+      "check": "51-besu-execution: components belong to the scoped container",
+      "passed": true
+    },
+    {
+      "check": "62-sandbox: visible static dataflow exists",
+      "passed": true
+    },
+    {
+      "check": "62-sandbox: every arrow has visible endpoints",
+      "passed": true
+    },
+    {
+      "check": "62-sandbox: every arrow names its action and mechanism",
+      "passed": true
+    },
+    {
+      "check": "62-sandbox: no disconnected boxes",
+      "passed": true
+    },
+    {
+      "check": "62-sandbox: parsed view includes exactly its intended elements",
+      "passed": true
+    },
+    {
+      "check": "62-sandbox: every selected dataflow survives view filtering",
+      "passed": true
+    },
+    {
+      "check": "62-sandbox: components belong to the scoped container",
+      "passed": true
+    },
+    {
+      "check": "21-core-blockchain-adapters: visible static dataflow exists",
+      "passed": true
+    },
+    {
+      "check": "21-core-blockchain-adapters: every arrow has visible endpoints",
+      "passed": true
+    },
+    {
+      "check": "21-core-blockchain-adapters: every arrow names its action and mechanism",
+      "passed": true
+    },
+    {
+      "check": "21-core-blockchain-adapters: no disconnected boxes",
+      "passed": true
+    },
+    {
+      "check": "21-core-blockchain-adapters: parsed view includes exactly its intended elements",
+      "passed": true
+    },
+    {
+      "check": "21-core-blockchain-adapters: every selected dataflow survives view filtering",
+      "passed": true
+    },
+    {
+      "check": "21-core-blockchain-adapters: components belong to the scoped container",
+      "passed": true
+    },
+    {
+      "check": "22-core-storage-adapters: visible static dataflow exists",
+      "passed": true
+    },
+    {
+      "check": "22-core-storage-adapters: every arrow has visible endpoints",
+      "passed": true
+    },
+    {
+      "check": "22-core-storage-adapters: every arrow names its action and mechanism",
+      "passed": true
+    },
+    {
+      "check": "22-core-storage-adapters: no disconnected boxes",
+      "passed": true
+    },
+    {
+      "check": "22-core-storage-adapters: parsed view includes exactly its intended elements",
+      "passed": true
+    },
+    {
+      "check": "22-core-storage-adapters: every selected dataflow survives view filtering",
+      "passed": true
+    },
+    {
+      "check": "22-core-storage-adapters: components belong to the scoped container",
+      "passed": true
+    },
+    {
+      "check": "23-core-event-token-adapters: visible static dataflow exists",
+      "passed": true
+    },
+    {
+      "check": "23-core-event-token-adapters: every arrow has visible endpoints",
+      "passed": true
+    },
+    {
+      "check": "23-core-event-token-adapters: every arrow names its action and mechanism",
+      "passed": true
+    },
+    {
+      "check": "23-core-event-token-adapters: no disconnected boxes",
+      "passed": true
+    },
+    {
+      "check": "23-core-event-token-adapters: parsed view includes exactly its intended elements",
+      "passed": true
+    },
+    {
+      "check": "23-core-event-token-adapters: every selected dataflow survives view filtering",
+      "passed": true
+    },
+    {
+      "check": "23-core-event-token-adapters: components belong to the scoped container",
+      "passed": true
+    },
+    {
+      "check": "31-evm-persistence-delivery: visible static dataflow exists",
+      "passed": true
+    },
+    {
+      "check": "31-evm-persistence-delivery: every arrow has visible endpoints",
+      "passed": true
+    },
+    {
+      "check": "31-evm-persistence-delivery: every arrow names its action and mechanism",
+      "passed": true
+    },
+    {
+      "check": "31-evm-persistence-delivery: no disconnected boxes",
+      "passed": true
+    },
+    {
+      "check": "31-evm-persistence-delivery: parsed view includes exactly its intended elements",
+      "passed": true
+    },
+    {
+      "check": "31-evm-persistence-delivery: every selected dataflow survives view filtering",
+      "passed": true
+    },
+    {
+      "check": "31-evm-persistence-delivery: components belong to the scoped container",
+      "passed": true
+    },
+    {
+      "check": "75-ethconnect-requests: visible static dataflow exists",
+      "passed": true
+    },
+    {
+      "check": "75-ethconnect-requests: every arrow has visible endpoints",
+      "passed": true
+    },
+    {
+      "check": "75-ethconnect-requests: every arrow names its action and mechanism",
+      "passed": true
+    },
+    {
+      "check": "75-ethconnect-requests: no disconnected boxes",
+      "passed": true
+    },
+    {
+      "check": "75-ethconnect-requests: parsed view includes exactly its intended elements",
+      "passed": true
+    },
+    {
+      "check": "75-ethconnect-requests: every selected dataflow survives view filtering",
+      "passed": true
+    },
+    {
+      "check": "75-ethconnect-requests: components belong to the scoped container",
+      "passed": true
+    },
+    {
+      "check": "75-ethconnect-events: visible static dataflow exists",
+      "passed": true
+    },
+    {
+      "check": "75-ethconnect-events: every arrow has visible endpoints",
+      "passed": true
+    },
+    {
+      "check": "75-ethconnect-events: every arrow names its action and mechanism",
+      "passed": true
+    },
+    {
+      "check": "75-ethconnect-events: no disconnected boxes",
+      "passed": true
+    },
+    {
+      "check": "75-ethconnect-events: parsed view includes exactly its intended elements",
+      "passed": true
+    },
+    {
+      "check": "75-ethconnect-events: every selected dataflow survives view filtering",
+      "passed": true
+    },
+    {
+      "check": "75-ethconnect-events: components belong to the scoped container",
+      "passed": true
+    },
+    {
+      "check": "75-fabconnect-transactions: visible static dataflow exists",
+      "passed": true
+    },
+    {
+      "check": "75-fabconnect-transactions: every arrow has visible endpoints",
+      "passed": true
+    },
+    {
+      "check": "75-fabconnect-transactions: every arrow names its action and mechanism",
+      "passed": true
+    },
+    {
+      "check": "75-fabconnect-transactions: no disconnected boxes",
+      "passed": true
+    },
+    {
+      "check": "75-fabconnect-transactions: parsed view includes exactly its intended elements",
+      "passed": true
+    },
+    {
+      "check": "75-fabconnect-transactions: every selected dataflow survives view filtering",
+      "passed": true
+    },
+    {
+      "check": "75-fabconnect-transactions: components belong to the scoped container",
+      "passed": true
+    },
+    {
+      "check": "75-fabconnect-events: visible static dataflow exists",
+      "passed": true
+    },
+    {
+      "check": "75-fabconnect-events: every arrow has visible endpoints",
+      "passed": true
+    },
+    {
+      "check": "75-fabconnect-events: every arrow names its action and mechanism",
+      "passed": true
+    },
+    {
+      "check": "75-fabconnect-events: no disconnected boxes",
+      "passed": true
+    },
+    {
+      "check": "75-fabconnect-events: parsed view includes exactly its intended elements",
+      "passed": true
+    },
+    {
+      "check": "75-fabconnect-events: every selected dataflow survives view filtering",
+      "passed": true
+    },
+    {
+      "check": "75-fabconnect-events: components belong to the scoped container",
+      "passed": true
+    },
+    {
+      "check": "75-tezosconnect-transactions: visible static dataflow exists",
+      "passed": true
+    },
+    {
+      "check": "75-tezosconnect-transactions: every arrow has visible endpoints",
+      "passed": true
+    },
+    {
+      "check": "75-tezosconnect-transactions: every arrow names its action and mechanism",
+      "passed": true
+    },
+    {
+      "check": "75-tezosconnect-transactions: no disconnected boxes",
+      "passed": true
+    },
+    {
+      "check": "75-tezosconnect-transactions: parsed view includes exactly its intended elements",
+      "passed": true
+    },
+    {
+      "check": "75-tezosconnect-transactions: every selected dataflow survives view filtering",
+      "passed": true
+    },
+    {
+      "check": "75-tezosconnect-transactions: components belong to the scoped container",
+      "passed": true
+    },
+    {
+      "check": "75-tezosconnect-events: visible static dataflow exists",
+      "passed": true
+    },
+    {
+      "check": "75-tezosconnect-events: every arrow has visible endpoints",
+      "passed": true
+    },
+    {
+      "check": "75-tezosconnect-events: every arrow names its action and mechanism",
+      "passed": true
+    },
+    {
+      "check": "75-tezosconnect-events: no disconnected boxes",
+      "passed": true
+    },
+    {
+      "check": "75-tezosconnect-events: parsed view includes exactly its intended elements",
+      "passed": true
+    },
+    {
+      "check": "75-tezosconnect-events: every selected dataflow survives view filtering",
+      "passed": true
+    },
+    {
+      "check": "75-tezosconnect-events: components belong to the scoped container",
+      "passed": true
+    },
+    {
+      "check": "75-cardanoconnect-operations: visible static dataflow exists",
+      "passed": true
+    },
+    {
+      "check": "75-cardanoconnect-operations: every arrow has visible endpoints",
+      "passed": true
+    },
+    {
+      "check": "75-cardanoconnect-operations: every arrow names its action and mechanism",
+      "passed": true
+    },
+    {
+      "check": "75-cardanoconnect-operations: no disconnected boxes",
+      "passed": true
+    },
+    {
+      "check": "75-cardanoconnect-operations: parsed view includes exactly its intended elements",
+      "passed": true
+    },
+    {
+      "check": "75-cardanoconnect-operations: every selected dataflow survives view filtering",
+      "passed": true
+    },
+    {
+      "check": "75-cardanoconnect-operations: components belong to the scoped container",
+      "passed": true
+    },
+    {
+      "check": "75-cardanoconnect-contracts-events: visible static dataflow exists",
+      "passed": true
+    },
+    {
+      "check": "75-cardanoconnect-contracts-events: every arrow has visible endpoints",
+      "passed": true
+    },
+    {
+      "check": "75-cardanoconnect-contracts-events: every arrow names its action and mechanism",
+      "passed": true
+    },
+    {
+      "check": "75-cardanoconnect-contracts-events: no disconnected boxes",
+      "passed": true
+    },
+    {
+      "check": "75-cardanoconnect-contracts-events: parsed view includes exactly its intended elements",
+      "passed": true
+    },
+    {
+      "check": "75-cardanoconnect-contracts-events: every selected dataflow survives view filtering",
+      "passed": true
+    },
+    {
+      "check": "75-cardanoconnect-contracts-events: components belong to the scoped container",
+      "passed": true
+    },
+    {
+      "check": "75-cardanosigner-signing: visible static dataflow exists",
+      "passed": true
+    },
+    {
+      "check": "75-cardanosigner-signing: every arrow has visible endpoints",
+      "passed": true
+    },
+    {
+      "check": "75-cardanosigner-signing: every arrow names its action and mechanism",
+      "passed": true
+    },
+    {
+      "check": "75-cardanosigner-signing: no disconnected boxes",
+      "passed": true
+    },
+    {
+      "check": "75-cardanosigner-signing: parsed view includes exactly its intended elements",
+      "passed": true
+    },
+    {
+      "check": "75-cardanosigner-signing: every selected dataflow survives view filtering",
+      "passed": true
+    },
+    {
+      "check": "75-cardanosigner-signing: components belong to the scoped container",
+      "passed": true
+    },
+    {
+      "check": "75-cordaconnect-starter: visible static dataflow exists",
+      "passed": true
+    },
+    {
+      "check": "75-cordaconnect-starter: every arrow has visible endpoints",
+      "passed": true
+    },
+    {
+      "check": "75-cordaconnect-starter: every arrow names its action and mechanism",
+      "passed": true
+    },
+    {
+      "check": "75-cordaconnect-starter: no disconnected boxes",
+      "passed": true
+    },
+    {
+      "check": "75-cordaconnect-starter: parsed view includes exactly its intended elements",
+      "passed": true
+    },
+    {
+      "check": "75-cordaconnect-starter: every selected dataflow survives view filtering",
+      "passed": true
+    },
+    {
+      "check": "75-cordaconnect-starter: components belong to the scoped container",
+      "passed": true
+    },
+    {
+      "check": "64-cli: visible static dataflow exists",
+      "passed": true
+    },
+    {
+      "check": "64-cli: every arrow has visible endpoints",
+      "passed": true
+    },
+    {
+      "check": "64-cli: every arrow names its action and mechanism",
+      "passed": true
+    },
+    {
+      "check": "64-cli: no disconnected boxes",
+      "passed": true
+    },
+    {
+      "check": "64-cli: parsed view includes exactly its intended elements",
+      "passed": true
+    },
+    {
+      "check": "64-cli: every selected dataflow survives view filtering",
+      "passed": true
+    },
+    {
+      "check": "64-cli: components belong to the scoped container",
+      "passed": true
+    },
+    {
+      "check": "65-performance: visible static dataflow exists",
+      "passed": true
+    },
+    {
+      "check": "65-performance: every arrow has visible endpoints",
+      "passed": true
+    },
+    {
+      "check": "65-performance: every arrow names its action and mechanism",
+      "passed": true
+    },
+    {
+      "check": "65-performance: no disconnected boxes",
+      "passed": true
+    },
+    {
+      "check": "65-performance: parsed view includes exactly its intended elements",
+      "passed": true
+    },
+    {
+      "check": "65-performance: every selected dataflow survives view filtering",
+      "passed": true
+    },
+    {
+      "check": "65-performance: components belong to the scoped container",
+      "passed": true
+    },
+    {
+      "check": "66-event-audit: visible static dataflow exists",
+      "passed": true
+    },
+    {
+      "check": "66-event-audit: every arrow has visible endpoints",
+      "passed": true
+    },
+    {
+      "check": "66-event-audit: every arrow names its action and mechanism",
+      "passed": true
+    },
+    {
+      "check": "66-event-audit: no disconnected boxes",
+      "passed": true
+    },
+    {
+      "check": "66-event-audit: parsed view includes exactly its intended elements",
+      "passed": true
+    },
+    {
+      "check": "66-event-audit: every selected dataflow survives view filtering",
+      "passed": true
+    },
+    {
+      "check": "66-event-audit: components belong to the scoped container",
+      "passed": true
+    },
+    {
+      "check": "67-config-migration: visible static dataflow exists",
+      "passed": true
+    },
+    {
+      "check": "67-config-migration: every arrow has visible endpoints",
+      "passed": true
+    },
+    {
+      "check": "67-config-migration: every arrow names its action and mechanism",
+      "passed": true
+    },
+    {
+      "check": "67-config-migration: no disconnected boxes",
+      "passed": true
+    },
+    {
+      "check": "67-config-migration: parsed view includes exactly its intended elements",
+      "passed": true
+    },
+    {
+      "check": "67-config-migration: every selected dataflow survives view filtering",
+      "passed": true
+    },
+    {
+      "check": "67-config-migration: components belong to the scoped container",
+      "passed": true
+    },
+    {
+      "check": "10-firefly-runtime: visible static dataflow exists",
+      "passed": true
+    },
+    {
+      "check": "10-firefly-runtime: every arrow has visible endpoints",
+      "passed": true
+    },
+    {
+      "check": "10-firefly-runtime: every arrow names its action and mechanism",
+      "passed": true
+    },
+    {
+      "check": "10-firefly-runtime: no disconnected boxes",
+      "passed": true
+    },
+    {
+      "check": "10-firefly-runtime: parsed view includes exactly its intended elements",
+      "passed": true
+    },
+    {
+      "check": "10-firefly-runtime: every selected dataflow survives view filtering",
+      "passed": true
+    },
+    {
+      "check": "10-firefly-runtime: correct level-2 abstraction",
+      "passed": true
+    },
+    {
+      "check": "11-firefly-state: visible static dataflow exists",
+      "passed": true
+    },
+    {
+      "check": "11-firefly-state: every arrow has visible endpoints",
+      "passed": true
+    },
+    {
+      "check": "11-firefly-state: every arrow names its action and mechanism",
+      "passed": true
+    },
+    {
+      "check": "11-firefly-state: no disconnected boxes",
+      "passed": true
+    },
+    {
+      "check": "11-firefly-state: parsed view includes exactly its intended elements",
+      "passed": true
+    },
+    {
+      "check": "11-firefly-state: every selected dataflow survives view filtering",
+      "passed": true
+    },
+    {
+      "check": "11-firefly-state: correct level-2 abstraction",
+      "passed": true
+    },
+    {
+      "check": "50-besu-network: visible static dataflow exists",
+      "passed": true
+    },
+    {
+      "check": "50-besu-network: every arrow has visible endpoints",
+      "passed": true
+    },
+    {
+      "check": "50-besu-network: every arrow names its action and mechanism",
+      "passed": true
+    },
+    {
+      "check": "50-besu-network: no disconnected boxes",
+      "passed": true
+    },
+    {
+      "check": "50-besu-network: parsed view includes exactly its intended elements",
+      "passed": true
+    },
+    {
+      "check": "50-besu-network: every selected dataflow survives view filtering",
+      "passed": true
+    },
+    {
+      "check": "50-besu-network: correct level-2 abstraction",
+      "passed": true
+    },
+    {
+      "check": "60-applications: visible static dataflow exists",
+      "passed": true
+    },
+    {
+      "check": "60-applications: every arrow has visible endpoints",
+      "passed": true
+    },
+    {
+      "check": "60-applications: every arrow names its action and mechanism",
+      "passed": true
+    },
+    {
+      "check": "60-applications: no disconnected boxes",
+      "passed": true
+    },
+    {
+      "check": "60-applications: parsed view includes exactly its intended elements",
+      "passed": true
+    },
+    {
+      "check": "60-applications: every selected dataflow survives view filtering",
+      "passed": true
+    },
+    {
+      "check": "60-applications: correct level-2 abstraction",
+      "passed": true
+    },
+    {
+      "check": "61-tools: visible static dataflow exists",
+      "passed": true
+    },
+    {
+      "check": "61-tools: every arrow has visible endpoints",
+      "passed": true
+    },
+    {
+      "check": "61-tools: every arrow names its action and mechanism",
+      "passed": true
+    },
+    {
+      "check": "61-tools: no disconnected boxes",
+      "passed": true
+    },
+    {
+      "check": "61-tools: parsed view includes exactly its intended elements",
+      "passed": true
+    },
+    {
+      "check": "61-tools: every selected dataflow survives view filtering",
+      "passed": true
+    },
+    {
+      "check": "61-tools: correct level-2 abstraction",
+      "passed": true
+    },
+    {
+      "check": "63-operations: visible static dataflow exists",
+      "passed": true
+    },
+    {
+      "check": "63-operations: every arrow has visible endpoints",
+      "passed": true
+    },
+    {
+      "check": "63-operations: every arrow names its action and mechanism",
+      "passed": true
+    },
+    {
+      "check": "63-operations: no disconnected boxes",
+      "passed": true
+    },
+    {
+      "check": "63-operations: parsed view includes exactly its intended elements",
+      "passed": true
+    },
+    {
+      "check": "63-operations: every selected dataflow survives view filtering",
+      "passed": true
+    },
+    {
+      "check": "63-operations: correct level-2 abstraction",
+      "passed": true
+    },
+    {
+      "check": "12-embedded-storage-options: visible static dataflow exists",
+      "passed": true
+    },
+    {
+      "check": "12-embedded-storage-options: every arrow has visible endpoints",
+      "passed": true
+    },
+    {
+      "check": "12-embedded-storage-options: every arrow names its action and mechanism",
+      "passed": true
+    },
+    {
+      "check": "12-embedded-storage-options: no disconnected boxes",
+      "passed": true
+    },
+    {
+      "check": "12-embedded-storage-options: parsed view includes exactly its intended elements",
+      "passed": true
+    },
+    {
+      "check": "12-embedded-storage-options: every selected dataflow survives view filtering",
+      "passed": true
+    },
+    {
+      "check": "12-embedded-storage-options: correct level-2 abstraction",
+      "passed": true
+    },
+    {
+      "check": "70-option-ethconnect: visible static dataflow exists",
+      "passed": true
+    },
+    {
+      "check": "70-option-ethconnect: every arrow has visible endpoints",
+      "passed": true
+    },
+    {
+      "check": "70-option-ethconnect: every arrow names its action and mechanism",
+      "passed": true
+    },
+    {
+      "check": "70-option-ethconnect: no disconnected boxes",
+      "passed": true
+    },
+    {
+      "check": "70-option-ethconnect: parsed view includes exactly its intended elements",
+      "passed": true
+    },
+    {
+      "check": "70-option-ethconnect: every selected dataflow survives view filtering",
+      "passed": true
+    },
+    {
+      "check": "70-option-ethconnect: correct level-2 abstraction",
+      "passed": true
+    },
+    {
+      "check": "71-option-fabconnect: visible static dataflow exists",
+      "passed": true
+    },
+    {
+      "check": "71-option-fabconnect: every arrow has visible endpoints",
+      "passed": true
+    },
+    {
+      "check": "71-option-fabconnect: every arrow names its action and mechanism",
+      "passed": true
+    },
+    {
+      "check": "71-option-fabconnect: no disconnected boxes",
+      "passed": true
+    },
+    {
+      "check": "71-option-fabconnect: parsed view includes exactly its intended elements",
+      "passed": true
+    },
+    {
+      "check": "71-option-fabconnect: every selected dataflow survives view filtering",
+      "passed": true
+    },
+    {
+      "check": "71-option-fabconnect: correct level-2 abstraction",
+      "passed": true
+    },
+    {
+      "check": "72-option-tezosconnect: visible static dataflow exists",
+      "passed": true
+    },
+    {
+      "check": "72-option-tezosconnect: every arrow has visible endpoints",
+      "passed": true
+    },
+    {
+      "check": "72-option-tezosconnect: every arrow names its action and mechanism",
+      "passed": true
+    },
+    {
+      "check": "72-option-tezosconnect: no disconnected boxes",
+      "passed": true
+    },
+    {
+      "check": "72-option-tezosconnect: parsed view includes exactly its intended elements",
+      "passed": true
+    },
+    {
+      "check": "72-option-tezosconnect: every selected dataflow survives view filtering",
+      "passed": true
+    },
+    {
+      "check": "72-option-tezosconnect: correct level-2 abstraction",
+      "passed": true
+    },
+    {
+      "check": "73-option-cardanoconnect: visible static dataflow exists",
+      "passed": true
+    },
+    {
+      "check": "73-option-cardanoconnect: every arrow has visible endpoints",
+      "passed": true
+    },
+    {
+      "check": "73-option-cardanoconnect: every arrow names its action and mechanism",
+      "passed": true
+    },
+    {
+      "check": "73-option-cardanoconnect: no disconnected boxes",
+      "passed": true
+    },
+    {
+      "check": "73-option-cardanoconnect: parsed view includes exactly its intended elements",
+      "passed": true
+    },
+    {
+      "check": "73-option-cardanoconnect: every selected dataflow survives view filtering",
+      "passed": true
+    },
+    {
+      "check": "73-option-cardanoconnect: correct level-2 abstraction",
+      "passed": true
+    },
+    {
+      "check": "74-option-cordaconnect: visible static dataflow exists",
+      "passed": true
+    },
+    {
+      "check": "74-option-cordaconnect: every arrow has visible endpoints",
+      "passed": true
+    },
+    {
+      "check": "74-option-cordaconnect: every arrow names its action and mechanism",
+      "passed": true
+    },
+    {
+      "check": "74-option-cordaconnect: no disconnected boxes",
+      "passed": true
+    },
+    {
+      "check": "74-option-cordaconnect: parsed view includes exactly its intended elements",
+      "passed": true
+    },
+    {
+      "check": "74-option-cordaconnect: every selected dataflow survives view filtering",
+      "passed": true
+    },
+    {
+      "check": "74-option-cordaconnect: correct level-2 abstraction",
+      "passed": true
+    },
+    {
+      "check": "76-legacy-broker-options: visible static dataflow exists",
+      "passed": true
+    },
+    {
+      "check": "76-legacy-broker-options: every arrow has visible endpoints",
+      "passed": true
+    },
+    {
+      "check": "76-legacy-broker-options: every arrow names its action and mechanism",
+      "passed": true
+    },
+    {
+      "check": "76-legacy-broker-options: no disconnected boxes",
+      "passed": true
+    },
+    {
+      "check": "76-legacy-broker-options: parsed view includes exactly its intended elements",
+      "passed": true
+    },
+    {
+      "check": "76-legacy-broker-options: every selected dataflow survives view filtering",
+      "passed": true
+    },
+    {
+      "check": "76-legacy-broker-options: correct level-2 abstraction",
+      "passed": true
+    },
+    {
+      "check": "02-context-firefly: visible static dataflow exists",
+      "passed": true
+    },
+    {
+      "check": "02-context-firefly: every arrow has visible endpoints",
+      "passed": true
+    },
+    {
+      "check": "02-context-firefly: every arrow names its action and mechanism",
+      "passed": true
+    },
+    {
+      "check": "02-context-firefly: no disconnected boxes",
+      "passed": true
+    },
+    {
+      "check": "02-context-firefly: parsed view includes exactly its intended elements",
+      "passed": true
+    },
+    {
+      "check": "02-context-firefly: every selected dataflow survives view filtering",
+      "passed": true
+    },
+    {
+      "check": "02-context-firefly: correct level-1 abstraction",
+      "passed": true
+    },
+    {
+      "check": "03-context-besu: visible static dataflow exists",
+      "passed": true
+    },
+    {
+      "check": "03-context-besu: every arrow has visible endpoints",
+      "passed": true
+    },
+    {
+      "check": "03-context-besu: every arrow names its action and mechanism",
+      "passed": true
+    },
+    {
+      "check": "03-context-besu: no disconnected boxes",
+      "passed": true
+    },
+    {
+      "check": "03-context-besu: parsed view includes exactly its intended elements",
+      "passed": true
+    },
+    {
+      "check": "03-context-besu: every selected dataflow survives view filtering",
+      "passed": true
+    },
+    {
+      "check": "03-context-besu: correct level-1 abstraction",
+      "passed": true
+    },
+    {
+      "check": "01-landscape: visible static dataflow exists",
+      "passed": true
+    },
+    {
+      "check": "01-landscape: every arrow has visible endpoints",
+      "passed": true
+    },
+    {
+      "check": "01-landscape: every arrow names its action and mechanism",
+      "passed": true
+    },
+    {
+      "check": "01-landscape: no disconnected boxes",
+      "passed": true
+    },
+    {
+      "check": "01-landscape: parsed view includes exactly its intended elements",
+      "passed": true
+    },
+    {
+      "check": "01-landscape: every selected dataflow survives view filtering",
+      "passed": true
+    },
+    {
+      "check": "01-landscape: correct level-1 abstraction",
+      "passed": true
+    },
+    {
+      "check": "04-alternatives: visible static dataflow exists",
+      "passed": true
+    },
+    {
+      "check": "04-alternatives: every arrow has visible endpoints",
+      "passed": true
+    },
+    {
+      "check": "04-alternatives: every arrow names its action and mechanism",
+      "passed": true
+    },
+    {
+      "check": "04-alternatives: no disconnected boxes",
+      "passed": true
+    },
+    {
+      "check": "04-alternatives: parsed view includes exactly its intended elements",
+      "passed": true
+    },
+    {
+      "check": "04-alternatives: every selected dataflow survives view filtering",
+      "passed": true
+    },
+    {
+      "check": "04-alternatives: correct level-1 abstraction",
+      "passed": true
+    },
+    {
+      "check": "Every logical element appears in a view",
+      "passed": true
+    },
+    {
+      "check": "Every system and actor appears at C4 level 1",
+      "passed": true
+    },
+    {
+      "check": "Every container appears at C4 level 2",
+      "passed": true
+    },
+    {
+      "check": "Every component appears in a component view",
+      "passed": true
+    },
+    {
+      "check": "Preservation only: deployment_elements is unchanged",
+      "passed": true
+    },
+    {
+      "check": "Preservation only: deployment_relationships is unchanged",
+      "passed": true
+    },
+    {
+      "check": "Preservation only: node_placement is unchanged",
+      "passed": true
+    },
+    {
+      "check": "Preservation only: deployment view definitions unchanged",
+      "passed": true
+    },
+    {
+      "check": "Preservation only: emitted deployment DSL blocks are unchanged",
+      "passed": true
+    },
+    {
+      "check": "Full and static entrypoints share the identical logical model",
+      "passed": true
+    },
+    {
+      "check": "Full and static entrypoints share identical logical views",
+      "passed": true
+    },
+    {
+      "check": "Existing exports are byte-for-byte unchanged",
+      "passed": true
+    },
+    {
+      "check": "Static DSL excludes deployment declarations",
+      "passed": true
+    }
+  ]
+}

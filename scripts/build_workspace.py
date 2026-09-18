@@ -6,7 +6,7 @@ ROOT=Path(__file__).resolve().parents[1]
 SOURCES=json.loads((ROOT/"sources.json").read_text(encoding="utf-8"))
 E={};R=[];V=[];D={};DR=[];instances=[]
 def source(repo,path=""):
-    if repo=="reference": return SOURCES["pages"]["aks"]["url"]
+    if repo=="reference": return SOURCES["pages"]["firefly-architecture"]["url"]
     if repo in SOURCES["pages"]: return SOURCES["pages"][repo]["url"]
     s=SOURCES["repositories"][repo]
     if path and path not in s["paths"]: raise ValueError(f"Unverified path {repo}:{path}")
@@ -19,7 +19,9 @@ def add(id,kind,name,desc,tech="",repo="firefly",path="",tags="",classification=
 def rel(a,b,desc,tech="In-process calls / Go",tag="Dataflow"):
     assert a in E and b in E,(a,b)
     if any(x["source"]==a and x["destination"]==b and x["description"]==desc for x in R): return
-    R.append(dict(id=f"{a}->{b}:{desc}",source=a,destination=b,description=desc,technology=tech,tags=tag))
+    R.append(dict(id=f"{a}->{b}:{desc}",source=a,destination=b,description=desc,technology=tech,tags=tag,
+                  evidence=list(dict.fromkeys([E[a]["source"], E[b]["source"]])),
+                  classification="Architecture flow inferred from documented responsibilities"))
 def view(kind,scope,key,title,ids,direction="lr"):
     ids=list(dict.fromkeys(ids))
     assert all(x in E for x in ids),(key,[x for x in ids if x not in E])
@@ -214,6 +216,9 @@ view("container","tools","61-tools","Container - developer tooling",kids("tools"
 view("component","tools.sandbox","62-sandbox","Component - Sandbox sample application",kids("tools.sandbox")+["firefly.core"])
 view("container","ops","63-operations","Container - platform operations",kids("ops")+["operator","firefly.core","firefly.pg","besu.node"])
 
+from ecosystem_model import extend_model
+extend_model(E, R, V, add, rel, view, comps, flows, kids, source)
+
 
 def dn(id,name,desc,tech,tags=""):
     D[id]=dict(id=id,parent=id.rsplit(".",1)[0] if "." in id else None,kind="deploymentNode",name=name,description=desc,technology=tech,tags=tags)
@@ -343,7 +348,7 @@ def emit_element(id,level):
     w("url "+q(e["source"]),level+1)
     props({"architecture.id":id,"evidence":e["classification"]},level+1)
     if kind=="softwareSystem" and kids(id):
-        w("!docs docs/system",level+1);w("!adrs decisions",level+1)
+        w("!docs docs/static/system",level+1);w("!adrs docs/static/decisions",level+1)
     for child in kids(id):emit_element(child,level+1)
     emit_pending(id,R,level+1)
     emit_outgoing(id,R,level+1)
@@ -367,65 +372,74 @@ def emit_deployment(id,level):
     emit_outgoing(id,DR,level+1)
     w("}",level)
     defined.add(id)
-w("// Generated from scripts/build_workspace.py and model_data.py. Rebuild after editing the source definitions.")
-w('workspace "FireFly + Besu - three-member consortium" "C4 levels 1-3 and three-zone AKS reference with explicit static dataflows." {')
-w("!identifiers hierarchical",1);w("!impliedRelationships false",1)
-props({"structurizr.inspection.workspace.scope":"info"},1)
-w("!docs docs/workspace",1);w("!adrs decisions",1);w("model {",1)
-for id,e in E.items():
-    if e["parent"] is None:emit_element(id,2)
-emit_pending("",R,2)
-w('production = deploymentEnvironment "AKS reference" {',2)
-for group,name in [("memberA","Member A private runtime"),("memberB","Member B private runtime"),("memberC","Member C private runtime"),("privateExchange","Authenticated Data Exchange peers"),("sharedContent","Shared IPFS swarm"),("rpcAccess","Private RPC clients and endpoints"),("blockchain","Besu peer network")]:
-    w(f"{group} = deploymentGroup {q(name)}",3)
-emit_deployment("azure",3)
-w("}",2)
-emit_pending("",DR,2)
-assert len(emitted_relationships)==len(R)+len(DR),"Every authored relationship must be emitted exactly once"
-w("}",1);w("views {",1)
-for v in V:
-    k=v["kind"];scope=v["scope"]
-    prefix=k+(" * production" if k=="deployment" else (" "+scope if scope else ""))
-    w(prefix+" "+q(v["key"])+" "+q(v["title"])+" {",2)
-    w("title "+q(v["title"]),3)
-    w("include "+" ".join(("production."+x if k=="deployment" else x) for x in v["elements"]),3)
-    if k!="deployment":
-        w("exclude *->*",3)
-        selected=set(v["relationships"])
-        for pair in dict.fromkeys(f"{r['source']}->{r['destination']}" for r in R if r["id"] in selected):
-            w("include "+pair,3)
-    w("autoLayout "+v["direction"]+" 360 200",3);w("}",2)
-w("styles {",2)
-styles=[
-("Element",{"color":"#122C43","stroke":"#57718A","strokeWidth":"2","fontSize":"22","width":"360","height":"220"}),
-("Person",{"shape":"Person","background":"#173F5F","color":"#FFFFFF"}),
-("Software System",{"background":"#176B87","color":"#FFFFFF"}),
-("Container",{"background":"#DCECF7"}),
-("Component",{"background":"#EEF5FA"}),
-("Database",{"shape":"Cylinder","background":"#E8E4F5"}),
-("Private",{"stroke":"#8C4966"}),("Shared",{"stroke":"#237A69"}),
-("Blockchain",{"background":"#EFE4C8","stroke":"#9B782E","color":"#122C43"}),
-("Contract",{"background":"#FFF3D3"}),
-("Optional",{"background":"#F0F0F0","stroke":"#7A7A7A","border":"Dashed","color":"#122C43"}),
-("Operational",{"background":"#E8EEEE","stroke":"#59736C"}),
-("Deployment Node",{"background":"#FFFFFF","stroke":"#A5B8C5","fontSize":"26"}),
-("Zone1",{"background":"#F4F9FD","stroke":"#3680AD"}),
-("Zone2",{"background":"#F3FAF5","stroke":"#428A61"}),
-("Zone3",{"background":"#FCF7EF","stroke":"#A77E42"})]
-for tag,attributes in styles:
-    w("element "+q(tag)+" {",3)
-    for k,val in attributes.items():w(k+" "+val,4)
-    w("}",3)
-for tag,color,dashed in [("Relationship","#476177",False),("PrivateFlow","#8C4966",False),("SharedFlow","#237A69",False),("BlockchainFlow","#967228",False),("Operational","#6D817A",True),("Alternative","#888888",True)]:
-    w("relationship "+q(tag)+" {",3);w("color "+color,4);w("fontSize 18",4);w("thickness 2",4)
-    w("routing Orthogonal",4);w("dashed "+str(dashed).lower(),4);w("}",3)
-w("}",2)
-w("properties {",2);w('"structurizr.sort" "key"',3);w("}",2)
-w("}",1);w("configuration {",1);w("scope none",2);w("}",1);w("}")
-(ROOT/"workspace.dsl").write_text("\n".join(lines)+"\n",encoding="utf-8")
+def emit_workspace(include_deployment):
+    global lines, defined, emitted_relationships
+    lines=[]; defined=set(); emitted_relationships=set()
+    w("// Generated from scripts/build_workspace.py and model_data.py. Rebuild after editing the source definitions.")
+    w('workspace "FireFly ecosystem + private Besu" '+q('C4 levels 1-3 with static dataflows; deployment definitions preserved for later review.' if include_deployment else 'C4 levels 1-3 with static dataflows; deployment validation excluded.')+' {')
+    w("!identifiers hierarchical",1);w("!impliedRelationships false",1)
+    props({"structurizr.inspection.workspace.scope":"info"},1)
+    w("!docs docs/static/workspace",1);w("!adrs docs/static/decisions",1);w("model {",1)
+    for id,e in E.items():
+        if e["parent"] is None:emit_element(id,2)
+    emit_pending("",R,2)
+    if include_deployment:
+        w('production = deploymentEnvironment "AKS reference" {',2)
+        for group,name in [("memberA","Member A private runtime"),("memberB","Member B private runtime"),("memberC","Member C private runtime"),("privateExchange","Authenticated Data Exchange peers"),("sharedContent","Shared IPFS swarm"),("rpcAccess","Private RPC clients and endpoints"),("blockchain","Besu peer network")]:
+            w(f"{group} = deploymentGroup {q(name)}",3)
+        emit_deployment("azure",3)
+        w("}",2)
+        emit_pending("",DR,2)
+    assert len(emitted_relationships)==len(R)+(len(DR) if include_deployment else 0),"Every authored relationship must be emitted exactly once"
+    w("}",1);w("views {",1)
+    for v in V:
+        if v["kind"]=="deployment" and not include_deployment: continue
+        k=v["kind"];scope=v["scope"]
+        prefix=k+(" * production" if k=="deployment" else (" "+scope if scope else ""))
+        w(prefix+" "+q(v["key"])+" "+q(v["title"])+" {",2)
+        w("title "+q(v["title"]),3)
+        w("include "+" ".join(("production."+x if k=="deployment" else x) for x in v["elements"]),3)
+        if k!="deployment":
+            w("exclude *->*",3)
+            selected=set(v["relationships"])
+            for pair in dict.fromkeys(f"{r['source']}->{r['destination']}" for r in R if r["id"] in selected):
+                w("include "+pair,3)
+        w("autoLayout "+v["direction"]+" 360 200",3);w("}",2)
+    w("styles {",2)
+    styles=[
+    ("Element",{"color":"#122C43","stroke":"#57718A","strokeWidth":"2","fontSize":"22","width":"360","height":"220"}),
+    ("Person",{"shape":"Person","background":"#173F5F","color":"#FFFFFF"}),
+    ("Software System",{"background":"#176B87","color":"#FFFFFF"}),
+    ("Container",{"background":"#DCECF7"}),
+    ("Component",{"background":"#EEF5FA"}),
+    ("Database",{"shape":"Cylinder","background":"#E8E4F5"}),
+    ("Private",{"stroke":"#8C4966"}),("Shared",{"stroke":"#237A69"}),
+    ("Blockchain",{"background":"#EFE4C8","stroke":"#9B782E","color":"#122C43"}),
+    ("Contract",{"background":"#FFF3D3"}),
+    ("Optional",{"background":"#F0F0F0","stroke":"#7A7A7A","border":"Dashed","color":"#122C43"}),
+    ("Operational",{"background":"#E8EEEE","stroke":"#59736C"}),
+    ("Deployment Node",{"background":"#FFFFFF","stroke":"#A5B8C5","fontSize":"26"}),
+    ("Zone1",{"background":"#F4F9FD","stroke":"#3680AD"}),
+    ("Zone2",{"background":"#F3FAF5","stroke":"#428A61"}),
+    ("Zone3",{"background":"#FCF7EF","stroke":"#A77E42"})]
+    for tag,attributes in styles:
+        w("element "+q(tag)+" {",3)
+        for k,val in attributes.items():w(k+" "+val,4)
+        w("}",3)
+    for tag,color,dashed in [("Relationship","#476177",False),("PrivateFlow","#8C4966",False),("SharedFlow","#237A69",False),("BlockchainFlow","#967228",False),("Operational","#6D817A",True),("Alternative","#888888",True)]:
+        w("relationship "+q(tag)+" {",3);w("color "+color,4);w("fontSize 18",4);w("thickness 2",4)
+        w("routing Orthogonal",4);w("dashed "+str(dashed).lower(),4);w("}",3)
+    w("}",2)
+    w("properties {",2);w('"structurizr.sort" "key"',3);w("}",2)
+    w("}",1);w("configuration {",1);w("scope none",2);w("}",1);w("}")
+    (ROOT/("workspace.dsl" if include_deployment else "workspace-static.dsl")).write_text("\n".join(lines)+"\n",encoding="utf-8")
+
+emit_workspace(True)
+emit_workspace(False)
 for item in instances:item["deployment_groups"]=deployment_groups(item)
 catalog={"elements":list(E.values()),"relationships":R,"views":V,"deployment_elements":list(D.values()),"deployment_relationships":DR,
 "node_placement":[dict(node=n,owner=o,zone=z,validator=v) for n,o,z,v in node_specs]}
+(ROOT/"model-catalog-static.json").write_text(json.dumps({"elements":list(E.values()),"relationships":R,"views":[v for v in V if v["kind"]!="deployment"]},indent=2)+"\n",encoding="utf-8")
 (ROOT/"model-catalog.json").write_text(json.dumps(catalog,indent=2)+"\n",encoding="utf-8")
 with (ROOT/"coverage.csv").open("w",encoding="utf-8",newline="") as f:
     writer=csv.writer(f);writer.writerow(["element","level","name","source","classification","views"])

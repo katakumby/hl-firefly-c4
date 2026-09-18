@@ -1,0 +1,1 @@
+["structurizr/structurizr@sha256:b5140a2a783b0cc780fe4b54dcfeecb565ddd5fce5a578e7ff600b78ad0cc03a"]

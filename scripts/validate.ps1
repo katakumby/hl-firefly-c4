@@ -1,8 +1,13 @@
-param([switch]$SkipRender)
+param([switch]$SkipRender, [switch]$StaticOnly)
 $ErrorActionPreference = 'Stop'
 $workspaceDirectory = Split-Path -Parent $PSScriptRoot
 Push-Location -LiteralPath $workspaceDirectory
 try {
+    if ($StaticOnly) {
+        python -B scripts/validate_static.py
+        if ($LASTEXITCODE -ne 0) { throw 'Static C4 validation failed. See reports/static/validation-summary.md.' }
+        return
+    }
     New-Item -ItemType Directory -Force -Path reports,exports | Out-Null
     python scripts/build_workspace.py
     if ($LASTEXITCODE -ne 0) { throw 'Workspace generation failed.' }
@@ -12,8 +17,8 @@ try {
     if ($LASTEXITCODE -ne 0) { throw 'DSL validation failed.' }
     docker compose run --rm cli inspect -workspace workspace.dsl 2>&1 | Tee-Object -FilePath reports/inspect-dsl.txt
     $dslInspectExitCode = $LASTEXITCODE
-    $dslScopeFindings = @(Get-Content -LiteralPath reports/inspect-dsl.txt | Select-String '^\s*INFO\s*\|\s*workspace.scope\s*\|').Count
-    if ($dslInspectExitCode -notin @(1,4) -or $dslScopeFindings -ne 4) { throw 'Unexpected DSL inspection findings.' }
+    python -B scripts/check_inspect.py reports/inspect-dsl.txt $dslInspectExitCode
+    if ($LASTEXITCODE -ne 0) { throw 'Unexpected DSL inspection findings.' }
     docker compose run --rm cli export -workspace workspace.dsl -format json -output exports 2>&1 | Tee-Object -FilePath reports/export-json.txt
     if ($LASTEXITCODE -ne 0) { throw 'JSON export failed.' }
     python scripts/layout_workspace.py
@@ -22,10 +27,8 @@ try {
     if ($LASTEXITCODE -ne 0) { throw 'JSON validation failed.' }
     docker compose run --rm cli inspect -workspace exports/workspace.json 2>&1 | Tee-Object -FilePath reports/inspect.txt
     $inspectExitCode = $LASTEXITCODE
-    $scopeFindings = @(Get-Content -LiteralPath reports/inspect.txt | Select-String '^\s*INFO\s*\|\s*workspace.scope\s*\|').Count
-    if ($inspectExitCode -notin @(1,4) -or $scopeFindings -ne 4) {
-        throw "Unexpected full inspection result: $inspectExitCode; scope findings: $scopeFindings"
-    }
+    python -B scripts/check_inspect.py reports/inspect.txt $inspectExitCode
+    if ($LASTEXITCODE -ne 0) { throw 'Unexpected full inspection result.' }
     docker compose run --rm cli inspect -workspace exports/workspace.json -severity error,warning 2>&1 | Tee-Object -FilePath reports/inspect-errors-warnings.txt
     if ($LASTEXITCODE -ne 0) { throw 'Actionable inspection findings remain.' }
     python scripts/audit_workspace.py
@@ -46,6 +49,6 @@ try {
         python scripts/validation_summary.py
         if ($LASTEXITCODE -ne 0) { throw 'Validation summary failed.' }
     }
-    Write-Output 'PASS: validation, actionable inspections and architecture checks. Four intentional scope INFO findings retained.'
+    Write-Output 'PASS: validation, actionable inspections and architecture checks. Documented scope INFO findings retained.'
 } finally { Pop-Location }
 

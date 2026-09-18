@@ -3,31 +3,14 @@ from pathlib import Path
 import hashlib
 import json
 import re
+from audit_security_catalog import audit_security_catalog
 
 ROOT=Path(__file__).resolve().parents[1]
 REPORT=ROOT/'reports/static'
 
-def deferred_blocks(text):
-    """Extract only unchanged deferred blocks, respecting quoted DSL braces."""
-    starts=re.finditer(r'^\s*(?:production = deploymentEnvironment|!element production\.|deployment \* production)[^\n]*\{',text,re.M)
-    blocks=[]
-    for match in starts:
-        start=match.start();opening=text.index('{',match.start());depth=0;quoted=False;escaped=False
-        for index in range(opening,len(text)):
-            char=text[index]
-            if escaped:escaped=False;continue
-            if quoted and char=='\\':escaped=True;continue
-            if char=='"':quoted=not quoted
-            if not quoted:
-                if char=='{':depth+=1
-                elif char=='}':depth-=1
-                if depth==0:
-                    blocks.append(text[start:index+1]);break
-    return blocks
-
 def audit(parsed_path, write_report=True, verbose=True):
     w=json.loads(Path(parsed_path).read_text(encoding='utf-8-sig'))
-    catalog=json.loads((ROOT/'model-catalog-static.json').read_text(encoding='utf-8'))
+    catalog=json.loads((ROOT/'model-catalog.json').read_text(encoding='utf-8'))
     elements={};types={};parents={};rels={};checks=[]
     def check(test,message):checks.append({'check':message,'passed':bool(test)})
     def collect(items,kind,parent=None):
@@ -83,26 +66,22 @@ def audit(parsed_path, write_report=True, verbose=True):
     check({id for id,t in types.items() if t in ('person','softwareSystem')}<=system_visible,'Every system and actor appears at C4 level 1')
     check({id for id,t in types.items() if t=='container'}<=container_visible,'Every container appears at C4 level 2')
     check({id for id,t in types.items() if t=='component'}<=component_visible,'Every component appears in a component view')
-    # These compare preserved definitions only; they do not assess deployment
-    # topology, availability, placement, quorum, layouts or runtime behavior.
-    baseline=ROOT/'.cache/static-baseline'
-    old=json.loads((baseline/'model-catalog.json').read_text(encoding='utf-8'))
-    full=json.loads((ROOT/'model-catalog.json').read_text(encoding='utf-8'))
-    for key in ('deployment_elements','deployment_relationships','node_placement'):
-        check(old[key]==full[key],f'Preservation only: {key} is unchanged')
-    check([v for v in old['views'] if v['kind']=='deployment']==[v for v in full['views'] if v['kind']=='deployment'],'Preservation only: deployment view definitions unchanged')
-    check(deferred_blocks((baseline/'workspace.dsl').read_text(encoding='utf-8'))==deferred_blocks((ROOT/'workspace.dsl').read_text(encoding='utf-8')),'Preservation only: emitted deployment DSL blocks are unchanged')
-    check(all(full[k]==catalog[k] for k in ('elements','relationships')),'Full and static entrypoints share the identical logical model')
-    check([v for v in full['views'] if v['kind']!='deployment']==catalog['views'],'Full and static entrypoints share identical logical views')
-    hashes=json.loads((baseline/'exports-hashes.json').read_text())
-    now={str(f):hashlib.sha256(f.read_bytes()).hexdigest() for f in (ROOT/'exports').rglob('*') if f.is_file()}
-    now={str(Path(k).relative_to(ROOT)):v for k,v in now.items()}
-    check(now==hashes,'Existing exports are byte-for-byte unchanged')
-    text=(ROOT/'workspace-static.dsl').read_text(encoding='utf-8')
+    checks.extend(audit_security_catalog(catalog, json.loads((ROOT/'sources.json').read_text(encoding='utf-8'))))
+    # Compare immutable historical material, not an active second workspace.
+    baseline=ROOT/'.cache/static-preservation.json'
+    hashes=json.loads(baseline.read_text(encoding='utf-8'))
+    now={f.relative_to(ROOT).as_posix():hashlib.sha256(f.read_bytes()).hexdigest()
+         for directory in ('exports','archive') for f in (ROOT/directory).rglob('*') if f.is_file()}
+    check(now==hashes,'Archived deployment material and historical exports are byte-for-byte unchanged')
+    check({p.name for p in ROOT.glob('*.dsl')}=={'workspace.dsl'},'Exactly one canonical DSL workspace exists')
+    check(not (ROOT/'model-catalog-static.json').exists(),'No redundant static model catalog exists')
+    check(set(catalog)=={'elements','relationships','views'},'Canonical catalog contains only the logical model')
+    text=(ROOT/'workspace.dsl').read_text(encoding='utf-8')
+    check(not re.search(r'\bflow_[0-9a-f]{16,}\b',text),'DSL contains no opaque generated relationship identifiers')
     check(not re.search(r'^\s*(?:\w+\s*=\s*)?(?:deploymentEnvironment|deploymentNode|containerInstance|deployment)\s',text,re.M),'Static DSL excludes deployment declarations')
     result={'passed':all(c['passed'] for c in checks),'elements':len(elements),'components':sum(t=='component' for t in types.values()),
             'relationships':len(rels),'views':len(views),'assertions':len(checks),'errors':[c['check'] for c in checks if not c['passed']],
-            'deployment_validation':'DEFERRED (preservation comparisons only)','diagram_exports':'NOT RUN','checks':checks}
+            'deployment_validation':'NOT RUN (legacy material archived)','diagram_exports':'NOT RUN','checks':checks}
     if write_report:
         REPORT.mkdir(parents=True,exist_ok=True)
         (REPORT/'architecture-audit.json').write_text(json.dumps(result,indent=2)+'\n',encoding='utf-8')

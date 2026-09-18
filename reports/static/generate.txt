@@ -1,1 +1,1 @@
-Generated 234 logical elements, 418 relationships, 57 views, 58 deployment instances.
+Generated workspace.dsl: 331 logical elements, 673 relationships, 89 static views.

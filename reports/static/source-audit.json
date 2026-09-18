@@ -101,5 +101,7 @@
       "commit": "c4e813bc611ff2c6222ff84adf1cceabfd929172",
       "evidence": "https://raw.githubusercontent.com/hyperledger-firefly/sandbox/ef7f240b8acf9c79c8fdf5a8bccb73e9de482069/server/package-lock.json"
     }
-  ]
+  ],
+  "security_elements": 97,
+  "security_document_links": 101
 }

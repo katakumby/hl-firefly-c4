@@ -15103,6 +15103,146 @@
       "bytes": 54689,
       "cache": ".cache/sources-static/inspections.txt",
       "retrieved_at": "2026-09-18T21:03:09.059773+00:00"
+    },
+    "security-keycloak": {
+      "url": "https://www.keycloak.org/docs/latest/server_admin/index.html",
+      "resolved_url": "https://www.keycloak.org/docs/latest/server_admin/index.html",
+      "sha256": "ce87c66f5f1a887ffb22ea24313a0668a58b73cc5ebf51f5497ac6d84a41af84",
+      "bytes": 1855752,
+      "cache": ".cache/sources-security/security-keycloak.html",
+      "retrieved_at": "2026-09-18T22:15:50.042698+00:00",
+      "capture_method": "Direct HTTP document snapshot",
+      "classification": "Official product documentation; logical decomposition is inferred"
+    },
+    "security-keycloak-db": {
+      "url": "https://www.keycloak.org/server/db",
+      "resolved_url": "https://www.keycloak.org/server/db",
+      "sha256": "9e6f0eed2218d84f8f6098b9d47cfcc2b8c4ff591acf9e5d933110f0b3e6470d",
+      "bytes": 127210,
+      "cache": ".cache/sources-security/security-keycloak-db.html",
+      "retrieved_at": "2026-09-18T22:15:50.202134+00:00",
+      "capture_method": "Direct HTTP document snapshot",
+      "classification": "Official product documentation; logical decomposition is inferred"
+    },
+    "security-hsm": {
+      "url": "https://learn.microsoft.com/en-us/azure/key-vault/managed-hsm/access-control",
+      "resolved_url": "https://learn.microsoft.com/en-us/azure/key-vault/managed-hsm/access-control",
+      "sha256": "ad2692cf94269baf3964a5f80269bb16acee0124a021396b42e70a6c93fe1655",
+      "bytes": 62362,
+      "cache": ".cache/sources-security/security-hsm.html",
+      "retrieved_at": "2026-09-18T22:15:50.423910+00:00",
+      "capture_method": "Direct HTTP document snapshot",
+      "classification": "Official product documentation; logical decomposition is inferred"
+    },
+    "security-hsm-keys": {
+      "url": "https://learn.microsoft.com/en-us/azure/key-vault/managed-hsm/about-keys-details",
+      "resolved_url": "https://learn.microsoft.com/en-us/azure/key-vault/managed-hsm/about-keys-details",
+      "sha256": "91bc8fcb945dddc9a31a92748a2f4e4c4aabf4458c02e1df33d544c93456b367",
+      "bytes": 64759,
+      "cache": ".cache/sources-security/security-hsm-keys.html",
+      "retrieved_at": "2026-09-18T22:15:50.658023+00:00",
+      "capture_method": "Direct HTTP document snapshot",
+      "classification": "Official product documentation; logical decomposition is inferred"
+    },
+    "security-pam": {
+      "url": "https://docs.cyberark.com/pam-self-hosted/latest/en/content/pas%20inst/installationoverview.htm",
+      "resolved_url": "https://docs.cyberark.com/pam-self-hosted/latest/en/content/pas%20inst/installationoverview.htm",
+      "sha256": "6a0621e38fd4177824c4e09e6b8e0671dcc30eb7a5fb5b478b813c7e1b287a91",
+      "bytes": 8472,
+      "cache": ".cache/sources-security/security-pam.txt",
+      "retrieved_at": "2026-09-18T22:15:50.827187+00:00",
+      "capture_method": "Web reader text excerpt; direct HTTP returned 404",
+      "classification": "Official product documentation; logical decomposition is inferred"
+    },
+    "security-conjur": {
+      "url": "https://docs.cyberark.com/secrets-manager-sh/latest/en/content/resources/_topnav/cc_home.htm",
+      "resolved_url": "https://docs.cyberark.com/secrets-manager-sh/latest/en/content/resources/_topnav/cc_home.htm",
+      "sha256": "42f1cd43bcd2d4a8c59fa581c415f86fa13b1ef8ccff14cdc551feeb16241a92",
+      "bytes": 2978,
+      "cache": ".cache/sources-security/security-conjur.txt",
+      "retrieved_at": "2026-09-18T22:15:50.936919+00:00",
+      "capture_method": "Web reader text excerpt; direct HTTP returned 404",
+      "classification": "Official product documentation; logical decomposition is inferred"
+    },
+    "security-conjur-sync": {
+      "url": "https://docs.cyberark.com/secrets-manager-sh/latest/en/content/conjur/cv_synchronizer-lp.htm",
+      "resolved_url": "https://docs.cyberark.com/secrets-manager-sh/latest/en/content/conjur/cv_synchronizer-lp.htm",
+      "sha256": "e911448c310c2262dfde5c4648ed9e4257cdf40226f18460adb901f11d89f564",
+      "bytes": 2547,
+      "cache": ".cache/sources-security/security-conjur-sync.txt",
+      "retrieved_at": "2026-09-18T22:15:51.064533+00:00",
+      "capture_method": "Web reader text excerpt; direct HTTP returned 404",
+      "classification": "Official product documentation; logical decomposition is inferred"
+    },
+    "security-entra": {
+      "url": "https://learn.microsoft.com/en-us/entra/architecture/architecture",
+      "resolved_url": "https://learn.microsoft.com/en-us/entra/architecture/architecture",
+      "sha256": "03c14d79d6d3c6944ce9f1a6de19e2176b827847f33d9f1eaef25e32bf561862",
+      "bytes": 58860,
+      "cache": ".cache/sources-security/security-entra.html",
+      "retrieved_at": "2026-09-18T22:15:51.386458+00:00",
+      "capture_method": "Direct HTTP document snapshot",
+      "classification": "Official product documentation; logical decomposition is inferred"
+    },
+    "security-entra-oidc": {
+      "url": "https://learn.microsoft.com/en-us/entra/identity-platform/v2-protocols-oidc",
+      "resolved_url": "https://learn.microsoft.com/en-us/entra/identity-platform/v2-protocols-oidc",
+      "sha256": "d04152c39a3a2263d5a0400a61db1e7f244646be5335fe98a2c81b5043df3d7f",
+      "bytes": 85389,
+      "cache": ".cache/sources-security/security-entra-oidc.html",
+      "retrieved_at": "2026-09-18T22:15:51.747056+00:00",
+      "capture_method": "Direct HTTP document snapshot",
+      "classification": "Official product documentation; logical decomposition is inferred"
+    },
+    "security-cloud-sync": {
+      "url": "https://learn.microsoft.com/en-us/entra/identity/hybrid/cloud-sync/what-is-cloud-sync",
+      "resolved_url": "https://learn.microsoft.com/en-us/entra/identity/hybrid/cloud-sync/what-is-cloud-sync",
+      "sha256": "5e9eeb26a2ba1462263f630c5a3a9c54cf0820c6a3040ac266912d8247ba8eab",
+      "bytes": 55995,
+      "cache": ".cache/sources-security/security-cloud-sync.html",
+      "retrieved_at": "2026-09-18T22:15:52.052730+00:00",
+      "capture_method": "Direct HTTP document snapshot",
+      "classification": "Official product documentation; logical decomposition is inferred"
+    },
+    "security-ad": {
+      "url": "https://learn.microsoft.com/en-us/windows-server/identity/ad-ds/get-started/virtual-dc/active-directory-domain-services-overview",
+      "resolved_url": "https://learn.microsoft.com/en-us/windows-server/identity/ad-ds/get-started/virtual-dc/active-directory-domain-services-overview",
+      "sha256": "a3cf89073c73c99a6d3905595600119e2fcbfafb2048b771e749d3edddd56ab0",
+      "bytes": 53472,
+      "cache": ".cache/sources-security/security-ad.html",
+      "retrieved_at": "2026-09-18T22:15:52.390384+00:00",
+      "capture_method": "Direct HTTP document snapshot",
+      "classification": "Official product documentation; logical decomposition is inferred"
+    },
+    "security-adfs": {
+      "url": "https://learn.microsoft.com/en-us/windows-server/identity/ad-fs/ad-fs-overview",
+      "resolved_url": "https://learn.microsoft.com/en-us/windows-server/identity/ad-fs/ad-fs-overview",
+      "sha256": "0d5bfd1b8af15e99a015f12fe854e2d7b3d4ef58f1abd5aeeee9738fedf79c15",
+      "bytes": 48385,
+      "cache": ".cache/sources-security/security-adfs.html",
+      "retrieved_at": "2026-09-18T22:15:52.688671+00:00",
+      "capture_method": "Direct HTTP document snapshot",
+      "classification": "Official product documentation; logical decomposition is inferred"
+    },
+    "security-adfs-claims": {
+      "url": "https://learn.microsoft.com/en-us/windows-server/identity/ad-fs/technical-reference/the-role-of-the-claims-engine",
+      "resolved_url": "https://learn.microsoft.com/en-us/windows-server/identity/ad-fs/technical-reference/the-role-of-the-claims-engine",
+      "sha256": "e2f35654d993488046a922b60f00b979cdc34d76bbcc312d9e112960e21c84f6",
+      "bytes": 60185,
+      "cache": ".cache/sources-security/security-adfs-claims.html",
+      "retrieved_at": "2026-09-18T22:15:53.124922+00:00",
+      "capture_method": "Direct HTTP document snapshot",
+      "classification": "Official product documentation; logical decomposition is inferred"
+    },
+    "security-ethereum-transactions": {
+      "url": "https://ethereum.org/en/developers/docs/transactions/",
+      "resolved_url": "https://ethereum.org/developers/docs/transactions/",
+      "sha256": "fa51f2287f87125387e1add01d028ed8d077d646625367e0ee317655c477b4ac",
+      "bytes": 485098,
+      "cache": ".cache/sources-security/security-ethereum-transactions.html",
+      "retrieved_at": "2026-09-18T22:15:54.002044+00:00",
+      "capture_method": "Direct HTTP document snapshot",
+      "classification": "Official product documentation; logical decomposition is inferred"
     }
   },
   "static_retrieved_at": "2026-09-18T21:02:48.224172+00:00",
@@ -15142,5 +15282,6 @@
       "commit": "c4e813bc611ff2c6222ff84adf1cceabfd929172",
       "evidence": "https://raw.githubusercontent.com/hyperledger-firefly/sandbox/ef7f240b8acf9c79c8fdf5a8bccb73e9de482069/server/package-lock.json"
     }
-  ]
+  ],
+  "security_retrieved_at": "2026-09-18T22:15:54.002044+00:00"
 }

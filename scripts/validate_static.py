@@ -28,13 +28,11 @@ def main():
         if required and result.returncode:
             raise RuntimeError(f'{name} failed:\n{result.stdout}')
         return result
-    baseline=ROOT/'.cache/static-baseline'
-    baseline.mkdir(parents=True,exist_ok=True)
-    for name in ('workspace.dsl','model-catalog.json'):
-        if not (baseline/name).exists():(baseline/name).write_bytes((ROOT/name).read_bytes())
-    if not (baseline/'exports-hashes.json').exists():
-        hashes={str(f.relative_to(ROOT)):hashlib.sha256(f.read_bytes()).hexdigest() for f in (ROOT/'exports').rglob('*') if f.is_file()}
-        (baseline/'exports-hashes.json').write_text(json.dumps(hashes),encoding='utf-8')
+    baseline=ROOT/'.cache/static-preservation.json'
+    baseline.parent.mkdir(parents=True,exist_ok=True)
+    hashes={f.relative_to(ROOT).as_posix():hashlib.sha256(f.read_bytes()).hexdigest()
+            for directory in ('exports','archive') for f in (ROOT/directory).rglob('*') if f.is_file()}
+    baseline.write_text(json.dumps(hashes,indent=2)+'\n',encoding='utf-8')
     success=False;failure=None;inspection=None;result=None;parsed=None
     try:
         ready=run('docker-readiness',['docker','version','--format','{{.Server.Version}}'],False)
@@ -45,7 +43,7 @@ def main():
         run('source-inventory',[sys.executable,'-B','scripts/static_source_inventory.py'])
         # Use the exact pinned image independently of changes to Compose.
         docker=['docker','run','--rm','--mount',f'type=bind,source={ROOT},target=/usr/local/structurizr',IMAGE]
-        workspace='workspace-static.dsl'
+        workspace='workspace.dsl'
         run('validate',docker+['validate','-workspace',workspace])
         full=run('inspect',docker+['inspect','-workspace',workspace],False)
         inspection=assess(full.stdout,full.returncode)
@@ -69,12 +67,12 @@ def main():
         manifest={'started_at':started,'completed_at':datetime.now(timezone.utc).isoformat(),'passed':success,
                   'image':IMAGE,'commands':commands,'inspection':inspection,'failure':failure,
                   'parsed_workspace':str(parsed.relative_to(ROOT)) if parsed else None,
-                  'workspace_sha256':hashlib.sha256((ROOT/'workspace-static.dsl').read_bytes()).hexdigest() if (ROOT/'workspace-static.dsl').exists() else None,
+                  'workspace_sha256':hashlib.sha256((ROOT/'workspace.dsl').read_bytes()).hexdigest() if (ROOT/'workspace.dsl').exists() else None,
                   'deployment_validation':'NOT RUN','diagram_exports':'NOT RUN'}
         (REPORT/'run.json').write_text(json.dumps(manifest,indent=2)+'\n',encoding='utf-8')
         lines=['# Static C4 validation report','',f'Recorded: {manifest["completed_at"]}',
                '',f'**Result: {"PASS" if success else "FAIL"}**','',f'Image: `{IMAGE}`',
-               '', 'Inspected input: `workspace-static.dsl`. The main workspace includes preserved, unvalidated deployment definitions.',
+               '', 'Inspected input: `workspace.dsl`, the sole canonical workspace. Legacy deployment material is archived separately and is not loaded.',
                '', '## Commands','','| Check | Exit | Log |','|---|---:|---|']
         for command in commands:lines.append(f'| {command["name"]} | {command["exit_code"]} | [{command["report"]}]({command["report"]}) |')
         if result:
@@ -83,7 +81,8 @@ def main():
                     '- Every view has visible, labeled, directed static dataflows and no disconnected boxes.',
                     '- Every component appears in its owning container\'s component views.',
                     '- Parsed element selections and arrow endpoints exactly match the authored model.',
-                    '- Deployment definitions and all existing exports pass preservation comparisons. This is not deployment validation.']
+                    '- Only one active DSL workspace and one generated model catalog exist; no opaque relationship identifiers are emitted.',
+                    '- Archived deployment material and all historical exports pass preservation comparisons. This is not deployment validation.']
         if inspection:
             lines+=['','## Retained scope advisories','',
                     'Only `workspace.scope` is informational. All other inspection severities retain their defaults. Full inspect returns the displayed violation count (some command wrappers collapse it to 1); the separate error/warning gate must return 0.']

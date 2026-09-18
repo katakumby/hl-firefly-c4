@@ -49,7 +49,7 @@ Retrieved: 2026-09-18T21:02:48.224172+00:00
 - The official samples repository is cataloged as example applications represented by the member-application boundary; it is not a mandatory runtime.
 - Explorer is served by Core. The UI source snapshot is a reference implementation; Core does not pin a UI source commit in its Dockerfile.
 - Signer ABI/RLP/EIP-712 utilities, common helpers, SDKs and public interfaces are mapped to owning responsibilities, without claiming independent services.
-- Besu source modules are mapped to its focused node views; other infrastructure internals are outside this review.
+- Besu source modules are mapped to its focused node views. Security products have separate documentation-backed logical reference coverage; their proprietary implementation files are not inventoried.
 - Relationship rows state architecture-level dataflow inferred from the cited source responsibilities. They do not claim every arrow is one direct method call.
 - Tezos embeds FFTM v1.3.20; it is not silently assigned EVMConnect's FFTM revision.
 - Alternative EVM chain guides reuse the Ethereum adapter rather than duplicating its implementation.
@@ -64,3 +64,30 @@ Retrieved: 2026-09-18T21:02:48.224172+00:00
 - [besu-rpc](https://docs.besu-eth.org/private-networks/reference/api)
 - [structurizr-dsl](https://docs.structurizr.com/dsl/language)
 - [inspect](https://docs.structurizr.com/inspect)
+
+## Security product reference catalog
+
+Proprietary component decompositions are logical reference abstractions, not a verified internal code inventory. Proposed application integrations are labeled separately. Conjur Enterprise (Secrets Manager Self-Hosted) is the selected edition.
+
+Retrieved: 2026-09-18T22:15:54.002044+00:00
+
+| Documentation | Capture method | SHA-256 |
+|---|---|---|
+| [security-keycloak](https://www.keycloak.org/docs/latest/server_admin/index.html) | Direct HTTP document snapshot | `ce87c66f5f1a887ffb22ea24313a0668a58b73cc5ebf51f5497ac6d84a41af84` |
+| [security-keycloak-db](https://www.keycloak.org/server/db) | Direct HTTP document snapshot | `9e6f0eed2218d84f8f6098b9d47cfcc2b8c4ff591acf9e5d933110f0b3e6470d` |
+| [security-hsm](https://learn.microsoft.com/en-us/azure/key-vault/managed-hsm/access-control) | Direct HTTP document snapshot | `ad2692cf94269baf3964a5f80269bb16acee0124a021396b42e70a6c93fe1655` |
+| [security-hsm-keys](https://learn.microsoft.com/en-us/azure/key-vault/managed-hsm/about-keys-details) | Direct HTTP document snapshot | `91bc8fcb945dddc9a31a92748a2f4e4c4aabf4458c02e1df33d544c93456b367` |
+| [security-pam](https://docs.cyberark.com/pam-self-hosted/latest/en/content/pas%20inst/installationoverview.htm) | Web reader text excerpt; direct HTTP returned 404 | `6a0621e38fd4177824c4e09e6b8e0671dcc30eb7a5fb5b478b813c7e1b287a91` |
+| [security-conjur](https://docs.cyberark.com/secrets-manager-sh/latest/en/content/resources/_topnav/cc_home.htm) | Web reader text excerpt; direct HTTP returned 404 | `42f1cd43bcd2d4a8c59fa581c415f86fa13b1ef8ccff14cdc551feeb16241a92` |
+| [security-conjur-sync](https://docs.cyberark.com/secrets-manager-sh/latest/en/content/conjur/cv_synchronizer-lp.htm) | Web reader text excerpt; direct HTTP returned 404 | `e911448c310c2262dfde5c4648ed9e4257cdf40226f18460adb901f11d89f564` |
+| [security-entra](https://learn.microsoft.com/en-us/entra/architecture/architecture) | Direct HTTP document snapshot | `03c14d79d6d3c6944ce9f1a6de19e2176b827847f33d9f1eaef25e32bf561862` |
+| [security-entra-oidc](https://learn.microsoft.com/en-us/entra/identity-platform/v2-protocols-oidc) | Direct HTTP document snapshot | `d04152c39a3a2263d5a0400a61db1e7f244646be5335fe98a2c81b5043df3d7f` |
+| [security-cloud-sync](https://learn.microsoft.com/en-us/entra/identity/hybrid/cloud-sync/what-is-cloud-sync) | Direct HTTP document snapshot | `5e9eeb26a2ba1462263f630c5a3a9c54cf0820c6a3040ac266912d8247ba8eab` |
+| [security-ad](https://learn.microsoft.com/en-us/windows-server/identity/ad-ds/get-started/virtual-dc/active-directory-domain-services-overview) | Direct HTTP document snapshot | `a3cf89073c73c99a6d3905595600119e2fcbfafb2048b771e749d3edddd56ab0` |
+| [security-adfs](https://learn.microsoft.com/en-us/windows-server/identity/ad-fs/ad-fs-overview) | Direct HTTP document snapshot | `0d5bfd1b8af15e99a015f12fe854e2d7b3d4ef58f1abd5aeeee9738fedf79c15` |
+| [security-adfs-claims](https://learn.microsoft.com/en-us/windows-server/identity/ad-fs/technical-reference/the-role-of-the-claims-engine) | Direct HTTP document snapshot | `e2f35654d993488046a922b60f00b979cdc34d76bbcc312d9e112960e21c84f6` |
+| [security-ethereum-transactions](https://ethereum.org/en/developers/docs/transactions/) | Direct HTTP document snapshot | `fa51f2287f87125387e1add01d028ed8d077d646625367e0ee317655c477b4ac` |
+
+CyberArk entries use web-reader text excerpts because direct HTTP downloads returned 404. Fingerprints describe those excerpts; they are not full HTML snapshots.
+
+[Security element-to-document coverage](security-source-coverage.csv). Broad product documentation supports capabilities; grouping those capabilities into logical components is explicitly inferred.

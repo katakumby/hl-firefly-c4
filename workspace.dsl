@@ -1,5 +1,5 @@
-// Generated from scripts/build_workspace.py and model_data.py. Rebuild after editing the source definitions.
-workspace "FireFly ecosystem + private Besu" "C4 levels 1-3 with static dataflows; deployment definitions preserved for later review." {
+// Generated from scripts/build_workspace.py and its logical model extensions. Rebuild after editing source definitions.
+workspace "FireFly ecosystem + private Besu + security catalog" "C4 levels 1-3 with security product references and static dataflows; no deployments." {
     !identifiers hierarchical
     !impliedRelationships false
     properties {
@@ -1971,6 +1971,59 @@ workspace "FireFly ecosystem + private Besu" "C4 levels 1-3 with static dataflow
                 -> firefly.core.api "Submits API commands and queries" "HTTPS / REST" "Dataflow"
                 -> firefly.core.websockets "Acknowledges consumed event batches" "WebSocket / JSON" "Dataflow"
             }
+            hsmSigner = container "Proposed HSM signing adapter" "Optional custom Ethereum RPC signing proxy; requires implementation and compatibility testing. Not built into FireFly Signer." "Reference adapter / Ethereum JSON-RPC + Azure REST" {
+                tags "SecurityCatalog,Optional,ReferenceIntegration"
+                url "https://learn.microsoft.com/en-us/azure/key-vault/managed-hsm/about-keys-details"
+                properties {
+                    "architecture.id" "apps.hsmSigner"
+                    "evidence" "Proposed reference integration"
+                }
+                transactions = component "Transaction preparation" "Proposed reference: Prepares chain-aware Ethereum signing payloads and Keccak-256 digests; preserves supplied transaction fields." "Custom integration responsibility / implementation required" {
+                    tags "SecurityCatalog,Optional,ReferenceIntegration"
+                    url "https://ethereum.org/en/developers/docs/transactions/"
+                    properties {
+                        "architecture.id" "apps.hsmSigner.transactions"
+                        "evidence" "Proposed reference integration"
+                    }
+                }
+                hsm = component "HSM access client" "Proposed reference: Acquires an Entra application token and requests signing with the selected non-exportable secp256k1 key." "Custom integration responsibility / implementation required" {
+                    tags "SecurityCatalog,Optional,ReferenceIntegration"
+                    url "https://ethereum.org/en/developers/docs/transactions/"
+                    properties {
+                        "architecture.id" "apps.hsmSigner.hsm"
+                        "evidence" "Proposed reference integration"
+                    }
+                }
+                signature = component "Signature conversion and validation" "Proposed reference: Normalizes low-s, determines recovery parity and verifies the Ethereum sender before transaction encoding." "Custom integration responsibility / implementation required" {
+                    tags "SecurityCatalog,Optional,ReferenceIntegration"
+                    url "https://ethereum.org/en/developers/docs/transactions/"
+                    properties {
+                        "architecture.id" "apps.hsmSigner.signature"
+                        "evidence" "Proposed reference integration"
+                    }
+                }
+                rpc = component "RPC submission" "Proposed reference: Submits the encoded signed transaction to Besu and returns the transaction hash or RPC error." "Custom integration responsibility / implementation required" {
+                    tags "SecurityCatalog,Optional,ReferenceIntegration"
+                    url "https://ethereum.org/en/developers/docs/transactions/"
+                    properties {
+                        "architecture.id" "apps.hsmSigner.rpc"
+                        "evidence" "Proposed reference integration"
+                    }
+                    -> apps.hsmSigner.transactions "Returns submitted transaction hash or RPC error" "In-process logical interface" "Dataflow,SecurityCatalog,KeyFlow,ReferenceIntegration"
+                    -> besu.node "Submits encoded signed transaction for validation and propagation" "Ethereum JSON-RPC / eth_sendRawTransaction" "Dataflow,SecurityCatalog,KeyFlow,ReferenceIntegration"
+                }
+                !element apps.hsmSigner.transactions {
+                    -> apps.hsmSigner.hsm "Passes Ethereum digest, key version and required signing algorithm" "In-process logical interface" "Dataflow,SecurityCatalog,KeyFlow,ReferenceIntegration"
+                }
+                !element apps.hsmSigner.hsm {
+                    -> apps.hsmSigner.signature "Returns HSM signature, public key and original signing digest" "In-process logical interface" "Dataflow,SecurityCatalog,KeyFlow,ReferenceIntegration"
+                }
+                !element apps.hsmSigner.signature {
+                    -> apps.hsmSigner.rpc "Supplies verified and encoded signed Ethereum transaction" "In-process logical interface" "Dataflow,SecurityCatalog,KeyFlow,ReferenceIntegration"
+                }
+                -> firefly.evm "Returns transaction hash or signing/submission error" "Ethereum JSON-RPC response" "Dataflow,SecurityCatalog,KeyFlow,ReferenceIntegration"
+                -> besu.node "Submits encoded signed transaction for validation and propagation" "Ethereum JSON-RPC / eth_sendRawTransaction" "Dataflow,SecurityCatalog,KeyFlow,ReferenceIntegration"
+            }
             -> firefly "Submits member requests and consumes events" "HTTPS + WebSocket" "Dataflow"
         }
         tools = softwareSystem "FireFly developer tools" "Development utilities and optional sample applications." {
@@ -2351,6 +2404,1027 @@ workspace "FireFly ecosystem + private Besu" "C4 levels 1-3 with static dataflow
                 "evidence" "External integration boundary"
             }
         }
+        securityAdmin = person "Security administrator" "Configures identity, privileged access, secret policies and key permissions in these reference examples." {
+            tags "SecurityCatalog"
+            url "https://docs.cyberark.com/pam-self-hosted/latest/en/content/pas%20inst/installationoverview.htm"
+            properties {
+                "architecture.id" "securityAdmin"
+                "evidence" "Reference choice"
+            }
+        }
+        managedTarget = softwareSystem "Managed target system" "Example SSH-accessible administrative target whose privileged account is rotated and sessions are controlled by PAM." {
+            tags "SecurityCatalog"
+            url "https://docs.cyberark.com/pam-self-hosted/latest/en/content/pas%20inst/installationoverview.htm"
+            properties {
+                "architecture.id" "managedTarget"
+                "evidence" "Reference choice"
+            }
+        }
+        azureManagement = softwareSystem "Azure Resource Manager" "External management-plane boundary; applies Azure RBAC to Managed HSM resource administration, not key operations." {
+            tags "SecurityCatalog"
+            url "https://learn.microsoft.com/en-us/azure/key-vault/managed-hsm/access-control"
+            properties {
+                "architecture.id" "azureManagement"
+                "evidence" "External integration boundary"
+            }
+        }
+        keycloak = softwareSystem "Keycloak" "Identity and access management: SSO, federation, brokering and token issuance." {
+            tags "SecurityCatalog"
+            url "https://www.keycloak.org/docs/latest/server_admin/index.html"
+            properties {
+                "architecture.id" "keycloak"
+                "evidence" "Documented product capability"
+            }
+            !docs docs/static/system
+            !adrs docs/static/decisions
+            server = container "Keycloak server" "Hosts login, administration, federation and protocol services; cache is embedded." "Java / Keycloak" {
+                tags "SecurityCatalog"
+                url "https://www.keycloak.org/docs/latest/server_admin/index.html"
+                properties {
+                    "architecture.id" "keycloak.server"
+                    "evidence" "Documented product capability"
+                }
+                endpoints = component "OIDC and SAML endpoints" "Accepts authorization, token and federation requests and returns protocol responses." "Java / Keycloak" {
+                    tags "SecurityCatalog"
+                    url "https://www.keycloak.org/docs/latest/server_admin/index.html"
+                    properties {
+                        "architecture.id" "keycloak.server.endpoints"
+                        "evidence" "Documented product capability"
+                    }
+                    -> apps.client "Returns signed identity response through the configured browser/client flow" "HTTPS / OIDC or SAML as configured" "Dataflow,SecurityCatalog,IdentityFlow,ReferenceIntegration"
+                }
+                authentication = component "Authentication flows" "Evaluates configured authenticators and required authentication steps." "Java / Keycloak" {
+                    tags "SecurityCatalog"
+                    url "https://www.keycloak.org/docs/latest/server_admin/index.html"
+                    properties {
+                        "architecture.id" "keycloak.server.authentication"
+                        "evidence" "Documented product capability"
+                    }
+                }
+                broker = component "Identity broker" "Delegates login to an external OIDC or SAML identity provider through the browser." "Java / Keycloak" {
+                    tags "SecurityCatalog"
+                    url "https://www.keycloak.org/docs/latest/server_admin/index.html"
+                    properties {
+                        "architecture.id" "keycloak.server.broker"
+                        "evidence" "Documented product capability"
+                    }
+                    -> keycloak.server.authentication "Returns verified external identity claims" "In-process logical interface" "Dataflow,SecurityCatalog,IdentityFlow"
+                }
+                ldap = component "LDAP user federation" "Queries AD user attributes and validates credentials by LDAP bind; never imports AD passwords." "Java / Keycloak" {
+                    tags "SecurityCatalog"
+                    url "https://www.keycloak.org/docs/latest/server_admin/index.html"
+                    properties {
+                        "architecture.id" "keycloak.server.ldap"
+                        "evidence" "Documented product capability"
+                    }
+                    -> keycloak.server.authentication "Returns user attributes and credential validation outcome" "In-process logical interface" "Dataflow,SecurityCatalog,IdentityFlow"
+                }
+                tokens = component "Token and claim mapping" "Builds and signs tokens or assertions with mapped roles and attributes." "Java / Keycloak" {
+                    tags "SecurityCatalog"
+                    url "https://www.keycloak.org/docs/latest/server_admin/index.html"
+                    properties {
+                        "architecture.id" "keycloak.server.tokens"
+                        "evidence" "Documented product capability"
+                    }
+                    -> keycloak.server.endpoints "Returns signed tokens or SAML assertions" "In-process logical interface" "Dataflow,SecurityCatalog,IdentityFlow"
+                }
+                admin = component "Administration" "Manages realms, clients, users, roles and identity-provider configuration." "Java / Keycloak" {
+                    tags "SecurityCatalog"
+                    url "https://www.keycloak.org/docs/latest/server_admin/index.html"
+                    properties {
+                        "architecture.id" "keycloak.server.admin"
+                        "evidence" "Documented product capability"
+                    }
+                }
+                sessions = component "Session and embedded cache management" "Tracks login sessions and cached realm or user data in the server runtime." "Java / Keycloak" {
+                    tags "SecurityCatalog"
+                    url "https://www.keycloak.org/docs/latest/server_admin/index.html"
+                    properties {
+                        "architecture.id" "keycloak.server.sessions"
+                        "evidence" "Documented product capability"
+                    }
+                    -> keycloak.server.tokens "Supplies session identity and client scope" "In-process logical interface" "Dataflow,SecurityCatalog,IdentityFlow"
+                }
+                persistence = component "Persistence adapter" "Reads and writes realm, user and persistent session records." "Java / Keycloak" {
+                    tags "SecurityCatalog"
+                    url "https://www.keycloak.org/docs/latest/server_admin/index.html"
+                    properties {
+                        "architecture.id" "keycloak.server.persistence"
+                        "evidence" "Documented product capability"
+                    }
+                }
+                !element keycloak.server.endpoints {
+                    -> keycloak.server.authentication "Passes authorization request and authentication context" "In-process logical interface" "Dataflow,SecurityCatalog,IdentityFlow"
+                }
+                !element keycloak.server.authentication {
+                    -> keycloak.server.broker "Delegates selected external-provider login" "In-process logical interface" "Dataflow,SecurityCatalog,IdentityFlow"
+                    -> keycloak.server.ldap "Passes directory lookup and credential validation requests" "In-process logical interface" "Dataflow,SecurityCatalog,IdentityFlow"
+                    -> keycloak.server.sessions "Creates or resolves authenticated user session" "In-process logical interface" "Dataflow,SecurityCatalog,IdentityFlow"
+                    -> keycloak.server.persistence "Reads local credentials and realm authentication settings" "In-process logical interface" "Dataflow,SecurityCatalog,IdentityFlow"
+                }
+                !element keycloak.server.admin {
+                    -> keycloak.server.persistence "Writes realm, client and federation settings" "In-process logical interface" "Dataflow,SecurityCatalog,IdentityFlow"
+                }
+                !element keycloak.server.sessions {
+                    -> keycloak.server.persistence "Reads and writes persistent session records" "In-process logical interface" "Dataflow,SecurityCatalog,IdentityFlow"
+                }
+                -> apps.client "Returns authenticated identity tokens or assertions through the selected protocol flow" "HTTPS / OIDC reference client" "Dataflow,SecurityCatalog,IdentityFlow,ReferenceIntegration"
+            }
+            database = container "Keycloak database" "Persists realm configuration, users, credentials and persistent session state." "PostgreSQL (reference choice)" {
+                tags "SecurityCatalog,Database"
+                url "https://www.keycloak.org/server/db"
+                properties {
+                    "architecture.id" "keycloak.database"
+                    "evidence" "Documented product capability"
+                }
+            }
+            !element keycloak.server {
+                -> keycloak.database "Reads and writes realm, user and session records" "PostgreSQL / TLS" "Dataflow,SecurityCatalog,DirectoryFlow"
+            }
+            !element keycloak.server.persistence {
+                -> keycloak.database "Reads and writes realm, user and session records" "PostgreSQL / TLS" "Dataflow,SecurityCatalog,DirectoryFlow"
+            }
+            -> apps "Returns identity tokens or assertions for application access" "HTTPS / configured identity protocol" "Dataflow,SecurityCatalog,IdentityFlow,ReferenceIntegration"
+        }
+        managedHsm = softwareSystem "Azure Managed HSM" "Protects cryptographic keys and performs authorized cryptographic operations; not a general secret or certificate store." {
+            tags "SecurityCatalog"
+            url "https://learn.microsoft.com/en-us/azure/key-vault/managed-hsm/access-control"
+            properties {
+                "architecture.id" "managedHsm"
+                "evidence" "Documented product capability"
+            }
+            !docs docs/static/system
+            !adrs docs/static/decisions
+            service = container "Managed HSM data-plane service" "Logical managed-service boundary for key operations and local role assignments; physical HSM topology is excluded." "Azure Managed HSM / HTTPS API" {
+                tags "SecurityCatalog,LogicalReference"
+                url "https://learn.microsoft.com/en-us/azure/key-vault/managed-hsm/access-control"
+                properties {
+                    "architecture.id" "managedHsm.service"
+                    "evidence" "Logical reference abstraction"
+                }
+                api = component "Data-plane API" "Logical reference: Accepts authenticated key-management and cryptographic requests." "Managed service responsibility / implementation undisclosed" {
+                    tags "SecurityCatalog,LogicalReference"
+                    url "https://learn.microsoft.com/en-us/azure/key-vault/managed-hsm/access-control"
+                    properties {
+                        "architecture.id" "managedHsm.service.api"
+                        "evidence" "Logical reference abstraction"
+                    }
+                    -> apps.client "Returns signature or wrapped data key; never the HSM private key" "HTTPS / Managed HSM REST response" "Dataflow,SecurityCatalog,KeyFlow,ReferenceIntegration"
+                }
+                authentication = component "Entra token validation" "Logical reference: Validates token signature, issuer and resource audience using trusted metadata." "Managed service responsibility / implementation undisclosed" {
+                    tags "SecurityCatalog,LogicalReference"
+                    url "https://learn.microsoft.com/en-us/azure/key-vault/managed-hsm/access-control"
+                    properties {
+                        "architecture.id" "managedHsm.service.authentication"
+                        "evidence" "Logical reference abstraction"
+                    }
+                }
+                authorization = component "Local RBAC authorization" "Logical reference: Checks Managed HSM local roles and key scope separately from Azure resource-management RBAC." "Managed service responsibility / implementation undisclosed" {
+                    tags "SecurityCatalog,LogicalReference"
+                    url "https://learn.microsoft.com/en-us/azure/key-vault/managed-hsm/access-control"
+                    properties {
+                        "architecture.id" "managedHsm.service.authorization"
+                        "evidence" "Logical reference abstraction"
+                    }
+                }
+                lifecycle = component "Key lifecycle" "Logical reference: Creates and versions keys and manages permitted key operations and role assignments." "Managed service responsibility / implementation undisclosed" {
+                    tags "SecurityCatalog,LogicalReference"
+                    url "https://learn.microsoft.com/en-us/azure/key-vault/managed-hsm/access-control"
+                    properties {
+                        "architecture.id" "managedHsm.service.lifecycle"
+                        "evidence" "Logical reference abstraction"
+                    }
+                    -> managedHsm.service.api "Returns key identifier, public metadata and operation outcome" "In-process logical interface" "Dataflow,SecurityCatalog,KeyFlow"
+                }
+                crypto = component "Cryptographic operations" "Logical reference: Performs sign, verify, encrypt, decrypt, wrap and unwrap operations supported by the selected key." "Managed service responsibility / implementation undisclosed" {
+                    tags "SecurityCatalog,LogicalReference"
+                    url "https://learn.microsoft.com/en-us/azure/key-vault/managed-hsm/access-control"
+                    properties {
+                        "architecture.id" "managedHsm.service.crypto"
+                        "evidence" "Logical reference abstraction"
+                    }
+                    -> managedHsm.service.api "Returns signature, ciphertext or wrapped-key result" "In-process logical interface" "Dataflow,SecurityCatalog,KeyFlow"
+                }
+                audit = component "Operation auditing" "Logical reference: Records principal, operation, key identifier and outcome without secret key material." "Managed service responsibility / implementation undisclosed" {
+                    tags "SecurityCatalog,LogicalReference"
+                    url "https://learn.microsoft.com/en-us/azure/key-vault/managed-hsm/access-control"
+                    properties {
+                        "architecture.id" "managedHsm.service.audit"
+                        "evidence" "Logical reference abstraction"
+                    }
+                }
+                !element managedHsm.service.api {
+                    -> managedHsm.service.authentication "Passes bearer token and requested resource audience" "In-process logical interface" "Dataflow,SecurityCatalog,KeyFlow"
+                    -> managedHsm.service.audit "Records caller, key identifier, operation and outcome" "In-process logical interface" "Dataflow,SecurityCatalog,KeyFlow"
+                }
+                !element managedHsm.service.authentication {
+                    -> managedHsm.service.authorization "Passes validated caller identity and requested operation" "In-process logical interface" "Dataflow,SecurityCatalog,KeyFlow"
+                }
+                !element managedHsm.service.authorization {
+                    -> managedHsm.service.lifecycle "Authorizes key lifecycle or local role-management command" "In-process logical interface" "Dataflow,SecurityCatalog,KeyFlow"
+                    -> managedHsm.service.crypto "Authorizes cryptographic operation on the selected key version" "In-process logical interface" "Dataflow,SecurityCatalog,KeyFlow"
+                }
+                -> apps.client "Returns signature or wrapped data key; never the HSM private key" "HTTPS / Managed HSM REST response" "Dataflow,SecurityCatalog,KeyFlow,ReferenceIntegration"
+                -> apps.hsmSigner "Returns signature and public key metadata; never private key material" "HTTPS / Managed HSM API response" "Dataflow,SecurityCatalog,KeyFlow,ReferenceIntegration"
+                -> apps.hsmSigner.hsm "Returns signature and public key metadata; never private key material" "HTTPS / Managed HSM API response" "Dataflow,SecurityCatalog,KeyFlow,ReferenceIntegration"
+            }
+            keys = container "HSM-protected key storage" "Logical protected store for non-exportable example private keys, key versions and local role data; not a separate database server." "HSM-protected managed storage (logical)" {
+                tags "SecurityCatalog,LogicalReference,Database"
+                url "https://learn.microsoft.com/en-us/azure/key-vault/managed-hsm/about-keys-details"
+                properties {
+                    "architecture.id" "managedHsm.keys"
+                    "evidence" "Logical reference abstraction"
+                }
+                -> managedHsm.service.crypto "Returns cryptographic result without private key material" "Protected cryptographic interface (logical)" "Dataflow,SecurityCatalog,KeyFlow"
+            }
+            !element managedHsm.service {
+                -> managedHsm.keys "Creates or updates protected keys, versions and local role records" "Protected managed-service storage interface" "Dataflow,SecurityCatalog,KeyFlow"
+            }
+            !element managedHsm.service.lifecycle {
+                -> managedHsm.keys "Creates or updates protected keys, versions and local role records" "Protected managed-service storage interface" "Dataflow,SecurityCatalog,KeyFlow"
+            }
+            !element managedHsm.service.crypto {
+                -> managedHsm.keys "Invokes cryptographic operation using protected key handle; no private-key export" "Protected cryptographic interface (logical)" "Dataflow,SecurityCatalog,KeyFlow"
+            }
+            -> apps "Returns signature or wrapped key result without private key material" "HTTPS / Managed HSM REST response" "Dataflow,SecurityCatalog,KeyFlow,ReferenceIntegration"
+        }
+        cyberarkPam = softwareSystem "CyberArk PAM Self-Hosted" "Controls privileged credentials, password rotation and recorded administrative sessions." {
+            tags "SecurityCatalog"
+            url "https://docs.cyberark.com/pam-self-hosted/latest/en/content/pas%20inst/installationoverview.htm"
+            properties {
+                "architecture.id" "cyberarkPam"
+                "evidence" "Documented product capability"
+            }
+            !docs docs/static/system
+            !adrs docs/static/decisions
+            vault = container "Digital Vault" "Protects privileged credentials, Safe permissions and audit/session records." "CyberArk PAM / proprietary service" {
+                tags "SecurityCatalog"
+                url "https://docs.cyberark.com/pam-self-hosted/latest/en/content/pas%20inst/installationoverview.htm"
+                properties {
+                    "architecture.id" "cyberarkPam.vault"
+                    "evidence" "Documented product capability"
+                }
+                access = component "Vault access interface" "Logical reference: Accepts authenticated Safe, credential and record operations." "Vault responsibility / proprietary implementation" {
+                    tags "SecurityCatalog,LogicalReference"
+                    url "https://docs.cyberark.com/pam-self-hosted/latest/en/content/pas%20inst/installationoverview.htm"
+                    properties {
+                        "architecture.id" "cyberarkPam.vault.access"
+                        "evidence" "Logical reference abstraction"
+                    }
+                }
+                policy = component "Safe permissions" "Logical reference: Checks access permissions for credentials and records." "Vault responsibility / proprietary implementation" {
+                    tags "SecurityCatalog,LogicalReference"
+                    url "https://docs.cyberark.com/pam-self-hosted/latest/en/content/pas%20inst/installationoverview.htm"
+                    properties {
+                        "architecture.id" "cyberarkPam.vault.policy"
+                        "evidence" "Logical reference abstraction"
+                    }
+                }
+                storage = component "Protected credential storage" "Logical reference: Owns encrypted credential and Safe records inside the Vault boundary." "Vault responsibility / proprietary implementation" {
+                    tags "SecurityCatalog,LogicalReference"
+                    url "https://docs.cyberark.com/pam-self-hosted/latest/en/content/pas%20inst/installationoverview.htm"
+                    properties {
+                        "architecture.id" "cyberarkPam.vault.storage"
+                        "evidence" "Logical reference abstraction"
+                    }
+                    -> cyberarkPam.vault.access "Returns permitted credential or metadata response" "In-process logical interface" "Dataflow,SecurityCatalog,PrivilegedFlow"
+                }
+                audit = component "Audit and recording storage" "Logical reference: Retains access audit records and uploaded session recordings." "Vault responsibility / proprietary implementation" {
+                    tags "SecurityCatalog,LogicalReference"
+                    url "https://docs.cyberark.com/pam-self-hosted/latest/en/content/pas%20inst/installationoverview.htm"
+                    properties {
+                        "architecture.id" "cyberarkPam.vault.audit"
+                        "evidence" "Logical reference abstraction"
+                    }
+                }
+                !element cyberarkPam.vault.access {
+                    -> cyberarkPam.vault.policy "Passes caller identity and requested Safe operation" "In-process logical interface" "Dataflow,SecurityCatalog,PrivilegedFlow"
+                    -> cyberarkPam.vault.audit "Stores access events or uploaded session recordings" "In-process logical interface" "Dataflow,SecurityCatalog,PrivilegedFlow"
+                }
+                !element cyberarkPam.vault.policy {
+                    -> cyberarkPam.vault.storage "Authorizes credential read or write" "In-process logical interface" "Dataflow,SecurityCatalog,PrivilegedFlow"
+                }
+            }
+            pvwa = container "Password Vault Web Access" "Provides the web interface and APIs for privileged-account access and administration." "CyberArk PAM / proprietary service" {
+                tags "SecurityCatalog"
+                url "https://docs.cyberark.com/pam-self-hosted/latest/en/content/pas%20inst/installationoverview.htm"
+                properties {
+                    "architecture.id" "cyberarkPam.pvwa"
+                    "evidence" "Documented product capability"
+                }
+                portal = component "Web portal and API" "Logical reference: Accepts account access, session-launch and administration requests." "PVWA responsibility / proprietary implementation" {
+                    tags "SecurityCatalog,LogicalReference"
+                    url "https://docs.cyberark.com/pam-self-hosted/latest/en/content/pas%20inst/installationoverview.htm"
+                    properties {
+                        "architecture.id" "cyberarkPam.pvwa.portal"
+                        "evidence" "Logical reference abstraction"
+                    }
+                }
+                approval = component "Access request workflow" "Logical reference: Evaluates configured request and approval requirements." "PVWA responsibility / proprietary implementation" {
+                    tags "SecurityCatalog,LogicalReference"
+                    url "https://docs.cyberark.com/pam-self-hosted/latest/en/content/pas%20inst/installationoverview.htm"
+                    properties {
+                        "architecture.id" "cyberarkPam.pvwa.approval"
+                        "evidence" "Logical reference abstraction"
+                    }
+                }
+                vaultClient = component "Vault client" "Logical reference: Retrieves permitted account metadata or credentials and submits administration changes." "PVWA responsibility / proprietary implementation" {
+                    tags "SecurityCatalog,LogicalReference"
+                    url "https://docs.cyberark.com/pam-self-hosted/latest/en/content/pas%20inst/installationoverview.htm"
+                    properties {
+                        "architecture.id" "cyberarkPam.pvwa.vaultClient"
+                        "evidence" "Logical reference abstraction"
+                    }
+                    -> cyberarkPam.pvwa.portal "Returns authorized account metadata and access outcome" "In-process logical interface" "Dataflow,SecurityCatalog,PrivilegedFlow"
+                    -> cyberarkPam.vault "Submits permitted Safe credential or metadata operations" "CyberArk Vault protocol / encrypted channel" "Dataflow,SecurityCatalog,PrivilegedFlow"
+                }
+                sessions = component "Session launch" "Logical reference: Creates authorized session connection details for the session manager." "PVWA responsibility / proprietary implementation" {
+                    tags "SecurityCatalog,LogicalReference"
+                    url "https://docs.cyberark.com/pam-self-hosted/latest/en/content/pas%20inst/installationoverview.htm"
+                    properties {
+                        "architecture.id" "cyberarkPam.pvwa.sessions"
+                        "evidence" "Logical reference abstraction"
+                    }
+                }
+                !element cyberarkPam.pvwa.portal {
+                    -> cyberarkPam.pvwa.approval "Submits requested account and access justification" "In-process logical interface" "Dataflow,SecurityCatalog,PrivilegedFlow"
+                }
+                !element cyberarkPam.pvwa.approval {
+                    -> cyberarkPam.pvwa.vaultClient "Passes approved credential or metadata request" "In-process logical interface" "Dataflow,SecurityCatalog,PrivilegedFlow"
+                    -> cyberarkPam.pvwa.sessions "Authorizes target session launch" "In-process logical interface" "Dataflow,SecurityCatalog,PrivilegedFlow"
+                }
+                -> cyberarkPam.vault "Submits permitted Safe credential or metadata operations" "CyberArk Vault protocol / encrypted channel" "Dataflow,SecurityCatalog,PrivilegedFlow"
+            }
+            cpm = container "Central Policy Manager" "Verifies, rotates and reconciles managed target-account passwords." "CyberArk PAM / proprietary service" {
+                tags "SecurityCatalog"
+                url "https://docs.cyberark.com/pam-self-hosted/latest/en/content/pas%20inst/installationoverview.htm"
+                properties {
+                    "architecture.id" "cyberarkPam.cpm"
+                    "evidence" "Documented product capability"
+                }
+                scheduler = component "Password management scheduler" "Logical reference: Selects target accounts requiring verification, change or reconciliation." "CPM responsibility / proprietary implementation" {
+                    tags "SecurityCatalog,LogicalReference"
+                    url "https://docs.cyberark.com/pam-self-hosted/latest/en/content/pas%20inst/installationoverview.htm"
+                    properties {
+                        "architecture.id" "cyberarkPam.cpm.scheduler"
+                        "evidence" "Logical reference abstraction"
+                    }
+                }
+                rotation = component "Password rotation orchestration" "Logical reference: Coordinates target password change and Vault credential update." "CPM responsibility / proprietary implementation" {
+                    tags "SecurityCatalog,LogicalReference"
+                    url "https://docs.cyberark.com/pam-self-hosted/latest/en/content/pas%20inst/installationoverview.htm"
+                    properties {
+                        "architecture.id" "cyberarkPam.cpm.rotation"
+                        "evidence" "Logical reference abstraction"
+                    }
+                }
+                target = component "Target platform connector" "Logical reference: Runs the configured target-specific password verification or change operation." "CPM responsibility / proprietary implementation" {
+                    tags "SecurityCatalog,LogicalReference"
+                    url "https://docs.cyberark.com/pam-self-hosted/latest/en/content/pas%20inst/installationoverview.htm"
+                    properties {
+                        "architecture.id" "cyberarkPam.cpm.target"
+                        "evidence" "Logical reference abstraction"
+                    }
+                    -> cyberarkPam.cpm.rotation "Returns target password operation outcome" "In-process logical interface" "Dataflow,SecurityCatalog,PrivilegedFlow"
+                    -> managedTarget "Verifies or changes the privileged target password" "SSH / target-specific password commands" "Dataflow,SecurityCatalog,PrivilegedFlow,ReferenceIntegration"
+                }
+                vaultClient = component "Vault credential client" "Logical reference: Reads current credentials and writes successfully changed credentials." "CPM responsibility / proprietary implementation" {
+                    tags "SecurityCatalog,LogicalReference"
+                    url "https://docs.cyberark.com/pam-self-hosted/latest/en/content/pas%20inst/installationoverview.htm"
+                    properties {
+                        "architecture.id" "cyberarkPam.cpm.vaultClient"
+                        "evidence" "Logical reference abstraction"
+                    }
+                    -> cyberarkPam.cpm.rotation "Returns permitted credential and target details" "In-process logical interface" "Dataflow,SecurityCatalog,PrivilegedFlow"
+                    -> cyberarkPam.vault "Submits permitted Safe credential or metadata operations" "CyberArk Vault protocol / encrypted channel" "Dataflow,SecurityCatalog,PrivilegedFlow"
+                }
+                !element cyberarkPam.cpm.scheduler {
+                    -> cyberarkPam.cpm.rotation "Passes account identifier and password management task" "In-process logical interface" "Dataflow,SecurityCatalog,PrivilegedFlow"
+                }
+                !element cyberarkPam.cpm.rotation {
+                    -> cyberarkPam.cpm.vaultClient "Requests current credential and target account metadata" "In-process logical interface" "Dataflow,SecurityCatalog,PrivilegedFlow"
+                    -> cyberarkPam.cpm.target "Passes password verification or change operation" "In-process logical interface" "Dataflow,SecurityCatalog,PrivilegedFlow"
+                    -> cyberarkPam.cpm.vaultClient "Submits successfully changed credential for storage" "In-process logical interface" "Dataflow,SecurityCatalog,PrivilegedFlow"
+                }
+                -> cyberarkPam.vault "Submits permitted Safe credential or metadata operations" "CyberArk Vault protocol / encrypted channel" "Dataflow,SecurityCatalog,PrivilegedFlow"
+                -> managedTarget "Verifies or changes the privileged target password" "SSH / target-specific password commands" "Dataflow,SecurityCatalog,PrivilegedFlow,ReferenceIntegration"
+            }
+            psm = container "Privileged Session Manager" "Brokers privileged target sessions and records session activity." "CyberArk PAM / proprietary service" {
+                tags "SecurityCatalog"
+                url "https://docs.cyberark.com/pam-self-hosted/latest/en/content/pas%20inst/installationoverview.htm"
+                properties {
+                    "architecture.id" "cyberarkPam.psm"
+                    "evidence" "Documented product capability"
+                }
+                broker = component "Session broker" "Logical reference: Accepts authorized session requests and retrieves target credentials." "PSM responsibility / proprietary implementation" {
+                    tags "SecurityCatalog,LogicalReference"
+                    url "https://docs.cyberark.com/pam-self-hosted/latest/en/content/pas%20inst/installationoverview.htm"
+                    properties {
+                        "architecture.id" "cyberarkPam.psm.broker"
+                        "evidence" "Logical reference abstraction"
+                    }
+                    -> cyberarkPam.vault "Submits permitted Safe credential or metadata operations" "CyberArk Vault protocol / encrypted channel" "Dataflow,SecurityCatalog,PrivilegedFlow"
+                    -> operator "Returns brokered session output and completion status" "PSM-supported session client / encrypted connection" "Dataflow,SecurityCatalog,PrivilegedFlow,ReferenceIntegration"
+                }
+                target = component "Target session connector" "Logical reference: Establishes the example SSH session using the vaulted privileged account." "PSM responsibility / proprietary implementation" {
+                    tags "SecurityCatalog,LogicalReference"
+                    url "https://docs.cyberark.com/pam-self-hosted/latest/en/content/pas%20inst/installationoverview.htm"
+                    properties {
+                        "architecture.id" "cyberarkPam.psm.target"
+                        "evidence" "Logical reference abstraction"
+                    }
+                    -> cyberarkPam.psm.broker "Returns session output and completion status" "In-process logical interface" "Dataflow,SecurityCatalog,PrivilegedFlow"
+                    -> managedTarget "Opens privileged SSH session and relays administrator commands" "SSH" "Dataflow,SecurityCatalog,PrivilegedFlow,ReferenceIntegration"
+                }
+                recorder = component "Session recorder" "Logical reference: Captures session activity and uploads recordings to the Vault." "PSM responsibility / proprietary implementation" {
+                    tags "SecurityCatalog,LogicalReference"
+                    url "https://docs.cyberark.com/pam-self-hosted/latest/en/content/pas%20inst/installationoverview.htm"
+                    properties {
+                        "architecture.id" "cyberarkPam.psm.recorder"
+                        "evidence" "Logical reference abstraction"
+                    }
+                    -> cyberarkPam.vault "Uploads session recordings and audit metadata" "CyberArk Vault protocol / encrypted channel" "Dataflow,SecurityCatalog,PrivilegedFlow"
+                }
+                !element cyberarkPam.psm.broker {
+                    -> cyberarkPam.psm.target "Passes authorized target and privileged credential" "In-process logical interface" "Dataflow,SecurityCatalog,PrivilegedFlow"
+                }
+                !element cyberarkPam.psm.target {
+                    -> cyberarkPam.psm.recorder "Supplies session activity for recording" "In-process logical interface" "Dataflow,SecurityCatalog,PrivilegedFlow"
+                }
+                -> cyberarkPam.vault "Submits permitted Safe credential or metadata operations" "CyberArk Vault protocol / encrypted channel" "Dataflow,SecurityCatalog,PrivilegedFlow"
+                -> cyberarkPam.vault "Uploads session recordings and audit metadata" "CyberArk Vault protocol / encrypted channel" "Dataflow,SecurityCatalog,PrivilegedFlow"
+                -> managedTarget "Opens privileged SSH session and relays administrator commands" "SSH" "Dataflow,SecurityCatalog,PrivilegedFlow,ReferenceIntegration"
+                -> operator "Returns brokered session output and completion status" "PSM-supported session client / encrypted connection" "Dataflow,SecurityCatalog,PrivilegedFlow,ReferenceIntegration"
+            }
+            !element cyberarkPam.vault {
+                -> cyberarkPam.pvwa "Returns authorized credential or account metadata" "CyberArk Vault protocol / encrypted channel" "Dataflow,SecurityCatalog,SecretFlow"
+                -> cyberarkPam.pvwa.vaultClient "Returns authorized credential or account metadata" "CyberArk Vault protocol / encrypted channel" "Dataflow,SecurityCatalog,SecretFlow"
+                -> cyberarkPam.cpm "Returns authorized credential or account metadata" "CyberArk Vault protocol / encrypted channel" "Dataflow,SecurityCatalog,SecretFlow"
+                -> cyberarkPam.cpm.vaultClient "Returns authorized credential or account metadata" "CyberArk Vault protocol / encrypted channel" "Dataflow,SecurityCatalog,SecretFlow"
+                -> cyberarkPam.psm "Returns authorized credential or account metadata" "CyberArk Vault protocol / encrypted channel" "Dataflow,SecurityCatalog,SecretFlow"
+                -> cyberarkPam.psm.broker "Returns authorized credential or account metadata" "CyberArk Vault protocol / encrypted channel" "Dataflow,SecurityCatalog,SecretFlow"
+            }
+            !element cyberarkPam.pvwa {
+                -> cyberarkPam.psm "Supplies authorized session-launch context via the user session client" "Session connection parameters / client-mediated" "Dataflow,SecurityCatalog,PrivilegedFlow"
+            }
+            !element cyberarkPam.pvwa.sessions {
+                -> cyberarkPam.psm "Supplies authorized session-launch context via the user session client" "Session connection parameters / client-mediated" "Dataflow,SecurityCatalog,PrivilegedFlow"
+            }
+            -> managedTarget "Rotates target credentials and brokers recorded privileged sessions" "SSH / target-specific password commands" "Dataflow,SecurityCatalog,PrivilegedFlow,ReferenceIntegration"
+        }
+        conjur = softwareSystem "CyberArk Conjur Enterprise" "Enterprise workload secret access; documented as Secrets Manager Self-Hosted. OSS is not the selected variant." {
+            tags "SecurityCatalog"
+            url "https://docs.cyberark.com/secrets-manager-sh/latest/en/content/resources/_topnav/cc_home.htm"
+            properties {
+                "architecture.id" "conjur"
+                "evidence" "Documented product capability"
+            }
+            !docs docs/static/system
+            !adrs docs/static/decisions
+            service = container "Conjur service" "Logical enterprise runtime for policy, workload authentication and secret APIs; no leader/follower placement is specified." "Conjur Enterprise / HTTPS API" {
+                tags "SecurityCatalog,LogicalReference"
+                url "https://docs.cyberark.com/secrets-manager-sh/latest/en/content/resources/_topnav/cc_home.htm"
+                properties {
+                    "architecture.id" "conjur.service"
+                    "evidence" "Logical reference abstraction"
+                }
+                api = component "Secret and policy API" "Logical reference: Accepts authenticated secret and policy operations." "Conjur responsibility / logical reference" {
+                    tags "SecurityCatalog,LogicalReference"
+                    url "https://docs.cyberark.com/secrets-manager-sh/latest/en/content/resources/_topnav/cc_home.htm"
+                    properties {
+                        "architecture.id" "conjur.service.api"
+                        "evidence" "Logical reference abstraction"
+                    }
+                    -> apps.client "Returns short-lived access token or authorized application secret" "HTTPS / Conjur API response" "Dataflow,SecurityCatalog,SecretFlow,ReferenceIntegration"
+                }
+                authentication = component "Workload authentication" "Logical reference: Validates the configured workload identity proof and issues a short-lived Conjur access token." "Conjur responsibility / logical reference" {
+                    tags "SecurityCatalog,LogicalReference"
+                    url "https://docs.cyberark.com/secrets-manager-sh/latest/en/content/resources/_topnav/cc_home.htm"
+                    properties {
+                        "architecture.id" "conjur.service.authentication"
+                        "evidence" "Logical reference abstraction"
+                    }
+                    -> conjur.service.api "Returns short-lived Conjur access token" "In-process logical interface" "Dataflow,SecurityCatalog,SecretFlow"
+                }
+                policy = component "Policy authorization" "Logical reference: Evaluates workload permissions for the requested secret variable or policy resource." "Conjur responsibility / logical reference" {
+                    tags "SecurityCatalog,LogicalReference"
+                    url "https://docs.cyberark.com/secrets-manager-sh/latest/en/content/resources/_topnav/cc_home.htm"
+                    properties {
+                        "architecture.id" "conjur.service.policy"
+                        "evidence" "Logical reference abstraction"
+                    }
+                }
+                secrets = component "Secret access" "Logical reference: Returns only authorized secret values and accepts permitted updates." "Conjur responsibility / logical reference" {
+                    tags "SecurityCatalog,LogicalReference"
+                    url "https://docs.cyberark.com/secrets-manager-sh/latest/en/content/resources/_topnav/cc_home.htm"
+                    properties {
+                        "architecture.id" "conjur.service.secrets"
+                        "evidence" "Logical reference abstraction"
+                    }
+                    -> conjur.service.api "Returns authorized secret value or update status" "In-process logical interface" "Dataflow,SecurityCatalog,SecretFlow"
+                }
+                audit = component "Access auditing" "Logical reference: Records workload, variable identifier and operation outcome without secret values." "Conjur responsibility / logical reference" {
+                    tags "SecurityCatalog,LogicalReference"
+                    url "https://docs.cyberark.com/secrets-manager-sh/latest/en/content/resources/_topnav/cc_home.htm"
+                    properties {
+                        "architecture.id" "conjur.service.audit"
+                        "evidence" "Logical reference abstraction"
+                    }
+                }
+                !element conjur.service.api {
+                    -> conjur.service.authentication "Submits configured workload authentication proof" "In-process logical interface" "Dataflow,SecurityCatalog,SecretFlow"
+                    -> conjur.service.policy "Passes token identity, variable path and requested operation" "In-process logical interface" "Dataflow,SecurityCatalog,SecretFlow"
+                    -> conjur.service.audit "Records workload, variable identifier and operation outcome" "In-process logical interface" "Dataflow,SecurityCatalog,SecretFlow"
+                }
+                !element conjur.service.policy {
+                    -> conjur.service.secrets "Authorizes secret variable read or update" "In-process logical interface" "Dataflow,SecurityCatalog,SecretFlow"
+                }
+                -> apps.client "Returns short-lived access token or authorized application secret" "HTTPS / Conjur API response" "Dataflow,SecurityCatalog,SecretFlow,ReferenceIntegration"
+            }
+            store = container "Conjur encrypted persistence" "Logical service-owned storage for encrypted secrets, identity and policy state; not an independently provisioned database claim." "Service-owned encrypted persistence (logical)" {
+                tags "SecurityCatalog,LogicalReference,Database"
+                url "https://docs.cyberark.com/secrets-manager-sh/latest/en/content/resources/_topnav/cc_home.htm"
+                properties {
+                    "architecture.id" "conjur.store"
+                    "evidence" "Logical reference abstraction"
+                }
+            }
+            synchronizer = container "Vault Synchronizer" "Reads selected PAM Vault accounts and synchronizes their secret values into Conjur Enterprise." "CyberArk Vault Synchronizer" {
+                tags "SecurityCatalog"
+                url "https://docs.cyberark.com/secrets-manager-sh/latest/en/content/conjur/cv_synchronizer-lp.htm"
+                properties {
+                    "architecture.id" "conjur.synchronizer"
+                    "evidence" "Documented product capability"
+                }
+                reader = component "Vault account reader" "Logical reference: Reads selected Vault accounts and changed credentials." "Synchronizer responsibility / proprietary implementation" {
+                    tags "SecurityCatalog,LogicalReference"
+                    url "https://docs.cyberark.com/secrets-manager-sh/latest/en/content/conjur/cv_synchronizer-lp.htm"
+                    properties {
+                        "architecture.id" "conjur.synchronizer.reader"
+                        "evidence" "Logical reference abstraction"
+                    }
+                    -> cyberarkPam.vault "Reads configured Vault accounts and changed credential versions" "CyberArk Vault protocol / encrypted channel" "Dataflow,SecurityCatalog,SecretFlow"
+                }
+                mapping = component "Account-to-variable mapping" "Logical reference: Maps selected Vault account metadata to Conjur variable identifiers." "Synchronizer responsibility / proprietary implementation" {
+                    tags "SecurityCatalog,LogicalReference"
+                    url "https://docs.cyberark.com/secrets-manager-sh/latest/en/content/conjur/cv_synchronizer-lp.htm"
+                    properties {
+                        "architecture.id" "conjur.synchronizer.mapping"
+                        "evidence" "Logical reference abstraction"
+                    }
+                }
+                writer = component "Conjur update client" "Logical reference: Authenticates to Conjur and writes synchronized secret values." "Synchronizer responsibility / proprietary implementation" {
+                    tags "SecurityCatalog,LogicalReference"
+                    url "https://docs.cyberark.com/secrets-manager-sh/latest/en/content/conjur/cv_synchronizer-lp.htm"
+                    properties {
+                        "architecture.id" "conjur.synchronizer.writer"
+                        "evidence" "Logical reference abstraction"
+                    }
+                    -> conjur.service "Authenticates and writes mapped secret variable values" "HTTPS / Conjur API" "Dataflow,SecurityCatalog,SecretFlow"
+                }
+                !element conjur.synchronizer.reader {
+                    -> conjur.synchronizer.mapping "Supplies selected account identifier, metadata and credential version" "In-process logical interface" "Dataflow,SecurityCatalog,SecretFlow"
+                }
+                !element conjur.synchronizer.mapping {
+                    -> conjur.synchronizer.writer "Supplies mapped variable identifier and updated secret value" "In-process logical interface" "Dataflow,SecurityCatalog,SecretFlow"
+                }
+                -> cyberarkPam.vault "Reads configured Vault accounts and changed credential versions" "CyberArk Vault protocol / encrypted channel" "Dataflow,SecurityCatalog,SecretFlow"
+                -> conjur.service "Authenticates and writes mapped secret variable values" "HTTPS / Conjur API" "Dataflow,SecurityCatalog,SecretFlow"
+            }
+            !element conjur.service {
+                -> conjur.store "Reads or writes encrypted secret records and versions" "Service-owned persistence interface (logical)" "Dataflow,SecurityCatalog,SecretFlow"
+            }
+            !element conjur.service.secrets {
+                -> conjur.store "Reads or writes encrypted secret records and versions" "Service-owned persistence interface (logical)" "Dataflow,SecurityCatalog,SecretFlow"
+            }
+            !element conjur.service.policy {
+                -> conjur.store "Reads workload permissions and variable policy records" "Service-owned persistence interface (logical)" "Dataflow,SecurityCatalog,SecretFlow"
+            }
+            -> apps "Returns short-lived token or authorized application secret" "HTTPS / Conjur API response" "Dataflow,SecurityCatalog,SecretFlow,ReferenceIntegration"
+        }
+        entraId = softwareSystem "Microsoft Entra ID" "Cloud identity, token issuance, directory administration and provisioning; separate from AD DS and AD FS." {
+            tags "SecurityCatalog"
+            url "https://learn.microsoft.com/en-us/entra/architecture/architecture"
+            properties {
+                "architecture.id" "entraId"
+                "evidence" "Documented product capability"
+            }
+            !docs docs/static/system
+            !adrs docs/static/decisions
+            authentication = container "Authentication and token service" "Logical identity-platform service for user and application authentication and token issuance." "Microsoft Entra managed service (logical)" {
+                tags "SecurityCatalog,LogicalReference"
+                url "https://learn.microsoft.com/en-us/entra/identity-platform/v2-protocols-oidc"
+                properties {
+                    "architecture.id" "entraId.authentication"
+                    "evidence" "Logical reference abstraction"
+                }
+                endpoints = component "Identity protocol endpoints" "Logical reference: Accepts OIDC authorization and OAuth token requests." "Identity-platform responsibility / implementation undisclosed" {
+                    tags "SecurityCatalog,LogicalReference"
+                    url "https://learn.microsoft.com/en-us/entra/identity-platform/v2-protocols-oidc"
+                    properties {
+                        "architecture.id" "entraId.authentication.endpoints"
+                        "evidence" "Logical reference abstraction"
+                    }
+                    -> apps.client "Returns signed identity response through the configured browser/client flow" "HTTPS / OIDC or SAML as configured" "Dataflow,SecurityCatalog,IdentityFlow,ReferenceIntegration"
+                }
+                credentials = component "Identity authentication" "Logical reference: Validates configured user or application authentication proof." "Identity-platform responsibility / implementation undisclosed" {
+                    tags "SecurityCatalog,LogicalReference"
+                    url "https://learn.microsoft.com/en-us/entra/identity-platform/v2-protocols-oidc"
+                    properties {
+                        "architecture.id" "entraId.authentication.credentials"
+                        "evidence" "Logical reference abstraction"
+                    }
+                }
+                policy = component "Access-policy evaluation" "Logical reference: Applies applicable sign-in and access requirements for this identity and resource." "Identity-platform responsibility / implementation undisclosed" {
+                    tags "SecurityCatalog,LogicalReference"
+                    url "https://learn.microsoft.com/en-us/entra/identity-platform/v2-protocols-oidc"
+                    properties {
+                        "architecture.id" "entraId.authentication.policy"
+                        "evidence" "Logical reference abstraction"
+                    }
+                }
+                tokens = component "Token issuance" "Logical reference: Issues signed ID and access tokens with audience-specific claims." "Identity-platform responsibility / implementation undisclosed" {
+                    tags "SecurityCatalog,LogicalReference"
+                    url "https://learn.microsoft.com/en-us/entra/identity-platform/v2-protocols-oidc"
+                    properties {
+                        "architecture.id" "entraId.authentication.tokens"
+                        "evidence" "Logical reference abstraction"
+                    }
+                    -> entraId.authentication.endpoints "Returns signed ID or access token response" "In-process logical interface" "Dataflow,SecurityCatalog,IdentityFlow"
+                }
+                !element entraId.authentication.endpoints {
+                    -> entraId.authentication.credentials "Passes authorization or token request with authentication proof" "In-process logical interface" "Dataflow,SecurityCatalog,IdentityFlow"
+                }
+                !element entraId.authentication.credentials {
+                    -> entraId.authentication.policy "Supplies authenticated identity and sign-in context" "In-process logical interface" "Dataflow,SecurityCatalog,IdentityFlow"
+                }
+                !element entraId.authentication.policy {
+                    -> entraId.authentication.tokens "Supplies permitted identity, audience and scopes" "In-process logical interface" "Dataflow,SecurityCatalog,IdentityFlow"
+                }
+                -> apps.client "Returns authenticated identity tokens or assertions through the selected protocol flow" "HTTPS / OIDC reference client" "Dataflow,SecurityCatalog,IdentityFlow,ReferenceIntegration"
+                -> keycloak.server "Returns authorization code through browser redirect" "HTTPS / OIDC redirect" "Dataflow,SecurityCatalog,IdentityFlow,ReferenceIntegration"
+                -> keycloak.server "Returns signed ID token and token endpoint response" "HTTPS / OAuth token response" "Dataflow,SecurityCatalog,IdentityFlow,ReferenceIntegration"
+                -> keycloak.server.broker "Returns authorization code through browser redirect" "HTTPS / OIDC redirect" "Dataflow,SecurityCatalog,IdentityFlow,ReferenceIntegration"
+                -> keycloak.server.broker "Returns signed ID token and token endpoint response" "HTTPS / OAuth token response" "Dataflow,SecurityCatalog,IdentityFlow,ReferenceIntegration"
+                hsmWorkloadTokenResponse = entraId.authentication -> apps.client "Returns HSM-audience workload access token" "HTTPS / OAuth 2.0 token response" "Dataflow,SecurityCatalog,IdentityFlow,ReferenceIntegration"
+                -> apps.hsmSigner "Returns Managed HSM audience access token" "HTTPS / OAuth 2.0 token response" "Dataflow,SecurityCatalog,IdentityFlow,ReferenceIntegration"
+                -> apps.hsmSigner.hsm "Returns Managed HSM audience access token" "HTTPS / OAuth 2.0 token response" "Dataflow,SecurityCatalog,IdentityFlow,ReferenceIntegration"
+            }
+            directory = container "Directory and administration API" "Logical directory and Microsoft Graph-facing boundary for users, groups, applications and policies." "Microsoft Entra managed service (logical)" {
+                tags "SecurityCatalog,LogicalReference"
+                url "https://learn.microsoft.com/en-us/entra/architecture/architecture"
+                properties {
+                    "architecture.id" "entraId.directory"
+                    "evidence" "Logical reference abstraction"
+                }
+                api = component "Directory administration API" "Logical reference: Accepts authorized directory reads and changes through public administrative interfaces." "Directory responsibility / implementation undisclosed" {
+                    tags "SecurityCatalog,LogicalReference"
+                    url "https://learn.microsoft.com/en-us/entra/architecture/architecture"
+                    properties {
+                        "architecture.id" "entraId.directory.api"
+                        "evidence" "Logical reference abstraction"
+                    }
+                }
+                authorization = component "Directory authorization" "Logical reference: Checks caller permissions for the requested directory resource operation." "Directory responsibility / implementation undisclosed" {
+                    tags "SecurityCatalog,LogicalReference"
+                    url "https://learn.microsoft.com/en-us/entra/architecture/architecture"
+                    properties {
+                        "architecture.id" "entraId.directory.authorization"
+                        "evidence" "Logical reference abstraction"
+                    }
+                }
+                records = component "Directory object access" "Logical reference: Reads and writes identity, group, application and policy records." "Directory responsibility / implementation undisclosed" {
+                    tags "SecurityCatalog,LogicalReference"
+                    url "https://learn.microsoft.com/en-us/entra/architecture/architecture"
+                    properties {
+                        "architecture.id" "entraId.directory.records"
+                        "evidence" "Logical reference abstraction"
+                    }
+                    -> entraId.directory.api "Returns directory objects or update outcome" "In-process logical interface" "Dataflow,SecurityCatalog,DirectoryFlow"
+                }
+                !element entraId.directory.api {
+                    -> entraId.directory.authorization "Passes caller, directory resource and operation" "In-process logical interface" "Dataflow,SecurityCatalog,DirectoryFlow"
+                }
+                !element entraId.directory.authorization {
+                    -> entraId.directory.records "Authorizes identity or policy record access" "In-process logical interface" "Dataflow,SecurityCatalog,DirectoryFlow"
+                }
+            }
+            provisioning = container "Cloud Sync provisioning service" "Orchestrates selected AD object synchronization and commits directory changes." "Microsoft Entra managed service (logical)" {
+                tags "SecurityCatalog,LogicalReference"
+                url "https://learn.microsoft.com/en-us/entra/identity/hybrid/cloud-sync/what-is-cloud-sync"
+                properties {
+                    "architecture.id" "entraId.provisioning"
+                    "evidence" "Logical reference abstraction"
+                }
+                scheduler = component "Provisioning orchestration" "Logical reference: Schedules scoped synchronization work and tracks incremental progress." "Cloud Sync logical responsibility" {
+                    tags "SecurityCatalog,LogicalReference"
+                    url "https://learn.microsoft.com/en-us/entra/identity/hybrid/cloud-sync/what-is-cloud-sync"
+                    properties {
+                        "architecture.id" "entraId.provisioning.scheduler"
+                        "evidence" "Logical reference abstraction"
+                    }
+                }
+                mapping = component "Provisioning mapping and processing" "Logical reference: Processes returned attributes according to configured scopes and mappings." "Cloud Sync logical responsibility" {
+                    tags "SecurityCatalog,LogicalReference"
+                    url "https://learn.microsoft.com/en-us/entra/identity/hybrid/cloud-sync/what-is-cloud-sync"
+                    properties {
+                        "architecture.id" "entraId.provisioning.mapping"
+                        "evidence" "Logical reference abstraction"
+                    }
+                }
+                writer = component "Directory update client" "Logical reference: Commits processed object changes to the Entra directory." "Cloud Sync logical responsibility" {
+                    tags "SecurityCatalog,LogicalReference"
+                    url "https://learn.microsoft.com/en-us/entra/identity/hybrid/cloud-sync/what-is-cloud-sync"
+                    properties {
+                        "architecture.id" "entraId.provisioning.writer"
+                        "evidence" "Logical reference abstraction"
+                    }
+                    -> entraId.directory "Commits scoped user, group and contact changes" "Microsoft internal directory interface (logical)" "Dataflow,SecurityCatalog,DirectoryFlow"
+                }
+                !element entraId.provisioning.scheduler {
+                    -> entraId.provisioning.mapping "Submits returned directory object changes and synchronization state" "In-process logical interface" "Dataflow,SecurityCatalog,DirectoryFlow"
+                }
+                !element entraId.provisioning.mapping {
+                    -> entraId.provisioning.writer "Supplies filtered and mapped directory object changes" "In-process logical interface" "Dataflow,SecurityCatalog,DirectoryFlow"
+                }
+                -> entraId.directory "Commits scoped user, group and contact changes" "Microsoft internal directory interface (logical)" "Dataflow,SecurityCatalog,DirectoryFlow"
+            }
+            agent = container "Cloud Sync provisioning agent" "Customer-managed runtime that queries AD DS through outbound-established communication with the provisioning service." "Microsoft Entra provisioning agent / Windows service" {
+                tags "SecurityCatalog"
+                url "https://learn.microsoft.com/en-us/entra/identity/hybrid/cloud-sync/what-is-cloud-sync"
+                properties {
+                    "architecture.id" "entraId.agent"
+                    "evidence" "Documented product capability"
+                }
+                channel = component "Outbound service channel" "Logical reference: Receives synchronization requests through the agent-established service connection." "Provisioning agent logical responsibility" {
+                    tags "SecurityCatalog,LogicalReference"
+                    url "https://learn.microsoft.com/en-us/entra/identity/hybrid/cloud-sync/what-is-cloud-sync"
+                    properties {
+                        "architecture.id" "entraId.agent.channel"
+                        "evidence" "Logical reference abstraction"
+                    }
+                    -> entraId.provisioning "Establishes outbound channel and returns requested directory attributes" "TLS / Cloud Sync service channel via Azure Service Bus" "Dataflow,SecurityCatalog,DirectoryFlow"
+                }
+                directory = component "AD query connector" "Logical reference: Queries scoped AD objects and returns requested attributes." "Provisioning agent logical responsibility" {
+                    tags "SecurityCatalog,LogicalReference"
+                    url "https://learn.microsoft.com/en-us/entra/identity/hybrid/cloud-sync/what-is-cloud-sync"
+                    properties {
+                        "architecture.id" "entraId.agent.directory"
+                        "evidence" "Logical reference abstraction"
+                    }
+                }
+                response = component "Synchronization response" "Logical reference: Returns directory data and progress information to cloud provisioning." "Provisioning agent logical responsibility" {
+                    tags "SecurityCatalog,LogicalReference"
+                    url "https://learn.microsoft.com/en-us/entra/identity/hybrid/cloud-sync/what-is-cloud-sync"
+                    properties {
+                        "architecture.id" "entraId.agent.response"
+                        "evidence" "Logical reference abstraction"
+                    }
+                    -> entraId.agent.channel "Returns synchronization data for the established service channel" "In-process logical interface" "Dataflow,SecurityCatalog,DirectoryFlow"
+                }
+                !element entraId.agent.channel {
+                    -> entraId.agent.directory "Passes requested directory scope and attribute query" "In-process logical interface" "Dataflow,SecurityCatalog,DirectoryFlow"
+                }
+                !element entraId.agent.directory {
+                    -> entraId.agent.response "Supplies selected object attributes and query outcome" "In-process logical interface" "Dataflow,SecurityCatalog,DirectoryFlow"
+                }
+                -> entraId.provisioning "Establishes outbound channel and returns requested directory attributes" "TLS / Cloud Sync service channel via Azure Service Bus" "Dataflow,SecurityCatalog,DirectoryFlow"
+                -> entraId.provisioning.mapping "Returns scoped object attributes and synchronization progress" "TLS / established Cloud Sync channel" "Dataflow,SecurityCatalog,DirectoryFlow"
+            }
+            !element entraId.authentication {
+                -> entraId.directory "Reads identity, application and applicable policy records" "Microsoft internal service interface (logical)" "Dataflow,SecurityCatalog,DirectoryFlow"
+            }
+            !element entraId.authentication.credentials {
+                -> entraId.directory "Reads identity, application and applicable policy records" "Microsoft internal service interface (logical)" "Dataflow,SecurityCatalog,DirectoryFlow"
+            }
+            !element entraId.authentication.policy {
+                -> entraId.directory "Reads identity, application and applicable policy records" "Microsoft internal service interface (logical)" "Dataflow,SecurityCatalog,DirectoryFlow"
+            }
+            !element entraId.provisioning {
+                -> entraId.agent "Delivers scoped synchronization requests over the agent-established channel" "SCIM / established Cloud Sync channel" "Dataflow,SecurityCatalog,DirectoryFlow"
+                -> entraId.agent.channel "Delivers scoped synchronization requests over the agent-established channel" "SCIM / established Cloud Sync channel" "Dataflow,SecurityCatalog,DirectoryFlow"
+            }
+            !element entraId.provisioning.scheduler {
+                -> entraId.agent "Delivers scoped directory synchronization requests" "SCIM / agent-established service channel" "Dataflow,SecurityCatalog,DirectoryFlow"
+            }
+            -> apps "Returns identity tokens or assertions for application access" "HTTPS / configured identity protocol" "Dataflow,SecurityCatalog,IdentityFlow,ReferenceIntegration"
+            -> keycloak "Returns verified identity claims through the configured federation flow" "HTTPS / OIDC" "Dataflow,SecurityCatalog,IdentityFlow,ReferenceIntegration"
+        }
+        adDs = softwareSystem "Microsoft Active Directory Domain Services" "Directory identities, LDAP queries and Kerberos authentication for the enterprise domain." {
+            tags "SecurityCatalog"
+            url "https://learn.microsoft.com/en-us/windows-server/identity/ad-ds/get-started/virtual-dc/active-directory-domain-services-overview"
+            properties {
+                "architecture.id" "adDs"
+                "evidence" "Documented product capability"
+            }
+            !docs docs/static/system
+            !adrs docs/static/decisions
+            directory = container "Domain-controller services" "Logical AD DS runtime; no server instances, sites or replication topology are modeled." "Windows Server / AD DS" {
+                tags "SecurityCatalog"
+                url "https://learn.microsoft.com/en-us/windows-server/identity/ad-ds/get-started/virtual-dc/active-directory-domain-services-overview"
+                properties {
+                    "architecture.id" "adDs.directory"
+                    "evidence" "Documented product capability"
+                }
+                ldap = component "LDAP directory interface" "Logical reference: Accepts directory searches and authenticated binds." "AD DS logical responsibility" {
+                    tags "SecurityCatalog,LogicalReference"
+                    url "https://learn.microsoft.com/en-us/windows-server/identity/ad-ds/get-started/virtual-dc/active-directory-domain-services-overview"
+                    properties {
+                        "architecture.id" "adDs.directory.ldap"
+                        "evidence" "Logical reference abstraction"
+                    }
+                }
+                kdc = component "Kerberos KDC" "Logical reference: Validates domain authentication and issues Kerberos tickets." "AD DS logical responsibility" {
+                    tags "SecurityCatalog,LogicalReference"
+                    url "https://learn.microsoft.com/en-us/windows-server/identity/ad-ds/get-started/virtual-dc/active-directory-domain-services-overview"
+                    properties {
+                        "architecture.id" "adDs.directory.kdc"
+                        "evidence" "Logical reference abstraction"
+                    }
+                    -> business "Returns Kerberos ticket response to the domain client" "Kerberos / domain client" "Dataflow,SecurityCatalog,IdentityFlow,ReferenceIntegration"
+                }
+                access = component "Directory access and authorization" "Logical reference: Applies directory permissions and resolves requested account attributes." "AD DS logical responsibility" {
+                    tags "SecurityCatalog,LogicalReference"
+                    url "https://learn.microsoft.com/en-us/windows-server/identity/ad-ds/get-started/virtual-dc/active-directory-domain-services-overview"
+                    properties {
+                        "architecture.id" "adDs.directory.access"
+                        "evidence" "Logical reference abstraction"
+                    }
+                }
+                persistence = component "Directory persistence" "Logical reference: Reads and writes directory objects and account records." "AD DS logical responsibility" {
+                    tags "SecurityCatalog,LogicalReference"
+                    url "https://learn.microsoft.com/en-us/windows-server/identity/ad-ds/get-started/virtual-dc/active-directory-domain-services-overview"
+                    properties {
+                        "architecture.id" "adDs.directory.persistence"
+                        "evidence" "Logical reference abstraction"
+                    }
+                }
+                replication = component "Directory replication responsibility" "Logical reference: Processes directory change records; controller topology is deliberately omitted." "AD DS logical responsibility" {
+                    tags "SecurityCatalog,LogicalReference"
+                    url "https://learn.microsoft.com/en-us/windows-server/identity/ad-ds/get-started/virtual-dc/active-directory-domain-services-overview"
+                    properties {
+                        "architecture.id" "adDs.directory.replication"
+                        "evidence" "Logical reference abstraction"
+                    }
+                    -> adDs.directory.persistence "Applies replicated directory change records" "In-process logical interface" "Dataflow,SecurityCatalog,DirectoryFlow"
+                }
+                policy = component "Group Policy and SYSVOL access" "Logical reference: Supplies domain policy metadata and policy-file references." "AD DS logical responsibility" {
+                    tags "SecurityCatalog,LogicalReference"
+                    url "https://learn.microsoft.com/en-us/windows-server/identity/ad-ds/get-started/virtual-dc/active-directory-domain-services-overview"
+                    properties {
+                        "architecture.id" "adDs.directory.policy"
+                        "evidence" "Logical reference abstraction"
+                    }
+                    -> adDs.directory.access "Reads authorized Group Policy object metadata" "In-process logical interface" "Dataflow,SecurityCatalog,DirectoryFlow"
+                }
+                !element adDs.directory.ldap {
+                    -> adDs.directory.access "Passes bind or directory search request" "In-process logical interface" "Dataflow,SecurityCatalog,DirectoryFlow"
+                }
+                !element adDs.directory.access {
+                    -> adDs.directory.persistence "Reads permitted account attributes or updates directory objects" "In-process logical interface" "Dataflow,SecurityCatalog,DirectoryFlow"
+                }
+                !element adDs.directory.kdc {
+                    -> adDs.directory.persistence "Reads account authentication and ticket-policy records" "In-process logical interface" "Dataflow,SecurityCatalog,DirectoryFlow"
+                }
+                -> entraId.agent "Returns scoped directory object attributes and change information" "LDAP / protected domain connection" "Dataflow,SecurityCatalog,DirectoryFlow"
+                -> entraId.agent.directory "Returns scoped directory object attributes and change information" "LDAP / protected domain connection" "Dataflow,SecurityCatalog,DirectoryFlow"
+                -> keycloak.server "Returns user attributes and bind result; does not export passwords" "LDAPS" "Dataflow,SecurityCatalog,IdentityFlow,ReferenceIntegration"
+                -> keycloak.server.ldap "Returns user attributes and bind result; does not export passwords" "LDAPS" "Dataflow,SecurityCatalog,IdentityFlow,ReferenceIntegration"
+                -> business "Returns Kerberos ticket response to the domain client" "Kerberos / domain client" "Dataflow,SecurityCatalog,IdentityFlow,ReferenceIntegration"
+            }
+            database = container "AD directory data store" "Domain-controller-owned directory objects, schema and account records." "NTDS directory database / owned storage" {
+                tags "SecurityCatalog,Database"
+                url "https://learn.microsoft.com/en-us/windows-server/identity/ad-ds/get-started/virtual-dc/active-directory-domain-services-overview"
+                properties {
+                    "architecture.id" "adDs.database"
+                    "evidence" "Documented product capability"
+                }
+            }
+            sysvol = container "SYSVOL store" "Domain-controller-owned policy templates and scripts; no filesystem deployment is specified." "SYSVOL / owned filesystem" {
+                tags "SecurityCatalog,Database"
+                url "https://learn.microsoft.com/en-us/windows-server/identity/ad-ds/get-started/virtual-dc/active-directory-domain-services-overview"
+                properties {
+                    "architecture.id" "adDs.sysvol"
+                    "evidence" "Documented product capability"
+                }
+            }
+            !element adDs.directory {
+                -> adDs.database "Reads and writes directory objects, account records and change state" "Local directory database interface" "Dataflow,SecurityCatalog,DirectoryFlow"
+                -> adDs.sysvol "Reads domain policy templates and script references" "Local filesystem access" "Dataflow,SecurityCatalog,DirectoryFlow"
+            }
+            !element adDs.directory.persistence {
+                -> adDs.database "Reads and writes directory objects, account records and change state" "Local directory database interface" "Dataflow,SecurityCatalog,DirectoryFlow"
+            }
+            !element adDs.directory.policy {
+                -> adDs.sysvol "Reads domain policy templates and script references" "Local filesystem access" "Dataflow,SecurityCatalog,DirectoryFlow"
+            }
+            -> keycloak "Returns user attributes and credential validation outcome" "LDAPS" "Dataflow,SecurityCatalog,IdentityFlow,ReferenceIntegration"
+            -> entraId "Returns selected identity attributes for Cloud Sync provisioning" "Protected LDAP / agent-established TLS service channel" "Dataflow,SecurityCatalog,DirectoryFlow"
+        }
+        adFs = softwareSystem "Microsoft Active Directory Federation Services" "Federates AD-backed identities and issues claims to relying parties; separate from directory synchronization." {
+            tags "SecurityCatalog"
+            url "https://learn.microsoft.com/en-us/windows-server/identity/ad-fs/ad-fs-overview"
+            properties {
+                "architecture.id" "adFs"
+                "evidence" "Documented product capability"
+            }
+            !docs docs/static/system
+            !adrs docs/static/decisions
+            service = container "AD FS federation service" "Authenticates users and issues claims under configured relying-party trust policy." "Windows Server / AD FS" {
+                tags "SecurityCatalog"
+                url "https://learn.microsoft.com/en-us/windows-server/identity/ad-fs/ad-fs-overview"
+                properties {
+                    "architecture.id" "adFs.service"
+                    "evidence" "Documented product capability"
+                }
+                endpoints = component "Federation protocol endpoints" "Logical reference: Accepts relying-party requests and returns browser-mediated federation responses." "AD FS logical responsibility" {
+                    tags "SecurityCatalog,LogicalReference"
+                    url "https://learn.microsoft.com/en-us/windows-server/identity/ad-fs/technical-reference/the-role-of-the-claims-engine"
+                    properties {
+                        "architecture.id" "adFs.service.endpoints"
+                        "evidence" "Logical reference abstraction"
+                    }
+                    -> apps.client "Returns signed identity response through the configured browser/client flow" "HTTPS / OIDC or SAML as configured" "Dataflow,SecurityCatalog,IdentityFlow,ReferenceIntegration"
+                }
+                authentication = component "Authentication adapters" "Logical reference: Validates user authentication through configured domain mechanisms." "AD FS logical responsibility" {
+                    tags "SecurityCatalog,LogicalReference"
+                    url "https://learn.microsoft.com/en-us/windows-server/identity/ad-fs/technical-reference/the-role-of-the-claims-engine"
+                    properties {
+                        "architecture.id" "adFs.service.authentication"
+                        "evidence" "Logical reference abstraction"
+                    }
+                    -> adDs.directory "Validates domain authentication and resolves account attributes" "Kerberos / protected directory interfaces" "Dataflow,SecurityCatalog,IdentityFlow"
+                }
+                claims = component "Claims engine" "Logical reference: Transforms incoming claims and directory attributes using configured claim rules." "AD FS logical responsibility" {
+                    tags "SecurityCatalog,LogicalReference"
+                    url "https://learn.microsoft.com/en-us/windows-server/identity/ad-fs/technical-reference/the-role-of-the-claims-engine"
+                    properties {
+                        "architecture.id" "adFs.service.claims"
+                        "evidence" "Logical reference abstraction"
+                    }
+                }
+                tokens = component "Token issuance" "Logical reference: Signs and issues claims tokens for the configured relying party." "AD FS logical responsibility" {
+                    tags "SecurityCatalog,LogicalReference"
+                    url "https://learn.microsoft.com/en-us/windows-server/identity/ad-fs/technical-reference/the-role-of-the-claims-engine"
+                    properties {
+                        "architecture.id" "adFs.service.tokens"
+                        "evidence" "Logical reference abstraction"
+                    }
+                    -> adFs.service.endpoints "Returns signed federation response" "In-process logical interface" "Dataflow,SecurityCatalog,IdentityFlow"
+                }
+                configuration = component "Trust and configuration access" "Logical reference: Loads relying-party trusts, claims rules and signing configuration." "AD FS logical responsibility" {
+                    tags "SecurityCatalog,LogicalReference"
+                    url "https://learn.microsoft.com/en-us/windows-server/identity/ad-fs/technical-reference/the-role-of-the-claims-engine"
+                    properties {
+                        "architecture.id" "adFs.service.configuration"
+                        "evidence" "Logical reference abstraction"
+                    }
+                }
+                audit = component "Federation auditing" "Logical reference: Records authentication, claims issuance outcome and request context." "AD FS logical responsibility" {
+                    tags "SecurityCatalog,LogicalReference"
+                    url "https://learn.microsoft.com/en-us/windows-server/identity/ad-fs/technical-reference/the-role-of-the-claims-engine"
+                    properties {
+                        "architecture.id" "adFs.service.audit"
+                        "evidence" "Logical reference abstraction"
+                    }
+                }
+                !element adFs.service.endpoints {
+                    -> adFs.service.authentication "Passes relying-party authentication request and user context" "In-process logical interface" "Dataflow,SecurityCatalog,IdentityFlow"
+                    -> adFs.service.audit "Records federation request context and issuance outcome" "In-process logical interface" "Dataflow,SecurityCatalog,IdentityFlow"
+                }
+                !element adFs.service.authentication {
+                    -> adFs.service.claims "Supplies authenticated identity and requested attributes" "In-process logical interface" "Dataflow,SecurityCatalog,IdentityFlow"
+                }
+                !element adFs.service.claims {
+                    -> adFs.service.tokens "Supplies transformed claims and relying-party audience" "In-process logical interface" "Dataflow,SecurityCatalog,IdentityFlow"
+                    -> adFs.service.configuration "Loads applicable claims transformation and issuance rules" "In-process logical interface" "Dataflow,SecurityCatalog,IdentityFlow"
+                }
+                !element adFs.service.tokens {
+                    -> adFs.service.configuration "Loads token-signing and relying-party trust settings" "In-process logical interface" "Dataflow,SecurityCatalog,IdentityFlow"
+                }
+                -> adDs.directory "Validates domain authentication and resolves account attributes" "Kerberos / protected directory interfaces" "Dataflow,SecurityCatalog,IdentityFlow"
+                -> apps.client "Returns authenticated identity tokens or assertions through the selected protocol flow" "HTTPS / SAML 2.0 reference client" "Dataflow,SecurityCatalog,IdentityFlow,ReferenceIntegration"
+                -> keycloak.server "Returns signed SAML assertion through browser POST" "HTTPS / browser-mediated SAML 2.0" "Dataflow,SecurityCatalog,IdentityFlow,ReferenceIntegration"
+                -> keycloak.server.broker "Returns signed SAML assertion through browser POST" "HTTPS / browser-mediated SAML 2.0" "Dataflow,SecurityCatalog,IdentityFlow,ReferenceIntegration"
+            }
+            configuration = container "AD FS configuration store" "Stores trust, claim-rule and federation configuration; WID is the reference store choice." "Windows Internal Database (reference choice)" {
+                tags "SecurityCatalog,Database"
+                url "https://learn.microsoft.com/en-us/windows-server/identity/ad-fs/ad-fs-overview"
+                properties {
+                    "architecture.id" "adFs.configuration"
+                    "evidence" "Documented product capability"
+                }
+            }
+            !element adFs.service {
+                -> adFs.configuration "Reads federation trusts, claim rules and signing configuration" "WID / local configuration database interface" "Dataflow,SecurityCatalog,DirectoryFlow"
+            }
+            !element adFs.service.configuration {
+                -> adFs.configuration "Reads federation trusts, claim rules and signing configuration" "WID / local configuration database interface" "Dataflow,SecurityCatalog,DirectoryFlow"
+            }
+            -> apps "Returns identity tokens or assertions for application access" "HTTPS / configured identity protocol" "Dataflow,SecurityCatalog,IdentityFlow,ReferenceIntegration"
+            -> keycloak "Returns verified identity claims through the configured federation flow" "HTTPS / SAML 2.0" "Dataflow,SecurityCatalog,IdentityFlow,ReferenceIntegration"
+            -> adDs "Requests domain authentication and account attributes" "Kerberos / protected directory access" "Dataflow,SecurityCatalog,IdentityFlow"
+        }
         !element firefly {
             -> besu "Submits transactions and consumes finalized events" "Ethereum JSON-RPC + events" "Dataflow"
             -> peerMembers "Exchanges private payloads and shared content references" "HTTPS / mTLS + IPFS" "Dataflow"
@@ -2368,6 +3442,11 @@ workspace "FireFly ecosystem + private Besu" "C4 levels 1-3 with static dataflow
             -> firefly "Inspects and administers member state" "HTTPS / Explorer + Admin API" "Operational"
             -> ops "Monitors availability and coordinates recovery" "HTTPS" "Operational"
             -> ops.grafana "Reviews quorum and recovery measurements" "HTTPS" "Operational"
+            -> cyberarkPam.pvwa "Requests approved privileged-account access or recorded target session" "HTTPS / PAM web portal" "Dataflow,SecurityCatalog,PrivilegedFlow,ReferenceIntegration"
+            -> cyberarkPam.pvwa.portal "Requests approved privileged-account access or recorded target session" "HTTPS / PAM web portal" "Dataflow,SecurityCatalog,PrivilegedFlow,ReferenceIntegration"
+            -> cyberarkPam.psm "Connects authorized session client and submits administrative input" "PSM-supported session client / encrypted connection" "Dataflow,SecurityCatalog,PrivilegedFlow,ReferenceIntegration"
+            -> cyberarkPam.psm.broker "Connects authorized session client and submits administrative input" "PSM-supported session client / encrypted connection" "Dataflow,SecurityCatalog,PrivilegedFlow,ReferenceIntegration"
+            -> cyberarkPam "Requests approved privileged access and submits session commands" "HTTPS / PAM portal and encrypted session client" "Dataflow,SecurityCatalog,PrivilegedFlow,ReferenceIntegration"
         }
         !element firefly.signer {
             -> besu.node "Submits signed transactions and queries RPC nodes" "HTTP JSON-RPC" "Dataflow"
@@ -2378,6 +3457,15 @@ workspace "FireFly ecosystem + private Besu" "C4 levels 1-3 with static dataflow
         !element business {
             -> apps.client "Submits business actions" "HTTPS" "Dataflow"
             -> apps "Submits consortium business actions" "HTTPS" "Dataflow"
+            -> keycloak.server "Submits sign-in interaction through the user browser" "HTTPS / browser OIDC" "Dataflow,SecurityCatalog,IdentityFlow,ReferenceIntegration"
+            -> entraId.authentication "Submits sign-in interaction through the user browser" "HTTPS / browser OIDC" "Dataflow,SecurityCatalog,IdentityFlow,ReferenceIntegration"
+            -> adFs.service "Submits sign-in interaction through the user browser" "HTTPS / browser SAML 2.0" "Dataflow,SecurityCatalog,IdentityFlow,ReferenceIntegration"
+            -> adDs.directory "Requests domain sign-in and service tickets through the domain client" "Kerberos / domain client" "Dataflow,SecurityCatalog,IdentityFlow,ReferenceIntegration"
+            -> adDs.directory.kdc "Requests domain sign-in and service tickets through the domain client" "Kerberos / domain client" "Dataflow,SecurityCatalog,IdentityFlow,ReferenceIntegration"
+            -> keycloak "Completes user sign-in through browser-mediated authentication" "HTTPS / user browser" "Dataflow,SecurityCatalog,IdentityFlow,ReferenceIntegration"
+            -> entraId "Completes user sign-in through browser-mediated authentication" "HTTPS / user browser" "Dataflow,SecurityCatalog,IdentityFlow,ReferenceIntegration"
+            -> adFs "Completes user sign-in through browser-mediated authentication" "HTTPS / user browser" "Dataflow,SecurityCatalog,IdentityFlow,ReferenceIntegration"
+            -> adDs "Requests domain sign-in and service tickets through the domain client" "Kerberos" "Dataflow,SecurityCatalog,IdentityFlow,ReferenceIntegration"
         }
         !element firefly.core {
             -> apps.client "Delivers subscribed events and accepts ACKs" "WebSocket / webhook / HTTPS" "Dataflow"
@@ -2419,6 +3507,8 @@ workspace "FireFly ecosystem + private Besu" "C4 levels 1-3 with static dataflow
         }
         !element firefly.evm {
             -> evmNetworks "Submits transactions and polls an alternative EVM network" "HTTP JSON-RPC" "Dataflow"
+            -> apps.hsmSigner "Submits unsigned transaction to the proposed alternative signing proxy" "Ethereum JSON-RPC / HTTPS (reference)" "Dataflow,SecurityCatalog,KeyFlow,ReferenceIntegration"
+            -> apps.hsmSigner.transactions "Submits unsigned Ethereum transaction fields" "Ethereum JSON-RPC / HTTPS (reference)" "Dataflow,SecurityCatalog,KeyFlow,ReferenceIntegration"
         }
         !element firefly.ethconnect.receipts {
             -> mongo "Stores receipts when MongoDB is selected" "MongoDB wire protocol" "Dataflow"
@@ -2484,1207 +3574,122 @@ workspace "FireFly ecosystem + private Besu" "C4 levels 1-3 with static dataflow
         !element tools {
             -> dockerEngine "Creates and manages local development stack services" "Docker Compose CLI" "Dataflow"
         }
-        production = deploymentEnvironment "AKS reference" {
-            memberA = deploymentGroup "Member A private runtime"
-            memberB = deploymentGroup "Member B private runtime"
-            memberC = deploymentGroup "Member C private runtime"
-            privateExchange = deploymentGroup "Authenticated Data Exchange peers"
-            sharedContent = deploymentGroup "Shared IPFS swarm"
-            rpcAccess = deploymentGroup "Private RPC clients and endpoints"
-            blockchain = deploymentGroup "Besu peer network"
-            azure = deploymentNode "Azure region" "One region supporting three zones and Premium SSD ZRS." "Microsoft Azure" {
-                properties {
-                    "architecture.id" "azure"
-                }
-                cluster = deploymentNode "AKS reference cluster" "Separate member namespaces; shared administrative trust." "Azure Kubernetes Service" {
-                    properties {
-                        "architecture.id" "azure.cluster"
-                    }
-                    az1 = deploymentNode "Availability Zone 1" "Independent fault domain AZ 1." "Azure availability zone" {
-                        tags "Zone1"
-                        properties {
-                            "architecture.id" "azure.cluster.az1"
-                        }
-                        system = deploymentNode "System node pool" "System capacity in AZ 1." "AKS VM scale set" {
-                            properties {
-                                "architecture.id" "azure.cluster.az1.system"
-                            }
-                            agent = infrastructureNode "Cluster services" "Runs DNS, networking and storage agents." "CoreDNS / CNI / CSI" {
-                                tags "Operational"
-                                properties {
-                                    "architecture.id" "azure.cluster.az1.system.agent"
-                                }
-                            }
-                        }
-                        apps = deploymentNode "Application node pool" "Member pods; surviving zones retain spare recovery capacity." "AKS Linux nodes" {
-                            properties {
-                                "architecture.id" "azure.cluster.az1.apps"
-                            }
-                            gateway = deploymentNode "Ingress pod" "Routes API requests and passes peer TLS through unchanged." "Kubernetes Deployment" {
-                                properties {
-                                    "architecture.id" "azure.cluster.az1.apps.gateway"
-                                }
-                                instance = containerInstance ops.gateway production.memberA,production.memberB,production.memberC,production.blockchain {
-                                    properties {
-                                        "architecture.id" "azure.cluster.az1.apps.gateway.instance"
-                                        "member" "consortium"
-                                        "zone" "1"
-                                        "role" "active"
-                                    }
-                                }
-                            }
-                            cnpg = deploymentNode "cnpg pod" "Operational replicas are spread across zones." "Kubernetes Deployment" {
-                                properties {
-                                    "architecture.id" "azure.cluster.az1.apps.cnpg"
-                                }
-                                instance = containerInstance ops.cnpg production.memberA,production.memberB,production.memberC,production.blockchain {
-                                    properties {
-                                        "architecture.id" "azure.cluster.az1.apps.cnpg.instance"
-                                        "member" "consortium"
-                                        "zone" "1"
-                                        "role" "active"
-                                    }
-                                }
-                            }
-                            prometheus = deploymentNode "prometheus pod" "Operational replicas are spread across zones." "Kubernetes Deployment" {
-                                properties {
-                                    "architecture.id" "azure.cluster.az1.apps.prometheus"
-                                }
-                                instance = containerInstance ops.prometheus production.memberA,production.memberB,production.memberC,production.blockchain {
-                                    properties {
-                                        "architecture.id" "azure.cluster.az1.apps.prometheus.instance"
-                                        "member" "consortium"
-                                        "zone" "1"
-                                        "role" "active"
-                                    }
-                                }
-                            }
-                            grafana = deploymentNode "Grafana pod" "Provisioned dashboards; restart eligible in surviving zones." "Kubernetes Deployment" {
-                                properties {
-                                    "architecture.id" "azure.cluster.az1.apps.grafana"
-                                }
-                                instance = containerInstance ops.grafana production.memberA,production.memberB,production.memberC,production.blockchain {
-                                    properties {
-                                        "architecture.id" "azure.cluster.az1.apps.grafana.instance"
-                                        "member" "consortium"
-                                        "zone" "1"
-                                        "role" "active"
-                                    }
-                                }
-                            }
-                            memberA = deploymentNode "Member A namespace - active services" "Separate identity and NetworkPolicies; restart eligible in AZ 1/2/3." "Kubernetes namespace / placement slice" {
-                                tags "MemberA"
-                                properties {
-                                    "architecture.id" "azure.cluster.az1.apps.memberA"
-                                }
-                                core = deploymentNode "FireFly Core pod" "One active member instance; fence before replacement after node loss." "Kubernetes StatefulSet" {
-                                    properties {
-                                        "architecture.id" "azure.cluster.az1.apps.memberA.core"
-                                    }
-                                    instance = containerInstance firefly.core production.memberA {
-                                        properties {
-                                            "architecture.id" "azure.cluster.az1.apps.memberA.core.instance"
-                                            "member" "a"
-                                            "zone" "1"
-                                            "role" "active"
-                                        }
-                                    }
-                                }
-                                evm = deploymentNode "EVMConnect + FFTM pod" "One active member instance; fence before replacement after node loss." "Kubernetes StatefulSet" {
-                                    properties {
-                                        "architecture.id" "azure.cluster.az1.apps.memberA.evm"
-                                    }
-                                    instance = containerInstance firefly.evm production.memberA {
-                                        properties {
-                                            "architecture.id" "azure.cluster.az1.apps.memberA.evm.instance"
-                                            "member" "a"
-                                            "zone" "1"
-                                            "role" "active"
-                                        }
-                                    }
-                                }
-                                signer = deploymentNode "FireFly Signer pod" "One active member instance; fence before replacement after node loss." "Kubernetes Deployment" {
-                                    properties {
-                                        "architecture.id" "azure.cluster.az1.apps.memberA.signer"
-                                    }
-                                    instance = containerInstance firefly.signer production.memberA,production.rpcAccess {
-                                        properties {
-                                            "architecture.id" "azure.cluster.az1.apps.memberA.signer.instance"
-                                            "member" "a"
-                                            "zone" "1"
-                                            "role" "active"
-                                        }
-                                    }
-                                }
-                                dx = deploymentNode "HTTPS Data Exchange pod" "One active member instance; fence before replacement after node loss." "Kubernetes StatefulSet" {
-                                    properties {
-                                        "architecture.id" "azure.cluster.az1.apps.memberA.dx"
-                                    }
-                                    instance = containerInstance firefly.dx production.memberA,production.privateExchange {
-                                        properties {
-                                            "architecture.id" "azure.cluster.az1.apps.memberA.dx.instance"
-                                            "member" "a"
-                                            "zone" "1"
-                                            "role" "active"
-                                        }
-                                    }
-                                }
-                                erc20 = deploymentNode "ERC-20 / ERC-721 connector pod" "One active member instance; fence before replacement after node loss." "Kubernetes Deployment" {
-                                    properties {
-                                        "architecture.id" "azure.cluster.az1.apps.memberA.erc20"
-                                    }
-                                    instance = containerInstance firefly.erc20 production.memberA {
-                                        properties {
-                                            "architecture.id" "azure.cluster.az1.apps.memberA.erc20.instance"
-                                            "member" "a"
-                                            "zone" "1"
-                                            "role" "active"
-                                        }
-                                    }
-                                }
-                                erc1155 = deploymentNode "ERC-1155 connector pod" "One active member instance; fence before replacement after node loss." "Kubernetes Deployment" {
-                                    properties {
-                                        "architecture.id" "azure.cluster.az1.apps.memberA.erc1155"
-                                    }
-                                    instance = containerInstance firefly.erc1155 production.memberA {
-                                        properties {
-                                            "architecture.id" "azure.cluster.az1.apps.memberA.erc1155.instance"
-                                            "member" "a"
-                                            "zone" "1"
-                                            "role" "active"
-                                        }
-                                    }
-                                }
-                                ipfs = deploymentNode "IPFS Kubo pod" "One active member instance; fence before replacement after node loss." "Kubernetes StatefulSet" {
-                                    properties {
-                                        "architecture.id" "azure.cluster.az1.apps.memberA.ipfs"
-                                    }
-                                    instance = containerInstance firefly.ipfs production.memberA,production.sharedContent {
-                                        properties {
-                                            "architecture.id" "azure.cluster.az1.apps.memberA.ipfs.instance"
-                                            "member" "a"
-                                            "zone" "1"
-                                            "role" "active"
-                                        }
-                                    }
-                                }
-                                blobs = deploymentNode "ZRS volume - Private blob and peer store" "Replicated across three zones; RWO; fence and detach before reattach." "Premium SSD ZRS / CSI" {
-                                    properties {
-                                        "architecture.id" "azure.cluster.az1.apps.memberA.blobs"
-                                    }
-                                    store = containerInstance firefly.blobs production.memberA {
-                                        properties {
-                                            "architecture.id" "azure.cluster.az1.apps.memberA.blobs.store"
-                                            "member" "a"
-                                            "zone" "regional"
-                                            "role" "persistent volume"
-                                        }
-                                    }
-                                }
-                                ipfsRepo = deploymentNode "ZRS volume - IPFS repository" "Replicated across three zones; RWO; fence and detach before reattach." "Premium SSD ZRS / CSI" {
-                                    properties {
-                                        "architecture.id" "azure.cluster.az1.apps.memberA.ipfsRepo"
-                                    }
-                                    store = containerInstance firefly.ipfsRepo production.memberA {
-                                        properties {
-                                            "architecture.id" "azure.cluster.az1.apps.memberA.ipfsRepo.store"
-                                            "member" "a"
-                                            "zone" "regional"
-                                            "role" "persistent volume"
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                        data = deploymentNode "Stateful node pool" "PostgreSQL and Besu; node anti-affinity separates replicas." "AKS Linux nodes" {
-                            properties {
-                                "architecture.id" "azure.cluster.az1.data"
-                            }
-                            pgA = deploymentNode "Member A PostgreSQL primary" "One instance per zone; separate Core/FFTM databases; ANY 1 synchronous standby." "CloudNativePG pod" {
-                                tags "MemberA"
-                                properties {
-                                    "architecture.id" "azure.cluster.az1.data.pgA"
-                                }
-                                instance = containerInstance firefly.pg production.memberA {
-                                    properties {
-                                        "architecture.id" "azure.cluster.az1.data.pgA.instance"
-                                        "member" "a"
-                                        "zone" "1"
-                                        "role" "primary"
-                                    }
-                                }
-                                volume = infrastructureNode "PGDATA A AZ 1" "Independent durable data directory for this instance." "Premium SSD ZRS / CSI" {
-                                    tags "Database"
-                                    properties {
-                                        "architecture.id" "azure.cluster.az1.data.pgA.volume"
-                                    }
-                                }
-                            }
-                            pgB = deploymentNode "Member B PostgreSQL standby" "One instance per zone; separate Core/FFTM databases; ANY 1 synchronous standby." "CloudNativePG pod" {
-                                tags "MemberB"
-                                properties {
-                                    "architecture.id" "azure.cluster.az1.data.pgB"
-                                }
-                                instance = containerInstance firefly.pgReplica production.memberB {
-                                    properties {
-                                        "architecture.id" "azure.cluster.az1.data.pgB.instance"
-                                        "member" "b"
-                                        "zone" "1"
-                                        "role" "standby"
-                                    }
-                                }
-                                volume = infrastructureNode "PGDATA B AZ 1" "Independent durable data directory for this instance." "Premium SSD ZRS / CSI" {
-                                    tags "Database"
-                                    properties {
-                                        "architecture.id" "azure.cluster.az1.data.pgB.volume"
-                                    }
-                                }
-                            }
-                            pgC = deploymentNode "Member C PostgreSQL standby" "One instance per zone; separate Core/FFTM databases; ANY 1 synchronous standby." "CloudNativePG pod" {
-                                tags "MemberC"
-                                properties {
-                                    "architecture.id" "azure.cluster.az1.data.pgC"
-                                }
-                                instance = containerInstance firefly.pgReplica production.memberC {
-                                    properties {
-                                        "architecture.id" "azure.cluster.az1.data.pgC.instance"
-                                        "member" "c"
-                                        "zone" "1"
-                                        "role" "standby"
-                                    }
-                                }
-                                volume = infrastructureNode "PGDATA C AZ 1" "Independent durable data directory for this instance." "Premium SSD ZRS / CSI" {
-                                    tags "Database"
-                                    properties {
-                                        "architecture.id" "azure.cluster.az1.data.pgC.volume"
-                                    }
-                                }
-                            }
-                            besua1 = deploymentNode "Besu A1 validator pod" "Unique node key and data directory; node anti-affinity; private P2P." "Kubernetes StatefulSet" {
-                                tags "Blockchain"
-                                properties {
-                                    "architecture.id" "azure.cluster.az1.data.besua1"
-                                }
-                                instance = containerInstance besu.node production.blockchain {
-                                    description "A1: validator; owner A; AZ 1. Dedicated node key and ledger."
-                                    properties {
-                                        "architecture.id" "azure.cluster.az1.data.besua1.instance"
-                                        "member" "a"
-                                        "zone" "1"
-                                        "role" "validator"
-                                    }
-                                }
-                                volume = infrastructureNode "Besu ledger A1" "Dedicated node data, retained during replacement." "Premium SSD ZRS / CSI" {
-                                    tags "Database"
-                                    properties {
-                                        "architecture.id" "azure.cluster.az1.data.besua1.volume"
-                                    }
-                                }
-                            }
-                            besub1 = deploymentNode "Besu B1 validator pod" "Unique node key and data directory; node anti-affinity; private P2P." "Kubernetes StatefulSet" {
-                                tags "Blockchain"
-                                properties {
-                                    "architecture.id" "azure.cluster.az1.data.besub1"
-                                }
-                                instance = containerInstance besu.node production.blockchain {
-                                    description "B1: validator; owner B; AZ 1. Dedicated node key and ledger."
-                                    properties {
-                                        "architecture.id" "azure.cluster.az1.data.besub1.instance"
-                                        "member" "b"
-                                        "zone" "1"
-                                        "role" "validator"
-                                    }
-                                }
-                                volume = infrastructureNode "Besu ledger B1" "Dedicated node data, retained during replacement." "Premium SSD ZRS / CSI" {
-                                    tags "Database"
-                                    properties {
-                                        "architecture.id" "azure.cluster.az1.data.besub1.volume"
-                                    }
-                                }
-                            }
-                            besurpc1 = deploymentNode "Besu RPC1 RPC pod" "Unique node key and data directory; node anti-affinity; private P2P." "Kubernetes StatefulSet" {
-                                tags "Blockchain"
-                                properties {
-                                    "architecture.id" "azure.cluster.az1.data.besurpc1"
-                                }
-                                instance = containerInstance besu.node production.blockchain,production.rpcAccess {
-                                    description "RPC1: rpc and bootnode; owner CONSORTIUM; AZ 1. Dedicated node key and ledger."
-                                    properties {
-                                        "architecture.id" "azure.cluster.az1.data.besurpc1.instance"
-                                        "member" "consortium"
-                                        "zone" "1"
-                                        "role" "rpc and bootnode"
-                                    }
-                                }
-                                volume = infrastructureNode "Besu ledger RPC1" "Dedicated node data, retained during replacement." "Premium SSD ZRS / CSI" {
-                                    tags "Database"
-                                    properties {
-                                        "architecture.id" "azure.cluster.az1.data.besurpc1.volume"
-                                    }
-                                }
-                            }
-                        }
-                    }
-                    az2 = deploymentNode "Availability Zone 2" "Independent fault domain AZ 2." "Azure availability zone" {
-                        tags "Zone2"
-                        properties {
-                            "architecture.id" "azure.cluster.az2"
-                        }
-                        system = deploymentNode "System node pool" "System capacity in AZ 2." "AKS VM scale set" {
-                            properties {
-                                "architecture.id" "azure.cluster.az2.system"
-                            }
-                            agent = infrastructureNode "Cluster services" "Runs DNS, networking and storage agents." "CoreDNS / CNI / CSI" {
-                                tags "Operational"
-                                properties {
-                                    "architecture.id" "azure.cluster.az2.system.agent"
-                                }
-                            }
-                        }
-                        apps = deploymentNode "Application node pool" "Member pods; surviving zones retain spare recovery capacity." "AKS Linux nodes" {
-                            properties {
-                                "architecture.id" "azure.cluster.az2.apps"
-                            }
-                            gateway = deploymentNode "Ingress pod" "Routes API requests and passes peer TLS through unchanged." "Kubernetes Deployment" {
-                                properties {
-                                    "architecture.id" "azure.cluster.az2.apps.gateway"
-                                }
-                                instance = containerInstance ops.gateway production.memberA,production.memberB,production.memberC,production.blockchain {
-                                    properties {
-                                        "architecture.id" "azure.cluster.az2.apps.gateway.instance"
-                                        "member" "consortium"
-                                        "zone" "2"
-                                        "role" "active"
-                                    }
-                                }
-                            }
-                            cnpg = deploymentNode "cnpg pod" "Operational replicas are spread across zones." "Kubernetes Deployment" {
-                                properties {
-                                    "architecture.id" "azure.cluster.az2.apps.cnpg"
-                                }
-                                instance = containerInstance ops.cnpg production.memberA,production.memberB,production.memberC,production.blockchain {
-                                    properties {
-                                        "architecture.id" "azure.cluster.az2.apps.cnpg.instance"
-                                        "member" "consortium"
-                                        "zone" "2"
-                                        "role" "active"
-                                    }
-                                }
-                            }
-                            prometheus = deploymentNode "prometheus pod" "Operational replicas are spread across zones." "Kubernetes Deployment" {
-                                properties {
-                                    "architecture.id" "azure.cluster.az2.apps.prometheus"
-                                }
-                                instance = containerInstance ops.prometheus production.memberA,production.memberB,production.memberC,production.blockchain {
-                                    properties {
-                                        "architecture.id" "azure.cluster.az2.apps.prometheus.instance"
-                                        "member" "consortium"
-                                        "zone" "2"
-                                        "role" "active"
-                                    }
-                                }
-                            }
-                            memberB = deploymentNode "Member B namespace - active services" "Separate identity and NetworkPolicies; restart eligible in AZ 1/2/3." "Kubernetes namespace / placement slice" {
-                                tags "MemberB"
-                                properties {
-                                    "architecture.id" "azure.cluster.az2.apps.memberB"
-                                }
-                                core = deploymentNode "FireFly Core pod" "One active member instance; fence before replacement after node loss." "Kubernetes StatefulSet" {
-                                    properties {
-                                        "architecture.id" "azure.cluster.az2.apps.memberB.core"
-                                    }
-                                    instance = containerInstance firefly.core production.memberB {
-                                        properties {
-                                            "architecture.id" "azure.cluster.az2.apps.memberB.core.instance"
-                                            "member" "b"
-                                            "zone" "2"
-                                            "role" "active"
-                                        }
-                                    }
-                                }
-                                evm = deploymentNode "EVMConnect + FFTM pod" "One active member instance; fence before replacement after node loss." "Kubernetes StatefulSet" {
-                                    properties {
-                                        "architecture.id" "azure.cluster.az2.apps.memberB.evm"
-                                    }
-                                    instance = containerInstance firefly.evm production.memberB {
-                                        properties {
-                                            "architecture.id" "azure.cluster.az2.apps.memberB.evm.instance"
-                                            "member" "b"
-                                            "zone" "2"
-                                            "role" "active"
-                                        }
-                                    }
-                                }
-                                signer = deploymentNode "FireFly Signer pod" "One active member instance; fence before replacement after node loss." "Kubernetes Deployment" {
-                                    properties {
-                                        "architecture.id" "azure.cluster.az2.apps.memberB.signer"
-                                    }
-                                    instance = containerInstance firefly.signer production.memberB,production.rpcAccess {
-                                        properties {
-                                            "architecture.id" "azure.cluster.az2.apps.memberB.signer.instance"
-                                            "member" "b"
-                                            "zone" "2"
-                                            "role" "active"
-                                        }
-                                    }
-                                }
-                                dx = deploymentNode "HTTPS Data Exchange pod" "One active member instance; fence before replacement after node loss." "Kubernetes StatefulSet" {
-                                    properties {
-                                        "architecture.id" "azure.cluster.az2.apps.memberB.dx"
-                                    }
-                                    instance = containerInstance firefly.dx production.memberB,production.privateExchange {
-                                        properties {
-                                            "architecture.id" "azure.cluster.az2.apps.memberB.dx.instance"
-                                            "member" "b"
-                                            "zone" "2"
-                                            "role" "active"
-                                        }
-                                    }
-                                }
-                                erc20 = deploymentNode "ERC-20 / ERC-721 connector pod" "One active member instance; fence before replacement after node loss." "Kubernetes Deployment" {
-                                    properties {
-                                        "architecture.id" "azure.cluster.az2.apps.memberB.erc20"
-                                    }
-                                    instance = containerInstance firefly.erc20 production.memberB {
-                                        properties {
-                                            "architecture.id" "azure.cluster.az2.apps.memberB.erc20.instance"
-                                            "member" "b"
-                                            "zone" "2"
-                                            "role" "active"
-                                        }
-                                    }
-                                }
-                                erc1155 = deploymentNode "ERC-1155 connector pod" "One active member instance; fence before replacement after node loss." "Kubernetes Deployment" {
-                                    properties {
-                                        "architecture.id" "azure.cluster.az2.apps.memberB.erc1155"
-                                    }
-                                    instance = containerInstance firefly.erc1155 production.memberB {
-                                        properties {
-                                            "architecture.id" "azure.cluster.az2.apps.memberB.erc1155.instance"
-                                            "member" "b"
-                                            "zone" "2"
-                                            "role" "active"
-                                        }
-                                    }
-                                }
-                                ipfs = deploymentNode "IPFS Kubo pod" "One active member instance; fence before replacement after node loss." "Kubernetes StatefulSet" {
-                                    properties {
-                                        "architecture.id" "azure.cluster.az2.apps.memberB.ipfs"
-                                    }
-                                    instance = containerInstance firefly.ipfs production.memberB,production.sharedContent {
-                                        properties {
-                                            "architecture.id" "azure.cluster.az2.apps.memberB.ipfs.instance"
-                                            "member" "b"
-                                            "zone" "2"
-                                            "role" "active"
-                                        }
-                                    }
-                                }
-                                blobs = deploymentNode "ZRS volume - Private blob and peer store" "Replicated across three zones; RWO; fence and detach before reattach." "Premium SSD ZRS / CSI" {
-                                    properties {
-                                        "architecture.id" "azure.cluster.az2.apps.memberB.blobs"
-                                    }
-                                    store = containerInstance firefly.blobs production.memberB {
-                                        properties {
-                                            "architecture.id" "azure.cluster.az2.apps.memberB.blobs.store"
-                                            "member" "b"
-                                            "zone" "regional"
-                                            "role" "persistent volume"
-                                        }
-                                    }
-                                }
-                                ipfsRepo = deploymentNode "ZRS volume - IPFS repository" "Replicated across three zones; RWO; fence and detach before reattach." "Premium SSD ZRS / CSI" {
-                                    properties {
-                                        "architecture.id" "azure.cluster.az2.apps.memberB.ipfsRepo"
-                                    }
-                                    store = containerInstance firefly.ipfsRepo production.memberB {
-                                        properties {
-                                            "architecture.id" "azure.cluster.az2.apps.memberB.ipfsRepo.store"
-                                            "member" "b"
-                                            "zone" "regional"
-                                            "role" "persistent volume"
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                        data = deploymentNode "Stateful node pool" "PostgreSQL and Besu; node anti-affinity separates replicas." "AKS Linux nodes" {
-                            properties {
-                                "architecture.id" "azure.cluster.az2.data"
-                            }
-                            pgA = deploymentNode "Member A PostgreSQL standby" "One instance per zone; separate Core/FFTM databases; ANY 1 synchronous standby." "CloudNativePG pod" {
-                                tags "MemberA"
-                                properties {
-                                    "architecture.id" "azure.cluster.az2.data.pgA"
-                                }
-                                instance = containerInstance firefly.pgReplica production.memberA {
-                                    properties {
-                                        "architecture.id" "azure.cluster.az2.data.pgA.instance"
-                                        "member" "a"
-                                        "zone" "2"
-                                        "role" "standby"
-                                    }
-                                }
-                                volume = infrastructureNode "PGDATA A AZ 2" "Independent durable data directory for this instance." "Premium SSD ZRS / CSI" {
-                                    tags "Database"
-                                    properties {
-                                        "architecture.id" "azure.cluster.az2.data.pgA.volume"
-                                    }
-                                }
-                            }
-                            pgB = deploymentNode "Member B PostgreSQL primary" "One instance per zone; separate Core/FFTM databases; ANY 1 synchronous standby." "CloudNativePG pod" {
-                                tags "MemberB"
-                                properties {
-                                    "architecture.id" "azure.cluster.az2.data.pgB"
-                                }
-                                instance = containerInstance firefly.pg production.memberB {
-                                    properties {
-                                        "architecture.id" "azure.cluster.az2.data.pgB.instance"
-                                        "member" "b"
-                                        "zone" "2"
-                                        "role" "primary"
-                                    }
-                                }
-                                volume = infrastructureNode "PGDATA B AZ 2" "Independent durable data directory for this instance." "Premium SSD ZRS / CSI" {
-                                    tags "Database"
-                                    properties {
-                                        "architecture.id" "azure.cluster.az2.data.pgB.volume"
-                                    }
-                                }
-                            }
-                            pgC = deploymentNode "Member C PostgreSQL standby" "One instance per zone; separate Core/FFTM databases; ANY 1 synchronous standby." "CloudNativePG pod" {
-                                tags "MemberC"
-                                properties {
-                                    "architecture.id" "azure.cluster.az2.data.pgC"
-                                }
-                                instance = containerInstance firefly.pgReplica production.memberC {
-                                    properties {
-                                        "architecture.id" "azure.cluster.az2.data.pgC.instance"
-                                        "member" "c"
-                                        "zone" "2"
-                                        "role" "standby"
-                                    }
-                                }
-                                volume = infrastructureNode "PGDATA C AZ 2" "Independent durable data directory for this instance." "Premium SSD ZRS / CSI" {
-                                    tags "Database"
-                                    properties {
-                                        "architecture.id" "azure.cluster.az2.data.pgC.volume"
-                                    }
-                                }
-                            }
-                            besub2 = deploymentNode "Besu B2 validator pod" "Unique node key and data directory; node anti-affinity; private P2P." "Kubernetes StatefulSet" {
-                                tags "Blockchain"
-                                properties {
-                                    "architecture.id" "azure.cluster.az2.data.besub2"
-                                }
-                                instance = containerInstance besu.node production.blockchain {
-                                    description "B2: validator; owner B; AZ 2. Dedicated node key and ledger."
-                                    properties {
-                                        "architecture.id" "azure.cluster.az2.data.besub2.instance"
-                                        "member" "b"
-                                        "zone" "2"
-                                        "role" "validator"
-                                    }
-                                }
-                                volume = infrastructureNode "Besu ledger B2" "Dedicated node data, retained during replacement." "Premium SSD ZRS / CSI" {
-                                    tags "Database"
-                                    properties {
-                                        "architecture.id" "azure.cluster.az2.data.besub2.volume"
-                                    }
-                                }
-                            }
-                            besuc1 = deploymentNode "Besu C1 validator pod" "Unique node key and data directory; node anti-affinity; private P2P." "Kubernetes StatefulSet" {
-                                tags "Blockchain"
-                                properties {
-                                    "architecture.id" "azure.cluster.az2.data.besuc1"
-                                }
-                                instance = containerInstance besu.node production.blockchain {
-                                    description "C1: validator; owner C; AZ 2. Dedicated node key and ledger."
-                                    properties {
-                                        "architecture.id" "azure.cluster.az2.data.besuc1.instance"
-                                        "member" "c"
-                                        "zone" "2"
-                                        "role" "validator"
-                                    }
-                                }
-                                volume = infrastructureNode "Besu ledger C1" "Dedicated node data, retained during replacement." "Premium SSD ZRS / CSI" {
-                                    tags "Database"
-                                    properties {
-                                        "architecture.id" "azure.cluster.az2.data.besuc1.volume"
-                                    }
-                                }
-                            }
-                            besurpc2 = deploymentNode "Besu RPC2 RPC pod" "Unique node key and data directory; node anti-affinity; private P2P." "Kubernetes StatefulSet" {
-                                tags "Blockchain"
-                                properties {
-                                    "architecture.id" "azure.cluster.az2.data.besurpc2"
-                                }
-                                instance = containerInstance besu.node production.blockchain,production.rpcAccess {
-                                    description "RPC2: rpc; owner CONSORTIUM; AZ 2. Dedicated node key and ledger."
-                                    properties {
-                                        "architecture.id" "azure.cluster.az2.data.besurpc2.instance"
-                                        "member" "consortium"
-                                        "zone" "2"
-                                        "role" "rpc"
-                                    }
-                                }
-                                volume = infrastructureNode "Besu ledger RPC2" "Dedicated node data, retained during replacement." "Premium SSD ZRS / CSI" {
-                                    tags "Database"
-                                    properties {
-                                        "architecture.id" "azure.cluster.az2.data.besurpc2.volume"
-                                    }
-                                }
-                            }
-                        }
-                    }
-                    az3 = deploymentNode "Availability Zone 3" "Independent fault domain AZ 3." "Azure availability zone" {
-                        tags "Zone3"
-                        properties {
-                            "architecture.id" "azure.cluster.az3"
-                        }
-                        system = deploymentNode "System node pool" "System capacity in AZ 3." "AKS VM scale set" {
-                            properties {
-                                "architecture.id" "azure.cluster.az3.system"
-                            }
-                            agent = infrastructureNode "Cluster services" "Runs DNS, networking and storage agents." "CoreDNS / CNI / CSI" {
-                                tags "Operational"
-                                properties {
-                                    "architecture.id" "azure.cluster.az3.system.agent"
-                                }
-                            }
-                        }
-                        apps = deploymentNode "Application node pool" "Member pods; surviving zones retain spare recovery capacity." "AKS Linux nodes" {
-                            properties {
-                                "architecture.id" "azure.cluster.az3.apps"
-                            }
-                            gateway = deploymentNode "Ingress pod" "Routes API requests and passes peer TLS through unchanged." "Kubernetes Deployment" {
-                                properties {
-                                    "architecture.id" "azure.cluster.az3.apps.gateway"
-                                }
-                                instance = containerInstance ops.gateway production.memberA,production.memberB,production.memberC,production.blockchain {
-                                    properties {
-                                        "architecture.id" "azure.cluster.az3.apps.gateway.instance"
-                                        "member" "consortium"
-                                        "zone" "3"
-                                        "role" "active"
-                                    }
-                                }
-                            }
-                            cnpg = deploymentNode "cnpg pod" "Operational replicas are spread across zones." "Kubernetes Deployment" {
-                                properties {
-                                    "architecture.id" "azure.cluster.az3.apps.cnpg"
-                                }
-                                instance = containerInstance ops.cnpg production.memberA,production.memberB,production.memberC,production.blockchain {
-                                    properties {
-                                        "architecture.id" "azure.cluster.az3.apps.cnpg.instance"
-                                        "member" "consortium"
-                                        "zone" "3"
-                                        "role" "active"
-                                    }
-                                }
-                            }
-                            prometheus = deploymentNode "prometheus pod" "Operational replicas are spread across zones." "Kubernetes Deployment" {
-                                properties {
-                                    "architecture.id" "azure.cluster.az3.apps.prometheus"
-                                }
-                                instance = containerInstance ops.prometheus production.memberA,production.memberB,production.memberC,production.blockchain {
-                                    properties {
-                                        "architecture.id" "azure.cluster.az3.apps.prometheus.instance"
-                                        "member" "consortium"
-                                        "zone" "3"
-                                        "role" "active"
-                                    }
-                                }
-                            }
-                            memberC = deploymentNode "Member C namespace - active services" "Separate identity and NetworkPolicies; restart eligible in AZ 1/2/3." "Kubernetes namespace / placement slice" {
-                                tags "MemberC"
-                                properties {
-                                    "architecture.id" "azure.cluster.az3.apps.memberC"
-                                }
-                                core = deploymentNode "FireFly Core pod" "One active member instance; fence before replacement after node loss." "Kubernetes StatefulSet" {
-                                    properties {
-                                        "architecture.id" "azure.cluster.az3.apps.memberC.core"
-                                    }
-                                    instance = containerInstance firefly.core production.memberC {
-                                        properties {
-                                            "architecture.id" "azure.cluster.az3.apps.memberC.core.instance"
-                                            "member" "c"
-                                            "zone" "3"
-                                            "role" "active"
-                                        }
-                                    }
-                                }
-                                evm = deploymentNode "EVMConnect + FFTM pod" "One active member instance; fence before replacement after node loss." "Kubernetes StatefulSet" {
-                                    properties {
-                                        "architecture.id" "azure.cluster.az3.apps.memberC.evm"
-                                    }
-                                    instance = containerInstance firefly.evm production.memberC {
-                                        properties {
-                                            "architecture.id" "azure.cluster.az3.apps.memberC.evm.instance"
-                                            "member" "c"
-                                            "zone" "3"
-                                            "role" "active"
-                                        }
-                                    }
-                                }
-                                signer = deploymentNode "FireFly Signer pod" "One active member instance; fence before replacement after node loss." "Kubernetes Deployment" {
-                                    properties {
-                                        "architecture.id" "azure.cluster.az3.apps.memberC.signer"
-                                    }
-                                    instance = containerInstance firefly.signer production.memberC,production.rpcAccess {
-                                        properties {
-                                            "architecture.id" "azure.cluster.az3.apps.memberC.signer.instance"
-                                            "member" "c"
-                                            "zone" "3"
-                                            "role" "active"
-                                        }
-                                    }
-                                }
-                                dx = deploymentNode "HTTPS Data Exchange pod" "One active member instance; fence before replacement after node loss." "Kubernetes StatefulSet" {
-                                    properties {
-                                        "architecture.id" "azure.cluster.az3.apps.memberC.dx"
-                                    }
-                                    instance = containerInstance firefly.dx production.memberC,production.privateExchange {
-                                        properties {
-                                            "architecture.id" "azure.cluster.az3.apps.memberC.dx.instance"
-                                            "member" "c"
-                                            "zone" "3"
-                                            "role" "active"
-                                        }
-                                    }
-                                }
-                                erc20 = deploymentNode "ERC-20 / ERC-721 connector pod" "One active member instance; fence before replacement after node loss." "Kubernetes Deployment" {
-                                    properties {
-                                        "architecture.id" "azure.cluster.az3.apps.memberC.erc20"
-                                    }
-                                    instance = containerInstance firefly.erc20 production.memberC {
-                                        properties {
-                                            "architecture.id" "azure.cluster.az3.apps.memberC.erc20.instance"
-                                            "member" "c"
-                                            "zone" "3"
-                                            "role" "active"
-                                        }
-                                    }
-                                }
-                                erc1155 = deploymentNode "ERC-1155 connector pod" "One active member instance; fence before replacement after node loss." "Kubernetes Deployment" {
-                                    properties {
-                                        "architecture.id" "azure.cluster.az3.apps.memberC.erc1155"
-                                    }
-                                    instance = containerInstance firefly.erc1155 production.memberC {
-                                        properties {
-                                            "architecture.id" "azure.cluster.az3.apps.memberC.erc1155.instance"
-                                            "member" "c"
-                                            "zone" "3"
-                                            "role" "active"
-                                        }
-                                    }
-                                }
-                                ipfs = deploymentNode "IPFS Kubo pod" "One active member instance; fence before replacement after node loss." "Kubernetes StatefulSet" {
-                                    properties {
-                                        "architecture.id" "azure.cluster.az3.apps.memberC.ipfs"
-                                    }
-                                    instance = containerInstance firefly.ipfs production.memberC,production.sharedContent {
-                                        properties {
-                                            "architecture.id" "azure.cluster.az3.apps.memberC.ipfs.instance"
-                                            "member" "c"
-                                            "zone" "3"
-                                            "role" "active"
-                                        }
-                                    }
-                                }
-                                blobs = deploymentNode "ZRS volume - Private blob and peer store" "Replicated across three zones; RWO; fence and detach before reattach." "Premium SSD ZRS / CSI" {
-                                    properties {
-                                        "architecture.id" "azure.cluster.az3.apps.memberC.blobs"
-                                    }
-                                    store = containerInstance firefly.blobs production.memberC {
-                                        properties {
-                                            "architecture.id" "azure.cluster.az3.apps.memberC.blobs.store"
-                                            "member" "c"
-                                            "zone" "regional"
-                                            "role" "persistent volume"
-                                        }
-                                    }
-                                }
-                                ipfsRepo = deploymentNode "ZRS volume - IPFS repository" "Replicated across three zones; RWO; fence and detach before reattach." "Premium SSD ZRS / CSI" {
-                                    properties {
-                                        "architecture.id" "azure.cluster.az3.apps.memberC.ipfsRepo"
-                                    }
-                                    store = containerInstance firefly.ipfsRepo production.memberC {
-                                        properties {
-                                            "architecture.id" "azure.cluster.az3.apps.memberC.ipfsRepo.store"
-                                            "member" "c"
-                                            "zone" "regional"
-                                            "role" "persistent volume"
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                        data = deploymentNode "Stateful node pool" "PostgreSQL and Besu; node anti-affinity separates replicas." "AKS Linux nodes" {
-                            properties {
-                                "architecture.id" "azure.cluster.az3.data"
-                            }
-                            pgA = deploymentNode "Member A PostgreSQL standby" "One instance per zone; separate Core/FFTM databases; ANY 1 synchronous standby." "CloudNativePG pod" {
-                                tags "MemberA"
-                                properties {
-                                    "architecture.id" "azure.cluster.az3.data.pgA"
-                                }
-                                instance = containerInstance firefly.pgReplica production.memberA {
-                                    properties {
-                                        "architecture.id" "azure.cluster.az3.data.pgA.instance"
-                                        "member" "a"
-                                        "zone" "3"
-                                        "role" "standby"
-                                    }
-                                }
-                                volume = infrastructureNode "PGDATA A AZ 3" "Independent durable data directory for this instance." "Premium SSD ZRS / CSI" {
-                                    tags "Database"
-                                    properties {
-                                        "architecture.id" "azure.cluster.az3.data.pgA.volume"
-                                    }
-                                }
-                            }
-                            pgB = deploymentNode "Member B PostgreSQL standby" "One instance per zone; separate Core/FFTM databases; ANY 1 synchronous standby." "CloudNativePG pod" {
-                                tags "MemberB"
-                                properties {
-                                    "architecture.id" "azure.cluster.az3.data.pgB"
-                                }
-                                instance = containerInstance firefly.pgReplica production.memberB {
-                                    properties {
-                                        "architecture.id" "azure.cluster.az3.data.pgB.instance"
-                                        "member" "b"
-                                        "zone" "3"
-                                        "role" "standby"
-                                    }
-                                }
-                                volume = infrastructureNode "PGDATA B AZ 3" "Independent durable data directory for this instance." "Premium SSD ZRS / CSI" {
-                                    tags "Database"
-                                    properties {
-                                        "architecture.id" "azure.cluster.az3.data.pgB.volume"
-                                    }
-                                }
-                            }
-                            pgC = deploymentNode "Member C PostgreSQL primary" "One instance per zone; separate Core/FFTM databases; ANY 1 synchronous standby." "CloudNativePG pod" {
-                                tags "MemberC"
-                                properties {
-                                    "architecture.id" "azure.cluster.az3.data.pgC"
-                                }
-                                instance = containerInstance firefly.pg production.memberC {
-                                    properties {
-                                        "architecture.id" "azure.cluster.az3.data.pgC.instance"
-                                        "member" "c"
-                                        "zone" "3"
-                                        "role" "primary"
-                                    }
-                                }
-                                volume = infrastructureNode "PGDATA C AZ 3" "Independent durable data directory for this instance." "Premium SSD ZRS / CSI" {
-                                    tags "Database"
-                                    properties {
-                                        "architecture.id" "azure.cluster.az3.data.pgC.volume"
-                                    }
-                                }
-                            }
-                            besuc2 = deploymentNode "Besu C2 validator pod" "Unique node key and data directory; node anti-affinity; private P2P." "Kubernetes StatefulSet" {
-                                tags "Blockchain"
-                                properties {
-                                    "architecture.id" "azure.cluster.az3.data.besuc2"
-                                }
-                                instance = containerInstance besu.node production.blockchain {
-                                    description "C2: validator; owner C; AZ 3. Dedicated node key and ledger."
-                                    properties {
-                                        "architecture.id" "azure.cluster.az3.data.besuc2.instance"
-                                        "member" "c"
-                                        "zone" "3"
-                                        "role" "validator"
-                                    }
-                                }
-                                volume = infrastructureNode "Besu ledger C2" "Dedicated node data, retained during replacement." "Premium SSD ZRS / CSI" {
-                                    tags "Database"
-                                    properties {
-                                        "architecture.id" "azure.cluster.az3.data.besuc2.volume"
-                                    }
-                                }
-                            }
-                            besua2 = deploymentNode "Besu A2 validator pod" "Unique node key and data directory; node anti-affinity; private P2P." "Kubernetes StatefulSet" {
-                                tags "Blockchain"
-                                properties {
-                                    "architecture.id" "azure.cluster.az3.data.besua2"
-                                }
-                                instance = containerInstance besu.node production.blockchain {
-                                    description "A2: validator; owner A; AZ 3. Dedicated node key and ledger."
-                                    properties {
-                                        "architecture.id" "azure.cluster.az3.data.besua2.instance"
-                                        "member" "a"
-                                        "zone" "3"
-                                        "role" "validator"
-                                    }
-                                }
-                                volume = infrastructureNode "Besu ledger A2" "Dedicated node data, retained during replacement." "Premium SSD ZRS / CSI" {
-                                    tags "Database"
-                                    properties {
-                                        "architecture.id" "azure.cluster.az3.data.besua2.volume"
-                                    }
-                                }
-                            }
-                            besurpc3 = deploymentNode "Besu RPC3 RPC pod" "Unique node key and data directory; node anti-affinity; private P2P." "Kubernetes StatefulSet" {
-                                tags "Blockchain"
-                                properties {
-                                    "architecture.id" "azure.cluster.az3.data.besurpc3"
-                                }
-                                instance = containerInstance besu.node production.blockchain,production.rpcAccess {
-                                    description "RPC3: rpc and bootnode; owner CONSORTIUM; AZ 3. Dedicated node key and ledger."
-                                    properties {
-                                        "architecture.id" "azure.cluster.az3.data.besurpc3.instance"
-                                        "member" "consortium"
-                                        "zone" "3"
-                                        "role" "rpc and bootnode"
-                                    }
-                                }
-                                volume = infrastructureNode "Besu ledger RPC3" "Dedicated node data, retained during replacement." "Premium SSD ZRS / CSI" {
-                                    tags "Database"
-                                    properties {
-                                        "architecture.id" "azure.cluster.az3.data.besurpc3.volume"
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-                control = infrastructureNode "Managed control plane" "Schedules workloads and stores Kubernetes objects; Azure-managed." "AKS API / etcd" {
-                    tags "Operational"
-                    properties {
-                        "architecture.id" "azure.control"
-                    }
-                    -> production.azure.cluster.az1.system.agent "Schedules and reconciles system workloads" "Kubernetes API / TLS" "Operational"
-                    -> production.azure.cluster.az2.system.agent "Schedules and reconciles system workloads" "Kubernetes API / TLS" "Operational"
-                    -> production.azure.cluster.az3.system.agent "Schedules and reconciles system workloads" "Kubernetes API / TLS" "Operational"
-                }
-                lb = infrastructureNode "Zone-redundant load balancer" "Exposes private member API and passthrough peer endpoints." "Azure Standard Load Balancer" {
-                    tags "Operational"
-                    properties {
-                        "architecture.id" "azure.lb"
-                    }
-                    -> production.azure.cluster.az1.apps.gateway.instance "Routes HTTPS and peer TLS sessions" "TCP / TLS" "Operational"
-                    -> production.azure.cluster.az2.apps.gateway.instance "Routes HTTPS and peer TLS sessions" "TCP / TLS" "Operational"
-                    -> production.azure.cluster.az3.apps.gateway.instance "Routes HTTPS and peer TLS sessions" "TCP / TLS" "Operational"
-                }
-                secrets = infrastructureNode "Kubernetes secret projection" "Projects namespaced configuration and distinct node keys." "Kubernetes API / Secret volumes" {
-                    tags "Operational"
-                    properties {
-                        "architecture.id" "azure.secrets"
-                    }
-                }
-                csi = infrastructureNode "Azure Disk CSI controller" "Provisions volumes and coordinates safe reattachment." "Azure Disk CSI / ARM" {
-                    tags "Operational"
-                    properties {
-                        "architecture.id" "azure.csi"
-                    }
-                    -> production.azure.cluster.az1.apps.memberA.blobs.store "Provisions and safely attaches member storage" "CSI / Azure ARM" "Operational"
-                    -> production.azure.cluster.az1.apps.memberA.ipfsRepo.store "Provisions and safely attaches member storage" "CSI / Azure ARM" "Operational"
-                    -> production.azure.cluster.az1.data.pgA.volume "Provisions a dedicated PGDATA volume" "CSI / Azure ARM" "Operational"
-                    -> production.azure.cluster.az2.data.pgA.volume "Provisions a dedicated PGDATA volume" "CSI / Azure ARM" "Operational"
-                    -> production.azure.cluster.az3.data.pgA.volume "Provisions a dedicated PGDATA volume" "CSI / Azure ARM" "Operational"
-                    -> production.azure.cluster.az2.apps.memberB.blobs.store "Provisions and safely attaches member storage" "CSI / Azure ARM" "Operational"
-                    -> production.azure.cluster.az2.apps.memberB.ipfsRepo.store "Provisions and safely attaches member storage" "CSI / Azure ARM" "Operational"
-                    -> production.azure.cluster.az1.data.pgB.volume "Provisions a dedicated PGDATA volume" "CSI / Azure ARM" "Operational"
-                    -> production.azure.cluster.az2.data.pgB.volume "Provisions a dedicated PGDATA volume" "CSI / Azure ARM" "Operational"
-                    -> production.azure.cluster.az3.data.pgB.volume "Provisions a dedicated PGDATA volume" "CSI / Azure ARM" "Operational"
-                    -> production.azure.cluster.az3.apps.memberC.blobs.store "Provisions and safely attaches member storage" "CSI / Azure ARM" "Operational"
-                    -> production.azure.cluster.az3.apps.memberC.ipfsRepo.store "Provisions and safely attaches member storage" "CSI / Azure ARM" "Operational"
-                    -> production.azure.cluster.az1.data.pgC.volume "Provisions a dedicated PGDATA volume" "CSI / Azure ARM" "Operational"
-                    -> production.azure.cluster.az2.data.pgC.volume "Provisions a dedicated PGDATA volume" "CSI / Azure ARM" "Operational"
-                    -> production.azure.cluster.az3.data.pgC.volume "Provisions a dedicated PGDATA volume" "CSI / Azure ARM" "Operational"
-                    -> production.azure.cluster.az1.data.besua1.volume "Provisions a node-specific ledger volume" "CSI / Azure ARM" "Operational"
-                    -> production.azure.cluster.az1.data.besub1.volume "Provisions a node-specific ledger volume" "CSI / Azure ARM" "Operational"
-                    -> production.azure.cluster.az2.data.besub2.volume "Provisions a node-specific ledger volume" "CSI / Azure ARM" "Operational"
-                    -> production.azure.cluster.az2.data.besuc1.volume "Provisions a node-specific ledger volume" "CSI / Azure ARM" "Operational"
-                    -> production.azure.cluster.az3.data.besuc2.volume "Provisions a node-specific ledger volume" "CSI / Azure ARM" "Operational"
-                    -> production.azure.cluster.az3.data.besua2.volume "Provisions a node-specific ledger volume" "CSI / Azure ARM" "Operational"
-                    -> production.azure.cluster.az1.data.besurpc1.volume "Provisions a node-specific ledger volume" "CSI / Azure ARM" "Operational"
-                    -> production.azure.cluster.az2.data.besurpc2.volume "Provisions a node-specific ledger volume" "CSI / Azure ARM" "Operational"
-                    -> production.azure.cluster.az3.data.besurpc3.volume "Provisions a node-specific ledger volume" "CSI / Azure ARM" "Operational"
-                }
-                secretStores = deploymentNode "Member secret stores" "Separate namespace objects containing encrypted keystores and credentials." "Kubernetes Secrets" {
-                    properties {
-                        "architecture.id" "azure.secretStores"
-                    }
-                    a = containerInstance firefly.secrets production.memberA {
-                        properties {
-                            "architecture.id" "azure.secretStores.a"
-                            "member" "a"
-                            "zone" "regional"
-                            "role" "projected configuration"
-                        }
-                    }
-                    b = containerInstance firefly.secrets production.memberB {
-                        properties {
-                            "architecture.id" "azure.secretStores.b"
-                            "member" "b"
-                            "zone" "regional"
-                            "role" "projected configuration"
-                        }
-                    }
-                    c = containerInstance firefly.secrets production.memberC {
-                        properties {
-                            "architecture.id" "azure.secretStores.c"
-                            "member" "c"
-                            "zone" "regional"
-                            "role" "projected configuration"
-                        }
-                    }
-                }
-                rpc = infrastructureNode "Private RPC Service" "Routes to synchronized RPC nodes; session affinity protects node-local filters." "Kubernetes Service / session affinity" {
-                    tags "Operational"
-                    properties {
-                        "architecture.id" "azure.rpc"
-                    }
-                    -> production.azure.cluster.az1.data.besurpc1.instance "Routes pinned JSON-RPC sessions" "HTTP JSON-RPC" "Operational"
-                    -> production.azure.cluster.az2.data.besurpc2.instance "Routes pinned JSON-RPC sessions" "HTTP JSON-RPC" "Operational"
-                    -> production.azure.cluster.az3.data.besurpc3.instance "Routes pinned JSON-RPC sessions" "HTTP JSON-RPC" "Operational"
-                }
-            }
+        !element managedTarget {
+            -> cyberarkPam.cpm "Returns password verification or change outcome" "SSH / target command response" "Dataflow,SecurityCatalog,PrivilegedFlow,ReferenceIntegration"
+            -> cyberarkPam.cpm.target "Returns password verification or change outcome" "SSH / target command response" "Dataflow,SecurityCatalog,PrivilegedFlow,ReferenceIntegration"
+            -> cyberarkPam.psm "Returns command output and session state" "SSH" "Dataflow,SecurityCatalog,PrivilegedFlow,ReferenceIntegration"
+            -> cyberarkPam.psm.target "Returns command output and session state" "SSH" "Dataflow,SecurityCatalog,PrivilegedFlow,ReferenceIntegration"
         }
-        !element production.azure.control {
-            -> production.azure.secrets "Stores and projects namespace configuration" "Kubernetes API / TLS" "Operational"
-            -> production.azure.csi "Reconciles volume attachments" "Kubernetes API / TLS" "Operational"
+        !element cyberarkPam.vault {
+            -> conjur.synchronizer "Returns selected account metadata and credentials" "CyberArk Vault protocol / encrypted channel" "Dataflow,SecurityCatalog,SecretFlow"
+            -> conjur.synchronizer.reader "Returns selected account metadata and credentials" "CyberArk Vault protocol / encrypted channel" "Dataflow,SecurityCatalog,SecretFlow"
         }
-        !element production.azure.cluster.az1.apps.cnpg.instance {
-            -> production.azure.control "Watches clusters and updates primary Services" "Kubernetes API / TLS" "Operational"
+        !element entraId.agent {
+            -> adDs.directory "Queries selected users, groups, contacts and requested attributes" "LDAP / protected domain connection" "Dataflow,SecurityCatalog,DirectoryFlow"
         }
-        !element production.azure.cluster.az2.apps.cnpg.instance {
-            -> production.azure.control "Watches clusters and updates primary Services" "Kubernetes API / TLS" "Operational"
+        !element entraId.agent.directory {
+            -> adDs.directory "Queries selected users, groups, contacts and requested attributes" "LDAP / protected domain connection" "Dataflow,SecurityCatalog,DirectoryFlow"
         }
-        !element production.azure.cluster.az3.apps.cnpg.instance {
-            -> production.azure.control "Watches clusters and updates primary Services" "Kubernetes API / TLS" "Operational"
+        !element keycloak.server {
+            -> adDs.directory "Queries user attributes and validates supplied credentials by LDAP bind" "LDAPS" "Dataflow,SecurityCatalog,IdentityFlow,ReferenceIntegration"
+            -> entraId.authentication "Redirects browser with OIDC authorization request" "HTTPS / browser-mediated OIDC" "Dataflow,SecurityCatalog,IdentityFlow,ReferenceIntegration"
+            -> entraId.authentication "Exchanges authorization code with client authentication for tokens" "HTTPS / OAuth token endpoint" "Dataflow,SecurityCatalog,IdentityFlow,ReferenceIntegration"
+            -> adFs.service "Redirects browser with SAML authentication request" "HTTPS / browser-mediated SAML 2.0" "Dataflow,SecurityCatalog,IdentityFlow,ReferenceIntegration"
         }
-        !element production.azure.cluster.az1.apps.memberA.core.instance {
-            -> production.azure.secrets "Reads projected member configuration" "Read-only projected files" "Operational"
+        !element keycloak.server.ldap {
+            -> adDs.directory "Queries user attributes and validates supplied credentials by LDAP bind" "LDAPS" "Dataflow,SecurityCatalog,IdentityFlow,ReferenceIntegration"
         }
-        !element production.azure.cluster.az1.apps.memberA.evm.instance {
-            -> production.azure.secrets "Reads projected member configuration" "Read-only projected files" "Operational"
+        !element adDs.directory {
+            -> adFs.service "Returns domain authentication result and requested attributes" "Kerberos / protected directory interfaces" "Dataflow,SecurityCatalog,IdentityFlow"
+            -> adFs.service.authentication "Returns domain authentication result and requested attributes" "Kerberos / protected directory interfaces" "Dataflow,SecurityCatalog,IdentityFlow"
         }
-        !element production.azure.cluster.az1.apps.memberA.signer.instance {
-            -> production.azure.secrets "Reads projected member configuration" "Read-only projected files" "Operational"
-            -> production.azure.rpc "Sends signed transactions and queries" "HTTP JSON-RPC" "Operational"
+        !element apps.client {
+            -> keycloak.server "Submits authorization request via browser and configured protocol client" "HTTPS / OIDC reference client" "Dataflow,SecurityCatalog,IdentityFlow,ReferenceIntegration"
+            -> entraId.authentication "Submits authorization request via browser and configured protocol client" "HTTPS / OIDC reference client" "Dataflow,SecurityCatalog,IdentityFlow,ReferenceIntegration"
+            -> adFs.service "Submits authorization request via browser and configured protocol client" "HTTPS / SAML 2.0 reference client" "Dataflow,SecurityCatalog,IdentityFlow,ReferenceIntegration"
+            -> keycloak.server.endpoints "Submits relying-party authorization request using the reference client" "HTTPS / OIDC or SAML as configured" "Dataflow,SecurityCatalog,IdentityFlow,ReferenceIntegration"
+            -> entraId.authentication.endpoints "Submits relying-party authorization request using the reference client" "HTTPS / OIDC or SAML as configured" "Dataflow,SecurityCatalog,IdentityFlow,ReferenceIntegration"
+            -> adFs.service.endpoints "Submits relying-party authorization request using the reference client" "HTTPS / OIDC or SAML as configured" "Dataflow,SecurityCatalog,IdentityFlow,ReferenceIntegration"
+            -> conjur.service "Authenticates workload and requests permitted secret variable" "HTTPS / Conjur authentication and secrets APIs" "Dataflow,SecurityCatalog,SecretFlow,ReferenceIntegration"
+            -> conjur.service.api "Authenticates workload and requests permitted secret variable" "HTTPS / Conjur authentication and secrets APIs" "Dataflow,SecurityCatalog,SecretFlow,ReferenceIntegration"
+            -> managedHsm.service "Submits bearer token, key identifier and digest or key-wrapping input" "HTTPS / Managed HSM REST API" "Dataflow,SecurityCatalog,KeyFlow,ReferenceIntegration"
+            -> managedHsm.service.api "Submits bearer token, key identifier and digest or key-wrapping input" "HTTPS / Managed HSM REST API" "Dataflow,SecurityCatalog,KeyFlow,ReferenceIntegration"
+            hsmWorkloadTokenRequest = apps.client -> entraId.authentication "Authenticates workload identity and requests HSM-audience access token" "HTTPS / OAuth 2.0 client credentials" "Dataflow,SecurityCatalog,IdentityFlow,ReferenceIntegration"
         }
-        !element production.azure.cluster.az1.apps.memberA.dx.instance {
-            -> production.azure.secrets "Reads projected member configuration" "Read-only projected files" "Operational"
+        !element keycloak.server.broker {
+            -> entraId.authentication "Redirects browser with OIDC authorization request" "HTTPS / browser-mediated OIDC" "Dataflow,SecurityCatalog,IdentityFlow,ReferenceIntegration"
+            -> entraId.authentication "Exchanges authorization code with client authentication for tokens" "HTTPS / OAuth token endpoint" "Dataflow,SecurityCatalog,IdentityFlow,ReferenceIntegration"
+            -> adFs.service "Redirects browser with SAML authentication request" "HTTPS / browser-mediated SAML 2.0" "Dataflow,SecurityCatalog,IdentityFlow,ReferenceIntegration"
         }
-        !element production.azure.cluster.az1.apps.memberA.erc20.instance {
-            -> production.azure.secrets "Reads projected member configuration" "Read-only projected files" "Operational"
+        !element managedHsm.service {
+            -> entraId.authentication "Retrieves issuer metadata and public signing keys for cached token verification" "HTTPS / OpenID metadata and JWKS" "Dataflow,SecurityCatalog,IdentityFlow"
         }
-        !element production.azure.cluster.az1.apps.memberA.erc1155.instance {
-            -> production.azure.secrets "Reads projected member configuration" "Read-only projected files" "Operational"
+        !element managedHsm.service.authentication {
+            -> entraId.authentication "Retrieves issuer metadata and public signing keys for cached token verification" "HTTPS / OpenID metadata and JWKS" "Dataflow,SecurityCatalog,IdentityFlow"
         }
-        !element production.azure.cluster.az1.apps.memberA.ipfs.instance {
-            -> production.azure.secrets "Reads projected member configuration" "Read-only projected files" "Operational"
+        !element apps.hsmSigner {
+            -> entraId.authentication "Authenticates application identity and requests Managed HSM access token" "HTTPS / OAuth 2.0 client credentials" "Dataflow,SecurityCatalog,IdentityFlow,ReferenceIntegration"
+            -> managedHsm.service "Submits Ethereum digest for secp256k1 signing; compatibility must be verified" "HTTPS / Managed HSM Sign API (proposed)" "Dataflow,SecurityCatalog,KeyFlow,ReferenceIntegration"
         }
-        !element production.azure.cluster.az1.data.pgA.instance {
-            -> production.azure.cluster.az1.data.pgA.volume "Reads and writes database pages and WAL" "Filesystem I/O" "Operational"
+        !element apps.hsmSigner.hsm {
+            -> entraId.authentication "Authenticates application identity and requests Managed HSM access token" "HTTPS / OAuth 2.0 client credentials" "Dataflow,SecurityCatalog,IdentityFlow,ReferenceIntegration"
+            -> managedHsm.service "Submits Ethereum digest for secp256k1 signing; compatibility must be verified" "HTTPS / Managed HSM Sign API (proposed)" "Dataflow,SecurityCatalog,KeyFlow,ReferenceIntegration"
         }
-        !element production.azure.cluster.az2.data.pgA.instance {
-            -> production.azure.cluster.az2.data.pgA.volume "Reads and writes database pages and WAL" "Filesystem I/O" "Operational"
+        !element besu.node {
+            -> apps.hsmSigner "Returns transaction hash or JSON-RPC rejection" "Ethereum JSON-RPC response" "Dataflow,SecurityCatalog,KeyFlow,ReferenceIntegration"
+            -> apps.hsmSigner.rpc "Returns transaction hash or JSON-RPC rejection" "Ethereum JSON-RPC response" "Dataflow,SecurityCatalog,KeyFlow,ReferenceIntegration"
         }
-        !element production.azure.cluster.az3.data.pgA.instance {
-            -> production.azure.cluster.az3.data.pgA.volume "Reads and writes database pages and WAL" "Filesystem I/O" "Operational"
+        !element securityAdmin {
+            -> keycloak "Configures Keycloak access policy and reviews administrative outcomes" "HTTPS / product administration interface" "Dataflow,SecurityCatalog,SecurityAdminFlow,ReferenceIntegration"
+            -> managedHsm "Configures Azure Managed HSM access policy and reviews administrative outcomes" "HTTPS / product administration interface" "Dataflow,SecurityCatalog,SecurityAdminFlow,ReferenceIntegration"
+            -> cyberarkPam "Configures CyberArk PAM Self-Hosted access policy and reviews administrative outcomes" "HTTPS / product administration interface" "Dataflow,SecurityCatalog,SecurityAdminFlow,ReferenceIntegration"
+            -> conjur "Configures CyberArk Conjur Enterprise access policy and reviews administrative outcomes" "HTTPS / product administration interface" "Dataflow,SecurityCatalog,SecurityAdminFlow,ReferenceIntegration"
+            -> entraId "Configures Microsoft Entra ID access policy and reviews administrative outcomes" "HTTPS / product administration interface" "Dataflow,SecurityCatalog,SecurityAdminFlow,ReferenceIntegration"
+            -> adDs "Configures Microsoft Active Directory Domain Services access policy and reviews administrative outcomes" "Protected LDAP / directory administration" "Dataflow,SecurityCatalog,SecurityAdminFlow,ReferenceIntegration"
+            -> adFs "Configures Microsoft Active Directory Federation Services access policy and reviews administrative outcomes" "AD FS administration / PowerShell" "Dataflow,SecurityCatalog,SecurityAdminFlow,ReferenceIntegration"
+            -> azureManagement "Submits Managed HSM resource administration request" "HTTPS / Azure Resource Manager API" "Dataflow,SecurityCatalog,SecurityAdminFlow,ReferenceIntegration"
+            -> keycloak.server "Submits authorized configuration or access-policy changes" "HTTPS / product administration API" "Dataflow,SecurityCatalog,SecurityAdminFlow,ReferenceIntegration"
+            -> keycloak.server.admin "Submits authorized configuration or access-policy changes" "HTTPS / product administration API" "Dataflow,SecurityCatalog,SecurityAdminFlow,ReferenceIntegration"
+            -> managedHsm.service "Submits authorized configuration or access-policy changes" "HTTPS / product administration API" "Dataflow,SecurityCatalog,SecurityAdminFlow,ReferenceIntegration"
+            -> managedHsm.service.lifecycle "Submits authorized configuration or access-policy changes" "HTTPS / product administration API" "Dataflow,SecurityCatalog,SecurityAdminFlow,ReferenceIntegration"
+            -> cyberarkPam.pvwa "Submits authorized configuration or access-policy changes" "HTTPS / product administration API" "Dataflow,SecurityCatalog,SecurityAdminFlow,ReferenceIntegration"
+            -> cyberarkPam.pvwa.portal "Submits authorized configuration or access-policy changes" "HTTPS / product administration API" "Dataflow,SecurityCatalog,SecurityAdminFlow,ReferenceIntegration"
+            -> conjur.service "Submits authorized configuration or access-policy changes" "HTTPS / product administration API" "Dataflow,SecurityCatalog,SecurityAdminFlow,ReferenceIntegration"
+            -> conjur.service.api "Submits authorized configuration or access-policy changes" "HTTPS / product administration API" "Dataflow,SecurityCatalog,SecurityAdminFlow,ReferenceIntegration"
+            -> entraId.directory "Submits authorized configuration or access-policy changes" "HTTPS / product administration API" "Dataflow,SecurityCatalog,SecurityAdminFlow,ReferenceIntegration"
+            -> entraId.directory.api "Submits authorized configuration or access-policy changes" "HTTPS / product administration API" "Dataflow,SecurityCatalog,SecurityAdminFlow,ReferenceIntegration"
+            -> adDs.directory "Submits authorized configuration or access-policy changes" "Protected LDAP / directory administration" "Dataflow,SecurityCatalog,SecurityAdminFlow,ReferenceIntegration"
+            -> adDs.directory.ldap "Submits authorized configuration or access-policy changes" "Protected LDAP / directory administration" "Dataflow,SecurityCatalog,SecurityAdminFlow,ReferenceIntegration"
+            -> adFs.service "Submits authorized configuration or access-policy changes" "AD FS administration / PowerShell configuration interface" "Dataflow,SecurityCatalog,SecurityAdminFlow,ReferenceIntegration"
+            -> adFs.service.configuration "Submits authorized configuration or access-policy changes" "AD FS administration / PowerShell configuration interface" "Dataflow,SecurityCatalog,SecurityAdminFlow,ReferenceIntegration"
         }
-        !element production.azure.cluster.az2.apps.memberB.core.instance {
-            -> production.azure.secrets "Reads projected member configuration" "Read-only projected files" "Operational"
+        !element apps {
+            -> keycloak "Requests application sign-in and identity claims" "HTTPS / OIDC or SAML reference flow" "Dataflow,SecurityCatalog,IdentityFlow,ReferenceIntegration"
+            -> entraId "Requests application sign-in and identity claims" "HTTPS / OIDC or SAML reference flow" "Dataflow,SecurityCatalog,IdentityFlow,ReferenceIntegration"
+            -> adFs "Requests application sign-in and identity claims" "HTTPS / OIDC or SAML reference flow" "Dataflow,SecurityCatalog,IdentityFlow,ReferenceIntegration"
+            -> conjur "Authenticates workload and requests permitted application secrets" "HTTPS / Conjur API" "Dataflow,SecurityCatalog,SecretFlow,ReferenceIntegration"
+            -> managedHsm "Submits authorized signing or key-wrapping request" "HTTPS / Managed HSM REST API" "Dataflow,SecurityCatalog,KeyFlow,ReferenceIntegration"
         }
-        !element production.azure.cluster.az2.apps.memberB.evm.instance {
-            -> production.azure.secrets "Reads projected member configuration" "Read-only projected files" "Operational"
+        !element keycloak {
+            -> adDs "Requests LDAP user attributes and credential validation" "LDAPS" "Dataflow,SecurityCatalog,IdentityFlow,ReferenceIntegration"
+            -> entraId "Delegates login through browser-mediated OIDC federation" "HTTPS / OIDC" "Dataflow,SecurityCatalog,IdentityFlow,ReferenceIntegration"
+            -> adFs "Delegates login through browser-mediated SAML 2.0 federation" "HTTPS / SAML 2.0" "Dataflow,SecurityCatalog,IdentityFlow,ReferenceIntegration"
         }
-        !element production.azure.cluster.az2.apps.memberB.signer.instance {
-            -> production.azure.secrets "Reads projected member configuration" "Read-only projected files" "Operational"
-            -> production.azure.rpc "Sends signed transactions and queries" "HTTP JSON-RPC" "Operational"
+        !element adDs {
+            -> adFs "Returns domain authentication result and account attributes" "Kerberos / protected directory access" "Dataflow,SecurityCatalog,IdentityFlow"
         }
-        !element production.azure.cluster.az2.apps.memberB.dx.instance {
-            -> production.azure.secrets "Reads projected member configuration" "Read-only projected files" "Operational"
+        !element entraId {
+            -> adDs "Queries selected directory objects through the Cloud Sync provisioning agent" "Protected LDAP / agent-established TLS service channel" "Dataflow,SecurityCatalog,DirectoryFlow"
         }
-        !element production.azure.cluster.az2.apps.memberB.erc20.instance {
-            -> production.azure.secrets "Reads projected member configuration" "Read-only projected files" "Operational"
+        !element cyberarkPam {
+            -> conjur "Supplies selected Vault credentials through Vault Synchronizer" "CyberArk Vault protocol + HTTPS / Conjur API" "Dataflow,SecurityCatalog,SecretFlow"
         }
-        !element production.azure.cluster.az2.apps.memberB.erc1155.instance {
-            -> production.azure.secrets "Reads projected member configuration" "Read-only projected files" "Operational"
+        !element managedHsm {
+            -> entraId "Retrieves issuer metadata and public signing keys for caller token verification" "HTTPS / OpenID metadata and JWKS" "Dataflow,SecurityCatalog,IdentityFlow"
         }
-        !element production.azure.cluster.az2.apps.memberB.ipfs.instance {
-            -> production.azure.secrets "Reads projected member configuration" "Read-only projected files" "Operational"
-        }
-        !element production.azure.cluster.az1.data.pgB.instance {
-            -> production.azure.cluster.az1.data.pgB.volume "Reads and writes database pages and WAL" "Filesystem I/O" "Operational"
-        }
-        !element production.azure.cluster.az2.data.pgB.instance {
-            -> production.azure.cluster.az2.data.pgB.volume "Reads and writes database pages and WAL" "Filesystem I/O" "Operational"
-        }
-        !element production.azure.cluster.az3.data.pgB.instance {
-            -> production.azure.cluster.az3.data.pgB.volume "Reads and writes database pages and WAL" "Filesystem I/O" "Operational"
-        }
-        !element production.azure.cluster.az3.apps.memberC.core.instance {
-            -> production.azure.secrets "Reads projected member configuration" "Read-only projected files" "Operational"
-        }
-        !element production.azure.cluster.az3.apps.memberC.evm.instance {
-            -> production.azure.secrets "Reads projected member configuration" "Read-only projected files" "Operational"
-        }
-        !element production.azure.cluster.az3.apps.memberC.signer.instance {
-            -> production.azure.secrets "Reads projected member configuration" "Read-only projected files" "Operational"
-            -> production.azure.rpc "Sends signed transactions and queries" "HTTP JSON-RPC" "Operational"
-        }
-        !element production.azure.cluster.az3.apps.memberC.dx.instance {
-            -> production.azure.secrets "Reads projected member configuration" "Read-only projected files" "Operational"
-        }
-        !element production.azure.cluster.az3.apps.memberC.erc20.instance {
-            -> production.azure.secrets "Reads projected member configuration" "Read-only projected files" "Operational"
-        }
-        !element production.azure.cluster.az3.apps.memberC.erc1155.instance {
-            -> production.azure.secrets "Reads projected member configuration" "Read-only projected files" "Operational"
-        }
-        !element production.azure.cluster.az3.apps.memberC.ipfs.instance {
-            -> production.azure.secrets "Reads projected member configuration" "Read-only projected files" "Operational"
-        }
-        !element production.azure.cluster.az1.data.pgC.instance {
-            -> production.azure.cluster.az1.data.pgC.volume "Reads and writes database pages and WAL" "Filesystem I/O" "Operational"
-        }
-        !element production.azure.cluster.az2.data.pgC.instance {
-            -> production.azure.cluster.az2.data.pgC.volume "Reads and writes database pages and WAL" "Filesystem I/O" "Operational"
-        }
-        !element production.azure.cluster.az3.data.pgC.instance {
-            -> production.azure.cluster.az3.data.pgC.volume "Reads and writes database pages and WAL" "Filesystem I/O" "Operational"
-        }
-        !element production.azure.cluster.az1.data.besua1.instance {
-            -> production.azure.cluster.az1.data.besua1.volume "Persists ledger, receipts and world state" "Filesystem I/O" "Operational"
-            -> production.azure.secrets "Reads its unique Besu node key" "Read-only projected secret" "Operational"
-        }
-        !element production.azure.cluster.az1.data.besub1.instance {
-            -> production.azure.cluster.az1.data.besub1.volume "Persists ledger, receipts and world state" "Filesystem I/O" "Operational"
-            -> production.azure.secrets "Reads its unique Besu node key" "Read-only projected secret" "Operational"
-        }
-        !element production.azure.cluster.az2.data.besub2.instance {
-            -> production.azure.cluster.az2.data.besub2.volume "Persists ledger, receipts and world state" "Filesystem I/O" "Operational"
-            -> production.azure.secrets "Reads its unique Besu node key" "Read-only projected secret" "Operational"
-        }
-        !element production.azure.cluster.az2.data.besuc1.instance {
-            -> production.azure.cluster.az2.data.besuc1.volume "Persists ledger, receipts and world state" "Filesystem I/O" "Operational"
-            -> production.azure.secrets "Reads its unique Besu node key" "Read-only projected secret" "Operational"
-        }
-        !element production.azure.cluster.az3.data.besuc2.instance {
-            -> production.azure.cluster.az3.data.besuc2.volume "Persists ledger, receipts and world state" "Filesystem I/O" "Operational"
-            -> production.azure.secrets "Reads its unique Besu node key" "Read-only projected secret" "Operational"
-        }
-        !element production.azure.cluster.az3.data.besua2.instance {
-            -> production.azure.cluster.az3.data.besua2.volume "Persists ledger, receipts and world state" "Filesystem I/O" "Operational"
-            -> production.azure.secrets "Reads its unique Besu node key" "Read-only projected secret" "Operational"
-        }
-        !element production.azure.cluster.az1.data.besurpc1.instance {
-            -> production.azure.cluster.az1.data.besurpc1.volume "Persists ledger, receipts and world state" "Filesystem I/O" "Operational"
-            -> production.azure.secrets "Reads its unique Besu node key" "Read-only projected secret" "Operational"
-        }
-        !element production.azure.cluster.az2.data.besurpc2.instance {
-            -> production.azure.cluster.az2.data.besurpc2.volume "Persists ledger, receipts and world state" "Filesystem I/O" "Operational"
-            -> production.azure.secrets "Reads its unique Besu node key" "Read-only projected secret" "Operational"
-        }
-        !element production.azure.cluster.az3.data.besurpc3.instance {
-            -> production.azure.cluster.az3.data.besurpc3.volume "Persists ledger, receipts and world state" "Filesystem I/O" "Operational"
-            -> production.azure.secrets "Reads its unique Besu node key" "Read-only projected secret" "Operational"
+        !element azureManagement {
+            -> managedHsm "Applies resource-management changes authorized by Azure RBAC; does not grant key access" "Azure management-plane interface" "Dataflow,SecurityCatalog,SecurityAdminFlow"
+            -> managedHsm.service "Applies resource-management changes; key access still requires local RBAC" "Azure management-plane interface (logical)" "Dataflow,SecurityCatalog,SecurityAdminFlow"
         }
     }
     views {
@@ -4511,35 +4516,701 @@ workspace "FireFly ecosystem + private Besu" "C4 levels 1-3 with static dataflow
             include tools.config.migration->developer
             autoLayout lr 360 200
         }
-        deployment * production "80-deployment-a" "Deployment - Member A across three AKS zones" {
-            title "Deployment - Member A across three AKS zones"
-            include production.azure.secretStores.a production.azure.cluster.az1.apps.memberA.core.instance production.azure.cluster.az1.apps.memberA.evm.instance production.azure.cluster.az1.apps.memberA.signer.instance production.azure.cluster.az1.apps.memberA.dx.instance production.azure.cluster.az1.apps.memberA.erc20.instance production.azure.cluster.az1.apps.memberA.erc1155.instance production.azure.cluster.az1.apps.memberA.ipfs.instance production.azure.cluster.az1.apps.memberA.blobs.store production.azure.cluster.az1.apps.memberA.ipfsRepo.store production.azure.cluster.az1.data.pgA.instance production.azure.cluster.az2.data.pgA.instance production.azure.cluster.az3.data.pgA.instance production.azure.control production.azure.secrets production.azure.csi production.azure.cluster.az1.data.pgA.volume production.azure.cluster.az2.data.pgA.volume production.azure.cluster.az3.data.pgA.volume production.azure.rpc
+        systemLandscape "100-security-landscape" "System Landscape - Security product reference catalog" {
+            title "System Landscape - Security product reference catalog"
+            include keycloak managedHsm cyberarkPam conjur entraId adDs adFs securityAdmin business operator apps managedTarget azureManagement
+            exclude *->*
+            include business->apps
+            include securityAdmin->keycloak
+            include securityAdmin->managedHsm
+            include securityAdmin->cyberarkPam
+            include securityAdmin->conjur
+            include securityAdmin->entraId
+            include securityAdmin->adDs
+            include securityAdmin->adFs
+            include apps->keycloak
+            include keycloak->apps
+            include business->keycloak
+            include apps->entraId
+            include entraId->apps
+            include business->entraId
+            include apps->adFs
+            include adFs->apps
+            include business->adFs
+            include keycloak->adDs
+            include adDs->keycloak
+            include keycloak->entraId
+            include entraId->keycloak
+            include keycloak->adFs
+            include adFs->keycloak
+            include adFs->adDs
+            include adDs->adFs
+            include entraId->adDs
+            include adDs->entraId
+            include business->adDs
+            include operator->cyberarkPam
+            include cyberarkPam->managedTarget
+            include cyberarkPam->conjur
+            include apps->conjur
+            include conjur->apps
+            include apps->managedHsm
+            include managedHsm->apps
+            include managedHsm->entraId
+            include securityAdmin->azureManagement
+            include azureManagement->managedHsm
             autoLayout lr 360 200
         }
-        deployment * production "80-deployment-b" "Deployment - Member B across three AKS zones" {
-            title "Deployment - Member B across three AKS zones"
-            include production.azure.secretStores.b production.azure.cluster.az2.apps.memberB.core.instance production.azure.cluster.az2.apps.memberB.evm.instance production.azure.cluster.az2.apps.memberB.signer.instance production.azure.cluster.az2.apps.memberB.dx.instance production.azure.cluster.az2.apps.memberB.erc20.instance production.azure.cluster.az2.apps.memberB.erc1155.instance production.azure.cluster.az2.apps.memberB.ipfs.instance production.azure.cluster.az2.apps.memberB.blobs.store production.azure.cluster.az2.apps.memberB.ipfsRepo.store production.azure.cluster.az1.data.pgB.instance production.azure.cluster.az2.data.pgB.instance production.azure.cluster.az3.data.pgB.instance production.azure.control production.azure.secrets production.azure.csi production.azure.cluster.az1.data.pgB.volume production.azure.cluster.az2.data.pgB.volume production.azure.cluster.az3.data.pgB.volume production.azure.rpc
+        systemContext keycloak "100-security-keycloak-context" "System Context - Keycloak reference" {
+            title "System Context - Keycloak reference"
+            include keycloak securityAdmin business apps adDs entraId adFs
+            exclude *->*
+            include business->apps
+            include securityAdmin->keycloak
+            include securityAdmin->entraId
+            include securityAdmin->adDs
+            include securityAdmin->adFs
+            include apps->keycloak
+            include keycloak->apps
+            include business->keycloak
+            include apps->entraId
+            include entraId->apps
+            include business->entraId
+            include apps->adFs
+            include adFs->apps
+            include business->adFs
+            include keycloak->adDs
+            include adDs->keycloak
+            include keycloak->entraId
+            include entraId->keycloak
+            include keycloak->adFs
+            include adFs->keycloak
+            include adFs->adDs
+            include adDs->adFs
+            include entraId->adDs
+            include adDs->entraId
+            include business->adDs
             autoLayout lr 360 200
         }
-        deployment * production "80-deployment-c" "Deployment - Member C across three AKS zones" {
-            title "Deployment - Member C across three AKS zones"
-            include production.azure.secretStores.c production.azure.cluster.az3.apps.memberC.core.instance production.azure.cluster.az3.apps.memberC.evm.instance production.azure.cluster.az3.apps.memberC.signer.instance production.azure.cluster.az3.apps.memberC.dx.instance production.azure.cluster.az3.apps.memberC.erc20.instance production.azure.cluster.az3.apps.memberC.erc1155.instance production.azure.cluster.az3.apps.memberC.ipfs.instance production.azure.cluster.az3.apps.memberC.blobs.store production.azure.cluster.az3.apps.memberC.ipfsRepo.store production.azure.cluster.az1.data.pgC.instance production.azure.cluster.az2.data.pgC.instance production.azure.cluster.az3.data.pgC.instance production.azure.control production.azure.secrets production.azure.csi production.azure.cluster.az1.data.pgC.volume production.azure.cluster.az2.data.pgC.volume production.azure.cluster.az3.data.pgC.volume production.azure.rpc
+        container keycloak "100-security-keycloak-containers" "Container - Keycloak logical reference" {
+            title "Container - Keycloak logical reference"
+            include keycloak.server keycloak.database securityAdmin business apps.client adDs.directory entraId.authentication adFs.service
+            exclude *->*
+            include business->apps.client
+            include keycloak.server->keycloak.database
+            include keycloak.server->adDs.directory
+            include adDs.directory->keycloak.server
+            include adFs.service->adDs.directory
+            include adDs.directory->adFs.service
+            include business->keycloak.server
+            include apps.client->keycloak.server
+            include keycloak.server->apps.client
+            include business->entraId.authentication
+            include apps.client->entraId.authentication
+            include entraId.authentication->apps.client
+            include business->adFs.service
+            include apps.client->adFs.service
+            include adFs.service->apps.client
+            include keycloak.server->entraId.authentication
+            include entraId.authentication->keycloak.server
+            include keycloak.server->adFs.service
+            include adFs.service->keycloak.server
+            include business->adDs.directory
+            include adDs.directory->business
+            include securityAdmin->keycloak.server
+            include securityAdmin->adDs.directory
+            include securityAdmin->adFs.service
             autoLayout lr 360 200
         }
-        deployment * production "81-deployment-besu" "Deployment - six QBFT validators and three RPC nodes" {
-            title "Deployment - six QBFT validators and three RPC nodes"
-            include production.azure.cluster.az1.data.besua1.instance production.azure.cluster.az1.data.besub1.instance production.azure.cluster.az2.data.besub2.instance production.azure.cluster.az2.data.besuc1.instance production.azure.cluster.az3.data.besuc2.instance production.azure.cluster.az3.data.besua2.instance production.azure.cluster.az1.data.besurpc1.instance production.azure.cluster.az2.data.besurpc2.instance production.azure.cluster.az3.data.besurpc3.instance production.azure.secrets production.azure.cluster.az1.data.besua1.volume production.azure.cluster.az1.data.besub1.volume production.azure.cluster.az2.data.besub2.volume production.azure.cluster.az2.data.besuc1.volume production.azure.cluster.az3.data.besuc2.volume production.azure.cluster.az3.data.besua2.volume production.azure.cluster.az1.data.besurpc1.volume production.azure.cluster.az2.data.besurpc2.volume production.azure.cluster.az3.data.besurpc3.volume production.azure.rpc
-            autoLayout tb 360 200
-        }
-        deployment * production "82-deployment-operations" "Deployment - AKS operations and control" {
-            title "Deployment - AKS operations and control"
-            include production.azure.cluster.az1.apps.gateway.instance production.azure.cluster.az1.apps.cnpg.instance production.azure.cluster.az1.apps.prometheus.instance production.azure.cluster.az1.apps.grafana.instance production.azure.cluster.az2.apps.gateway.instance production.azure.cluster.az2.apps.cnpg.instance production.azure.cluster.az2.apps.prometheus.instance production.azure.cluster.az3.apps.gateway.instance production.azure.cluster.az3.apps.cnpg.instance production.azure.cluster.az3.apps.prometheus.instance production.azure.control production.azure.lb production.azure.secrets production.azure.csi production.azure.cluster.az1.system.agent production.azure.cluster.az2.system.agent production.azure.cluster.az3.system.agent
+        systemContext managedHsm "100-security-managedHsm-context" "System Context - Azure Managed HSM reference" {
+            title "System Context - Azure Managed HSM reference"
+            include managedHsm securityAdmin apps entraId azureManagement
+            exclude *->*
+            include securityAdmin->managedHsm
+            include securityAdmin->entraId
+            include apps->entraId
+            include entraId->apps
+            include apps->managedHsm
+            include managedHsm->apps
+            include managedHsm->entraId
+            include securityAdmin->azureManagement
+            include azureManagement->managedHsm
             autoLayout lr 360 200
         }
-        deployment * production "99-deployment-complete" "Deployment - complete three-member three-zone AKS reference" {
-            title "Deployment - complete three-member three-zone AKS reference"
-            include production.azure.control production.azure.lb production.azure.secrets production.azure.csi production.azure.secretStores.a production.azure.secretStores.b production.azure.secretStores.c production.azure.cluster.az1.system.agent production.azure.cluster.az1.apps.gateway.instance production.azure.cluster.az1.apps.cnpg.instance production.azure.cluster.az1.apps.prometheus.instance production.azure.cluster.az1.apps.grafana.instance production.azure.cluster.az2.system.agent production.azure.cluster.az2.apps.gateway.instance production.azure.cluster.az2.apps.cnpg.instance production.azure.cluster.az2.apps.prometheus.instance production.azure.cluster.az3.system.agent production.azure.cluster.az3.apps.gateway.instance production.azure.cluster.az3.apps.cnpg.instance production.azure.cluster.az3.apps.prometheus.instance production.azure.cluster.az1.apps.memberA.core.instance production.azure.cluster.az1.apps.memberA.evm.instance production.azure.cluster.az1.apps.memberA.signer.instance production.azure.cluster.az1.apps.memberA.dx.instance production.azure.cluster.az1.apps.memberA.erc20.instance production.azure.cluster.az1.apps.memberA.erc1155.instance production.azure.cluster.az1.apps.memberA.ipfs.instance production.azure.cluster.az1.apps.memberA.blobs.store production.azure.cluster.az1.apps.memberA.ipfsRepo.store production.azure.cluster.az1.data.pgA.instance production.azure.cluster.az1.data.pgA.volume production.azure.cluster.az2.data.pgA.instance production.azure.cluster.az2.data.pgA.volume production.azure.cluster.az3.data.pgA.instance production.azure.cluster.az3.data.pgA.volume production.azure.cluster.az2.apps.memberB.core.instance production.azure.cluster.az2.apps.memberB.evm.instance production.azure.cluster.az2.apps.memberB.signer.instance production.azure.cluster.az2.apps.memberB.dx.instance production.azure.cluster.az2.apps.memberB.erc20.instance production.azure.cluster.az2.apps.memberB.erc1155.instance production.azure.cluster.az2.apps.memberB.ipfs.instance production.azure.cluster.az2.apps.memberB.blobs.store production.azure.cluster.az2.apps.memberB.ipfsRepo.store production.azure.cluster.az1.data.pgB.instance production.azure.cluster.az1.data.pgB.volume production.azure.cluster.az2.data.pgB.instance production.azure.cluster.az2.data.pgB.volume production.azure.cluster.az3.data.pgB.instance production.azure.cluster.az3.data.pgB.volume production.azure.cluster.az3.apps.memberC.core.instance production.azure.cluster.az3.apps.memberC.evm.instance production.azure.cluster.az3.apps.memberC.signer.instance production.azure.cluster.az3.apps.memberC.dx.instance production.azure.cluster.az3.apps.memberC.erc20.instance production.azure.cluster.az3.apps.memberC.erc1155.instance production.azure.cluster.az3.apps.memberC.ipfs.instance production.azure.cluster.az3.apps.memberC.blobs.store production.azure.cluster.az3.apps.memberC.ipfsRepo.store production.azure.cluster.az1.data.pgC.instance production.azure.cluster.az1.data.pgC.volume production.azure.cluster.az2.data.pgC.instance production.azure.cluster.az2.data.pgC.volume production.azure.cluster.az3.data.pgC.instance production.azure.cluster.az3.data.pgC.volume production.azure.cluster.az1.data.besua1.instance production.azure.cluster.az1.data.besua1.volume production.azure.cluster.az1.data.besub1.instance production.azure.cluster.az1.data.besub1.volume production.azure.cluster.az2.data.besub2.instance production.azure.cluster.az2.data.besub2.volume production.azure.cluster.az2.data.besuc1.instance production.azure.cluster.az2.data.besuc1.volume production.azure.cluster.az3.data.besuc2.instance production.azure.cluster.az3.data.besuc2.volume production.azure.cluster.az3.data.besua2.instance production.azure.cluster.az3.data.besua2.volume production.azure.cluster.az1.data.besurpc1.instance production.azure.cluster.az1.data.besurpc1.volume production.azure.cluster.az2.data.besurpc2.instance production.azure.cluster.az2.data.besurpc2.volume production.azure.cluster.az3.data.besurpc3.instance production.azure.cluster.az3.data.besurpc3.volume production.azure.rpc
-            autoLayout tb 360 200
+        container managedHsm "100-security-managedHsm-containers" "Container - Azure Managed HSM logical reference" {
+            title "Container - Azure Managed HSM logical reference"
+            include managedHsm.service managedHsm.keys securityAdmin apps.client entraId.authentication azureManagement
+            exclude *->*
+            include managedHsm.service->managedHsm.keys
+            include apps.client->entraId.authentication
+            include entraId.authentication->apps.client
+            include apps.client->managedHsm.service
+            include managedHsm.service->apps.client
+            include managedHsm.service->entraId.authentication
+            include securityAdmin->azureManagement
+            include azureManagement->managedHsm.service
+            include securityAdmin->managedHsm.service
+            autoLayout lr 360 200
+        }
+        systemContext cyberarkPam "100-security-cyberarkPam-context" "System Context - CyberArk PAM Self-Hosted reference" {
+            title "System Context - CyberArk PAM Self-Hosted reference"
+            include cyberarkPam securityAdmin operator managedTarget conjur
+            exclude *->*
+            include securityAdmin->cyberarkPam
+            include securityAdmin->conjur
+            include operator->cyberarkPam
+            include cyberarkPam->managedTarget
+            include cyberarkPam->conjur
+            autoLayout lr 360 200
+        }
+        container cyberarkPam "100-security-cyberarkPam-containers" "Container - CyberArk PAM Self-Hosted logical reference" {
+            title "Container - CyberArk PAM Self-Hosted logical reference"
+            include cyberarkPam.vault cyberarkPam.pvwa cyberarkPam.cpm cyberarkPam.psm securityAdmin operator managedTarget conjur.synchronizer
+            exclude *->*
+            include cyberarkPam.pvwa->cyberarkPam.vault
+            include cyberarkPam.vault->cyberarkPam.pvwa
+            include cyberarkPam.cpm->cyberarkPam.vault
+            include cyberarkPam.vault->cyberarkPam.cpm
+            include cyberarkPam.psm->cyberarkPam.vault
+            include cyberarkPam.vault->cyberarkPam.psm
+            include cyberarkPam.pvwa->cyberarkPam.psm
+            include cyberarkPam.cpm->managedTarget
+            include managedTarget->cyberarkPam.cpm
+            include cyberarkPam.psm->managedTarget
+            include managedTarget->cyberarkPam.psm
+            include conjur.synchronizer->cyberarkPam.vault
+            include cyberarkPam.vault->conjur.synchronizer
+            include operator->cyberarkPam.pvwa
+            include operator->cyberarkPam.psm
+            include cyberarkPam.psm->operator
+            include securityAdmin->cyberarkPam.pvwa
+            autoLayout lr 360 200
+        }
+        systemContext conjur "100-security-conjur-context" "System Context - CyberArk Conjur Enterprise reference" {
+            title "System Context - CyberArk Conjur Enterprise reference"
+            include conjur securityAdmin apps cyberarkPam
+            exclude *->*
+            include securityAdmin->cyberarkPam
+            include securityAdmin->conjur
+            include cyberarkPam->conjur
+            include apps->conjur
+            include conjur->apps
+            autoLayout lr 360 200
+        }
+        container conjur "100-security-conjur-containers" "Container - CyberArk Conjur Enterprise logical reference" {
+            title "Container - CyberArk Conjur Enterprise logical reference"
+            include conjur.service conjur.store conjur.synchronizer securityAdmin apps.client cyberarkPam.vault
+            exclude *->*
+            include conjur.service->conjur.store
+            include conjur.synchronizer->cyberarkPam.vault
+            include cyberarkPam.vault->conjur.synchronizer
+            include conjur.synchronizer->conjur.service
+            include apps.client->conjur.service
+            include conjur.service->apps.client
+            include securityAdmin->conjur.service
+            autoLayout lr 360 200
+        }
+        systemContext entraId "100-security-entraId-context" "System Context - Microsoft Entra ID reference" {
+            title "System Context - Microsoft Entra ID reference"
+            include entraId securityAdmin apps business adDs keycloak managedHsm
+            exclude *->*
+            include business->apps
+            include securityAdmin->keycloak
+            include securityAdmin->managedHsm
+            include securityAdmin->entraId
+            include securityAdmin->adDs
+            include apps->keycloak
+            include keycloak->apps
+            include business->keycloak
+            include apps->entraId
+            include entraId->apps
+            include business->entraId
+            include keycloak->adDs
+            include adDs->keycloak
+            include keycloak->entraId
+            include entraId->keycloak
+            include entraId->adDs
+            include adDs->entraId
+            include business->adDs
+            include apps->managedHsm
+            include managedHsm->apps
+            include managedHsm->entraId
+            autoLayout lr 360 200
+        }
+        container entraId "100-security-entraId-containers" "Container - Microsoft Entra ID logical reference" {
+            title "Container - Microsoft Entra ID logical reference"
+            include entraId.authentication entraId.directory entraId.provisioning entraId.agent securityAdmin apps.client business adDs.directory
+            exclude *->*
+            include business->apps.client
+            include entraId.authentication->entraId.directory
+            include entraId.provisioning->entraId.directory
+            include entraId.agent->entraId.provisioning
+            include entraId.provisioning->entraId.agent
+            include entraId.agent->adDs.directory
+            include adDs.directory->entraId.agent
+            include business->entraId.authentication
+            include apps.client->entraId.authentication
+            include entraId.authentication->apps.client
+            include business->adDs.directory
+            include adDs.directory->business
+            include securityAdmin->entraId.directory
+            include securityAdmin->adDs.directory
+            autoLayout lr 360 200
+        }
+        systemContext adDs "100-security-adDs-context" "System Context - Microsoft Active Directory Domain Services reference" {
+            title "System Context - Microsoft Active Directory Domain Services reference"
+            include adDs securityAdmin business keycloak entraId adFs
+            exclude *->*
+            include securityAdmin->keycloak
+            include securityAdmin->entraId
+            include securityAdmin->adDs
+            include securityAdmin->adFs
+            include business->keycloak
+            include business->entraId
+            include business->adFs
+            include keycloak->adDs
+            include adDs->keycloak
+            include keycloak->entraId
+            include entraId->keycloak
+            include keycloak->adFs
+            include adFs->keycloak
+            include adFs->adDs
+            include adDs->adFs
+            include entraId->adDs
+            include adDs->entraId
+            include business->adDs
+            autoLayout lr 360 200
+        }
+        container adDs "100-security-adDs-containers" "Container - Microsoft Active Directory Domain Services logical reference" {
+            title "Container - Microsoft Active Directory Domain Services logical reference"
+            include adDs.directory adDs.database adDs.sysvol securityAdmin business keycloak.server adFs.service entraId.agent
+            exclude *->*
+            include adDs.directory->adDs.database
+            include adDs.directory->adDs.sysvol
+            include entraId.agent->adDs.directory
+            include adDs.directory->entraId.agent
+            include keycloak.server->adDs.directory
+            include adDs.directory->keycloak.server
+            include adFs.service->adDs.directory
+            include adDs.directory->adFs.service
+            include business->keycloak.server
+            include business->adFs.service
+            include keycloak.server->adFs.service
+            include adFs.service->keycloak.server
+            include business->adDs.directory
+            include adDs.directory->business
+            include securityAdmin->keycloak.server
+            include securityAdmin->adDs.directory
+            include securityAdmin->adFs.service
+            autoLayout lr 360 200
+        }
+        systemContext adFs "100-security-adFs-context" "System Context - Microsoft Active Directory Federation Services reference" {
+            title "System Context - Microsoft Active Directory Federation Services reference"
+            include adFs securityAdmin business apps adDs keycloak
+            exclude *->*
+            include business->apps
+            include securityAdmin->keycloak
+            include securityAdmin->adDs
+            include securityAdmin->adFs
+            include apps->keycloak
+            include keycloak->apps
+            include business->keycloak
+            include apps->adFs
+            include adFs->apps
+            include business->adFs
+            include keycloak->adDs
+            include adDs->keycloak
+            include keycloak->adFs
+            include adFs->keycloak
+            include adFs->adDs
+            include adDs->adFs
+            include business->adDs
+            autoLayout lr 360 200
+        }
+        container adFs "100-security-adFs-containers" "Container - Microsoft Active Directory Federation Services logical reference" {
+            title "Container - Microsoft Active Directory Federation Services logical reference"
+            include adFs.service adFs.configuration securityAdmin business apps.client adDs.directory keycloak.server
+            exclude *->*
+            include business->apps.client
+            include keycloak.server->adDs.directory
+            include adDs.directory->keycloak.server
+            include adFs.service->adFs.configuration
+            include adFs.service->adDs.directory
+            include adDs.directory->adFs.service
+            include business->keycloak.server
+            include apps.client->keycloak.server
+            include keycloak.server->apps.client
+            include business->adFs.service
+            include apps.client->adFs.service
+            include adFs.service->apps.client
+            include keycloak.server->adFs.service
+            include adFs.service->keycloak.server
+            include business->adDs.directory
+            include adDs.directory->business
+            include securityAdmin->keycloak.server
+            include securityAdmin->adDs.directory
+            include securityAdmin->adFs.service
+            autoLayout lr 360 200
+        }
+        component keycloak.server "100-security-keycloak-server-components" "Component - Keycloak server: logical responsibilities" {
+            title "Component - Keycloak server: logical responsibilities"
+            include keycloak.server.endpoints keycloak.server.authentication keycloak.server.broker keycloak.server.ldap keycloak.server.tokens keycloak.server.admin keycloak.server.sessions keycloak.server.persistence apps.client securityAdmin keycloak.database adDs.directory entraId.authentication adFs.service
+            exclude *->*
+            include keycloak.server.endpoints->keycloak.server.authentication
+            include keycloak.server.authentication->keycloak.server.broker
+            include keycloak.server.authentication->keycloak.server.ldap
+            include keycloak.server.ldap->keycloak.server.authentication
+            include keycloak.server.broker->keycloak.server.authentication
+            include keycloak.server.authentication->keycloak.server.sessions
+            include keycloak.server.sessions->keycloak.server.tokens
+            include keycloak.server.tokens->keycloak.server.endpoints
+            include keycloak.server.admin->keycloak.server.persistence
+            include keycloak.server.authentication->keycloak.server.persistence
+            include keycloak.server.sessions->keycloak.server.persistence
+            include keycloak.server.persistence->keycloak.database
+            include keycloak.server.ldap->adDs.directory
+            include adDs.directory->keycloak.server.ldap
+            include adFs.service->adDs.directory
+            include adDs.directory->adFs.service
+            include apps.client->entraId.authentication
+            include entraId.authentication->apps.client
+            include apps.client->adFs.service
+            include adFs.service->apps.client
+            include apps.client->keycloak.server.endpoints
+            include keycloak.server.endpoints->apps.client
+            include keycloak.server.broker->entraId.authentication
+            include entraId.authentication->keycloak.server.broker
+            include keycloak.server.broker->adFs.service
+            include adFs.service->keycloak.server.broker
+            include securityAdmin->keycloak.server.admin
+            include securityAdmin->adDs.directory
+            include securityAdmin->adFs.service
+            autoLayout lr 360 200
+        }
+        component managedHsm.service "100-security-managedHsm-service-components" "Component - Managed HSM data-plane service: logical responsibilities" {
+            title "Component - Managed HSM data-plane service: logical responsibilities"
+            include managedHsm.service.api managedHsm.service.authentication managedHsm.service.authorization managedHsm.service.lifecycle managedHsm.service.crypto managedHsm.service.audit apps.client securityAdmin managedHsm.keys entraId.authentication
+            exclude *->*
+            include managedHsm.service.api->managedHsm.service.authentication
+            include managedHsm.service.authentication->managedHsm.service.authorization
+            include managedHsm.service.authorization->managedHsm.service.lifecycle
+            include managedHsm.service.authorization->managedHsm.service.crypto
+            include managedHsm.service.crypto->managedHsm.service.api
+            include managedHsm.service.lifecycle->managedHsm.service.api
+            include managedHsm.service.api->managedHsm.service.audit
+            include managedHsm.service.lifecycle->managedHsm.keys
+            include managedHsm.service.crypto->managedHsm.keys
+            include managedHsm.keys->managedHsm.service.crypto
+            include apps.client->entraId.authentication
+            include entraId.authentication->apps.client
+            include apps.client->managedHsm.service.api
+            include managedHsm.service.api->apps.client
+            include managedHsm.service.authentication->entraId.authentication
+            include securityAdmin->managedHsm.service.lifecycle
+            autoLayout lr 360 200
+        }
+        component cyberarkPam.vault "100-security-cyberarkPam-vault-components" "Component - Digital Vault: logical responsibilities" {
+            title "Component - Digital Vault: logical responsibilities"
+            include cyberarkPam.vault.access cyberarkPam.vault.policy cyberarkPam.vault.storage cyberarkPam.vault.audit
+            exclude *->*
+            include cyberarkPam.vault.access->cyberarkPam.vault.policy
+            include cyberarkPam.vault.policy->cyberarkPam.vault.storage
+            include cyberarkPam.vault.storage->cyberarkPam.vault.access
+            include cyberarkPam.vault.access->cyberarkPam.vault.audit
+            autoLayout lr 360 200
+        }
+        component cyberarkPam.pvwa "100-security-cyberarkPam-pvwa-components" "Component - Password Vault Web Access: logical responsibilities" {
+            title "Component - Password Vault Web Access: logical responsibilities"
+            include cyberarkPam.pvwa.portal cyberarkPam.pvwa.approval cyberarkPam.pvwa.vaultClient cyberarkPam.pvwa.sessions operator securityAdmin cyberarkPam.vault cyberarkPam.psm
+            exclude *->*
+            include cyberarkPam.pvwa.portal->cyberarkPam.pvwa.approval
+            include cyberarkPam.pvwa.approval->cyberarkPam.pvwa.vaultClient
+            include cyberarkPam.pvwa.approval->cyberarkPam.pvwa.sessions
+            include cyberarkPam.pvwa.vaultClient->cyberarkPam.pvwa.portal
+            include cyberarkPam.pvwa.vaultClient->cyberarkPam.vault
+            include cyberarkPam.vault->cyberarkPam.pvwa.vaultClient
+            include cyberarkPam.psm->cyberarkPam.vault
+            include cyberarkPam.vault->cyberarkPam.psm
+            include cyberarkPam.pvwa.sessions->cyberarkPam.psm
+            include operator->cyberarkPam.pvwa.portal
+            include operator->cyberarkPam.psm
+            include cyberarkPam.psm->operator
+            include securityAdmin->cyberarkPam.pvwa.portal
+            autoLayout lr 360 200
+        }
+        component cyberarkPam.cpm "100-security-cyberarkPam-cpm-components" "Component - Central Policy Manager: logical responsibilities" {
+            title "Component - Central Policy Manager: logical responsibilities"
+            include cyberarkPam.cpm.scheduler cyberarkPam.cpm.rotation cyberarkPam.cpm.target cyberarkPam.cpm.vaultClient cyberarkPam.vault managedTarget
+            exclude *->*
+            include cyberarkPam.cpm.scheduler->cyberarkPam.cpm.rotation
+            include cyberarkPam.cpm.rotation->cyberarkPam.cpm.vaultClient
+            include cyberarkPam.cpm.vaultClient->cyberarkPam.cpm.rotation
+            include cyberarkPam.cpm.rotation->cyberarkPam.cpm.target
+            include cyberarkPam.cpm.target->cyberarkPam.cpm.rotation
+            include cyberarkPam.cpm.vaultClient->cyberarkPam.vault
+            include cyberarkPam.vault->cyberarkPam.cpm.vaultClient
+            include cyberarkPam.cpm.target->managedTarget
+            include managedTarget->cyberarkPam.cpm.target
+            autoLayout lr 360 200
+        }
+        component cyberarkPam.psm "100-security-cyberarkPam-psm-components" "Component - Privileged Session Manager: logical responsibilities" {
+            title "Component - Privileged Session Manager: logical responsibilities"
+            include cyberarkPam.psm.broker cyberarkPam.psm.target cyberarkPam.psm.recorder operator cyberarkPam.vault managedTarget
+            exclude *->*
+            include cyberarkPam.psm.broker->cyberarkPam.psm.target
+            include cyberarkPam.psm.target->cyberarkPam.psm.recorder
+            include cyberarkPam.psm.target->cyberarkPam.psm.broker
+            include cyberarkPam.psm.broker->cyberarkPam.vault
+            include cyberarkPam.vault->cyberarkPam.psm.broker
+            include cyberarkPam.psm.recorder->cyberarkPam.vault
+            include cyberarkPam.psm.target->managedTarget
+            include managedTarget->cyberarkPam.psm.target
+            include operator->cyberarkPam.psm.broker
+            include cyberarkPam.psm.broker->operator
+            autoLayout lr 360 200
+        }
+        component conjur.service "100-security-conjur-service-components" "Component - Conjur service: logical responsibilities" {
+            title "Component - Conjur service: logical responsibilities"
+            include conjur.service.api conjur.service.authentication conjur.service.policy conjur.service.secrets conjur.service.audit apps.client securityAdmin conjur.store
+            exclude *->*
+            include conjur.service.api->conjur.service.authentication
+            include conjur.service.authentication->conjur.service.api
+            include conjur.service.api->conjur.service.policy
+            include conjur.service.policy->conjur.service.secrets
+            include conjur.service.secrets->conjur.service.api
+            include conjur.service.api->conjur.service.audit
+            include conjur.service.secrets->conjur.store
+            include conjur.service.policy->conjur.store
+            include apps.client->conjur.service.api
+            include conjur.service.api->apps.client
+            include securityAdmin->conjur.service.api
+            autoLayout lr 360 200
+        }
+        component conjur.synchronizer "100-security-conjur-synchronizer-components" "Component - Vault Synchronizer: logical responsibilities" {
+            title "Component - Vault Synchronizer: logical responsibilities"
+            include conjur.synchronizer.reader conjur.synchronizer.mapping conjur.synchronizer.writer cyberarkPam.vault conjur.service
+            exclude *->*
+            include conjur.synchronizer.reader->conjur.synchronizer.mapping
+            include conjur.synchronizer.mapping->conjur.synchronizer.writer
+            include conjur.synchronizer.reader->cyberarkPam.vault
+            include cyberarkPam.vault->conjur.synchronizer.reader
+            include conjur.synchronizer.writer->conjur.service
+            autoLayout lr 360 200
+        }
+        component entraId.authentication "100-security-entraId-authentication-components" "Component - Authentication and token service: logical responsibilities" {
+            title "Component - Authentication and token service: logical responsibilities"
+            include entraId.authentication.endpoints entraId.authentication.credentials entraId.authentication.policy entraId.authentication.tokens apps.client entraId.directory
+            exclude *->*
+            include entraId.authentication.endpoints->entraId.authentication.credentials
+            include entraId.authentication.credentials->entraId.authentication.policy
+            include entraId.authentication.policy->entraId.authentication.tokens
+            include entraId.authentication.tokens->entraId.authentication.endpoints
+            include entraId.authentication.credentials->entraId.directory
+            include entraId.authentication.policy->entraId.directory
+            include apps.client->entraId.authentication.endpoints
+            include entraId.authentication.endpoints->apps.client
+            autoLayout lr 360 200
+        }
+        component entraId.directory "100-security-entraId-directory-components" "Component - Directory and administration API: logical responsibilities" {
+            title "Component - Directory and administration API: logical responsibilities"
+            include entraId.directory.api entraId.directory.authorization entraId.directory.records securityAdmin
+            exclude *->*
+            include entraId.directory.api->entraId.directory.authorization
+            include entraId.directory.authorization->entraId.directory.records
+            include entraId.directory.records->entraId.directory.api
+            include securityAdmin->entraId.directory.api
+            autoLayout lr 360 200
+        }
+        component entraId.provisioning "100-security-entraId-provisioning-components" "Component - Cloud Sync provisioning service: logical responsibilities" {
+            title "Component - Cloud Sync provisioning service: logical responsibilities"
+            include entraId.provisioning.scheduler entraId.provisioning.mapping entraId.provisioning.writer entraId.agent entraId.directory
+            exclude *->*
+            include entraId.provisioning.scheduler->entraId.provisioning.mapping
+            include entraId.provisioning.mapping->entraId.provisioning.writer
+            include entraId.provisioning.writer->entraId.directory
+            include entraId.provisioning.scheduler->entraId.agent
+            include entraId.agent->entraId.provisioning.mapping
+            autoLayout lr 360 200
+        }
+        component entraId.agent "100-security-entraId-agent-components" "Component - Cloud Sync provisioning agent: logical responsibilities" {
+            title "Component - Cloud Sync provisioning agent: logical responsibilities"
+            include entraId.agent.channel entraId.agent.directory entraId.agent.response adDs.directory entraId.provisioning
+            exclude *->*
+            include entraId.agent.channel->entraId.agent.directory
+            include entraId.agent.directory->entraId.agent.response
+            include entraId.agent.response->entraId.agent.channel
+            include entraId.agent.channel->entraId.provisioning
+            include entraId.provisioning->entraId.agent.channel
+            include entraId.agent.directory->adDs.directory
+            include adDs.directory->entraId.agent.directory
+            autoLayout lr 360 200
+        }
+        component adDs.directory "100-security-adDs-directory-components" "Component - Domain-controller services: logical responsibilities" {
+            title "Component - Domain-controller services: logical responsibilities"
+            include adDs.directory.ldap adDs.directory.kdc adDs.directory.access adDs.directory.persistence adDs.directory.replication adDs.directory.policy business securityAdmin adDs.database adDs.sysvol
+            exclude *->*
+            include adDs.directory.ldap->adDs.directory.access
+            include adDs.directory.access->adDs.directory.persistence
+            include adDs.directory.kdc->adDs.directory.persistence
+            include adDs.directory.replication->adDs.directory.persistence
+            include adDs.directory.policy->adDs.directory.access
+            include adDs.directory.persistence->adDs.database
+            include adDs.directory.policy->adDs.sysvol
+            include business->adDs.directory.kdc
+            include adDs.directory.kdc->business
+            include securityAdmin->adDs.directory.ldap
+            autoLayout lr 360 200
+        }
+        component adFs.service "100-security-adFs-service-components" "Component - AD FS federation service: logical responsibilities" {
+            title "Component - AD FS federation service: logical responsibilities"
+            include adFs.service.endpoints adFs.service.authentication adFs.service.claims adFs.service.tokens adFs.service.configuration adFs.service.audit apps.client securityAdmin adDs.directory adFs.configuration
+            exclude *->*
+            include adFs.service.endpoints->adFs.service.authentication
+            include adFs.service.authentication->adFs.service.claims
+            include adFs.service.claims->adFs.service.tokens
+            include adFs.service.tokens->adFs.service.endpoints
+            include adFs.service.claims->adFs.service.configuration
+            include adFs.service.tokens->adFs.service.configuration
+            include adFs.service.endpoints->adFs.service.audit
+            include adFs.service.configuration->adFs.configuration
+            include adFs.service.authentication->adDs.directory
+            include adDs.directory->adFs.service.authentication
+            include apps.client->adFs.service.endpoints
+            include adFs.service.endpoints->apps.client
+            include securityAdmin->adDs.directory
+            include securityAdmin->adFs.service.configuration
+            autoLayout lr 360 200
+        }
+        component apps.hsmSigner "100-security-apps-hsmSigner-components" "Component - Proposed HSM signing adapter: proposed integration" {
+            title "Component - Proposed HSM signing adapter: proposed integration"
+            include apps.hsmSigner.transactions apps.hsmSigner.hsm apps.hsmSigner.signature apps.hsmSigner.rpc firefly.evm managedHsm.service entraId.authentication besu.node
+            exclude *->*
+            include managedHsm.service->entraId.authentication
+            include apps.hsmSigner.transactions->apps.hsmSigner.hsm
+            include apps.hsmSigner.hsm->apps.hsmSigner.signature
+            include apps.hsmSigner.signature->apps.hsmSigner.rpc
+            include apps.hsmSigner.rpc->apps.hsmSigner.transactions
+            include firefly.evm->apps.hsmSigner.transactions
+            include apps.hsmSigner.hsm->entraId.authentication
+            include entraId.authentication->apps.hsmSigner.hsm
+            include apps.hsmSigner.hsm->managedHsm.service
+            include managedHsm.service->apps.hsmSigner.hsm
+            include apps.hsmSigner.rpc->besu.node
+            include besu.node->apps.hsmSigner.rpc
+            autoLayout lr 360 200
+        }
+        container keycloak "100-security-example-login-ad" "Container - Example: Keycloak login with AD LDAP" {
+            title "Container - Example: Keycloak login with AD LDAP"
+            include business apps.client keycloak.server adDs.directory
+            exclude *->*
+            include business->apps.client
+            include keycloak.server->adDs.directory
+            include adDs.directory->keycloak.server
+            include business->keycloak.server
+            include apps.client->keycloak.server
+            include keycloak.server->apps.client
+            include business->adDs.directory
+            include adDs.directory->business
+            autoLayout lr 360 200
+        }
+        container keycloak "100-security-example-broker-entra" "Container - Example: Browser-mediated Keycloak and Entra OIDC" {
+            title "Container - Example: Browser-mediated Keycloak and Entra OIDC"
+            include business apps.client keycloak.server entraId.authentication
+            exclude *->*
+            include business->apps.client
+            include business->keycloak.server
+            include apps.client->keycloak.server
+            include keycloak.server->apps.client
+            include business->entraId.authentication
+            include keycloak.server->entraId.authentication
+            include entraId.authentication->keycloak.server
+            autoLayout lr 360 200
+        }
+        container keycloak "100-security-example-broker-adfs" "Container - Example: Browser-mediated Keycloak and AD FS SAML" {
+            title "Container - Example: Browser-mediated Keycloak and AD FS SAML"
+            include business apps.client keycloak.server adFs.service adDs.directory
+            exclude *->*
+            include business->apps.client
+            include adFs.service->adDs.directory
+            include adDs.directory->adFs.service
+            include business->keycloak.server
+            include apps.client->keycloak.server
+            include keycloak.server->apps.client
+            include business->adFs.service
+            include keycloak.server->adFs.service
+            include adFs.service->keycloak.server
+            include business->adDs.directory
+            include adDs.directory->business
+            autoLayout lr 360 200
+        }
+        container entraId "100-security-example-directory-sync" "Container - Example: AD identity synchronization through Cloud Sync" {
+            title "Container - Example: AD identity synchronization through Cloud Sync"
+            include adDs.directory entraId.agent entraId.provisioning entraId.directory
+            exclude *->*
+            include entraId.provisioning->entraId.directory
+            include entraId.agent->entraId.provisioning
+            include entraId.provisioning->entraId.agent
+            include entraId.agent->adDs.directory
+            include adDs.directory->entraId.agent
+            autoLayout lr 360 200
+        }
+        container cyberarkPam "100-security-example-privileged-access" "Container - Example: PAM password rotation and recorded sessions" {
+            title "Container - Example: PAM password rotation and recorded sessions"
+            include operator cyberarkPam.pvwa cyberarkPam.vault cyberarkPam.cpm cyberarkPam.psm managedTarget
+            exclude *->*
+            include cyberarkPam.pvwa->cyberarkPam.vault
+            include cyberarkPam.vault->cyberarkPam.pvwa
+            include cyberarkPam.cpm->cyberarkPam.vault
+            include cyberarkPam.vault->cyberarkPam.cpm
+            include cyberarkPam.psm->cyberarkPam.vault
+            include cyberarkPam.vault->cyberarkPam.psm
+            include cyberarkPam.pvwa->cyberarkPam.psm
+            include cyberarkPam.cpm->managedTarget
+            include managedTarget->cyberarkPam.cpm
+            include cyberarkPam.psm->managedTarget
+            include managedTarget->cyberarkPam.psm
+            include operator->cyberarkPam.pvwa
+            include operator->cyberarkPam.psm
+            include cyberarkPam.psm->operator
+            autoLayout lr 360 200
+        }
+        container conjur "100-security-example-secret-delivery" "Container - Example: Vault synchronization and workload secret retrieval" {
+            title "Container - Example: Vault synchronization and workload secret retrieval"
+            include cyberarkPam.vault conjur.synchronizer conjur.service conjur.store apps.client
+            exclude *->*
+            include conjur.service->conjur.store
+            include conjur.synchronizer->cyberarkPam.vault
+            include cyberarkPam.vault->conjur.synchronizer
+            include conjur.synchronizer->conjur.service
+            include apps.client->conjur.service
+            include conjur.service->apps.client
+            autoLayout lr 360 200
+        }
+        container managedHsm "100-security-example-key-protection" "Container - Example: Entra-authenticated HSM signing and key wrapping" {
+            title "Container - Example: Entra-authenticated HSM signing and key wrapping"
+            include apps.client entraId.authentication managedHsm.service managedHsm.keys
+            exclude *->*
+            include managedHsm.service->managedHsm.keys
+            include hsmWorkloadTokenRequest
+            include hsmWorkloadTokenResponse
+            include apps.client->managedHsm.service
+            include managedHsm.service->apps.client
+            include managedHsm.service->entraId.authentication
+            autoLayout lr 360 200
+        }
+        container apps "100-security-example-dlt-signing" "Container - Example: Proposed HSM-backed Ethereum transaction signing" {
+            title "Container - Example: Proposed HSM-backed Ethereum transaction signing"
+            include firefly.evm apps.hsmSigner entraId.authentication managedHsm.service besu.node
+            exclude *->*
+            include managedHsm.service->entraId.authentication
+            include firefly.evm->apps.hsmSigner
+            include apps.hsmSigner->firefly.evm
+            include apps.hsmSigner->entraId.authentication
+            include entraId.authentication->apps.hsmSigner
+            include apps.hsmSigner->managedHsm.service
+            include managedHsm.service->apps.hsmSigner
+            include apps.hsmSigner->besu.node
+            include besu.node->apps.hsmSigner
+            autoLayout lr 360 200
         }
         styles {
             element "Element" {
@@ -4593,22 +5264,13 @@ workspace "FireFly ecosystem + private Besu" "C4 levels 1-3 with static dataflow
                 background #E8EEEE
                 stroke #59736C
             }
-            element "Deployment Node" {
-                background #FFFFFF
-                stroke #A5B8C5
-                fontSize 26
+            element "LogicalReference" {
+                stroke #566C82
+                border Dashed
             }
-            element "Zone1" {
-                background #F4F9FD
-                stroke #3680AD
-            }
-            element "Zone2" {
-                background #F3FAF5
-                stroke #428A61
-            }
-            element "Zone3" {
-                background #FCF7EF
-                stroke #A77E42
+            element "ReferenceIntegration" {
+                stroke #8A6623
+                border Dashed
             }
             relationship "Relationship" {
                 color #476177
@@ -4647,6 +5309,55 @@ workspace "FireFly ecosystem + private Besu" "C4 levels 1-3 with static dataflow
             }
             relationship "Alternative" {
                 color #888888
+                fontSize 18
+                thickness 2
+                routing Orthogonal
+                dashed true
+            }
+            relationship "IdentityFlow" {
+                color #285D9F
+                fontSize 18
+                thickness 2
+                routing Orthogonal
+                dashed false
+            }
+            relationship "DirectoryFlow" {
+                color #277668
+                fontSize 18
+                thickness 2
+                routing Orthogonal
+                dashed false
+            }
+            relationship "SecretFlow" {
+                color #874C84
+                fontSize 18
+                thickness 2
+                routing Orthogonal
+                dashed false
+            }
+            relationship "KeyFlow" {
+                color #946B20
+                fontSize 18
+                thickness 2
+                routing Orthogonal
+                dashed false
+            }
+            relationship "PrivilegedFlow" {
+                color #A34532
+                fontSize 18
+                thickness 2
+                routing Orthogonal
+                dashed false
+            }
+            relationship "SecurityAdminFlow" {
+                color #607080
+                fontSize 18
+                thickness 2
+                routing Orthogonal
+                dashed false
+            }
+            relationship "ReferenceIntegration" {
+                color #8A6623
                 fontSize 18
                 thickness 2
                 routing Orthogonal

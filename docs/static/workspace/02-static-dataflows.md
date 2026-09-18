@@ -37,3 +37,9 @@ path. Consensus configuration and multi-zone deployment resilience are deferred.
 
 Application smart contracts are tagged as deployed responsibilities hosted by
 the EVM. They are not presented as Java packages implemented by Besu.
+
+The separate [security examples](04-security-dataflows.md) cover identity
+federation, directory synchronization, PAM sessions and rotation, Conjur secret
+delivery, HSM operations and a proposed custom Ethereum signing adapter. Those
+examples do not replace the existing FireFly authentication or filesystem-wallet
+implementation described above.

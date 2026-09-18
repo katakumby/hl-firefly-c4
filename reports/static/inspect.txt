@@ -1,4 +1,4 @@
 INFO   | workspace.scope | This workspace has no defined scope. It is recommended that the workspace scope is set to "Landscape" or "SoftwareSystem".
-INFO   | workspace.scope | This workspace describes the internal details of 5 software systems. It is recommended that a workspace contains the model, views, and documentation for a single software system only.
-INFO   | workspace.scope | System context views exist for 2 software systems. It is recommended that a workspace includes system context views for a single software system only.
-INFO   | workspace.scope | Container views exist for 5 software systems. It is recommended that a workspace includes container views for a single software system only.
+INFO   | workspace.scope | This workspace describes the internal details of 12 software systems. It is recommended that a workspace contains the model, views, and documentation for a single software system only.
+INFO   | workspace.scope | System context views exist for 9 software systems. It is recommended that a workspace includes system context views for a single software system only.
+INFO   | workspace.scope | Container views exist for 12 software systems. It is recommended that a workspace includes container views for a single software system only.

@@ -1,10 +1,11 @@
 """Rebuild the reusable logical DSL and coverage inventory from official-source mappings."""
 from pathlib import Path
 import json,csv
+from dsl_relationships import relationship_name, relationship_selectors
 from model_data import *
 ROOT=Path(__file__).resolve().parents[1]
 SOURCES=json.loads((ROOT/"sources.json").read_text(encoding="utf-8"))
-E={};R=[];V=[];D={};DR=[];instances=[]
+E={};R=[];V=[]
 def source(repo,path=""):
     if repo=="reference": return SOURCES["pages"]["firefly-architecture"]["url"]
     if repo in SOURCES["pages"]: return SOURCES["pages"][repo]["url"]
@@ -104,8 +105,6 @@ for t in ("erc20","erc1155"):
     rel("firefly.evm",f"firefly.{t}.stream","Streams confirmed token logs","WebSocket / JSON")
     rel(f"firefly.{t}.proxy","firefly.core","Delivers token events and receives ACKs","WebSocket / JSON")
 add("besu","softwareSystem","Private Besu network","Permissioned Ethereum network with QBFT validators, private RPC and contracts.",repo="besu",tags="Blockchain")
-node_specs=[("a1","a",1,True),("b1","b",1,True),("b2","b",2,True),("c1","c",2,True),("c2","c",3,True),("a2","a",3,True),
-("rpc1","consortium",1,False),("rpc2","consortium",2,False),("rpc3","consortium",3,False)]
 p="besu.node"
 add(p,"container","Besu node","Runs the selected validator or non-validator RPC/discovery role; each instance owns its key and ledger.","Java / Besu / RocksDB","besu",tags="Blockchain")
 for id,name,desc,path in BESU:
@@ -218,104 +217,10 @@ view("container","ops","63-operations","Container - platform operations",kids("o
 
 from ecosystem_model import extend_model
 extend_model(E, R, V, add, rel, view, comps, flows, kids, source)
+from security_model import extend_security_model
+extend_security_model(E, R, V, add, rel, view, kids, source)
 
 
-def dn(id,name,desc,tech,tags=""):
-    D[id]=dict(id=id,parent=id.rsplit(".",1)[0] if "." in id else None,kind="deploymentNode",name=name,description=desc,technology=tech,tags=tags)
-    return id
-def infra(id,name,desc,tech,tags=""):
-    D[id]=dict(id=id,parent=id.rsplit(".",1)[0],kind="infrastructureNode",name=name,description=desc,technology=tech,tags=tags)
-    return id
-def inst(id,container,owner,zone,role="active"):
-    D[id]=dict(id=id,parent=id.rsplit(".",1)[0],kind="containerInstance",container=container,owner=owner,zone=str(zone),role=role)
-    instances.append(D[id]);return id
-
-def deployment_groups(e):
-    container=e["container"]
-    if container.startswith("firefly."):
-        groups=["member"+e["owner"].upper()]
-        if container=="firefly.dx":groups.append("privateExchange")
-        if container=="firefly.ipfs":groups.append("sharedContent")
-        if container=="firefly.signer":groups.append("rpcAccess")
-        return groups
-    if container=="besu.node":
-        return ["blockchain"]+(["rpcAccess"] if e["role"].startswith("rpc") else [])
-    return ["memberA","memberB","memberC","blockchain"]
-def dr(a,b,label,tech="Filesystem I/O",tag="Operational"):
-    assert a in D and b in D,(a,b)
-    DR.append(dict(id=f"{a}->{b}:{label}",source=a,destination=b,description=label,technology=tech,tags=tag))
-dn("azure","Azure region","One region supporting three zones and Premium SSD ZRS.","Microsoft Azure")
-dn("azure.cluster","AKS reference cluster","Separate member namespaces; shared administrative trust.","Azure Kubernetes Service")
-infra("azure.control","Managed control plane","Schedules workloads and stores Kubernetes objects; Azure-managed.","AKS API / etcd","Operational")
-infra("azure.lb","Zone-redundant load balancer","Exposes private member API and passthrough peer endpoints.","Azure Standard Load Balancer","Operational")
-infra("azure.secrets","Kubernetes secret projection","Projects namespaced configuration and distinct node keys.","Kubernetes API / Secret volumes","Operational")
-dr("azure.control","azure.secrets","Stores and projects namespace configuration","Kubernetes API / TLS")
-infra("azure.csi","Azure Disk CSI controller","Provisions volumes and coordinates safe reattachment.","Azure Disk CSI / ARM","Operational")
-dr("azure.control","azure.csi","Reconciles volume attachments","Kubernetes API / TLS")
-dn("azure.secretStores","Member secret stores","Separate namespace objects containing encrypted keystores and credentials.","Kubernetes Secrets")
-for m in "abc":inst("azure.secretStores."+m,"firefly.secrets",m,"regional","projected configuration")
-for z in (1,2,3):
-    zp=f"azure.cluster.az{z}"
-    dn(zp,f"Availability Zone {z}",f"Independent fault domain AZ {z}.","Azure availability zone",f"Zone{z}")
-    dn(zp+".system","System node pool",f"System capacity in AZ {z}.","AKS VM scale set")
-    infra(zp+".system.agent","Cluster services","Runs DNS, networking and storage agents.","CoreDNS / CNI / CSI","Operational")
-    dr("azure.control",zp+".system.agent","Schedules and reconciles system workloads","Kubernetes API / TLS")
-    dn(zp+".apps","Application node pool","Member pods; surviving zones retain spare recovery capacity.","AKS Linux nodes")
-    dn(zp+".data","Stateful node pool","PostgreSQL and Besu; node anti-affinity separates replicas.","AKS Linux nodes")
-    p=dn(zp+".apps.gateway","Ingress pod","Routes API requests and passes peer TLS through unchanged.","Kubernetes Deployment")
-    ci=inst(p+".instance","ops.gateway","consortium",z)
-    dr("azure.lb",ci,"Routes HTTPS and peer TLS sessions","TCP / TLS")
-    for c in ("cnpg","prometheus"):
-        p=dn(zp+".apps."+c,c+" pod","Operational replicas are spread across zones.","Kubernetes Deployment")
-        ci=inst(p+".instance","ops."+c,"consortium",z)
-        if c=="cnpg":dr(ci,"azure.control","Watches clusters and updates primary Services","Kubernetes API / TLS")
-    if z==1:
-        p=dn(zp+".apps.grafana","Grafana pod","Provisioned dashboards; restart eligible in surviving zones.","Kubernetes Deployment")
-        inst(p+".instance","ops.grafana","consortium",z)
-for ix,m in enumerate("abc",1):
-    p=f"azure.cluster.az{ix}.apps.member{m.upper()}"
-    dn(p,f"Member {m.upper()} namespace - active services","Separate identity and NetworkPolicies; restart eligible in AZ 1/2/3.","Kubernetes namespace / placement slice","Member"+m.upper())
-    for c in ("core","evm","signer","dx","erc20","erc1155","ipfs"):
-        pod=dn(p+"."+c,E["firefly."+c]["name"]+" pod","One active member instance; fence before replacement after node loss.","Kubernetes StatefulSet" if c in ("core","evm","dx","ipfs") else "Kubernetes Deployment")
-        ci=inst(pod+".instance","firefly."+c,m,ix)
-        dr(ci,"azure.secrets","Reads projected member configuration","Read-only projected files")
-    for c in ("blobs","ipfsRepo"):
-        volume=dn(p+"."+c,"ZRS volume - "+E["firefly."+c]["name"],"Replicated across three zones; RWO; fence and detach before reattach.","Premium SSD ZRS / CSI")
-        vi=inst(volume+".store","firefly."+c,m,"regional","persistent volume")
-        dr("azure.csi",vi,"Provisions and safely attaches member storage","CSI / Azure ARM")
-    for z in (1,2,3):
-        role="primary" if z==ix else "standby"
-        pg=f"azure.cluster.az{z}.data.pg{m.upper()}"
-        dn(pg,f"Member {m.upper()} PostgreSQL {role}","One instance per zone; separate Core/FFTM databases; ANY 1 synchronous standby.","CloudNativePG pod","Member"+m.upper())
-        ci=inst(pg+".instance","firefly"+(".pg" if role=="primary" else ".pgReplica"),m,z,role)
-        vol=infra(pg+".volume",f"PGDATA {m.upper()} AZ {z}","Independent durable data directory for this instance.","Premium SSD ZRS / CSI","Database")
-        dr(ci,vol,"Reads and writes database pages and WAL")
-        dr("azure.csi",vol,"Provisions a dedicated PGDATA volume","CSI / Azure ARM")
-for n,owner,z,validator in node_specs:
-    p=f"azure.cluster.az{z}.data.besu{n}"
-    dn(p,"Besu "+n.upper()+" "+("validator" if validator else "RPC")+" pod","Unique node key and data directory; node anti-affinity; private P2P.","Kubernetes StatefulSet","Blockchain")
-    ci=inst(p+".instance","besu.node",owner,z,"validator" if validator else "rpc")
-    vol=infra(p+".volume","Besu ledger "+n.upper(),"Dedicated node data, retained during replacement.","Premium SSD ZRS / CSI","Database")
-    dr(ci,vol,"Persists ledger, receipts and world state")
-    dr(ci,"azure.secrets","Reads its unique Besu node key","Read-only projected secret")
-    dr("azure.csi",vol,"Provisions a node-specific ledger volume","CSI / Azure ARM")
-    if n in ("rpc1","rpc3"):D[ci]["role"]="rpc and bootnode"
-infra("azure.rpc","Private RPC Service","Routes to synchronized RPC nodes; session affinity protects node-local filters.","Kubernetes Service / session affinity","Operational")
-for item in instances:
-    if item["container"].endswith(".signer"):dr(item["id"],"azure.rpc","Sends signed transactions and queries","HTTP JSON-RPC")
-    if item["role"].startswith("rpc"):dr("azure.rpc",item["id"],"Routes pinned JSON-RPC sessions","HTTP JSON-RPC")
-def dv(key,title,selected,direction="lr"):
-    V.append(dict(kind="deployment",scope="production",key=key,title=title,elements=list(dict.fromkeys(selected)),direction=direction,relationships=[]))
-for m in "abc":
-    selected=[i["id"] for i in instances if i["owner"]==m and not i["container"].startswith("besu.")]
-    selected += [id for id,e in D.items() if e["kind"]=="infrastructureNode" and (f".pg{m.upper()}." in id or id in ("azure.control","azure.secrets","azure.csi","azure.rpc"))]
-    dv("80-deployment-"+m,f"Deployment - Member {m.upper()} across three AKS zones",selected)
-dv("81-deployment-besu","Deployment - six QBFT validators and three RPC nodes",
-    [i["id"] for i in instances if i["container"].startswith("besu.")]+[id for id,e in D.items() if e["kind"]=="infrastructureNode" and (".besu" in id or id in ("azure.rpc","azure.secrets"))],"tb")
-dv("82-deployment-operations","Deployment - AKS operations and control",
-    [i["id"] for i in instances if i["container"].startswith("ops.")]+[id for id,e in D.items() if e["kind"]=="infrastructureNode" and (".system." in id or id in ("azure.lb","azure.control","azure.csi","azure.secrets"))])
-dv("99-deployment-complete","Deployment - complete three-member three-zone AKS reference",
-    [id for id,e in D.items() if e["kind"] in ("containerInstance","infrastructureNode")],"tb")
 def q(s):return json.dumps(str(s),ensure_ascii=False)
 lines=[];defined=set();emitted_relationships=set()
 def w(s="",level=0):lines.append("    "*level+s)
@@ -327,8 +232,10 @@ def props(values,level):
 def emit_outgoing(id,relationships,level):
     for r in relationships:
         if r["source"]==id and r["destination"] in defined and r["id"] not in emitted_relationships:
-            destination=("production." if relationships is DR else "")+r["destination"]
-            w(f"-> {destination} {q(r['description'])} {q(r['technology'])} {q(r['tags'])}",level)
+            destination=r["destination"]
+            name = relationship_name(r)
+            prefix = name+' = '+id+' ' if name else ''
+            w(f"{prefix}-> {destination} {q(r['description'])} {q(r['technology'])} {q(r['tags'])}",level)
             emitted_relationships.add(r["id"])
 
 def emit_pending(prefix,relationships,level):
@@ -336,7 +243,7 @@ def emit_pending(prefix,relationships,level):
         (not prefix or r["source"].startswith(prefix+".")) and r["source"] in defined and
         r["destination"] in defined and r["id"] not in emitted_relationships)
     for id in sources:
-        identifier=("production." if relationships is DR else "")+id
+        identifier=id
         w(f"!element {identifier} {{",level)
         emit_outgoing(id,relationships,level+1)
         w("}",level)
@@ -354,57 +261,29 @@ def emit_element(id,level):
     emit_outgoing(id,R,level+1)
     w("}",level)
     defined.add(id)
-def emit_deployment(id,level):
-    e=D[id];kind=e["kind"];short=id.split(".")[-1]
-    if kind=="containerInstance":
-        groups=",".join("production."+g for g in deployment_groups(e))
-        w(f"{short} = containerInstance {e['container']} {groups} {{",level)
-        if e["container"]=="besu.node":
-            node=id.split(".")[-2].removeprefix("besu").upper()
-            w("description "+q(f"{node}: {e['role']}; owner {e['owner'].upper()}; AZ {e['zone']}. Dedicated node key and ledger."),level+1)
-        props({"architecture.id":id,"member":e["owner"],"zone":e["zone"],"role":e["role"]},level+1)
-    else:
-        w(f"{short} = {kind} {q(e['name'])} {q(e['description'])} {q(e['technology'])} {{",level)
-        if e["tags"]:w("tags "+q(e["tags"]),level+1)
-        props({"architecture.id":id},level+1)
-    for child,ce in D.items():
-        if ce["parent"]==id:emit_deployment(child,level+1)
-    emit_outgoing(id,DR,level+1)
-    w("}",level)
-    defined.add(id)
-def emit_workspace(include_deployment):
+def emit_workspace():
     global lines, defined, emitted_relationships
     lines=[]; defined=set(); emitted_relationships=set()
-    w("// Generated from scripts/build_workspace.py and model_data.py. Rebuild after editing the source definitions.")
-    w('workspace "FireFly ecosystem + private Besu" '+q('C4 levels 1-3 with static dataflows; deployment definitions preserved for later review.' if include_deployment else 'C4 levels 1-3 with static dataflows; deployment validation excluded.')+' {')
+    w("// Generated from scripts/build_workspace.py and its logical model extensions. Rebuild after editing source definitions.")
+    w('workspace "FireFly ecosystem + private Besu + security catalog" '+q('C4 levels 1-3 with security product references and static dataflows; no deployments.')+' {')
     w("!identifiers hierarchical",1);w("!impliedRelationships false",1)
     props({"structurizr.inspection.workspace.scope":"info"},1)
     w("!docs docs/static/workspace",1);w("!adrs docs/static/decisions",1);w("model {",1)
     for id,e in E.items():
         if e["parent"] is None:emit_element(id,2)
     emit_pending("",R,2)
-    if include_deployment:
-        w('production = deploymentEnvironment "AKS reference" {',2)
-        for group,name in [("memberA","Member A private runtime"),("memberB","Member B private runtime"),("memberC","Member C private runtime"),("privateExchange","Authenticated Data Exchange peers"),("sharedContent","Shared IPFS swarm"),("rpcAccess","Private RPC clients and endpoints"),("blockchain","Besu peer network")]:
-            w(f"{group} = deploymentGroup {q(name)}",3)
-        emit_deployment("azure",3)
-        w("}",2)
-        emit_pending("",DR,2)
-    assert len(emitted_relationships)==len(R)+(len(DR) if include_deployment else 0),"Every authored relationship must be emitted exactly once"
+    assert len(emitted_relationships)==len(R),"Every authored relationship must be emitted exactly once"
     w("}",1);w("views {",1)
     for v in V:
-        if v["kind"]=="deployment" and not include_deployment: continue
-        k=v["kind"];scope=v["scope"]
-        prefix=k+(" * production" if k=="deployment" else (" "+scope if scope else ""))
-        w(prefix+" "+q(v["key"])+" "+q(v["title"])+" {",2)
-        w("title "+q(v["title"]),3)
-        w("include "+" ".join(("production."+x if k=="deployment" else x) for x in v["elements"]),3)
-        if k!="deployment":
-            w("exclude *->*",3)
-            selected=set(v["relationships"])
-            for pair in dict.fromkeys(f"{r['source']}->{r['destination']}" for r in R if r["id"] in selected):
-                w("include "+pair,3)
-        w("autoLayout "+v["direction"]+" 360 200",3);w("}",2)
+        assert v['kind'] in ('systemLandscape', 'systemContext', 'container', 'component')
+        prefix=v['kind']+(' '+v['scope'] if v['scope'] else '')
+        w(prefix+' '+q(v['key'])+' '+q(v['title'])+' {',2)
+        w('title '+q(v['title']),3)
+        w('include '+' '.join(v['elements']),3)
+        w('exclude *->*',3)
+        for selector in relationship_selectors(R, v['relationships']):
+            w('include '+selector,3)
+        w('autoLayout '+v['direction']+' 360 200',3);w('}',2)
     w("styles {",2)
     styles=[
     ("Element",{"color":"#122C43","stroke":"#57718A","strokeWidth":"2","fontSize":"22","width":"360","height":"220"}),
@@ -418,31 +297,25 @@ def emit_workspace(include_deployment):
     ("Contract",{"background":"#FFF3D3"}),
     ("Optional",{"background":"#F0F0F0","stroke":"#7A7A7A","border":"Dashed","color":"#122C43"}),
     ("Operational",{"background":"#E8EEEE","stroke":"#59736C"}),
-    ("Deployment Node",{"background":"#FFFFFF","stroke":"#A5B8C5","fontSize":"26"}),
-    ("Zone1",{"background":"#F4F9FD","stroke":"#3680AD"}),
-    ("Zone2",{"background":"#F3FAF5","stroke":"#428A61"}),
-    ("Zone3",{"background":"#FCF7EF","stroke":"#A77E42"})]
+    ("LogicalReference",{"stroke":"#566C82","border":"Dashed"}),
+    ("ReferenceIntegration",{"stroke":"#8A6623","border":"Dashed"})]
     for tag,attributes in styles:
         w("element "+q(tag)+" {",3)
         for k,val in attributes.items():w(k+" "+val,4)
         w("}",3)
-    for tag,color,dashed in [("Relationship","#476177",False),("PrivateFlow","#8C4966",False),("SharedFlow","#237A69",False),("BlockchainFlow","#967228",False),("Operational","#6D817A",True),("Alternative","#888888",True)]:
+    for tag,color,dashed in [("Relationship","#476177",False),("PrivateFlow","#8C4966",False),("SharedFlow","#237A69",False),("BlockchainFlow","#967228",False),("Operational","#6D817A",True),("Alternative","#888888",True),('IdentityFlow','#285D9F',False),('DirectoryFlow','#277668',False),('SecretFlow','#874C84',False),('KeyFlow','#946B20',False),('PrivilegedFlow','#A34532',False),('SecurityAdminFlow','#607080',False),('ReferenceIntegration','#8A6623',True)]:
         w("relationship "+q(tag)+" {",3);w("color "+color,4);w("fontSize 18",4);w("thickness 2",4)
         w("routing Orthogonal",4);w("dashed "+str(dashed).lower(),4);w("}",3)
     w("}",2)
     w("properties {",2);w('"structurizr.sort" "key"',3);w("}",2)
     w("}",1);w("configuration {",1);w("scope none",2);w("}",1);w("}")
-    (ROOT/("workspace.dsl" if include_deployment else "workspace-static.dsl")).write_text("\n".join(lines)+"\n",encoding="utf-8")
+    (ROOT/"workspace.dsl").write_text("\n".join(lines)+"\n",encoding="utf-8")
 
-emit_workspace(True)
-emit_workspace(False)
-for item in instances:item["deployment_groups"]=deployment_groups(item)
-catalog={"elements":list(E.values()),"relationships":R,"views":V,"deployment_elements":list(D.values()),"deployment_relationships":DR,
-"node_placement":[dict(node=n,owner=o,zone=z,validator=v) for n,o,z,v in node_specs]}
-(ROOT/"model-catalog-static.json").write_text(json.dumps({"elements":list(E.values()),"relationships":R,"views":[v for v in V if v["kind"]!="deployment"]},indent=2)+"\n",encoding="utf-8")
+emit_workspace()
+catalog={"elements":list(E.values()),"relationships":R,"views":V}
 (ROOT/"model-catalog.json").write_text(json.dumps(catalog,indent=2)+"\n",encoding="utf-8")
 with (ROOT/"coverage.csv").open("w",encoding="utf-8",newline="") as f:
     writer=csv.writer(f);writer.writerow(["element","level","name","source","classification","views"])
     for id,e in E.items():writer.writerow([id,e["kind"],e["name"],e["source"],e["classification"],";".join(v["key"] for v in V if id in v["elements"])])
-print(f"Generated {len(E)} logical elements, {len(R)} relationships, {len(V)} views, {len(instances)} deployment instances.")
+print(f"Generated workspace.dsl: {len(E)} logical elements, {len(R)} relationships, {len(V)} static views.")
 

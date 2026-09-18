@@ -1,16 +1,19 @@
-# FireFly ecosystem: C4 levels 1–3
+# FireFly ecosystem and security catalog: C4 levels 1–3
 
 This workspace describes the documented open-source FireFly ecosystem and a
-private Besu example. The validated entrypoint is **workspace-static.dsl**.
-The main workspace retains the previous deployment definitions for a later
-review. No deployment, availability-zone, recovery, quorum-sizing or export
+private Besu example. The sole validated entrypoint is **workspace.dsl**.
+Previous deployment definitions are preserved separately in the deployment
+archive and are not loaded by the workspace. No deployment, availability-zone,
+recovery, quorum-sizing or export
 claim from the earlier reports is renewed by this validation.
 
 Start with 01-landscape and 02-context-firefly, then 10-firefly-runtime for the
 Besu configuration. Core responsibilities are split across 20–23 component
 views; EVMConnect, Signer, Data Exchange and token connectors use 30–40 views.
-Besu details use 50–51. Tools use 61–65. Optional blockchain configurations use
-70–76. View titles state their C4 level and selected configuration.
+Besu details use 50–51. Tools use 61–67. Optional blockchain configurations use
+70–76. Security reference products and examples use `100-security-` keys; start
+with `100-security-landscape`. View titles state their C4 level and selected
+configuration. The security catalog guide provides product navigation.
 
 Core hosts its Explorer UI and statically compiled plugin adapters. Independent
 connectors are containers. FFTM is embedded in EVMConnect and TezosConnect, with
@@ -19,9 +22,11 @@ HTTP libraries, ABI/cryptographic utilities and factories are embedded
 responsibilities, not additional services. SQLite and LevelDB boxes represent
 files owned by a process, not database servers.
 
-FireFly and Besu receive component-level detail. Other ledger, database, broker,
-signing-provider and infrastructure implementations stop at integration
-boundaries. This does not claim to inventory arbitrary vendor plugins or every
+FireFly and Besu receive source-backed component-level detail. The seven security
+products receive documented capability detail, with proprietary decompositions
+labeled as logical reference abstractions. Other ledger, database, broker and
+infrastructure implementations stop at integration boundaries. This does not
+claim to inventory arbitrary vendor plugins or every
 application that could be built with FireFly. Samples and CorDapps are recorded
 as examples/customization points in the source inventory.
 
@@ -36,6 +41,11 @@ stores. Dashed grey boxes/relationships denote optional integrations. Gold
 identifies blockchain/contract responsibilities; purple and green distinguish
 private and shared data. Arrow labels and protocol metadata carry the meaning
 independently of color. Every view contains directed static relationships.
+Security arrow categories distinguish identity, directory, secret, key,
+privileged-session and administration data. Dashed reference-integration arrows
+identify proposed application examples; dashed logical-reference boxes identify
+inferred proprietary responsibility boundaries. Labels and evidence properties
+remain authoritative; see the security catalog legend.
 
 Source-backed capability coverage is in reports/static/source-inventory.md;
 element-to-view coverage is in coverage.csv. Relationship evidence in the model

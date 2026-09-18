@@ -127,7 +127,7 @@ def matches(path,prefix):
 def main():
  REPORT.mkdir(parents=True,exist_ok=True)
  s=json.loads((ROOT/'sources.json').read_text(encoding='utf-8'))
- m=json.loads((ROOT/'model-catalog-static.json').read_text(encoding='utf-8'))
+ m=json.loads((ROOT/'model-catalog.json').read_text(encoding='utf-8'))
  components=[e for e in m['elements'] if e['kind']=='component']
  element_ids={e['id'] for e in m['elements']}
  mappings={}
@@ -178,16 +178,37 @@ def main():
   '- The official samples repository is cataloged as example applications represented by the member-application boundary; it is not a mandatory runtime.',
   '- Explorer is served by Core. The UI source snapshot is a reference implementation; Core does not pin a UI source commit in its Dockerfile.',
   '- Signer ABI/RLP/EIP-712 utilities, common helpers, SDKs and public interfaces are mapped to owning responsibilities, without claiming independent services.',
-  '- Besu source modules are mapped to its focused node views; other infrastructure internals are outside this review.',
+  '- Besu source modules are mapped to its focused node views. Security products have separate documentation-backed logical reference coverage; their proprietary implementation files are not inventoried.',
   '- Relationship rows state architecture-level dataflow inferred from the cited source responsibilities. They do not claim every arrow is one direct method call.',
   '- Tezos embeds FFTM '+next(d['version'] for d in s['embedded_dependencies'] if d['runtime']=='tezosconnect')+'; it is not silently assigned EVMConnect\'s FFTM revision.',
   '- Alternative EVM chain guides reuse the Ethereum adapter rather than duplicating its implementation.',
   '', '## Official documentation','']
  for key in ('firefly-head','firefly-architecture','firefly-plugins','qbft','permissioning','besu-rpc','structurizr-dsl','inspect'):
   lines.append(f'- [{key}]({s["pages"][key]["url"]})')
+ security=[e for e in m['elements'] if 'SecurityCatalog' in e.get('tags','').split(',')]
+ security_pages={v['url']:v for k,v in s['pages'].items() if k.startswith('security-')}
+ lines+=['','## Security product reference catalog','',
+  'Proprietary component decompositions are logical reference abstractions, not a verified internal code inventory. Proposed application integrations are labeled separately. Conjur Enterprise (Secrets Manager Self-Hosted) is the selected edition.',
+  '', 'Retrieved: '+s['security_retrieved_at'], '',
+  '| Documentation | Capture method | SHA-256 |','|---|---|---|']
+ for key,entry in s['pages'].items():
+  if key.startswith('security-'):
+   lines.append(f'| [{key}]({entry["url"]}) | {entry["capture_method"]} | `{entry["sha256"]}` |')
+ lines+=['','CyberArk entries use web-reader text excerpts because direct HTTP downloads returned 404. Fingerprints describe those excerpts; they are not full HTML snapshots.',
+         '', '[Security element-to-document coverage](security-source-coverage.csv). Broad product documentation supports capabilities; grouping those capabilities into logical components is explicitly inferred.']
+ security_records=[]
+ for e in security:
+  for url in e.get('sources',[e['source']]):
+   entry=security_pages[url]
+   security_records.append({'element':e['id'],'level':e['kind'],'classification':e['classification'],
+       'source':url,'sha256':entry['sha256'],'retrieved_at':entry['retrieved_at'],'capture_method':entry['capture_method']})
+ with (REPORT/'security-source-coverage.csv').open('w',encoding='utf-8',newline='') as f:
+  writer=csv.DictWriter(f,fieldnames=['element','level','classification','source','sha256','retrieved_at','capture_method'])
+  writer.writeheader();writer.writerows(security_records)
  (REPORT/'source-inventory.md').write_text('\n'.join(lines)+'\n',encoding='utf-8')
  report={'passed':not unmapped,'source_files':len(records),'unmapped':unmapped,'classifications':dict(Counter(r['classification'] for r in records)),
-         'repository_count':len(GROUPS),'embedded_dependencies':s['embedded_dependencies']}
+         'repository_count':len(GROUPS),'embedded_dependencies':s['embedded_dependencies'],
+         'security_elements':len(security),'security_document_links':len(security_records)}
  (REPORT/'source-audit.json').write_text(json.dumps(report,indent=2)+'\n',encoding='utf-8')
  print(json.dumps({'source_files':len(records),'unmapped':unmapped},indent=2))
  return 1 if unmapped else 0

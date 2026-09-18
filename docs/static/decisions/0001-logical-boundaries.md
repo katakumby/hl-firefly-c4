@@ -26,3 +26,8 @@ their actual implementation limitations. Reuse existing logical identifiers.
 Optional configurations use separate views. Source coverage is broader than
 Core top-level packages, but is not a class-level inventory. No code diagrams
 or proprietary vendor implementation claims are introduced.
+
+The security catalog extension in decision 0004 adds documented product
+capabilities and explicitly inferred proprietary logical responsibilities. It
+relaxes this decision's infrastructure-detail scope only for the seven named
+security products; it does not claim proprietary source-code verification.

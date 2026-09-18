@@ -1,0 +1,2701 @@
+{
+  "description": "Historical deployment reference only; not an active Structurizr workspace.",
+  "archived_at": "2026-09-18T22:33:19.524898+00:00",
+  "original_workspace_sha256": "85ee4caa3b9f9816b20d099d9d1c8a6f8a2edb3864c6282674644e9627f3f1e0",
+  "deployment_elements": [
+    {
+      "id": "azure",
+      "parent": null,
+      "kind": "deploymentNode",
+      "name": "Azure region",
+      "description": "One region supporting three zones and Premium SSD ZRS.",
+      "technology": "Microsoft Azure",
+      "tags": ""
+    },
+    {
+      "id": "azure.cluster",
+      "parent": "azure",
+      "kind": "deploymentNode",
+      "name": "AKS reference cluster",
+      "description": "Separate member namespaces; shared administrative trust.",
+      "technology": "Azure Kubernetes Service",
+      "tags": ""
+    },
+    {
+      "id": "azure.control",
+      "parent": "azure",
+      "kind": "infrastructureNode",
+      "name": "Managed control plane",
+      "description": "Schedules workloads and stores Kubernetes objects; Azure-managed.",
+      "technology": "AKS API / etcd",
+      "tags": "Operational"
+    },
+    {
+      "id": "azure.lb",
+      "parent": "azure",
+      "kind": "infrastructureNode",
+      "name": "Zone-redundant load balancer",
+      "description": "Exposes private member API and passthrough peer endpoints.",
+      "technology": "Azure Standard Load Balancer",
+      "tags": "Operational"
+    },
+    {
+      "id": "azure.secrets",
+      "parent": "azure",
+      "kind": "infrastructureNode",
+      "name": "Kubernetes secret projection",
+      "description": "Projects namespaced configuration and distinct node keys.",
+      "technology": "Kubernetes API / Secret volumes",
+      "tags": "Operational"
+    },
+    {
+      "id": "azure.csi",
+      "parent": "azure",
+      "kind": "infrastructureNode",
+      "name": "Azure Disk CSI controller",
+      "description": "Provisions volumes and coordinates safe reattachment.",
+      "technology": "Azure Disk CSI / ARM",
+      "tags": "Operational"
+    },
+    {
+      "id": "azure.secretStores",
+      "parent": "azure",
+      "kind": "deploymentNode",
+      "name": "Member secret stores",
+      "description": "Separate namespace objects containing encrypted keystores and credentials.",
+      "technology": "Kubernetes Secrets",
+      "tags": ""
+    },
+    {
+      "id": "azure.secretStores.a",
+      "parent": "azure.secretStores",
+      "kind": "containerInstance",
+      "container": "firefly.secrets",
+      "owner": "a",
+      "zone": "regional",
+      "role": "projected configuration",
+      "deployment_groups": [
+        "memberA"
+      ]
+    },
+    {
+      "id": "azure.secretStores.b",
+      "parent": "azure.secretStores",
+      "kind": "containerInstance",
+      "container": "firefly.secrets",
+      "owner": "b",
+      "zone": "regional",
+      "role": "projected configuration",
+      "deployment_groups": [
+        "memberB"
+      ]
+    },
+    {
+      "id": "azure.secretStores.c",
+      "parent": "azure.secretStores",
+      "kind": "containerInstance",
+      "container": "firefly.secrets",
+      "owner": "c",
+      "zone": "regional",
+      "role": "projected configuration",
+      "deployment_groups": [
+        "memberC"
+      ]
+    },
+    {
+      "id": "azure.cluster.az1",
+      "parent": "azure.cluster",
+      "kind": "deploymentNode",
+      "name": "Availability Zone 1",
+      "description": "Independent fault domain AZ 1.",
+      "technology": "Azure availability zone",
+      "tags": "Zone1"
+    },
+    {
+      "id": "azure.cluster.az1.system",
+      "parent": "azure.cluster.az1",
+      "kind": "deploymentNode",
+      "name": "System node pool",
+      "description": "System capacity in AZ 1.",
+      "technology": "AKS VM scale set",
+      "tags": ""
+    },
+    {
+      "id": "azure.cluster.az1.system.agent",
+      "parent": "azure.cluster.az1.system",
+      "kind": "infrastructureNode",
+      "name": "Cluster services",
+      "description": "Runs DNS, networking and storage agents.",
+      "technology": "CoreDNS / CNI / CSI",
+      "tags": "Operational"
+    },
+    {
+      "id": "azure.cluster.az1.apps",
+      "parent": "azure.cluster.az1",
+      "kind": "deploymentNode",
+      "name": "Application node pool",
+      "description": "Member pods; surviving zones retain spare recovery capacity.",
+      "technology": "AKS Linux nodes",
+      "tags": ""
+    },
+    {
+      "id": "azure.cluster.az1.data",
+      "parent": "azure.cluster.az1",
+      "kind": "deploymentNode",
+      "name": "Stateful node pool",
+      "description": "PostgreSQL and Besu; node anti-affinity separates replicas.",
+      "technology": "AKS Linux nodes",
+      "tags": ""
+    },
+    {
+      "id": "azure.cluster.az1.apps.gateway",
+      "parent": "azure.cluster.az1.apps",
+      "kind": "deploymentNode",
+      "name": "Ingress pod",
+      "description": "Routes API requests and passes peer TLS through unchanged.",
+      "technology": "Kubernetes Deployment",
+      "tags": ""
+    },
+    {
+      "id": "azure.cluster.az1.apps.gateway.instance",
+      "parent": "azure.cluster.az1.apps.gateway",
+      "kind": "containerInstance",
+      "container": "ops.gateway",
+      "owner": "consortium",
+      "zone": "1",
+      "role": "active",
+      "deployment_groups": [
+        "memberA",
+        "memberB",
+        "memberC",
+        "blockchain"
+      ]
+    },
+    {
+      "id": "azure.cluster.az1.apps.cnpg",
+      "parent": "azure.cluster.az1.apps",
+      "kind": "deploymentNode",
+      "name": "cnpg pod",
+      "description": "Operational replicas are spread across zones.",
+      "technology": "Kubernetes Deployment",
+      "tags": ""
+    },
+    {
+      "id": "azure.cluster.az1.apps.cnpg.instance",
+      "parent": "azure.cluster.az1.apps.cnpg",
+      "kind": "containerInstance",
+      "container": "ops.cnpg",
+      "owner": "consortium",
+      "zone": "1",
+      "role": "active",
+      "deployment_groups": [
+        "memberA",
+        "memberB",
+        "memberC",
+        "blockchain"
+      ]
+    },
+    {
+      "id": "azure.cluster.az1.apps.prometheus",
+      "parent": "azure.cluster.az1.apps",
+      "kind": "deploymentNode",
+      "name": "prometheus pod",
+      "description": "Operational replicas are spread across zones.",
+      "technology": "Kubernetes Deployment",
+      "tags": ""
+    },
+    {
+      "id": "azure.cluster.az1.apps.prometheus.instance",
+      "parent": "azure.cluster.az1.apps.prometheus",
+      "kind": "containerInstance",
+      "container": "ops.prometheus",
+      "owner": "consortium",
+      "zone": "1",
+      "role": "active",
+      "deployment_groups": [
+        "memberA",
+        "memberB",
+        "memberC",
+        "blockchain"
+      ]
+    },
+    {
+      "id": "azure.cluster.az1.apps.grafana",
+      "parent": "azure.cluster.az1.apps",
+      "kind": "deploymentNode",
+      "name": "Grafana pod",
+      "description": "Provisioned dashboards; restart eligible in surviving zones.",
+      "technology": "Kubernetes Deployment",
+      "tags": ""
+    },
+    {
+      "id": "azure.cluster.az1.apps.grafana.instance",
+      "parent": "azure.cluster.az1.apps.grafana",
+      "kind": "containerInstance",
+      "container": "ops.grafana",
+      "owner": "consortium",
+      "zone": "1",
+      "role": "active",
+      "deployment_groups": [
+        "memberA",
+        "memberB",
+        "memberC",
+        "blockchain"
+      ]
+    },
+    {
+      "id": "azure.cluster.az2",
+      "parent": "azure.cluster",
+      "kind": "deploymentNode",
+      "name": "Availability Zone 2",
+      "description": "Independent fault domain AZ 2.",
+      "technology": "Azure availability zone",
+      "tags": "Zone2"
+    },
+    {
+      "id": "azure.cluster.az2.system",
+      "parent": "azure.cluster.az2",
+      "kind": "deploymentNode",
+      "name": "System node pool",
+      "description": "System capacity in AZ 2.",
+      "technology": "AKS VM scale set",
+      "tags": ""
+    },
+    {
+      "id": "azure.cluster.az2.system.agent",
+      "parent": "azure.cluster.az2.system",
+      "kind": "infrastructureNode",
+      "name": "Cluster services",
+      "description": "Runs DNS, networking and storage agents.",
+      "technology": "CoreDNS / CNI / CSI",
+      "tags": "Operational"
+    },
+    {
+      "id": "azure.cluster.az2.apps",
+      "parent": "azure.cluster.az2",
+      "kind": "deploymentNode",
+      "name": "Application node pool",
+      "description": "Member pods; surviving zones retain spare recovery capacity.",
+      "technology": "AKS Linux nodes",
+      "tags": ""
+    },
+    {
+      "id": "azure.cluster.az2.data",
+      "parent": "azure.cluster.az2",
+      "kind": "deploymentNode",
+      "name": "Stateful node pool",
+      "description": "PostgreSQL and Besu; node anti-affinity separates replicas.",
+      "technology": "AKS Linux nodes",
+      "tags": ""
+    },
+    {
+      "id": "azure.cluster.az2.apps.gateway",
+      "parent": "azure.cluster.az2.apps",
+      "kind": "deploymentNode",
+      "name": "Ingress pod",
+      "description": "Routes API requests and passes peer TLS through unchanged.",
+      "technology": "Kubernetes Deployment",
+      "tags": ""
+    },
+    {
+      "id": "azure.cluster.az2.apps.gateway.instance",
+      "parent": "azure.cluster.az2.apps.gateway",
+      "kind": "containerInstance",
+      "container": "ops.gateway",
+      "owner": "consortium",
+      "zone": "2",
+      "role": "active",
+      "deployment_groups": [
+        "memberA",
+        "memberB",
+        "memberC",
+        "blockchain"
+      ]
+    },
+    {
+      "id": "azure.cluster.az2.apps.cnpg",
+      "parent": "azure.cluster.az2.apps",
+      "kind": "deploymentNode",
+      "name": "cnpg pod",
+      "description": "Operational replicas are spread across zones.",
+      "technology": "Kubernetes Deployment",
+      "tags": ""
+    },
+    {
+      "id": "azure.cluster.az2.apps.cnpg.instance",
+      "parent": "azure.cluster.az2.apps.cnpg",
+      "kind": "containerInstance",
+      "container": "ops.cnpg",
+      "owner": "consortium",
+      "zone": "2",
+      "role": "active",
+      "deployment_groups": [
+        "memberA",
+        "memberB",
+        "memberC",
+        "blockchain"
+      ]
+    },
+    {
+      "id": "azure.cluster.az2.apps.prometheus",
+      "parent": "azure.cluster.az2.apps",
+      "kind": "deploymentNode",
+      "name": "prometheus pod",
+      "description": "Operational replicas are spread across zones.",
+      "technology": "Kubernetes Deployment",
+      "tags": ""
+    },
+    {
+      "id": "azure.cluster.az2.apps.prometheus.instance",
+      "parent": "azure.cluster.az2.apps.prometheus",
+      "kind": "containerInstance",
+      "container": "ops.prometheus",
+      "owner": "consortium",
+      "zone": "2",
+      "role": "active",
+      "deployment_groups": [
+        "memberA",
+        "memberB",
+        "memberC",
+        "blockchain"
+      ]
+    },
+    {
+      "id": "azure.cluster.az3",
+      "parent": "azure.cluster",
+      "kind": "deploymentNode",
+      "name": "Availability Zone 3",
+      "description": "Independent fault domain AZ 3.",
+      "technology": "Azure availability zone",
+      "tags": "Zone3"
+    },
+    {
+      "id": "azure.cluster.az3.system",
+      "parent": "azure.cluster.az3",
+      "kind": "deploymentNode",
+      "name": "System node pool",
+      "description": "System capacity in AZ 3.",
+      "technology": "AKS VM scale set",
+      "tags": ""
+    },
+    {
+      "id": "azure.cluster.az3.system.agent",
+      "parent": "azure.cluster.az3.system",
+      "kind": "infrastructureNode",
+      "name": "Cluster services",
+      "description": "Runs DNS, networking and storage agents.",
+      "technology": "CoreDNS / CNI / CSI",
+      "tags": "Operational"
+    },
+    {
+      "id": "azure.cluster.az3.apps",
+      "parent": "azure.cluster.az3",
+      "kind": "deploymentNode",
+      "name": "Application node pool",
+      "description": "Member pods; surviving zones retain spare recovery capacity.",
+      "technology": "AKS Linux nodes",
+      "tags": ""
+    },
+    {
+      "id": "azure.cluster.az3.data",
+      "parent": "azure.cluster.az3",
+      "kind": "deploymentNode",
+      "name": "Stateful node pool",
+      "description": "PostgreSQL and Besu; node anti-affinity separates replicas.",
+      "technology": "AKS Linux nodes",
+      "tags": ""
+    },
+    {
+      "id": "azure.cluster.az3.apps.gateway",
+      "parent": "azure.cluster.az3.apps",
+      "kind": "deploymentNode",
+      "name": "Ingress pod",
+      "description": "Routes API requests and passes peer TLS through unchanged.",
+      "technology": "Kubernetes Deployment",
+      "tags": ""
+    },
+    {
+      "id": "azure.cluster.az3.apps.gateway.instance",
+      "parent": "azure.cluster.az3.apps.gateway",
+      "kind": "containerInstance",
+      "container": "ops.gateway",
+      "owner": "consortium",
+      "zone": "3",
+      "role": "active",
+      "deployment_groups": [
+        "memberA",
+        "memberB",
+        "memberC",
+        "blockchain"
+      ]
+    },
+    {
+      "id": "azure.cluster.az3.apps.cnpg",
+      "parent": "azure.cluster.az3.apps",
+      "kind": "deploymentNode",
+      "name": "cnpg pod",
+      "description": "Operational replicas are spread across zones.",
+      "technology": "Kubernetes Deployment",
+      "tags": ""
+    },
+    {
+      "id": "azure.cluster.az3.apps.cnpg.instance",
+      "parent": "azure.cluster.az3.apps.cnpg",
+      "kind": "containerInstance",
+      "container": "ops.cnpg",
+      "owner": "consortium",
+      "zone": "3",
+      "role": "active",
+      "deployment_groups": [
+        "memberA",
+        "memberB",
+        "memberC",
+        "blockchain"
+      ]
+    },
+    {
+      "id": "azure.cluster.az3.apps.prometheus",
+      "parent": "azure.cluster.az3.apps",
+      "kind": "deploymentNode",
+      "name": "prometheus pod",
+      "description": "Operational replicas are spread across zones.",
+      "technology": "Kubernetes Deployment",
+      "tags": ""
+    },
+    {
+      "id": "azure.cluster.az3.apps.prometheus.instance",
+      "parent": "azure.cluster.az3.apps.prometheus",
+      "kind": "containerInstance",
+      "container": "ops.prometheus",
+      "owner": "consortium",
+      "zone": "3",
+      "role": "active",
+      "deployment_groups": [
+        "memberA",
+        "memberB",
+        "memberC",
+        "blockchain"
+      ]
+    },
+    {
+      "id": "azure.cluster.az1.apps.memberA",
+      "parent": "azure.cluster.az1.apps",
+      "kind": "deploymentNode",
+      "name": "Member A namespace - active services",
+      "description": "Separate identity and NetworkPolicies; restart eligible in AZ 1/2/3.",
+      "technology": "Kubernetes namespace / placement slice",
+      "tags": "MemberA"
+    },
+    {
+      "id": "azure.cluster.az1.apps.memberA.core",
+      "parent": "azure.cluster.az1.apps.memberA",
+      "kind": "deploymentNode",
+      "name": "FireFly Core pod",
+      "description": "One active member instance; fence before replacement after node loss.",
+      "technology": "Kubernetes StatefulSet",
+      "tags": ""
+    },
+    {
+      "id": "azure.cluster.az1.apps.memberA.core.instance",
+      "parent": "azure.cluster.az1.apps.memberA.core",
+      "kind": "containerInstance",
+      "container": "firefly.core",
+      "owner": "a",
+      "zone": "1",
+      "role": "active",
+      "deployment_groups": [
+        "memberA"
+      ]
+    },
+    {
+      "id": "azure.cluster.az1.apps.memberA.evm",
+      "parent": "azure.cluster.az1.apps.memberA",
+      "kind": "deploymentNode",
+      "name": "EVMConnect + FFTM pod",
+      "description": "One active member instance; fence before replacement after node loss.",
+      "technology": "Kubernetes StatefulSet",
+      "tags": ""
+    },
+    {
+      "id": "azure.cluster.az1.apps.memberA.evm.instance",
+      "parent": "azure.cluster.az1.apps.memberA.evm",
+      "kind": "containerInstance",
+      "container": "firefly.evm",
+      "owner": "a",
+      "zone": "1",
+      "role": "active",
+      "deployment_groups": [
+        "memberA"
+      ]
+    },
+    {
+      "id": "azure.cluster.az1.apps.memberA.signer",
+      "parent": "azure.cluster.az1.apps.memberA",
+      "kind": "deploymentNode",
+      "name": "FireFly Signer pod",
+      "description": "One active member instance; fence before replacement after node loss.",
+      "technology": "Kubernetes Deployment",
+      "tags": ""
+    },
+    {
+      "id": "azure.cluster.az1.apps.memberA.signer.instance",
+      "parent": "azure.cluster.az1.apps.memberA.signer",
+      "kind": "containerInstance",
+      "container": "firefly.signer",
+      "owner": "a",
+      "zone": "1",
+      "role": "active",
+      "deployment_groups": [
+        "memberA",
+        "rpcAccess"
+      ]
+    },
+    {
+      "id": "azure.cluster.az1.apps.memberA.dx",
+      "parent": "azure.cluster.az1.apps.memberA",
+      "kind": "deploymentNode",
+      "name": "HTTPS Data Exchange pod",
+      "description": "One active member instance; fence before replacement after node loss.",
+      "technology": "Kubernetes StatefulSet",
+      "tags": ""
+    },
+    {
+      "id": "azure.cluster.az1.apps.memberA.dx.instance",
+      "parent": "azure.cluster.az1.apps.memberA.dx",
+      "kind": "containerInstance",
+      "container": "firefly.dx",
+      "owner": "a",
+      "zone": "1",
+      "role": "active",
+      "deployment_groups": [
+        "memberA",
+        "privateExchange"
+      ]
+    },
+    {
+      "id": "azure.cluster.az1.apps.memberA.erc20",
+      "parent": "azure.cluster.az1.apps.memberA",
+      "kind": "deploymentNode",
+      "name": "ERC-20 / ERC-721 connector pod",
+      "description": "One active member instance; fence before replacement after node loss.",
+      "technology": "Kubernetes Deployment",
+      "tags": ""
+    },
+    {
+      "id": "azure.cluster.az1.apps.memberA.erc20.instance",
+      "parent": "azure.cluster.az1.apps.memberA.erc20",
+      "kind": "containerInstance",
+      "container": "firefly.erc20",
+      "owner": "a",
+      "zone": "1",
+      "role": "active",
+      "deployment_groups": [
+        "memberA"
+      ]
+    },
+    {
+      "id": "azure.cluster.az1.apps.memberA.erc1155",
+      "parent": "azure.cluster.az1.apps.memberA",
+      "kind": "deploymentNode",
+      "name": "ERC-1155 connector pod",
+      "description": "One active member instance; fence before replacement after node loss.",
+      "technology": "Kubernetes Deployment",
+      "tags": ""
+    },
+    {
+      "id": "azure.cluster.az1.apps.memberA.erc1155.instance",
+      "parent": "azure.cluster.az1.apps.memberA.erc1155",
+      "kind": "containerInstance",
+      "container": "firefly.erc1155",
+      "owner": "a",
+      "zone": "1",
+      "role": "active",
+      "deployment_groups": [
+        "memberA"
+      ]
+    },
+    {
+      "id": "azure.cluster.az1.apps.memberA.ipfs",
+      "parent": "azure.cluster.az1.apps.memberA",
+      "kind": "deploymentNode",
+      "name": "IPFS Kubo pod",
+      "description": "One active member instance; fence before replacement after node loss.",
+      "technology": "Kubernetes StatefulSet",
+      "tags": ""
+    },
+    {
+      "id": "azure.cluster.az1.apps.memberA.ipfs.instance",
+      "parent": "azure.cluster.az1.apps.memberA.ipfs",
+      "kind": "containerInstance",
+      "container": "firefly.ipfs",
+      "owner": "a",
+      "zone": "1",
+      "role": "active",
+      "deployment_groups": [
+        "memberA",
+        "sharedContent"
+      ]
+    },
+    {
+      "id": "azure.cluster.az1.apps.memberA.blobs",
+      "parent": "azure.cluster.az1.apps.memberA",
+      "kind": "deploymentNode",
+      "name": "ZRS volume - Private blob and peer store",
+      "description": "Replicated across three zones; RWO; fence and detach before reattach.",
+      "technology": "Premium SSD ZRS / CSI",
+      "tags": ""
+    },
+    {
+      "id": "azure.cluster.az1.apps.memberA.blobs.store",
+      "parent": "azure.cluster.az1.apps.memberA.blobs",
+      "kind": "containerInstance",
+      "container": "firefly.blobs",
+      "owner": "a",
+      "zone": "regional",
+      "role": "persistent volume",
+      "deployment_groups": [
+        "memberA"
+      ]
+    },
+    {
+      "id": "azure.cluster.az1.apps.memberA.ipfsRepo",
+      "parent": "azure.cluster.az1.apps.memberA",
+      "kind": "deploymentNode",
+      "name": "ZRS volume - IPFS repository",
+      "description": "Replicated across three zones; RWO; fence and detach before reattach.",
+      "technology": "Premium SSD ZRS / CSI",
+      "tags": ""
+    },
+    {
+      "id": "azure.cluster.az1.apps.memberA.ipfsRepo.store",
+      "parent": "azure.cluster.az1.apps.memberA.ipfsRepo",
+      "kind": "containerInstance",
+      "container": "firefly.ipfsRepo",
+      "owner": "a",
+      "zone": "regional",
+      "role": "persistent volume",
+      "deployment_groups": [
+        "memberA"
+      ]
+    },
+    {
+      "id": "azure.cluster.az1.data.pgA",
+      "parent": "azure.cluster.az1.data",
+      "kind": "deploymentNode",
+      "name": "Member A PostgreSQL primary",
+      "description": "One instance per zone; separate Core/FFTM databases; ANY 1 synchronous standby.",
+      "technology": "CloudNativePG pod",
+      "tags": "MemberA"
+    },
+    {
+      "id": "azure.cluster.az1.data.pgA.instance",
+      "parent": "azure.cluster.az1.data.pgA",
+      "kind": "containerInstance",
+      "container": "firefly.pg",
+      "owner": "a",
+      "zone": "1",
+      "role": "primary",
+      "deployment_groups": [
+        "memberA"
+      ]
+    },
+    {
+      "id": "azure.cluster.az1.data.pgA.volume",
+      "parent": "azure.cluster.az1.data.pgA",
+      "kind": "infrastructureNode",
+      "name": "PGDATA A AZ 1",
+      "description": "Independent durable data directory for this instance.",
+      "technology": "Premium SSD ZRS / CSI",
+      "tags": "Database"
+    },
+    {
+      "id": "azure.cluster.az2.data.pgA",
+      "parent": "azure.cluster.az2.data",
+      "kind": "deploymentNode",
+      "name": "Member A PostgreSQL standby",
+      "description": "One instance per zone; separate Core/FFTM databases; ANY 1 synchronous standby.",
+      "technology": "CloudNativePG pod",
+      "tags": "MemberA"
+    },
+    {
+      "id": "azure.cluster.az2.data.pgA.instance",
+      "parent": "azure.cluster.az2.data.pgA",
+      "kind": "containerInstance",
+      "container": "firefly.pgReplica",
+      "owner": "a",
+      "zone": "2",
+      "role": "standby",
+      "deployment_groups": [
+        "memberA"
+      ]
+    },
+    {
+      "id": "azure.cluster.az2.data.pgA.volume",
+      "parent": "azure.cluster.az2.data.pgA",
+      "kind": "infrastructureNode",
+      "name": "PGDATA A AZ 2",
+      "description": "Independent durable data directory for this instance.",
+      "technology": "Premium SSD ZRS / CSI",
+      "tags": "Database"
+    },
+    {
+      "id": "azure.cluster.az3.data.pgA",
+      "parent": "azure.cluster.az3.data",
+      "kind": "deploymentNode",
+      "name": "Member A PostgreSQL standby",
+      "description": "One instance per zone; separate Core/FFTM databases; ANY 1 synchronous standby.",
+      "technology": "CloudNativePG pod",
+      "tags": "MemberA"
+    },
+    {
+      "id": "azure.cluster.az3.data.pgA.instance",
+      "parent": "azure.cluster.az3.data.pgA",
+      "kind": "containerInstance",
+      "container": "firefly.pgReplica",
+      "owner": "a",
+      "zone": "3",
+      "role": "standby",
+      "deployment_groups": [
+        "memberA"
+      ]
+    },
+    {
+      "id": "azure.cluster.az3.data.pgA.volume",
+      "parent": "azure.cluster.az3.data.pgA",
+      "kind": "infrastructureNode",
+      "name": "PGDATA A AZ 3",
+      "description": "Independent durable data directory for this instance.",
+      "technology": "Premium SSD ZRS / CSI",
+      "tags": "Database"
+    },
+    {
+      "id": "azure.cluster.az2.apps.memberB",
+      "parent": "azure.cluster.az2.apps",
+      "kind": "deploymentNode",
+      "name": "Member B namespace - active services",
+      "description": "Separate identity and NetworkPolicies; restart eligible in AZ 1/2/3.",
+      "technology": "Kubernetes namespace / placement slice",
+      "tags": "MemberB"
+    },
+    {
+      "id": "azure.cluster.az2.apps.memberB.core",
+      "parent": "azure.cluster.az2.apps.memberB",
+      "kind": "deploymentNode",
+      "name": "FireFly Core pod",
+      "description": "One active member instance; fence before replacement after node loss.",
+      "technology": "Kubernetes StatefulSet",
+      "tags": ""
+    },
+    {
+      "id": "azure.cluster.az2.apps.memberB.core.instance",
+      "parent": "azure.cluster.az2.apps.memberB.core",
+      "kind": "containerInstance",
+      "container": "firefly.core",
+      "owner": "b",
+      "zone": "2",
+      "role": "active",
+      "deployment_groups": [
+        "memberB"
+      ]
+    },
+    {
+      "id": "azure.cluster.az2.apps.memberB.evm",
+      "parent": "azure.cluster.az2.apps.memberB",
+      "kind": "deploymentNode",
+      "name": "EVMConnect + FFTM pod",
+      "description": "One active member instance; fence before replacement after node loss.",
+      "technology": "Kubernetes StatefulSet",
+      "tags": ""
+    },
+    {
+      "id": "azure.cluster.az2.apps.memberB.evm.instance",
+      "parent": "azure.cluster.az2.apps.memberB.evm",
+      "kind": "containerInstance",
+      "container": "firefly.evm",
+      "owner": "b",
+      "zone": "2",
+      "role": "active",
+      "deployment_groups": [
+        "memberB"
+      ]
+    },
+    {
+      "id": "azure.cluster.az2.apps.memberB.signer",
+      "parent": "azure.cluster.az2.apps.memberB",
+      "kind": "deploymentNode",
+      "name": "FireFly Signer pod",
+      "description": "One active member instance; fence before replacement after node loss.",
+      "technology": "Kubernetes Deployment",
+      "tags": ""
+    },
+    {
+      "id": "azure.cluster.az2.apps.memberB.signer.instance",
+      "parent": "azure.cluster.az2.apps.memberB.signer",
+      "kind": "containerInstance",
+      "container": "firefly.signer",
+      "owner": "b",
+      "zone": "2",
+      "role": "active",
+      "deployment_groups": [
+        "memberB",
+        "rpcAccess"
+      ]
+    },
+    {
+      "id": "azure.cluster.az2.apps.memberB.dx",
+      "parent": "azure.cluster.az2.apps.memberB",
+      "kind": "deploymentNode",
+      "name": "HTTPS Data Exchange pod",
+      "description": "One active member instance; fence before replacement after node loss.",
+      "technology": "Kubernetes StatefulSet",
+      "tags": ""
+    },
+    {
+      "id": "azure.cluster.az2.apps.memberB.dx.instance",
+      "parent": "azure.cluster.az2.apps.memberB.dx",
+      "kind": "containerInstance",
+      "container": "firefly.dx",
+      "owner": "b",
+      "zone": "2",
+      "role": "active",
+      "deployment_groups": [
+        "memberB",
+        "privateExchange"
+      ]
+    },
+    {
+      "id": "azure.cluster.az2.apps.memberB.erc20",
+      "parent": "azure.cluster.az2.apps.memberB",
+      "kind": "deploymentNode",
+      "name": "ERC-20 / ERC-721 connector pod",
+      "description": "One active member instance; fence before replacement after node loss.",
+      "technology": "Kubernetes Deployment",
+      "tags": ""
+    },
+    {
+      "id": "azure.cluster.az2.apps.memberB.erc20.instance",
+      "parent": "azure.cluster.az2.apps.memberB.erc20",
+      "kind": "containerInstance",
+      "container": "firefly.erc20",
+      "owner": "b",
+      "zone": "2",
+      "role": "active",
+      "deployment_groups": [
+        "memberB"
+      ]
+    },
+    {
+      "id": "azure.cluster.az2.apps.memberB.erc1155",
+      "parent": "azure.cluster.az2.apps.memberB",
+      "kind": "deploymentNode",
+      "name": "ERC-1155 connector pod",
+      "description": "One active member instance; fence before replacement after node loss.",
+      "technology": "Kubernetes Deployment",
+      "tags": ""
+    },
+    {
+      "id": "azure.cluster.az2.apps.memberB.erc1155.instance",
+      "parent": "azure.cluster.az2.apps.memberB.erc1155",
+      "kind": "containerInstance",
+      "container": "firefly.erc1155",
+      "owner": "b",
+      "zone": "2",
+      "role": "active",
+      "deployment_groups": [
+        "memberB"
+      ]
+    },
+    {
+      "id": "azure.cluster.az2.apps.memberB.ipfs",
+      "parent": "azure.cluster.az2.apps.memberB",
+      "kind": "deploymentNode",
+      "name": "IPFS Kubo pod",
+      "description": "One active member instance; fence before replacement after node loss.",
+      "technology": "Kubernetes StatefulSet",
+      "tags": ""
+    },
+    {
+      "id": "azure.cluster.az2.apps.memberB.ipfs.instance",
+      "parent": "azure.cluster.az2.apps.memberB.ipfs",
+      "kind": "containerInstance",
+      "container": "firefly.ipfs",
+      "owner": "b",
+      "zone": "2",
+      "role": "active",
+      "deployment_groups": [
+        "memberB",
+        "sharedContent"
+      ]
+    },
+    {
+      "id": "azure.cluster.az2.apps.memberB.blobs",
+      "parent": "azure.cluster.az2.apps.memberB",
+      "kind": "deploymentNode",
+      "name": "ZRS volume - Private blob and peer store",
+      "description": "Replicated across three zones; RWO; fence and detach before reattach.",
+      "technology": "Premium SSD ZRS / CSI",
+      "tags": ""
+    },
+    {
+      "id": "azure.cluster.az2.apps.memberB.blobs.store",
+      "parent": "azure.cluster.az2.apps.memberB.blobs",
+      "kind": "containerInstance",
+      "container": "firefly.blobs",
+      "owner": "b",
+      "zone": "regional",
+      "role": "persistent volume",
+      "deployment_groups": [
+        "memberB"
+      ]
+    },
+    {
+      "id": "azure.cluster.az2.apps.memberB.ipfsRepo",
+      "parent": "azure.cluster.az2.apps.memberB",
+      "kind": "deploymentNode",
+      "name": "ZRS volume - IPFS repository",
+      "description": "Replicated across three zones; RWO; fence and detach before reattach.",
+      "technology": "Premium SSD ZRS / CSI",
+      "tags": ""
+    },
+    {
+      "id": "azure.cluster.az2.apps.memberB.ipfsRepo.store",
+      "parent": "azure.cluster.az2.apps.memberB.ipfsRepo",
+      "kind": "containerInstance",
+      "container": "firefly.ipfsRepo",
+      "owner": "b",
+      "zone": "regional",
+      "role": "persistent volume",
+      "deployment_groups": [
+        "memberB"
+      ]
+    },
+    {
+      "id": "azure.cluster.az1.data.pgB",
+      "parent": "azure.cluster.az1.data",
+      "kind": "deploymentNode",
+      "name": "Member B PostgreSQL standby",
+      "description": "One instance per zone; separate Core/FFTM databases; ANY 1 synchronous standby.",
+      "technology": "CloudNativePG pod",
+      "tags": "MemberB"
+    },
+    {
+      "id": "azure.cluster.az1.data.pgB.instance",
+      "parent": "azure.cluster.az1.data.pgB",
+      "kind": "containerInstance",
+      "container": "firefly.pgReplica",
+      "owner": "b",
+      "zone": "1",
+      "role": "standby",
+      "deployment_groups": [
+        "memberB"
+      ]
+    },
+    {
+      "id": "azure.cluster.az1.data.pgB.volume",
+      "parent": "azure.cluster.az1.data.pgB",
+      "kind": "infrastructureNode",
+      "name": "PGDATA B AZ 1",
+      "description": "Independent durable data directory for this instance.",
+      "technology": "Premium SSD ZRS / CSI",
+      "tags": "Database"
+    },
+    {
+      "id": "azure.cluster.az2.data.pgB",
+      "parent": "azure.cluster.az2.data",
+      "kind": "deploymentNode",
+      "name": "Member B PostgreSQL primary",
+      "description": "One instance per zone; separate Core/FFTM databases; ANY 1 synchronous standby.",
+      "technology": "CloudNativePG pod",
+      "tags": "MemberB"
+    },
+    {
+      "id": "azure.cluster.az2.data.pgB.instance",
+      "parent": "azure.cluster.az2.data.pgB",
+      "kind": "containerInstance",
+      "container": "firefly.pg",
+      "owner": "b",
+      "zone": "2",
+      "role": "primary",
+      "deployment_groups": [
+        "memberB"
+      ]
+    },
+    {
+      "id": "azure.cluster.az2.data.pgB.volume",
+      "parent": "azure.cluster.az2.data.pgB",
+      "kind": "infrastructureNode",
+      "name": "PGDATA B AZ 2",
+      "description": "Independent durable data directory for this instance.",
+      "technology": "Premium SSD ZRS / CSI",
+      "tags": "Database"
+    },
+    {
+      "id": "azure.cluster.az3.data.pgB",
+      "parent": "azure.cluster.az3.data",
+      "kind": "deploymentNode",
+      "name": "Member B PostgreSQL standby",
+      "description": "One instance per zone; separate Core/FFTM databases; ANY 1 synchronous standby.",
+      "technology": "CloudNativePG pod",
+      "tags": "MemberB"
+    },
+    {
+      "id": "azure.cluster.az3.data.pgB.instance",
+      "parent": "azure.cluster.az3.data.pgB",
+      "kind": "containerInstance",
+      "container": "firefly.pgReplica",
+      "owner": "b",
+      "zone": "3",
+      "role": "standby",
+      "deployment_groups": [
+        "memberB"
+      ]
+    },
+    {
+      "id": "azure.cluster.az3.data.pgB.volume",
+      "parent": "azure.cluster.az3.data.pgB",
+      "kind": "infrastructureNode",
+      "name": "PGDATA B AZ 3",
+      "description": "Independent durable data directory for this instance.",
+      "technology": "Premium SSD ZRS / CSI",
+      "tags": "Database"
+    },
+    {
+      "id": "azure.cluster.az3.apps.memberC",
+      "parent": "azure.cluster.az3.apps",
+      "kind": "deploymentNode",
+      "name": "Member C namespace - active services",
+      "description": "Separate identity and NetworkPolicies; restart eligible in AZ 1/2/3.",
+      "technology": "Kubernetes namespace / placement slice",
+      "tags": "MemberC"
+    },
+    {
+      "id": "azure.cluster.az3.apps.memberC.core",
+      "parent": "azure.cluster.az3.apps.memberC",
+      "kind": "deploymentNode",
+      "name": "FireFly Core pod",
+      "description": "One active member instance; fence before replacement after node loss.",
+      "technology": "Kubernetes StatefulSet",
+      "tags": ""
+    },
+    {
+      "id": "azure.cluster.az3.apps.memberC.core.instance",
+      "parent": "azure.cluster.az3.apps.memberC.core",
+      "kind": "containerInstance",
+      "container": "firefly.core",
+      "owner": "c",
+      "zone": "3",
+      "role": "active",
+      "deployment_groups": [
+        "memberC"
+      ]
+    },
+    {
+      "id": "azure.cluster.az3.apps.memberC.evm",
+      "parent": "azure.cluster.az3.apps.memberC",
+      "kind": "deploymentNode",
+      "name": "EVMConnect + FFTM pod",
+      "description": "One active member instance; fence before replacement after node loss.",
+      "technology": "Kubernetes StatefulSet",
+      "tags": ""
+    },
+    {
+      "id": "azure.cluster.az3.apps.memberC.evm.instance",
+      "parent": "azure.cluster.az3.apps.memberC.evm",
+      "kind": "containerInstance",
+      "container": "firefly.evm",
+      "owner": "c",
+      "zone": "3",
+      "role": "active",
+      "deployment_groups": [
+        "memberC"
+      ]
+    },
+    {
+      "id": "azure.cluster.az3.apps.memberC.signer",
+      "parent": "azure.cluster.az3.apps.memberC",
+      "kind": "deploymentNode",
+      "name": "FireFly Signer pod",
+      "description": "One active member instance; fence before replacement after node loss.",
+      "technology": "Kubernetes Deployment",
+      "tags": ""
+    },
+    {
+      "id": "azure.cluster.az3.apps.memberC.signer.instance",
+      "parent": "azure.cluster.az3.apps.memberC.signer",
+      "kind": "containerInstance",
+      "container": "firefly.signer",
+      "owner": "c",
+      "zone": "3",
+      "role": "active",
+      "deployment_groups": [
+        "memberC",
+        "rpcAccess"
+      ]
+    },
+    {
+      "id": "azure.cluster.az3.apps.memberC.dx",
+      "parent": "azure.cluster.az3.apps.memberC",
+      "kind": "deploymentNode",
+      "name": "HTTPS Data Exchange pod",
+      "description": "One active member instance; fence before replacement after node loss.",
+      "technology": "Kubernetes StatefulSet",
+      "tags": ""
+    },
+    {
+      "id": "azure.cluster.az3.apps.memberC.dx.instance",
+      "parent": "azure.cluster.az3.apps.memberC.dx",
+      "kind": "containerInstance",
+      "container": "firefly.dx",
+      "owner": "c",
+      "zone": "3",
+      "role": "active",
+      "deployment_groups": [
+        "memberC",
+        "privateExchange"
+      ]
+    },
+    {
+      "id": "azure.cluster.az3.apps.memberC.erc20",
+      "parent": "azure.cluster.az3.apps.memberC",
+      "kind": "deploymentNode",
+      "name": "ERC-20 / ERC-721 connector pod",
+      "description": "One active member instance; fence before replacement after node loss.",
+      "technology": "Kubernetes Deployment",
+      "tags": ""
+    },
+    {
+      "id": "azure.cluster.az3.apps.memberC.erc20.instance",
+      "parent": "azure.cluster.az3.apps.memberC.erc20",
+      "kind": "containerInstance",
+      "container": "firefly.erc20",
+      "owner": "c",
+      "zone": "3",
+      "role": "active",
+      "deployment_groups": [
+        "memberC"
+      ]
+    },
+    {
+      "id": "azure.cluster.az3.apps.memberC.erc1155",
+      "parent": "azure.cluster.az3.apps.memberC",
+      "kind": "deploymentNode",
+      "name": "ERC-1155 connector pod",
+      "description": "One active member instance; fence before replacement after node loss.",
+      "technology": "Kubernetes Deployment",
+      "tags": ""
+    },
+    {
+      "id": "azure.cluster.az3.apps.memberC.erc1155.instance",
+      "parent": "azure.cluster.az3.apps.memberC.erc1155",
+      "kind": "containerInstance",
+      "container": "firefly.erc1155",
+      "owner": "c",
+      "zone": "3",
+      "role": "active",
+      "deployment_groups": [
+        "memberC"
+      ]
+    },
+    {
+      "id": "azure.cluster.az3.apps.memberC.ipfs",
+      "parent": "azure.cluster.az3.apps.memberC",
+      "kind": "deploymentNode",
+      "name": "IPFS Kubo pod",
+      "description": "One active member instance; fence before replacement after node loss.",
+      "technology": "Kubernetes StatefulSet",
+      "tags": ""
+    },
+    {
+      "id": "azure.cluster.az3.apps.memberC.ipfs.instance",
+      "parent": "azure.cluster.az3.apps.memberC.ipfs",
+      "kind": "containerInstance",
+      "container": "firefly.ipfs",
+      "owner": "c",
+      "zone": "3",
+      "role": "active",
+      "deployment_groups": [
+        "memberC",
+        "sharedContent"
+      ]
+    },
+    {
+      "id": "azure.cluster.az3.apps.memberC.blobs",
+      "parent": "azure.cluster.az3.apps.memberC",
+      "kind": "deploymentNode",
+      "name": "ZRS volume - Private blob and peer store",
+      "description": "Replicated across three zones; RWO; fence and detach before reattach.",
+      "technology": "Premium SSD ZRS / CSI",
+      "tags": ""
+    },
+    {
+      "id": "azure.cluster.az3.apps.memberC.blobs.store",
+      "parent": "azure.cluster.az3.apps.memberC.blobs",
+      "kind": "containerInstance",
+      "container": "firefly.blobs",
+      "owner": "c",
+      "zone": "regional",
+      "role": "persistent volume",
+      "deployment_groups": [
+        "memberC"
+      ]
+    },
+    {
+      "id": "azure.cluster.az3.apps.memberC.ipfsRepo",
+      "parent": "azure.cluster.az3.apps.memberC",
+      "kind": "deploymentNode",
+      "name": "ZRS volume - IPFS repository",
+      "description": "Replicated across three zones; RWO; fence and detach before reattach.",
+      "technology": "Premium SSD ZRS / CSI",
+      "tags": ""
+    },
+    {
+      "id": "azure.cluster.az3.apps.memberC.ipfsRepo.store",
+      "parent": "azure.cluster.az3.apps.memberC.ipfsRepo",
+      "kind": "containerInstance",
+      "container": "firefly.ipfsRepo",
+      "owner": "c",
+      "zone": "regional",
+      "role": "persistent volume",
+      "deployment_groups": [
+        "memberC"
+      ]
+    },
+    {
+      "id": "azure.cluster.az1.data.pgC",
+      "parent": "azure.cluster.az1.data",
+      "kind": "deploymentNode",
+      "name": "Member C PostgreSQL standby",
+      "description": "One instance per zone; separate Core/FFTM databases; ANY 1 synchronous standby.",
+      "technology": "CloudNativePG pod",
+      "tags": "MemberC"
+    },
+    {
+      "id": "azure.cluster.az1.data.pgC.instance",
+      "parent": "azure.cluster.az1.data.pgC",
+      "kind": "containerInstance",
+      "container": "firefly.pgReplica",
+      "owner": "c",
+      "zone": "1",
+      "role": "standby",
+      "deployment_groups": [
+        "memberC"
+      ]
+    },
+    {
+      "id": "azure.cluster.az1.data.pgC.volume",
+      "parent": "azure.cluster.az1.data.pgC",
+      "kind": "infrastructureNode",
+      "name": "PGDATA C AZ 1",
+      "description": "Independent durable data directory for this instance.",
+      "technology": "Premium SSD ZRS / CSI",
+      "tags": "Database"
+    },
+    {
+      "id": "azure.cluster.az2.data.pgC",
+      "parent": "azure.cluster.az2.data",
+      "kind": "deploymentNode",
+      "name": "Member C PostgreSQL standby",
+      "description": "One instance per zone; separate Core/FFTM databases; ANY 1 synchronous standby.",
+      "technology": "CloudNativePG pod",
+      "tags": "MemberC"
+    },
+    {
+      "id": "azure.cluster.az2.data.pgC.instance",
+      "parent": "azure.cluster.az2.data.pgC",
+      "kind": "containerInstance",
+      "container": "firefly.pgReplica",
+      "owner": "c",
+      "zone": "2",
+      "role": "standby",
+      "deployment_groups": [
+        "memberC"
+      ]
+    },
+    {
+      "id": "azure.cluster.az2.data.pgC.volume",
+      "parent": "azure.cluster.az2.data.pgC",
+      "kind": "infrastructureNode",
+      "name": "PGDATA C AZ 2",
+      "description": "Independent durable data directory for this instance.",
+      "technology": "Premium SSD ZRS / CSI",
+      "tags": "Database"
+    },
+    {
+      "id": "azure.cluster.az3.data.pgC",
+      "parent": "azure.cluster.az3.data",
+      "kind": "deploymentNode",
+      "name": "Member C PostgreSQL primary",
+      "description": "One instance per zone; separate Core/FFTM databases; ANY 1 synchronous standby.",
+      "technology": "CloudNativePG pod",
+      "tags": "MemberC"
+    },
+    {
+      "id": "azure.cluster.az3.data.pgC.instance",
+      "parent": "azure.cluster.az3.data.pgC",
+      "kind": "containerInstance",
+      "container": "firefly.pg",
+      "owner": "c",
+      "zone": "3",
+      "role": "primary",
+      "deployment_groups": [
+        "memberC"
+      ]
+    },
+    {
+      "id": "azure.cluster.az3.data.pgC.volume",
+      "parent": "azure.cluster.az3.data.pgC",
+      "kind": "infrastructureNode",
+      "name": "PGDATA C AZ 3",
+      "description": "Independent durable data directory for this instance.",
+      "technology": "Premium SSD ZRS / CSI",
+      "tags": "Database"
+    },
+    {
+      "id": "azure.cluster.az1.data.besua1",
+      "parent": "azure.cluster.az1.data",
+      "kind": "deploymentNode",
+      "name": "Besu A1 validator pod",
+      "description": "Unique node key and data directory; node anti-affinity; private P2P.",
+      "technology": "Kubernetes StatefulSet",
+      "tags": "Blockchain"
+    },
+    {
+      "id": "azure.cluster.az1.data.besua1.instance",
+      "parent": "azure.cluster.az1.data.besua1",
+      "kind": "containerInstance",
+      "container": "besu.node",
+      "owner": "a",
+      "zone": "1",
+      "role": "validator",
+      "deployment_groups": [
+        "blockchain"
+      ]
+    },
+    {
+      "id": "azure.cluster.az1.data.besua1.volume",
+      "parent": "azure.cluster.az1.data.besua1",
+      "kind": "infrastructureNode",
+      "name": "Besu ledger A1",
+      "description": "Dedicated node data, retained during replacement.",
+      "technology": "Premium SSD ZRS / CSI",
+      "tags": "Database"
+    },
+    {
+      "id": "azure.cluster.az1.data.besub1",
+      "parent": "azure.cluster.az1.data",
+      "kind": "deploymentNode",
+      "name": "Besu B1 validator pod",
+      "description": "Unique node key and data directory; node anti-affinity; private P2P.",
+      "technology": "Kubernetes StatefulSet",
+      "tags": "Blockchain"
+    },
+    {
+      "id": "azure.cluster.az1.data.besub1.instance",
+      "parent": "azure.cluster.az1.data.besub1",
+      "kind": "containerInstance",
+      "container": "besu.node",
+      "owner": "b",
+      "zone": "1",
+      "role": "validator",
+      "deployment_groups": [
+        "blockchain"
+      ]
+    },
+    {
+      "id": "azure.cluster.az1.data.besub1.volume",
+      "parent": "azure.cluster.az1.data.besub1",
+      "kind": "infrastructureNode",
+      "name": "Besu ledger B1",
+      "description": "Dedicated node data, retained during replacement.",
+      "technology": "Premium SSD ZRS / CSI",
+      "tags": "Database"
+    },
+    {
+      "id": "azure.cluster.az2.data.besub2",
+      "parent": "azure.cluster.az2.data",
+      "kind": "deploymentNode",
+      "name": "Besu B2 validator pod",
+      "description": "Unique node key and data directory; node anti-affinity; private P2P.",
+      "technology": "Kubernetes StatefulSet",
+      "tags": "Blockchain"
+    },
+    {
+      "id": "azure.cluster.az2.data.besub2.instance",
+      "parent": "azure.cluster.az2.data.besub2",
+      "kind": "containerInstance",
+      "container": "besu.node",
+      "owner": "b",
+      "zone": "2",
+      "role": "validator",
+      "deployment_groups": [
+        "blockchain"
+      ]
+    },
+    {
+      "id": "azure.cluster.az2.data.besub2.volume",
+      "parent": "azure.cluster.az2.data.besub2",
+      "kind": "infrastructureNode",
+      "name": "Besu ledger B2",
+      "description": "Dedicated node data, retained during replacement.",
+      "technology": "Premium SSD ZRS / CSI",
+      "tags": "Database"
+    },
+    {
+      "id": "azure.cluster.az2.data.besuc1",
+      "parent": "azure.cluster.az2.data",
+      "kind": "deploymentNode",
+      "name": "Besu C1 validator pod",
+      "description": "Unique node key and data directory; node anti-affinity; private P2P.",
+      "technology": "Kubernetes StatefulSet",
+      "tags": "Blockchain"
+    },
+    {
+      "id": "azure.cluster.az2.data.besuc1.instance",
+      "parent": "azure.cluster.az2.data.besuc1",
+      "kind": "containerInstance",
+      "container": "besu.node",
+      "owner": "c",
+      "zone": "2",
+      "role": "validator",
+      "deployment_groups": [
+        "blockchain"
+      ]
+    },
+    {
+      "id": "azure.cluster.az2.data.besuc1.volume",
+      "parent": "azure.cluster.az2.data.besuc1",
+      "kind": "infrastructureNode",
+      "name": "Besu ledger C1",
+      "description": "Dedicated node data, retained during replacement.",
+      "technology": "Premium SSD ZRS / CSI",
+      "tags": "Database"
+    },
+    {
+      "id": "azure.cluster.az3.data.besuc2",
+      "parent": "azure.cluster.az3.data",
+      "kind": "deploymentNode",
+      "name": "Besu C2 validator pod",
+      "description": "Unique node key and data directory; node anti-affinity; private P2P.",
+      "technology": "Kubernetes StatefulSet",
+      "tags": "Blockchain"
+    },
+    {
+      "id": "azure.cluster.az3.data.besuc2.instance",
+      "parent": "azure.cluster.az3.data.besuc2",
+      "kind": "containerInstance",
+      "container": "besu.node",
+      "owner": "c",
+      "zone": "3",
+      "role": "validator",
+      "deployment_groups": [
+        "blockchain"
+      ]
+    },
+    {
+      "id": "azure.cluster.az3.data.besuc2.volume",
+      "parent": "azure.cluster.az3.data.besuc2",
+      "kind": "infrastructureNode",
+      "name": "Besu ledger C2",
+      "description": "Dedicated node data, retained during replacement.",
+      "technology": "Premium SSD ZRS / CSI",
+      "tags": "Database"
+    },
+    {
+      "id": "azure.cluster.az3.data.besua2",
+      "parent": "azure.cluster.az3.data",
+      "kind": "deploymentNode",
+      "name": "Besu A2 validator pod",
+      "description": "Unique node key and data directory; node anti-affinity; private P2P.",
+      "technology": "Kubernetes StatefulSet",
+      "tags": "Blockchain"
+    },
+    {
+      "id": "azure.cluster.az3.data.besua2.instance",
+      "parent": "azure.cluster.az3.data.besua2",
+      "kind": "containerInstance",
+      "container": "besu.node",
+      "owner": "a",
+      "zone": "3",
+      "role": "validator",
+      "deployment_groups": [
+        "blockchain"
+      ]
+    },
+    {
+      "id": "azure.cluster.az3.data.besua2.volume",
+      "parent": "azure.cluster.az3.data.besua2",
+      "kind": "infrastructureNode",
+      "name": "Besu ledger A2",
+      "description": "Dedicated node data, retained during replacement.",
+      "technology": "Premium SSD ZRS / CSI",
+      "tags": "Database"
+    },
+    {
+      "id": "azure.cluster.az1.data.besurpc1",
+      "parent": "azure.cluster.az1.data",
+      "kind": "deploymentNode",
+      "name": "Besu RPC1 RPC pod",
+      "description": "Unique node key and data directory; node anti-affinity; private P2P.",
+      "technology": "Kubernetes StatefulSet",
+      "tags": "Blockchain"
+    },
+    {
+      "id": "azure.cluster.az1.data.besurpc1.instance",
+      "parent": "azure.cluster.az1.data.besurpc1",
+      "kind": "containerInstance",
+      "container": "besu.node",
+      "owner": "consortium",
+      "zone": "1",
+      "role": "rpc and bootnode",
+      "deployment_groups": [
+        "blockchain",
+        "rpcAccess"
+      ]
+    },
+    {
+      "id": "azure.cluster.az1.data.besurpc1.volume",
+      "parent": "azure.cluster.az1.data.besurpc1",
+      "kind": "infrastructureNode",
+      "name": "Besu ledger RPC1",
+      "description": "Dedicated node data, retained during replacement.",
+      "technology": "Premium SSD ZRS / CSI",
+      "tags": "Database"
+    },
+    {
+      "id": "azure.cluster.az2.data.besurpc2",
+      "parent": "azure.cluster.az2.data",
+      "kind": "deploymentNode",
+      "name": "Besu RPC2 RPC pod",
+      "description": "Unique node key and data directory; node anti-affinity; private P2P.",
+      "technology": "Kubernetes StatefulSet",
+      "tags": "Blockchain"
+    },
+    {
+      "id": "azure.cluster.az2.data.besurpc2.instance",
+      "parent": "azure.cluster.az2.data.besurpc2",
+      "kind": "containerInstance",
+      "container": "besu.node",
+      "owner": "consortium",
+      "zone": "2",
+      "role": "rpc",
+      "deployment_groups": [
+        "blockchain",
+        "rpcAccess"
+      ]
+    },
+    {
+      "id": "azure.cluster.az2.data.besurpc2.volume",
+      "parent": "azure.cluster.az2.data.besurpc2",
+      "kind": "infrastructureNode",
+      "name": "Besu ledger RPC2",
+      "description": "Dedicated node data, retained during replacement.",
+      "technology": "Premium SSD ZRS / CSI",
+      "tags": "Database"
+    },
+    {
+      "id": "azure.cluster.az3.data.besurpc3",
+      "parent": "azure.cluster.az3.data",
+      "kind": "deploymentNode",
+      "name": "Besu RPC3 RPC pod",
+      "description": "Unique node key and data directory; node anti-affinity; private P2P.",
+      "technology": "Kubernetes StatefulSet",
+      "tags": "Blockchain"
+    },
+    {
+      "id": "azure.cluster.az3.data.besurpc3.instance",
+      "parent": "azure.cluster.az3.data.besurpc3",
+      "kind": "containerInstance",
+      "container": "besu.node",
+      "owner": "consortium",
+      "zone": "3",
+      "role": "rpc and bootnode",
+      "deployment_groups": [
+        "blockchain",
+        "rpcAccess"
+      ]
+    },
+    {
+      "id": "azure.cluster.az3.data.besurpc3.volume",
+      "parent": "azure.cluster.az3.data.besurpc3",
+      "kind": "infrastructureNode",
+      "name": "Besu ledger RPC3",
+      "description": "Dedicated node data, retained during replacement.",
+      "technology": "Premium SSD ZRS / CSI",
+      "tags": "Database"
+    },
+    {
+      "id": "azure.rpc",
+      "parent": "azure",
+      "kind": "infrastructureNode",
+      "name": "Private RPC Service",
+      "description": "Routes to synchronized RPC nodes; session affinity protects node-local filters.",
+      "technology": "Kubernetes Service / session affinity",
+      "tags": "Operational"
+    }
+  ],
+  "deployment_relationships": [
+    {
+      "id": "azure.control->azure.secrets:Stores and projects namespace configuration",
+      "source": "azure.control",
+      "destination": "azure.secrets",
+      "description": "Stores and projects namespace configuration",
+      "technology": "Kubernetes API / TLS",
+      "tags": "Operational"
+    },
+    {
+      "id": "azure.control->azure.csi:Reconciles volume attachments",
+      "source": "azure.control",
+      "destination": "azure.csi",
+      "description": "Reconciles volume attachments",
+      "technology": "Kubernetes API / TLS",
+      "tags": "Operational"
+    },
+    {
+      "id": "azure.control->azure.cluster.az1.system.agent:Schedules and reconciles system workloads",
+      "source": "azure.control",
+      "destination": "azure.cluster.az1.system.agent",
+      "description": "Schedules and reconciles system workloads",
+      "technology": "Kubernetes API / TLS",
+      "tags": "Operational"
+    },
+    {
+      "id": "azure.lb->azure.cluster.az1.apps.gateway.instance:Routes HTTPS and peer TLS sessions",
+      "source": "azure.lb",
+      "destination": "azure.cluster.az1.apps.gateway.instance",
+      "description": "Routes HTTPS and peer TLS sessions",
+      "technology": "TCP / TLS",
+      "tags": "Operational"
+    },
+    {
+      "id": "azure.cluster.az1.apps.cnpg.instance->azure.control:Watches clusters and updates primary Services",
+      "source": "azure.cluster.az1.apps.cnpg.instance",
+      "destination": "azure.control",
+      "description": "Watches clusters and updates primary Services",
+      "technology": "Kubernetes API / TLS",
+      "tags": "Operational"
+    },
+    {
+      "id": "azure.control->azure.cluster.az2.system.agent:Schedules and reconciles system workloads",
+      "source": "azure.control",
+      "destination": "azure.cluster.az2.system.agent",
+      "description": "Schedules and reconciles system workloads",
+      "technology": "Kubernetes API / TLS",
+      "tags": "Operational"
+    },
+    {
+      "id": "azure.lb->azure.cluster.az2.apps.gateway.instance:Routes HTTPS and peer TLS sessions",
+      "source": "azure.lb",
+      "destination": "azure.cluster.az2.apps.gateway.instance",
+      "description": "Routes HTTPS and peer TLS sessions",
+      "technology": "TCP / TLS",
+      "tags": "Operational"
+    },
+    {
+      "id": "azure.cluster.az2.apps.cnpg.instance->azure.control:Watches clusters and updates primary Services",
+      "source": "azure.cluster.az2.apps.cnpg.instance",
+      "destination": "azure.control",
+      "description": "Watches clusters and updates primary Services",
+      "technology": "Kubernetes API / TLS",
+      "tags": "Operational"
+    },
+    {
+      "id": "azure.control->azure.cluster.az3.system.agent:Schedules and reconciles system workloads",
+      "source": "azure.control",
+      "destination": "azure.cluster.az3.system.agent",
+      "description": "Schedules and reconciles system workloads",
+      "technology": "Kubernetes API / TLS",
+      "tags": "Operational"
+    },
+    {
+      "id": "azure.lb->azure.cluster.az3.apps.gateway.instance:Routes HTTPS and peer TLS sessions",
+      "source": "azure.lb",
+      "destination": "azure.cluster.az3.apps.gateway.instance",
+      "description": "Routes HTTPS and peer TLS sessions",
+      "technology": "TCP / TLS",
+      "tags": "Operational"
+    },
+    {
+      "id": "azure.cluster.az3.apps.cnpg.instance->azure.control:Watches clusters and updates primary Services",
+      "source": "azure.cluster.az3.apps.cnpg.instance",
+      "destination": "azure.control",
+      "description": "Watches clusters and updates primary Services",
+      "technology": "Kubernetes API / TLS",
+      "tags": "Operational"
+    },
+    {
+      "id": "azure.cluster.az1.apps.memberA.core.instance->azure.secrets:Reads projected member configuration",
+      "source": "azure.cluster.az1.apps.memberA.core.instance",
+      "destination": "azure.secrets",
+      "description": "Reads projected member configuration",
+      "technology": "Read-only projected files",
+      "tags": "Operational"
+    },
+    {
+      "id": "azure.cluster.az1.apps.memberA.evm.instance->azure.secrets:Reads projected member configuration",
+      "source": "azure.cluster.az1.apps.memberA.evm.instance",
+      "destination": "azure.secrets",
+      "description": "Reads projected member configuration",
+      "technology": "Read-only projected files",
+      "tags": "Operational"
+    },
+    {
+      "id": "azure.cluster.az1.apps.memberA.signer.instance->azure.secrets:Reads projected member configuration",
+      "source": "azure.cluster.az1.apps.memberA.signer.instance",
+      "destination": "azure.secrets",
+      "description": "Reads projected member configuration",
+      "technology": "Read-only projected files",
+      "tags": "Operational"
+    },
+    {
+      "id": "azure.cluster.az1.apps.memberA.dx.instance->azure.secrets:Reads projected member configuration",
+      "source": "azure.cluster.az1.apps.memberA.dx.instance",
+      "destination": "azure.secrets",
+      "description": "Reads projected member configuration",
+      "technology": "Read-only projected files",
+      "tags": "Operational"
+    },
+    {
+      "id": "azure.cluster.az1.apps.memberA.erc20.instance->azure.secrets:Reads projected member configuration",
+      "source": "azure.cluster.az1.apps.memberA.erc20.instance",
+      "destination": "azure.secrets",
+      "description": "Reads projected member configuration",
+      "technology": "Read-only projected files",
+      "tags": "Operational"
+    },
+    {
+      "id": "azure.cluster.az1.apps.memberA.erc1155.instance->azure.secrets:Reads projected member configuration",
+      "source": "azure.cluster.az1.apps.memberA.erc1155.instance",
+      "destination": "azure.secrets",
+      "description": "Reads projected member configuration",
+      "technology": "Read-only projected files",
+      "tags": "Operational"
+    },
+    {
+      "id": "azure.cluster.az1.apps.memberA.ipfs.instance->azure.secrets:Reads projected member configuration",
+      "source": "azure.cluster.az1.apps.memberA.ipfs.instance",
+      "destination": "azure.secrets",
+      "description": "Reads projected member configuration",
+      "technology": "Read-only projected files",
+      "tags": "Operational"
+    },
+    {
+      "id": "azure.csi->azure.cluster.az1.apps.memberA.blobs.store:Provisions and safely attaches member storage",
+      "source": "azure.csi",
+      "destination": "azure.cluster.az1.apps.memberA.blobs.store",
+      "description": "Provisions and safely attaches member storage",
+      "technology": "CSI / Azure ARM",
+      "tags": "Operational"
+    },
+    {
+      "id": "azure.csi->azure.cluster.az1.apps.memberA.ipfsRepo.store:Provisions and safely attaches member storage",
+      "source": "azure.csi",
+      "destination": "azure.cluster.az1.apps.memberA.ipfsRepo.store",
+      "description": "Provisions and safely attaches member storage",
+      "technology": "CSI / Azure ARM",
+      "tags": "Operational"
+    },
+    {
+      "id": "azure.cluster.az1.data.pgA.instance->azure.cluster.az1.data.pgA.volume:Reads and writes database pages and WAL",
+      "source": "azure.cluster.az1.data.pgA.instance",
+      "destination": "azure.cluster.az1.data.pgA.volume",
+      "description": "Reads and writes database pages and WAL",
+      "technology": "Filesystem I/O",
+      "tags": "Operational"
+    },
+    {
+      "id": "azure.csi->azure.cluster.az1.data.pgA.volume:Provisions a dedicated PGDATA volume",
+      "source": "azure.csi",
+      "destination": "azure.cluster.az1.data.pgA.volume",
+      "description": "Provisions a dedicated PGDATA volume",
+      "technology": "CSI / Azure ARM",
+      "tags": "Operational"
+    },
+    {
+      "id": "azure.cluster.az2.data.pgA.instance->azure.cluster.az2.data.pgA.volume:Reads and writes database pages and WAL",
+      "source": "azure.cluster.az2.data.pgA.instance",
+      "destination": "azure.cluster.az2.data.pgA.volume",
+      "description": "Reads and writes database pages and WAL",
+      "technology": "Filesystem I/O",
+      "tags": "Operational"
+    },
+    {
+      "id": "azure.csi->azure.cluster.az2.data.pgA.volume:Provisions a dedicated PGDATA volume",
+      "source": "azure.csi",
+      "destination": "azure.cluster.az2.data.pgA.volume",
+      "description": "Provisions a dedicated PGDATA volume",
+      "technology": "CSI / Azure ARM",
+      "tags": "Operational"
+    },
+    {
+      "id": "azure.cluster.az3.data.pgA.instance->azure.cluster.az3.data.pgA.volume:Reads and writes database pages and WAL",
+      "source": "azure.cluster.az3.data.pgA.instance",
+      "destination": "azure.cluster.az3.data.pgA.volume",
+      "description": "Reads and writes database pages and WAL",
+      "technology": "Filesystem I/O",
+      "tags": "Operational"
+    },
+    {
+      "id": "azure.csi->azure.cluster.az3.data.pgA.volume:Provisions a dedicated PGDATA volume",
+      "source": "azure.csi",
+      "destination": "azure.cluster.az3.data.pgA.volume",
+      "description": "Provisions a dedicated PGDATA volume",
+      "technology": "CSI / Azure ARM",
+      "tags": "Operational"
+    },
+    {
+      "id": "azure.cluster.az2.apps.memberB.core.instance->azure.secrets:Reads projected member configuration",
+      "source": "azure.cluster.az2.apps.memberB.core.instance",
+      "destination": "azure.secrets",
+      "description": "Reads projected member configuration",
+      "technology": "Read-only projected files",
+      "tags": "Operational"
+    },
+    {
+      "id": "azure.cluster.az2.apps.memberB.evm.instance->azure.secrets:Reads projected member configuration",
+      "source": "azure.cluster.az2.apps.memberB.evm.instance",
+      "destination": "azure.secrets",
+      "description": "Reads projected member configuration",
+      "technology": "Read-only projected files",
+      "tags": "Operational"
+    },
+    {
+      "id": "azure.cluster.az2.apps.memberB.signer.instance->azure.secrets:Reads projected member configuration",
+      "source": "azure.cluster.az2.apps.memberB.signer.instance",
+      "destination": "azure.secrets",
+      "description": "Reads projected member configuration",
+      "technology": "Read-only projected files",
+      "tags": "Operational"
+    },
+    {
+      "id": "azure.cluster.az2.apps.memberB.dx.instance->azure.secrets:Reads projected member configuration",
+      "source": "azure.cluster.az2.apps.memberB.dx.instance",
+      "destination": "azure.secrets",
+      "description": "Reads projected member configuration",
+      "technology": "Read-only projected files",
+      "tags": "Operational"
+    },
+    {
+      "id": "azure.cluster.az2.apps.memberB.erc20.instance->azure.secrets:Reads projected member configuration",
+      "source": "azure.cluster.az2.apps.memberB.erc20.instance",
+      "destination": "azure.secrets",
+      "description": "Reads projected member configuration",
+      "technology": "Read-only projected files",
+      "tags": "Operational"
+    },
+    {
+      "id": "azure.cluster.az2.apps.memberB.erc1155.instance->azure.secrets:Reads projected member configuration",
+      "source": "azure.cluster.az2.apps.memberB.erc1155.instance",
+      "destination": "azure.secrets",
+      "description": "Reads projected member configuration",
+      "technology": "Read-only projected files",
+      "tags": "Operational"
+    },
+    {
+      "id": "azure.cluster.az2.apps.memberB.ipfs.instance->azure.secrets:Reads projected member configuration",
+      "source": "azure.cluster.az2.apps.memberB.ipfs.instance",
+      "destination": "azure.secrets",
+      "description": "Reads projected member configuration",
+      "technology": "Read-only projected files",
+      "tags": "Operational"
+    },
+    {
+      "id": "azure.csi->azure.cluster.az2.apps.memberB.blobs.store:Provisions and safely attaches member storage",
+      "source": "azure.csi",
+      "destination": "azure.cluster.az2.apps.memberB.blobs.store",
+      "description": "Provisions and safely attaches member storage",
+      "technology": "CSI / Azure ARM",
+      "tags": "Operational"
+    },
+    {
+      "id": "azure.csi->azure.cluster.az2.apps.memberB.ipfsRepo.store:Provisions and safely attaches member storage",
+      "source": "azure.csi",
+      "destination": "azure.cluster.az2.apps.memberB.ipfsRepo.store",
+      "description": "Provisions and safely attaches member storage",
+      "technology": "CSI / Azure ARM",
+      "tags": "Operational"
+    },
+    {
+      "id": "azure.cluster.az1.data.pgB.instance->azure.cluster.az1.data.pgB.volume:Reads and writes database pages and WAL",
+      "source": "azure.cluster.az1.data.pgB.instance",
+      "destination": "azure.cluster.az1.data.pgB.volume",
+      "description": "Reads and writes database pages and WAL",
+      "technology": "Filesystem I/O",
+      "tags": "Operational"
+    },
+    {
+      "id": "azure.csi->azure.cluster.az1.data.pgB.volume:Provisions a dedicated PGDATA volume",
+      "source": "azure.csi",
+      "destination": "azure.cluster.az1.data.pgB.volume",
+      "description": "Provisions a dedicated PGDATA volume",
+      "technology": "CSI / Azure ARM",
+      "tags": "Operational"
+    },
+    {
+      "id": "azure.cluster.az2.data.pgB.instance->azure.cluster.az2.data.pgB.volume:Reads and writes database pages and WAL",
+      "source": "azure.cluster.az2.data.pgB.instance",
+      "destination": "azure.cluster.az2.data.pgB.volume",
+      "description": "Reads and writes database pages and WAL",
+      "technology": "Filesystem I/O",
+      "tags": "Operational"
+    },
+    {
+      "id": "azure.csi->azure.cluster.az2.data.pgB.volume:Provisions a dedicated PGDATA volume",
+      "source": "azure.csi",
+      "destination": "azure.cluster.az2.data.pgB.volume",
+      "description": "Provisions a dedicated PGDATA volume",
+      "technology": "CSI / Azure ARM",
+      "tags": "Operational"
+    },
+    {
+      "id": "azure.cluster.az3.data.pgB.instance->azure.cluster.az3.data.pgB.volume:Reads and writes database pages and WAL",
+      "source": "azure.cluster.az3.data.pgB.instance",
+      "destination": "azure.cluster.az3.data.pgB.volume",
+      "description": "Reads and writes database pages and WAL",
+      "technology": "Filesystem I/O",
+      "tags": "Operational"
+    },
+    {
+      "id": "azure.csi->azure.cluster.az3.data.pgB.volume:Provisions a dedicated PGDATA volume",
+      "source": "azure.csi",
+      "destination": "azure.cluster.az3.data.pgB.volume",
+      "description": "Provisions a dedicated PGDATA volume",
+      "technology": "CSI / Azure ARM",
+      "tags": "Operational"
+    },
+    {
+      "id": "azure.cluster.az3.apps.memberC.core.instance->azure.secrets:Reads projected member configuration",
+      "source": "azure.cluster.az3.apps.memberC.core.instance",
+      "destination": "azure.secrets",
+      "description": "Reads projected member configuration",
+      "technology": "Read-only projected files",
+      "tags": "Operational"
+    },
+    {
+      "id": "azure.cluster.az3.apps.memberC.evm.instance->azure.secrets:Reads projected member configuration",
+      "source": "azure.cluster.az3.apps.memberC.evm.instance",
+      "destination": "azure.secrets",
+      "description": "Reads projected member configuration",
+      "technology": "Read-only projected files",
+      "tags": "Operational"
+    },
+    {
+      "id": "azure.cluster.az3.apps.memberC.signer.instance->azure.secrets:Reads projected member configuration",
+      "source": "azure.cluster.az3.apps.memberC.signer.instance",
+      "destination": "azure.secrets",
+      "description": "Reads projected member configuration",
+      "technology": "Read-only projected files",
+      "tags": "Operational"
+    },
+    {
+      "id": "azure.cluster.az3.apps.memberC.dx.instance->azure.secrets:Reads projected member configuration",
+      "source": "azure.cluster.az3.apps.memberC.dx.instance",
+      "destination": "azure.secrets",
+      "description": "Reads projected member configuration",
+      "technology": "Read-only projected files",
+      "tags": "Operational"
+    },
+    {
+      "id": "azure.cluster.az3.apps.memberC.erc20.instance->azure.secrets:Reads projected member configuration",
+      "source": "azure.cluster.az3.apps.memberC.erc20.instance",
+      "destination": "azure.secrets",
+      "description": "Reads projected member configuration",
+      "technology": "Read-only projected files",
+      "tags": "Operational"
+    },
+    {
+      "id": "azure.cluster.az3.apps.memberC.erc1155.instance->azure.secrets:Reads projected member configuration",
+      "source": "azure.cluster.az3.apps.memberC.erc1155.instance",
+      "destination": "azure.secrets",
+      "description": "Reads projected member configuration",
+      "technology": "Read-only projected files",
+      "tags": "Operational"
+    },
+    {
+      "id": "azure.cluster.az3.apps.memberC.ipfs.instance->azure.secrets:Reads projected member configuration",
+      "source": "azure.cluster.az3.apps.memberC.ipfs.instance",
+      "destination": "azure.secrets",
+      "description": "Reads projected member configuration",
+      "technology": "Read-only projected files",
+      "tags": "Operational"
+    },
+    {
+      "id": "azure.csi->azure.cluster.az3.apps.memberC.blobs.store:Provisions and safely attaches member storage",
+      "source": "azure.csi",
+      "destination": "azure.cluster.az3.apps.memberC.blobs.store",
+      "description": "Provisions and safely attaches member storage",
+      "technology": "CSI / Azure ARM",
+      "tags": "Operational"
+    },
+    {
+      "id": "azure.csi->azure.cluster.az3.apps.memberC.ipfsRepo.store:Provisions and safely attaches member storage",
+      "source": "azure.csi",
+      "destination": "azure.cluster.az3.apps.memberC.ipfsRepo.store",
+      "description": "Provisions and safely attaches member storage",
+      "technology": "CSI / Azure ARM",
+      "tags": "Operational"
+    },
+    {
+      "id": "azure.cluster.az1.data.pgC.instance->azure.cluster.az1.data.pgC.volume:Reads and writes database pages and WAL",
+      "source": "azure.cluster.az1.data.pgC.instance",
+      "destination": "azure.cluster.az1.data.pgC.volume",
+      "description": "Reads and writes database pages and WAL",
+      "technology": "Filesystem I/O",
+      "tags": "Operational"
+    },
+    {
+      "id": "azure.csi->azure.cluster.az1.data.pgC.volume:Provisions a dedicated PGDATA volume",
+      "source": "azure.csi",
+      "destination": "azure.cluster.az1.data.pgC.volume",
+      "description": "Provisions a dedicated PGDATA volume",
+      "technology": "CSI / Azure ARM",
+      "tags": "Operational"
+    },
+    {
+      "id": "azure.cluster.az2.data.pgC.instance->azure.cluster.az2.data.pgC.volume:Reads and writes database pages and WAL",
+      "source": "azure.cluster.az2.data.pgC.instance",
+      "destination": "azure.cluster.az2.data.pgC.volume",
+      "description": "Reads and writes database pages and WAL",
+      "technology": "Filesystem I/O",
+      "tags": "Operational"
+    },
+    {
+      "id": "azure.csi->azure.cluster.az2.data.pgC.volume:Provisions a dedicated PGDATA volume",
+      "source": "azure.csi",
+      "destination": "azure.cluster.az2.data.pgC.volume",
+      "description": "Provisions a dedicated PGDATA volume",
+      "technology": "CSI / Azure ARM",
+      "tags": "Operational"
+    },
+    {
+      "id": "azure.cluster.az3.data.pgC.instance->azure.cluster.az3.data.pgC.volume:Reads and writes database pages and WAL",
+      "source": "azure.cluster.az3.data.pgC.instance",
+      "destination": "azure.cluster.az3.data.pgC.volume",
+      "description": "Reads and writes database pages and WAL",
+      "technology": "Filesystem I/O",
+      "tags": "Operational"
+    },
+    {
+      "id": "azure.csi->azure.cluster.az3.data.pgC.volume:Provisions a dedicated PGDATA volume",
+      "source": "azure.csi",
+      "destination": "azure.cluster.az3.data.pgC.volume",
+      "description": "Provisions a dedicated PGDATA volume",
+      "technology": "CSI / Azure ARM",
+      "tags": "Operational"
+    },
+    {
+      "id": "azure.cluster.az1.data.besua1.instance->azure.cluster.az1.data.besua1.volume:Persists ledger, receipts and world state",
+      "source": "azure.cluster.az1.data.besua1.instance",
+      "destination": "azure.cluster.az1.data.besua1.volume",
+      "description": "Persists ledger, receipts and world state",
+      "technology": "Filesystem I/O",
+      "tags": "Operational"
+    },
+    {
+      "id": "azure.cluster.az1.data.besua1.instance->azure.secrets:Reads its unique Besu node key",
+      "source": "azure.cluster.az1.data.besua1.instance",
+      "destination": "azure.secrets",
+      "description": "Reads its unique Besu node key",
+      "technology": "Read-only projected secret",
+      "tags": "Operational"
+    },
+    {
+      "id": "azure.csi->azure.cluster.az1.data.besua1.volume:Provisions a node-specific ledger volume",
+      "source": "azure.csi",
+      "destination": "azure.cluster.az1.data.besua1.volume",
+      "description": "Provisions a node-specific ledger volume",
+      "technology": "CSI / Azure ARM",
+      "tags": "Operational"
+    },
+    {
+      "id": "azure.cluster.az1.data.besub1.instance->azure.cluster.az1.data.besub1.volume:Persists ledger, receipts and world state",
+      "source": "azure.cluster.az1.data.besub1.instance",
+      "destination": "azure.cluster.az1.data.besub1.volume",
+      "description": "Persists ledger, receipts and world state",
+      "technology": "Filesystem I/O",
+      "tags": "Operational"
+    },
+    {
+      "id": "azure.cluster.az1.data.besub1.instance->azure.secrets:Reads its unique Besu node key",
+      "source": "azure.cluster.az1.data.besub1.instance",
+      "destination": "azure.secrets",
+      "description": "Reads its unique Besu node key",
+      "technology": "Read-only projected secret",
+      "tags": "Operational"
+    },
+    {
+      "id": "azure.csi->azure.cluster.az1.data.besub1.volume:Provisions a node-specific ledger volume",
+      "source": "azure.csi",
+      "destination": "azure.cluster.az1.data.besub1.volume",
+      "description": "Provisions a node-specific ledger volume",
+      "technology": "CSI / Azure ARM",
+      "tags": "Operational"
+    },
+    {
+      "id": "azure.cluster.az2.data.besub2.instance->azure.cluster.az2.data.besub2.volume:Persists ledger, receipts and world state",
+      "source": "azure.cluster.az2.data.besub2.instance",
+      "destination": "azure.cluster.az2.data.besub2.volume",
+      "description": "Persists ledger, receipts and world state",
+      "technology": "Filesystem I/O",
+      "tags": "Operational"
+    },
+    {
+      "id": "azure.cluster.az2.data.besub2.instance->azure.secrets:Reads its unique Besu node key",
+      "source": "azure.cluster.az2.data.besub2.instance",
+      "destination": "azure.secrets",
+      "description": "Reads its unique Besu node key",
+      "technology": "Read-only projected secret",
+      "tags": "Operational"
+    },
+    {
+      "id": "azure.csi->azure.cluster.az2.data.besub2.volume:Provisions a node-specific ledger volume",
+      "source": "azure.csi",
+      "destination": "azure.cluster.az2.data.besub2.volume",
+      "description": "Provisions a node-specific ledger volume",
+      "technology": "CSI / Azure ARM",
+      "tags": "Operational"
+    },
+    {
+      "id": "azure.cluster.az2.data.besuc1.instance->azure.cluster.az2.data.besuc1.volume:Persists ledger, receipts and world state",
+      "source": "azure.cluster.az2.data.besuc1.instance",
+      "destination": "azure.cluster.az2.data.besuc1.volume",
+      "description": "Persists ledger, receipts and world state",
+      "technology": "Filesystem I/O",
+      "tags": "Operational"
+    },
+    {
+      "id": "azure.cluster.az2.data.besuc1.instance->azure.secrets:Reads its unique Besu node key",
+      "source": "azure.cluster.az2.data.besuc1.instance",
+      "destination": "azure.secrets",
+      "description": "Reads its unique Besu node key",
+      "technology": "Read-only projected secret",
+      "tags": "Operational"
+    },
+    {
+      "id": "azure.csi->azure.cluster.az2.data.besuc1.volume:Provisions a node-specific ledger volume",
+      "source": "azure.csi",
+      "destination": "azure.cluster.az2.data.besuc1.volume",
+      "description": "Provisions a node-specific ledger volume",
+      "technology": "CSI / Azure ARM",
+      "tags": "Operational"
+    },
+    {
+      "id": "azure.cluster.az3.data.besuc2.instance->azure.cluster.az3.data.besuc2.volume:Persists ledger, receipts and world state",
+      "source": "azure.cluster.az3.data.besuc2.instance",
+      "destination": "azure.cluster.az3.data.besuc2.volume",
+      "description": "Persists ledger, receipts and world state",
+      "technology": "Filesystem I/O",
+      "tags": "Operational"
+    },
+    {
+      "id": "azure.cluster.az3.data.besuc2.instance->azure.secrets:Reads its unique Besu node key",
+      "source": "azure.cluster.az3.data.besuc2.instance",
+      "destination": "azure.secrets",
+      "description": "Reads its unique Besu node key",
+      "technology": "Read-only projected secret",
+      "tags": "Operational"
+    },
+    {
+      "id": "azure.csi->azure.cluster.az3.data.besuc2.volume:Provisions a node-specific ledger volume",
+      "source": "azure.csi",
+      "destination": "azure.cluster.az3.data.besuc2.volume",
+      "description": "Provisions a node-specific ledger volume",
+      "technology": "CSI / Azure ARM",
+      "tags": "Operational"
+    },
+    {
+      "id": "azure.cluster.az3.data.besua2.instance->azure.cluster.az3.data.besua2.volume:Persists ledger, receipts and world state",
+      "source": "azure.cluster.az3.data.besua2.instance",
+      "destination": "azure.cluster.az3.data.besua2.volume",
+      "description": "Persists ledger, receipts and world state",
+      "technology": "Filesystem I/O",
+      "tags": "Operational"
+    },
+    {
+      "id": "azure.cluster.az3.data.besua2.instance->azure.secrets:Reads its unique Besu node key",
+      "source": "azure.cluster.az3.data.besua2.instance",
+      "destination": "azure.secrets",
+      "description": "Reads its unique Besu node key",
+      "technology": "Read-only projected secret",
+      "tags": "Operational"
+    },
+    {
+      "id": "azure.csi->azure.cluster.az3.data.besua2.volume:Provisions a node-specific ledger volume",
+      "source": "azure.csi",
+      "destination": "azure.cluster.az3.data.besua2.volume",
+      "description": "Provisions a node-specific ledger volume",
+      "technology": "CSI / Azure ARM",
+      "tags": "Operational"
+    },
+    {
+      "id": "azure.cluster.az1.data.besurpc1.instance->azure.cluster.az1.data.besurpc1.volume:Persists ledger, receipts and world state",
+      "source": "azure.cluster.az1.data.besurpc1.instance",
+      "destination": "azure.cluster.az1.data.besurpc1.volume",
+      "description": "Persists ledger, receipts and world state",
+      "technology": "Filesystem I/O",
+      "tags": "Operational"
+    },
+    {
+      "id": "azure.cluster.az1.data.besurpc1.instance->azure.secrets:Reads its unique Besu node key",
+      "source": "azure.cluster.az1.data.besurpc1.instance",
+      "destination": "azure.secrets",
+      "description": "Reads its unique Besu node key",
+      "technology": "Read-only projected secret",
+      "tags": "Operational"
+    },
+    {
+      "id": "azure.csi->azure.cluster.az1.data.besurpc1.volume:Provisions a node-specific ledger volume",
+      "source": "azure.csi",
+      "destination": "azure.cluster.az1.data.besurpc1.volume",
+      "description": "Provisions a node-specific ledger volume",
+      "technology": "CSI / Azure ARM",
+      "tags": "Operational"
+    },
+    {
+      "id": "azure.cluster.az2.data.besurpc2.instance->azure.cluster.az2.data.besurpc2.volume:Persists ledger, receipts and world state",
+      "source": "azure.cluster.az2.data.besurpc2.instance",
+      "destination": "azure.cluster.az2.data.besurpc2.volume",
+      "description": "Persists ledger, receipts and world state",
+      "technology": "Filesystem I/O",
+      "tags": "Operational"
+    },
+    {
+      "id": "azure.cluster.az2.data.besurpc2.instance->azure.secrets:Reads its unique Besu node key",
+      "source": "azure.cluster.az2.data.besurpc2.instance",
+      "destination": "azure.secrets",
+      "description": "Reads its unique Besu node key",
+      "technology": "Read-only projected secret",
+      "tags": "Operational"
+    },
+    {
+      "id": "azure.csi->azure.cluster.az2.data.besurpc2.volume:Provisions a node-specific ledger volume",
+      "source": "azure.csi",
+      "destination": "azure.cluster.az2.data.besurpc2.volume",
+      "description": "Provisions a node-specific ledger volume",
+      "technology": "CSI / Azure ARM",
+      "tags": "Operational"
+    },
+    {
+      "id": "azure.cluster.az3.data.besurpc3.instance->azure.cluster.az3.data.besurpc3.volume:Persists ledger, receipts and world state",
+      "source": "azure.cluster.az3.data.besurpc3.instance",
+      "destination": "azure.cluster.az3.data.besurpc3.volume",
+      "description": "Persists ledger, receipts and world state",
+      "technology": "Filesystem I/O",
+      "tags": "Operational"
+    },
+    {
+      "id": "azure.cluster.az3.data.besurpc3.instance->azure.secrets:Reads its unique Besu node key",
+      "source": "azure.cluster.az3.data.besurpc3.instance",
+      "destination": "azure.secrets",
+      "description": "Reads its unique Besu node key",
+      "technology": "Read-only projected secret",
+      "tags": "Operational"
+    },
+    {
+      "id": "azure.csi->azure.cluster.az3.data.besurpc3.volume:Provisions a node-specific ledger volume",
+      "source": "azure.csi",
+      "destination": "azure.cluster.az3.data.besurpc3.volume",
+      "description": "Provisions a node-specific ledger volume",
+      "technology": "CSI / Azure ARM",
+      "tags": "Operational"
+    },
+    {
+      "id": "azure.cluster.az1.apps.memberA.signer.instance->azure.rpc:Sends signed transactions and queries",
+      "source": "azure.cluster.az1.apps.memberA.signer.instance",
+      "destination": "azure.rpc",
+      "description": "Sends signed transactions and queries",
+      "technology": "HTTP JSON-RPC",
+      "tags": "Operational"
+    },
+    {
+      "id": "azure.cluster.az2.apps.memberB.signer.instance->azure.rpc:Sends signed transactions and queries",
+      "source": "azure.cluster.az2.apps.memberB.signer.instance",
+      "destination": "azure.rpc",
+      "description": "Sends signed transactions and queries",
+      "technology": "HTTP JSON-RPC",
+      "tags": "Operational"
+    },
+    {
+      "id": "azure.cluster.az3.apps.memberC.signer.instance->azure.rpc:Sends signed transactions and queries",
+      "source": "azure.cluster.az3.apps.memberC.signer.instance",
+      "destination": "azure.rpc",
+      "description": "Sends signed transactions and queries",
+      "technology": "HTTP JSON-RPC",
+      "tags": "Operational"
+    },
+    {
+      "id": "azure.rpc->azure.cluster.az1.data.besurpc1.instance:Routes pinned JSON-RPC sessions",
+      "source": "azure.rpc",
+      "destination": "azure.cluster.az1.data.besurpc1.instance",
+      "description": "Routes pinned JSON-RPC sessions",
+      "technology": "HTTP JSON-RPC",
+      "tags": "Operational"
+    },
+    {
+      "id": "azure.rpc->azure.cluster.az2.data.besurpc2.instance:Routes pinned JSON-RPC sessions",
+      "source": "azure.rpc",
+      "destination": "azure.cluster.az2.data.besurpc2.instance",
+      "description": "Routes pinned JSON-RPC sessions",
+      "technology": "HTTP JSON-RPC",
+      "tags": "Operational"
+    },
+    {
+      "id": "azure.rpc->azure.cluster.az3.data.besurpc3.instance:Routes pinned JSON-RPC sessions",
+      "source": "azure.rpc",
+      "destination": "azure.cluster.az3.data.besurpc3.instance",
+      "description": "Routes pinned JSON-RPC sessions",
+      "technology": "HTTP JSON-RPC",
+      "tags": "Operational"
+    }
+  ],
+  "node_placement": [
+    {
+      "node": "a1",
+      "owner": "a",
+      "zone": 1,
+      "validator": true
+    },
+    {
+      "node": "b1",
+      "owner": "b",
+      "zone": 1,
+      "validator": true
+    },
+    {
+      "node": "b2",
+      "owner": "b",
+      "zone": 2,
+      "validator": true
+    },
+    {
+      "node": "c1",
+      "owner": "c",
+      "zone": 2,
+      "validator": true
+    },
+    {
+      "node": "c2",
+      "owner": "c",
+      "zone": 3,
+      "validator": true
+    },
+    {
+      "node": "a2",
+      "owner": "a",
+      "zone": 3,
+      "validator": true
+    },
+    {
+      "node": "rpc1",
+      "owner": "consortium",
+      "zone": 1,
+      "validator": false
+    },
+    {
+      "node": "rpc2",
+      "owner": "consortium",
+      "zone": 2,
+      "validator": false
+    },
+    {
+      "node": "rpc3",
+      "owner": "consortium",
+      "zone": 3,
+      "validator": false
+    }
+  ],
+  "views": [
+    {
+      "kind": "deployment",
+      "scope": "production",
+      "key": "80-deployment-a",
+      "title": "Deployment - Member A across three AKS zones",
+      "elements": [
+        "azure.secretStores.a",
+        "azure.cluster.az1.apps.memberA.core.instance",
+        "azure.cluster.az1.apps.memberA.evm.instance",
+        "azure.cluster.az1.apps.memberA.signer.instance",
+        "azure.cluster.az1.apps.memberA.dx.instance",
+        "azure.cluster.az1.apps.memberA.erc20.instance",
+        "azure.cluster.az1.apps.memberA.erc1155.instance",
+        "azure.cluster.az1.apps.memberA.ipfs.instance",
+        "azure.cluster.az1.apps.memberA.blobs.store",
+        "azure.cluster.az1.apps.memberA.ipfsRepo.store",
+        "azure.cluster.az1.data.pgA.instance",
+        "azure.cluster.az2.data.pgA.instance",
+        "azure.cluster.az3.data.pgA.instance",
+        "azure.control",
+        "azure.secrets",
+        "azure.csi",
+        "azure.cluster.az1.data.pgA.volume",
+        "azure.cluster.az2.data.pgA.volume",
+        "azure.cluster.az3.data.pgA.volume",
+        "azure.rpc"
+      ],
+      "direction": "lr",
+      "relationships": []
+    },
+    {
+      "kind": "deployment",
+      "scope": "production",
+      "key": "80-deployment-b",
+      "title": "Deployment - Member B across three AKS zones",
+      "elements": [
+        "azure.secretStores.b",
+        "azure.cluster.az2.apps.memberB.core.instance",
+        "azure.cluster.az2.apps.memberB.evm.instance",
+        "azure.cluster.az2.apps.memberB.signer.instance",
+        "azure.cluster.az2.apps.memberB.dx.instance",
+        "azure.cluster.az2.apps.memberB.erc20.instance",
+        "azure.cluster.az2.apps.memberB.erc1155.instance",
+        "azure.cluster.az2.apps.memberB.ipfs.instance",
+        "azure.cluster.az2.apps.memberB.blobs.store",
+        "azure.cluster.az2.apps.memberB.ipfsRepo.store",
+        "azure.cluster.az1.data.pgB.instance",
+        "azure.cluster.az2.data.pgB.instance",
+        "azure.cluster.az3.data.pgB.instance",
+        "azure.control",
+        "azure.secrets",
+        "azure.csi",
+        "azure.cluster.az1.data.pgB.volume",
+        "azure.cluster.az2.data.pgB.volume",
+        "azure.cluster.az3.data.pgB.volume",
+        "azure.rpc"
+      ],
+      "direction": "lr",
+      "relationships": []
+    },
+    {
+      "kind": "deployment",
+      "scope": "production",
+      "key": "80-deployment-c",
+      "title": "Deployment - Member C across three AKS zones",
+      "elements": [
+        "azure.secretStores.c",
+        "azure.cluster.az3.apps.memberC.core.instance",
+        "azure.cluster.az3.apps.memberC.evm.instance",
+        "azure.cluster.az3.apps.memberC.signer.instance",
+        "azure.cluster.az3.apps.memberC.dx.instance",
+        "azure.cluster.az3.apps.memberC.erc20.instance",
+        "azure.cluster.az3.apps.memberC.erc1155.instance",
+        "azure.cluster.az3.apps.memberC.ipfs.instance",
+        "azure.cluster.az3.apps.memberC.blobs.store",
+        "azure.cluster.az3.apps.memberC.ipfsRepo.store",
+        "azure.cluster.az1.data.pgC.instance",
+        "azure.cluster.az2.data.pgC.instance",
+        "azure.cluster.az3.data.pgC.instance",
+        "azure.control",
+        "azure.secrets",
+        "azure.csi",
+        "azure.cluster.az1.data.pgC.volume",
+        "azure.cluster.az2.data.pgC.volume",
+        "azure.cluster.az3.data.pgC.volume",
+        "azure.rpc"
+      ],
+      "direction": "lr",
+      "relationships": []
+    },
+    {
+      "kind": "deployment",
+      "scope": "production",
+      "key": "81-deployment-besu",
+      "title": "Deployment - six QBFT validators and three RPC nodes",
+      "elements": [
+        "azure.cluster.az1.data.besua1.instance",
+        "azure.cluster.az1.data.besub1.instance",
+        "azure.cluster.az2.data.besub2.instance",
+        "azure.cluster.az2.data.besuc1.instance",
+        "azure.cluster.az3.data.besuc2.instance",
+        "azure.cluster.az3.data.besua2.instance",
+        "azure.cluster.az1.data.besurpc1.instance",
+        "azure.cluster.az2.data.besurpc2.instance",
+        "azure.cluster.az3.data.besurpc3.instance",
+        "azure.secrets",
+        "azure.cluster.az1.data.besua1.volume",
+        "azure.cluster.az1.data.besub1.volume",
+        "azure.cluster.az2.data.besub2.volume",
+        "azure.cluster.az2.data.besuc1.volume",
+        "azure.cluster.az3.data.besuc2.volume",
+        "azure.cluster.az3.data.besua2.volume",
+        "azure.cluster.az1.data.besurpc1.volume",
+        "azure.cluster.az2.data.besurpc2.volume",
+        "azure.cluster.az3.data.besurpc3.volume",
+        "azure.rpc"
+      ],
+      "direction": "tb",
+      "relationships": []
+    },
+    {
+      "kind": "deployment",
+      "scope": "production",
+      "key": "82-deployment-operations",
+      "title": "Deployment - AKS operations and control",
+      "elements": [
+        "azure.cluster.az1.apps.gateway.instance",
+        "azure.cluster.az1.apps.cnpg.instance",
+        "azure.cluster.az1.apps.prometheus.instance",
+        "azure.cluster.az1.apps.grafana.instance",
+        "azure.cluster.az2.apps.gateway.instance",
+        "azure.cluster.az2.apps.cnpg.instance",
+        "azure.cluster.az2.apps.prometheus.instance",
+        "azure.cluster.az3.apps.gateway.instance",
+        "azure.cluster.az3.apps.cnpg.instance",
+        "azure.cluster.az3.apps.prometheus.instance",
+        "azure.control",
+        "azure.lb",
+        "azure.secrets",
+        "azure.csi",
+        "azure.cluster.az1.system.agent",
+        "azure.cluster.az2.system.agent",
+        "azure.cluster.az3.system.agent"
+      ],
+      "direction": "lr",
+      "relationships": []
+    },
+    {
+      "kind": "deployment",
+      "scope": "production",
+      "key": "99-deployment-complete",
+      "title": "Deployment - complete three-member three-zone AKS reference",
+      "elements": [
+        "azure.control",
+        "azure.lb",
+        "azure.secrets",
+        "azure.csi",
+        "azure.secretStores.a",
+        "azure.secretStores.b",
+        "azure.secretStores.c",
+        "azure.cluster.az1.system.agent",
+        "azure.cluster.az1.apps.gateway.instance",
+        "azure.cluster.az1.apps.cnpg.instance",
+        "azure.cluster.az1.apps.prometheus.instance",
+        "azure.cluster.az1.apps.grafana.instance",
+        "azure.cluster.az2.system.agent",
+        "azure.cluster.az2.apps.gateway.instance",
+        "azure.cluster.az2.apps.cnpg.instance",
+        "azure.cluster.az2.apps.prometheus.instance",
+        "azure.cluster.az3.system.agent",
+        "azure.cluster.az3.apps.gateway.instance",
+        "azure.cluster.az3.apps.cnpg.instance",
+        "azure.cluster.az3.apps.prometheus.instance",
+        "azure.cluster.az1.apps.memberA.core.instance",
+        "azure.cluster.az1.apps.memberA.evm.instance",
+        "azure.cluster.az1.apps.memberA.signer.instance",
+        "azure.cluster.az1.apps.memberA.dx.instance",
+        "azure.cluster.az1.apps.memberA.erc20.instance",
+        "azure.cluster.az1.apps.memberA.erc1155.instance",
+        "azure.cluster.az1.apps.memberA.ipfs.instance",
+        "azure.cluster.az1.apps.memberA.blobs.store",
+        "azure.cluster.az1.apps.memberA.ipfsRepo.store",
+        "azure.cluster.az1.data.pgA.instance",
+        "azure.cluster.az1.data.pgA.volume",
+        "azure.cluster.az2.data.pgA.instance",
+        "azure.cluster.az2.data.pgA.volume",
+        "azure.cluster.az3.data.pgA.instance",
+        "azure.cluster.az3.data.pgA.volume",
+        "azure.cluster.az2.apps.memberB.core.instance",
+        "azure.cluster.az2.apps.memberB.evm.instance",
+        "azure.cluster.az2.apps.memberB.signer.instance",
+        "azure.cluster.az2.apps.memberB.dx.instance",
+        "azure.cluster.az2.apps.memberB.erc20.instance",
+        "azure.cluster.az2.apps.memberB.erc1155.instance",
+        "azure.cluster.az2.apps.memberB.ipfs.instance",
+        "azure.cluster.az2.apps.memberB.blobs.store",
+        "azure.cluster.az2.apps.memberB.ipfsRepo.store",
+        "azure.cluster.az1.data.pgB.instance",
+        "azure.cluster.az1.data.pgB.volume",
+        "azure.cluster.az2.data.pgB.instance",
+        "azure.cluster.az2.data.pgB.volume",
+        "azure.cluster.az3.data.pgB.instance",
+        "azure.cluster.az3.data.pgB.volume",
+        "azure.cluster.az3.apps.memberC.core.instance",
+        "azure.cluster.az3.apps.memberC.evm.instance",
+        "azure.cluster.az3.apps.memberC.signer.instance",
+        "azure.cluster.az3.apps.memberC.dx.instance",
+        "azure.cluster.az3.apps.memberC.erc20.instance",
+        "azure.cluster.az3.apps.memberC.erc1155.instance",
+        "azure.cluster.az3.apps.memberC.ipfs.instance",
+        "azure.cluster.az3.apps.memberC.blobs.store",
+        "azure.cluster.az3.apps.memberC.ipfsRepo.store",
+        "azure.cluster.az1.data.pgC.instance",
+        "azure.cluster.az1.data.pgC.volume",
+        "azure.cluster.az2.data.pgC.instance",
+        "azure.cluster.az2.data.pgC.volume",
+        "azure.cluster.az3.data.pgC.instance",
+        "azure.cluster.az3.data.pgC.volume",
+        "azure.cluster.az1.data.besua1.instance",
+        "azure.cluster.az1.data.besua1.volume",
+        "azure.cluster.az1.data.besub1.instance",
+        "azure.cluster.az1.data.besub1.volume",
+        "azure.cluster.az2.data.besub2.instance",
+        "azure.cluster.az2.data.besub2.volume",
+        "azure.cluster.az2.data.besuc1.instance",
+        "azure.cluster.az2.data.besuc1.volume",
+        "azure.cluster.az3.data.besuc2.instance",
+        "azure.cluster.az3.data.besuc2.volume",
+        "azure.cluster.az3.data.besua2.instance",
+        "azure.cluster.az3.data.besua2.volume",
+        "azure.cluster.az1.data.besurpc1.instance",
+        "azure.cluster.az1.data.besurpc1.volume",
+        "azure.cluster.az2.data.besurpc2.instance",
+        "azure.cluster.az2.data.besurpc2.volume",
+        "azure.cluster.az3.data.besurpc3.instance",
+        "azure.cluster.az3.data.besurpc3.volume",
+        "azure.rpc"
+      ],
+      "direction": "tb",
+      "relationships": []
+    }
+  ],
+  "dsl_blocks": [
+    "        production = deploymentEnvironment \"AKS reference\" {\n            memberA = deploymentGroup \"Member A private runtime\"\n            memberB = deploymentGroup \"Member B private runtime\"\n            memberC = deploymentGroup \"Member C private runtime\"\n            privateExchange = deploymentGroup \"Authenticated Data Exchange peers\"\n            sharedContent = deploymentGroup \"Shared IPFS swarm\"\n            rpcAccess = deploymentGroup \"Private RPC clients and endpoints\"\n            blockchain = deploymentGroup \"Besu peer network\"\n            azure = deploymentNode \"Azure region\" \"One region supporting three zones and Premium SSD ZRS.\" \"Microsoft Azure\" {\n                properties {\n                    \"architecture.id\" \"azure\"\n                }\n                cluster = deploymentNode \"AKS reference cluster\" \"Separate member namespaces; shared administrative trust.\" \"Azure Kubernetes Service\" {\n                    properties {\n                        \"architecture.id\" \"azure.cluster\"\n                    }\n                    az1 = deploymentNode \"Availability Zone 1\" \"Independent fault domain AZ 1.\" \"Azure availability zone\" {\n                        tags \"Zone1\"\n                        properties {\n                            \"architecture.id\" \"azure.cluster.az1\"\n                        }\n                        system = deploymentNode \"System node pool\" \"System capacity in AZ 1.\" \"AKS VM scale set\" {\n                            properties {\n                                \"architecture.id\" \"azure.cluster.az1.system\"\n                            }\n                            agent = infrastructureNode \"Cluster services\" \"Runs DNS, networking and storage agents.\" \"CoreDNS / CNI / CSI\" {\n                                tags \"Operational\"\n                                properties {\n                                    \"architecture.id\" \"azure.cluster.az1.system.agent\"\n                                }\n                            }\n                        }\n                        apps = deploymentNode \"Application node pool\" \"Member pods; surviving zones retain spare recovery capacity.\" \"AKS Linux nodes\" {\n                            properties {\n                                \"architecture.id\" \"azure.cluster.az1.apps\"\n                            }\n                            gateway = deploymentNode \"Ingress pod\" \"Routes API requests and passes peer TLS through unchanged.\" \"Kubernetes Deployment\" {\n                                properties {\n                                    \"architecture.id\" \"azure.cluster.az1.apps.gateway\"\n                                }\n                                instance = containerInstance ops.gateway production.memberA,production.memberB,production.memberC,production.blockchain {\n                                    properties {\n                                        \"architecture.id\" \"azure.cluster.az1.apps.gateway.instance\"\n                                        \"member\" \"consortium\"\n                                        \"zone\" \"1\"\n                                        \"role\" \"active\"\n                                    }\n                                }\n                            }\n                            cnpg = deploymentNode \"cnpg pod\" \"Operational replicas are spread across zones.\" \"Kubernetes Deployment\" {\n                                properties {\n                                    \"architecture.id\" \"azure.cluster.az1.apps.cnpg\"\n                                }\n                                instance = containerInstance ops.cnpg production.memberA,production.memberB,production.memberC,production.blockchain {\n                                    properties {\n                                        \"architecture.id\" \"azure.cluster.az1.apps.cnpg.instance\"\n                                        \"member\" \"consortium\"\n                                        \"zone\" \"1\"\n                                        \"role\" \"active\"\n                                    }\n                                }\n                            }\n                            prometheus = deploymentNode \"prometheus pod\" \"Operational replicas are spread across zones.\" \"Kubernetes Deployment\" {\n                                properties {\n                                    \"architecture.id\" \"azure.cluster.az1.apps.prometheus\"\n                                }\n                                instance = containerInstance ops.prometheus production.memberA,production.memberB,production.memberC,production.blockchain {\n                                    properties {\n                                        \"architecture.id\" \"azure.cluster.az1.apps.prometheus.instance\"\n                                        \"member\" \"consortium\"\n                                        \"zone\" \"1\"\n                                        \"role\" \"active\"\n                                    }\n                                }\n                            }\n                            grafana = deploymentNode \"Grafana pod\" \"Provisioned dashboards; restart eligible in surviving zones.\" \"Kubernetes Deployment\" {\n                                properties {\n                                    \"architecture.id\" \"azure.cluster.az1.apps.grafana\"\n                                }\n                                instance = containerInstance ops.grafana production.memberA,production.memberB,production.memberC,production.blockchain {\n                                    properties {\n                                        \"architecture.id\" \"azure.cluster.az1.apps.grafana.instance\"\n                                        \"member\" \"consortium\"\n                                        \"zone\" \"1\"\n                                        \"role\" \"active\"\n                                    }\n                                }\n                            }\n                            memberA = deploymentNode \"Member A namespace - active services\" \"Separate identity and NetworkPolicies; restart eligible in AZ 1/2/3.\" \"Kubernetes namespace / placement slice\" {\n                                tags \"MemberA\"\n                                properties {\n                                    \"architecture.id\" \"azure.cluster.az1.apps.memberA\"\n                                }\n                                core = deploymentNode \"FireFly Core pod\" \"One active member instance; fence before replacement after node loss.\" \"Kubernetes StatefulSet\" {\n                                    properties {\n                                        \"architecture.id\" \"azure.cluster.az1.apps.memberA.core\"\n                                    }\n                                    instance = containerInstance firefly.core production.memberA {\n                                        properties {\n                                            \"architecture.id\" \"azure.cluster.az1.apps.memberA.core.instance\"\n                                            \"member\" \"a\"\n                                            \"zone\" \"1\"\n                                            \"role\" \"active\"\n                                        }\n                                    }\n                                }\n                                evm = deploymentNode \"EVMConnect + FFTM pod\" \"One active member instance; fence before replacement after node loss.\" \"Kubernetes StatefulSet\" {\n                                    properties {\n                                        \"architecture.id\" \"azure.cluster.az1.apps.memberA.evm\"\n                                    }\n                                    instance = containerInstance firefly.evm production.memberA {\n                                        properties {\n                                            \"architecture.id\" \"azure.cluster.az1.apps.memberA.evm.instance\"\n                                            \"member\" \"a\"\n                                            \"zone\" \"1\"\n                                            \"role\" \"active\"\n                                        }\n                                    }\n                                }\n                                signer = deploymentNode \"FireFly Signer pod\" \"One active member instance; fence before replacement after node loss.\" \"Kubernetes Deployment\" {\n                                    properties {\n                                        \"architecture.id\" \"azure.cluster.az1.apps.memberA.signer\"\n                                    }\n                                    instance = containerInstance firefly.signer production.memberA,production.rpcAccess {\n                                        properties {\n                                            \"architecture.id\" \"azure.cluster.az1.apps.memberA.signer.instance\"\n                                            \"member\" \"a\"\n                                            \"zone\" \"1\"\n                                            \"role\" \"active\"\n                                        }\n                                    }\n                                }\n                                dx = deploymentNode \"HTTPS Data Exchange pod\" \"One active member instance; fence before replacement after node loss.\" \"Kubernetes StatefulSet\" {\n                                    properties {\n                                        \"architecture.id\" \"azure.cluster.az1.apps.memberA.dx\"\n                                    }\n                                    instance = containerInstance firefly.dx production.memberA,production.privateExchange {\n                                        properties {\n                                            \"architecture.id\" \"azure.cluster.az1.apps.memberA.dx.instance\"\n                                            \"member\" \"a\"\n                                            \"zone\" \"1\"\n                                            \"role\" \"active\"\n                                        }\n                                    }\n                                }\n                                erc20 = deploymentNode \"ERC-20 / ERC-721 connector pod\" \"One active member instance; fence before replacement after node loss.\" \"Kubernetes Deployment\" {\n                                    properties {\n                                        \"architecture.id\" \"azure.cluster.az1.apps.memberA.erc20\"\n                                    }\n                                    instance = containerInstance firefly.erc20 production.memberA {\n                                        properties {\n                                            \"architecture.id\" \"azure.cluster.az1.apps.memberA.erc20.instance\"\n                                            \"member\" \"a\"\n                                            \"zone\" \"1\"\n                                            \"role\" \"active\"\n                                        }\n                                    }\n                                }\n                                erc1155 = deploymentNode \"ERC-1155 connector pod\" \"One active member instance; fence before replacement after node loss.\" \"Kubernetes Deployment\" {\n                                    properties {\n                                        \"architecture.id\" \"azure.cluster.az1.apps.memberA.erc1155\"\n                                    }\n                                    instance = containerInstance firefly.erc1155 production.memberA {\n                                        properties {\n                                            \"architecture.id\" \"azure.cluster.az1.apps.memberA.erc1155.instance\"\n                                            \"member\" \"a\"\n                                            \"zone\" \"1\"\n                                            \"role\" \"active\"\n                                        }\n                                    }\n                                }\n                                ipfs = deploymentNode \"IPFS Kubo pod\" \"One active member instance; fence before replacement after node loss.\" \"Kubernetes StatefulSet\" {\n                                    properties {\n                                        \"architecture.id\" \"azure.cluster.az1.apps.memberA.ipfs\"\n                                    }\n                                    instance = containerInstance firefly.ipfs production.memberA,production.sharedContent {\n                                        properties {\n                                            \"architecture.id\" \"azure.cluster.az1.apps.memberA.ipfs.instance\"\n                                            \"member\" \"a\"\n                                            \"zone\" \"1\"\n                                            \"role\" \"active\"\n                                        }\n                                    }\n                                }\n                                blobs = deploymentNode \"ZRS volume - Private blob and peer store\" \"Replicated across three zones; RWO; fence and detach before reattach.\" \"Premium SSD ZRS / CSI\" {\n                                    properties {\n                                        \"architecture.id\" \"azure.cluster.az1.apps.memberA.blobs\"\n                                    }\n                                    store = containerInstance firefly.blobs production.memberA {\n                                        properties {\n                                            \"architecture.id\" \"azure.cluster.az1.apps.memberA.blobs.store\"\n                                            \"member\" \"a\"\n                                            \"zone\" \"regional\"\n                                            \"role\" \"persistent volume\"\n                                        }\n                                    }\n                                }\n                                ipfsRepo = deploymentNode \"ZRS volume - IPFS repository\" \"Replicated across three zones; RWO; fence and detach before reattach.\" \"Premium SSD ZRS / CSI\" {\n                                    properties {\n                                        \"architecture.id\" \"azure.cluster.az1.apps.memberA.ipfsRepo\"\n                                    }\n                                    store = containerInstance firefly.ipfsRepo production.memberA {\n                                        properties {\n                                            \"architecture.id\" \"azure.cluster.az1.apps.memberA.ipfsRepo.store\"\n                                            \"member\" \"a\"\n                                            \"zone\" \"regional\"\n                                            \"role\" \"persistent volume\"\n                                        }\n                                    }\n                                }\n                            }\n                        }\n                        data = deploymentNode \"Stateful node pool\" \"PostgreSQL and Besu; node anti-affinity separates replicas.\" \"AKS Linux nodes\" {\n                            properties {\n                                \"architecture.id\" \"azure.cluster.az1.data\"\n                            }\n                            pgA = deploymentNode \"Member A PostgreSQL primary\" \"One instance per zone; separate Core/FFTM databases; ANY 1 synchronous standby.\" \"CloudNativePG pod\" {\n                                tags \"MemberA\"\n                                properties {\n                                    \"architecture.id\" \"azure.cluster.az1.data.pgA\"\n                                }\n                                instance = containerInstance firefly.pg production.memberA {\n                                    properties {\n                                        \"architecture.id\" \"azure.cluster.az1.data.pgA.instance\"\n                                        \"member\" \"a\"\n                                        \"zone\" \"1\"\n                                        \"role\" \"primary\"\n                                    }\n                                }\n                                volume = infrastructureNode \"PGDATA A AZ 1\" \"Independent durable data directory for this instance.\" \"Premium SSD ZRS / CSI\" {\n                                    tags \"Database\"\n                                    properties {\n                                        \"architecture.id\" \"azure.cluster.az1.data.pgA.volume\"\n                                    }\n                                }\n                            }\n                            pgB = deploymentNode \"Member B PostgreSQL standby\" \"One instance per zone; separate Core/FFTM databases; ANY 1 synchronous standby.\" \"CloudNativePG pod\" {\n                                tags \"MemberB\"\n                                properties {\n                                    \"architecture.id\" \"azure.cluster.az1.data.pgB\"\n                                }\n                                instance = containerInstance firefly.pgReplica production.memberB {\n                                    properties {\n                                        \"architecture.id\" \"azure.cluster.az1.data.pgB.instance\"\n                                        \"member\" \"b\"\n                                        \"zone\" \"1\"\n                                        \"role\" \"standby\"\n                                    }\n                                }\n                                volume = infrastructureNode \"PGDATA B AZ 1\" \"Independent durable data directory for this instance.\" \"Premium SSD ZRS / CSI\" {\n                                    tags \"Database\"\n                                    properties {\n                                        \"architecture.id\" \"azure.cluster.az1.data.pgB.volume\"\n                                    }\n                                }\n                            }\n                            pgC = deploymentNode \"Member C PostgreSQL standby\" \"One instance per zone; separate Core/FFTM databases; ANY 1 synchronous standby.\" \"CloudNativePG pod\" {\n                                tags \"MemberC\"\n                                properties {\n                                    \"architecture.id\" \"azure.cluster.az1.data.pgC\"\n                                }\n                                instance = containerInstance firefly.pgReplica production.memberC {\n                                    properties {\n                                        \"architecture.id\" \"azure.cluster.az1.data.pgC.instance\"\n                                        \"member\" \"c\"\n                                        \"zone\" \"1\"\n                                        \"role\" \"standby\"\n                                    }\n                                }\n                                volume = infrastructureNode \"PGDATA C AZ 1\" \"Independent durable data directory for this instance.\" \"Premium SSD ZRS / CSI\" {\n                                    tags \"Database\"\n                                    properties {\n                                        \"architecture.id\" \"azure.cluster.az1.data.pgC.volume\"\n                                    }\n                                }\n                            }\n                            besua1 = deploymentNode \"Besu A1 validator pod\" \"Unique node key and data directory; node anti-affinity; private P2P.\" \"Kubernetes StatefulSet\" {\n                                tags \"Blockchain\"\n                                properties {\n                                    \"architecture.id\" \"azure.cluster.az1.data.besua1\"\n                                }\n                                instance = containerInstance besu.node production.blockchain {\n                                    description \"A1: validator; owner A; AZ 1. Dedicated node key and ledger.\"\n                                    properties {\n                                        \"architecture.id\" \"azure.cluster.az1.data.besua1.instance\"\n                                        \"member\" \"a\"\n                                        \"zone\" \"1\"\n                                        \"role\" \"validator\"\n                                    }\n                                }\n                                volume = infrastructureNode \"Besu ledger A1\" \"Dedicated node data, retained during replacement.\" \"Premium SSD ZRS / CSI\" {\n                                    tags \"Database\"\n                                    properties {\n                                        \"architecture.id\" \"azure.cluster.az1.data.besua1.volume\"\n                                    }\n                                }\n                            }\n                            besub1 = deploymentNode \"Besu B1 validator pod\" \"Unique node key and data directory; node anti-affinity; private P2P.\" \"Kubernetes StatefulSet\" {\n                                tags \"Blockchain\"\n                                properties {\n                                    \"architecture.id\" \"azure.cluster.az1.data.besub1\"\n                                }\n                                instance = containerInstance besu.node production.blockchain {\n                                    description \"B1: validator; owner B; AZ 1. Dedicated node key and ledger.\"\n                                    properties {\n                                        \"architecture.id\" \"azure.cluster.az1.data.besub1.instance\"\n                                        \"member\" \"b\"\n                                        \"zone\" \"1\"\n                                        \"role\" \"validator\"\n                                    }\n                                }\n                                volume = infrastructureNode \"Besu ledger B1\" \"Dedicated node data, retained during replacement.\" \"Premium SSD ZRS / CSI\" {\n                                    tags \"Database\"\n                                    properties {\n                                        \"architecture.id\" \"azure.cluster.az1.data.besub1.volume\"\n                                    }\n                                }\n                            }\n                            besurpc1 = deploymentNode \"Besu RPC1 RPC pod\" \"Unique node key and data directory; node anti-affinity; private P2P.\" \"Kubernetes StatefulSet\" {\n                                tags \"Blockchain\"\n                                properties {\n                                    \"architecture.id\" \"azure.cluster.az1.data.besurpc1\"\n                                }\n                                instance = containerInstance besu.node production.blockchain,production.rpcAccess {\n                                    description \"RPC1: rpc and bootnode; owner CONSORTIUM; AZ 1. Dedicated node key and ledger.\"\n                                    properties {\n                                        \"architecture.id\" \"azure.cluster.az1.data.besurpc1.instance\"\n                                        \"member\" \"consortium\"\n                                        \"zone\" \"1\"\n                                        \"role\" \"rpc and bootnode\"\n                                    }\n                                }\n                                volume = infrastructureNode \"Besu ledger RPC1\" \"Dedicated node data, retained during replacement.\" \"Premium SSD ZRS / CSI\" {\n                                    tags \"Database\"\n                                    properties {\n                                        \"architecture.id\" \"azure.cluster.az1.data.besurpc1.volume\"\n                                    }\n                                }\n                            }\n                        }\n                    }\n                    az2 = deploymentNode \"Availability Zone 2\" \"Independent fault domain AZ 2.\" \"Azure availability zone\" {\n                        tags \"Zone2\"\n                        properties {\n                            \"architecture.id\" \"azure.cluster.az2\"\n                        }\n                        system = deploymentNode \"System node pool\" \"System capacity in AZ 2.\" \"AKS VM scale set\" {\n                            properties {\n                                \"architecture.id\" \"azure.cluster.az2.system\"\n                            }\n                            agent = infrastructureNode \"Cluster services\" \"Runs DNS, networking and storage agents.\" \"CoreDNS / CNI / CSI\" {\n                                tags \"Operational\"\n                                properties {\n                                    \"architecture.id\" \"azure.cluster.az2.system.agent\"\n                                }\n                            }\n                        }\n                        apps = deploymentNode \"Application node pool\" \"Member pods; surviving zones retain spare recovery capacity.\" \"AKS Linux nodes\" {\n                            properties {\n                                \"architecture.id\" \"azure.cluster.az2.apps\"\n                            }\n                            gateway = deploymentNode \"Ingress pod\" \"Routes API requests and passes peer TLS through unchanged.\" \"Kubernetes Deployment\" {\n                                properties {\n                                    \"architecture.id\" \"azure.cluster.az2.apps.gateway\"\n                                }\n                                instance = containerInstance ops.gateway production.memberA,production.memberB,production.memberC,production.blockchain {\n                                    properties {\n                                        \"architecture.id\" \"azure.cluster.az2.apps.gateway.instance\"\n                                        \"member\" \"consortium\"\n                                        \"zone\" \"2\"\n                                        \"role\" \"active\"\n                                    }\n                                }\n                            }\n                            cnpg = deploymentNode \"cnpg pod\" \"Operational replicas are spread across zones.\" \"Kubernetes Deployment\" {\n                                properties {\n                                    \"architecture.id\" \"azure.cluster.az2.apps.cnpg\"\n                                }\n                                instance = containerInstance ops.cnpg production.memberA,production.memberB,production.memberC,production.blockchain {\n                                    properties {\n                                        \"architecture.id\" \"azure.cluster.az2.apps.cnpg.instance\"\n                                        \"member\" \"consortium\"\n                                        \"zone\" \"2\"\n                                        \"role\" \"active\"\n                                    }\n                                }\n                            }\n                            prometheus = deploymentNode \"prometheus pod\" \"Operational replicas are spread across zones.\" \"Kubernetes Deployment\" {\n                                properties {\n                                    \"architecture.id\" \"azure.cluster.az2.apps.prometheus\"\n                                }\n                                instance = containerInstance ops.prometheus production.memberA,production.memberB,production.memberC,production.blockchain {\n                                    properties {\n                                        \"architecture.id\" \"azure.cluster.az2.apps.prometheus.instance\"\n                                        \"member\" \"consortium\"\n                                        \"zone\" \"2\"\n                                        \"role\" \"active\"\n                                    }\n                                }\n                            }\n                            memberB = deploymentNode \"Member B namespace - active services\" \"Separate identity and NetworkPolicies; restart eligible in AZ 1/2/3.\" \"Kubernetes namespace / placement slice\" {\n                                tags \"MemberB\"\n                                properties {\n                                    \"architecture.id\" \"azure.cluster.az2.apps.memberB\"\n                                }\n                                core = deploymentNode \"FireFly Core pod\" \"One active member instance; fence before replacement after node loss.\" \"Kubernetes StatefulSet\" {\n                                    properties {\n                                        \"architecture.id\" \"azure.cluster.az2.apps.memberB.core\"\n                                    }\n                                    instance = containerInstance firefly.core production.memberB {\n                                        properties {\n                                            \"architecture.id\" \"azure.cluster.az2.apps.memberB.core.instance\"\n                                            \"member\" \"b\"\n                                            \"zone\" \"2\"\n                                            \"role\" \"active\"\n                                        }\n                                    }\n                                }\n                                evm = deploymentNode \"EVMConnect + FFTM pod\" \"One active member instance; fence before replacement after node loss.\" \"Kubernetes StatefulSet\" {\n                                    properties {\n                                        \"architecture.id\" \"azure.cluster.az2.apps.memberB.evm\"\n                                    }\n                                    instance = containerInstance firefly.evm production.memberB {\n                                        properties {\n                                            \"architecture.id\" \"azure.cluster.az2.apps.memberB.evm.instance\"\n                                            \"member\" \"b\"\n                                            \"zone\" \"2\"\n                                            \"role\" \"active\"\n                                        }\n                                    }\n                                }\n                                signer = deploymentNode \"FireFly Signer pod\" \"One active member instance; fence before replacement after node loss.\" \"Kubernetes Deployment\" {\n                                    properties {\n                                        \"architecture.id\" \"azure.cluster.az2.apps.memberB.signer\"\n                                    }\n                                    instance = containerInstance firefly.signer production.memberB,production.rpcAccess {\n                                        properties {\n                                            \"architecture.id\" \"azure.cluster.az2.apps.memberB.signer.instance\"\n                                            \"member\" \"b\"\n                                            \"zone\" \"2\"\n                                            \"role\" \"active\"\n                                        }\n                                    }\n                                }\n                                dx = deploymentNode \"HTTPS Data Exchange pod\" \"One active member instance; fence before replacement after node loss.\" \"Kubernetes StatefulSet\" {\n                                    properties {\n                                        \"architecture.id\" \"azure.cluster.az2.apps.memberB.dx\"\n                                    }\n                                    instance = containerInstance firefly.dx production.memberB,production.privateExchange {\n                                        properties {\n                                            \"architecture.id\" \"azure.cluster.az2.apps.memberB.dx.instance\"\n                                            \"member\" \"b\"\n                                            \"zone\" \"2\"\n                                            \"role\" \"active\"\n                                        }\n                                    }\n                                }\n                                erc20 = deploymentNode \"ERC-20 / ERC-721 connector pod\" \"One active member instance; fence before replacement after node loss.\" \"Kubernetes Deployment\" {\n                                    properties {\n                                        \"architecture.id\" \"azure.cluster.az2.apps.memberB.erc20\"\n                                    }\n                                    instance = containerInstance firefly.erc20 production.memberB {\n                                        properties {\n                                            \"architecture.id\" \"azure.cluster.az2.apps.memberB.erc20.instance\"\n                                            \"member\" \"b\"\n                                            \"zone\" \"2\"\n                                            \"role\" \"active\"\n                                        }\n                                    }\n                                }\n                                erc1155 = deploymentNode \"ERC-1155 connector pod\" \"One active member instance; fence before replacement after node loss.\" \"Kubernetes Deployment\" {\n                                    properties {\n                                        \"architecture.id\" \"azure.cluster.az2.apps.memberB.erc1155\"\n                                    }\n                                    instance = containerInstance firefly.erc1155 production.memberB {\n                                        properties {\n                                            \"architecture.id\" \"azure.cluster.az2.apps.memberB.erc1155.instance\"\n                                            \"member\" \"b\"\n                                            \"zone\" \"2\"\n                                            \"role\" \"active\"\n                                        }\n                                    }\n                                }\n                                ipfs = deploymentNode \"IPFS Kubo pod\" \"One active member instance; fence before replacement after node loss.\" \"Kubernetes StatefulSet\" {\n                                    properties {\n                                        \"architecture.id\" \"azure.cluster.az2.apps.memberB.ipfs\"\n                                    }\n                                    instance = containerInstance firefly.ipfs production.memberB,production.sharedContent {\n                                        properties {\n                                            \"architecture.id\" \"azure.cluster.az2.apps.memberB.ipfs.instance\"\n                                            \"member\" \"b\"\n                                            \"zone\" \"2\"\n                                            \"role\" \"active\"\n                                        }\n                                    }\n                                }\n                                blobs = deploymentNode \"ZRS volume - Private blob and peer store\" \"Replicated across three zones; RWO; fence and detach before reattach.\" \"Premium SSD ZRS / CSI\" {\n                                    properties {\n                                        \"architecture.id\" \"azure.cluster.az2.apps.memberB.blobs\"\n                                    }\n                                    store = containerInstance firefly.blobs production.memberB {\n                                        properties {\n                                            \"architecture.id\" \"azure.cluster.az2.apps.memberB.blobs.store\"\n                                            \"member\" \"b\"\n                                            \"zone\" \"regional\"\n                                            \"role\" \"persistent volume\"\n                                        }\n                                    }\n                                }\n                                ipfsRepo = deploymentNode \"ZRS volume - IPFS repository\" \"Replicated across three zones; RWO; fence and detach before reattach.\" \"Premium SSD ZRS / CSI\" {\n                                    properties {\n                                        \"architecture.id\" \"azure.cluster.az2.apps.memberB.ipfsRepo\"\n                                    }\n                                    store = containerInstance firefly.ipfsRepo production.memberB {\n                                        properties {\n                                            \"architecture.id\" \"azure.cluster.az2.apps.memberB.ipfsRepo.store\"\n                                            \"member\" \"b\"\n                                            \"zone\" \"regional\"\n                                            \"role\" \"persistent volume\"\n                                        }\n                                    }\n                                }\n                            }\n                        }\n                        data = deploymentNode \"Stateful node pool\" \"PostgreSQL and Besu; node anti-affinity separates replicas.\" \"AKS Linux nodes\" {\n                            properties {\n                                \"architecture.id\" \"azure.cluster.az2.data\"\n                            }\n                            pgA = deploymentNode \"Member A PostgreSQL standby\" \"One instance per zone; separate Core/FFTM databases; ANY 1 synchronous standby.\" \"CloudNativePG pod\" {\n                                tags \"MemberA\"\n                                properties {\n                                    \"architecture.id\" \"azure.cluster.az2.data.pgA\"\n                                }\n                                instance = containerInstance firefly.pgReplica production.memberA {\n                                    properties {\n                                        \"architecture.id\" \"azure.cluster.az2.data.pgA.instance\"\n                                        \"member\" \"a\"\n                                        \"zone\" \"2\"\n                                        \"role\" \"standby\"\n                                    }\n                                }\n                                volume = infrastructureNode \"PGDATA A AZ 2\" \"Independent durable data directory for this instance.\" \"Premium SSD ZRS / CSI\" {\n                                    tags \"Database\"\n                                    properties {\n                                        \"architecture.id\" \"azure.cluster.az2.data.pgA.volume\"\n                                    }\n                                }\n                            }\n                            pgB = deploymentNode \"Member B PostgreSQL primary\" \"One instance per zone; separate Core/FFTM databases; ANY 1 synchronous standby.\" \"CloudNativePG pod\" {\n                                tags \"MemberB\"\n                                properties {\n                                    \"architecture.id\" \"azure.cluster.az2.data.pgB\"\n                                }\n                                instance = containerInstance firefly.pg production.memberB {\n                                    properties {\n                                        \"architecture.id\" \"azure.cluster.az2.data.pgB.instance\"\n                                        \"member\" \"b\"\n                                        \"zone\" \"2\"\n                                        \"role\" \"primary\"\n                                    }\n                                }\n                                volume = infrastructureNode \"PGDATA B AZ 2\" \"Independent durable data directory for this instance.\" \"Premium SSD ZRS / CSI\" {\n                                    tags \"Database\"\n                                    properties {\n                                        \"architecture.id\" \"azure.cluster.az2.data.pgB.volume\"\n                                    }\n                                }\n                            }\n                            pgC = deploymentNode \"Member C PostgreSQL standby\" \"One instance per zone; separate Core/FFTM databases; ANY 1 synchronous standby.\" \"CloudNativePG pod\" {\n                                tags \"MemberC\"\n                                properties {\n                                    \"architecture.id\" \"azure.cluster.az2.data.pgC\"\n                                }\n                                instance = containerInstance firefly.pgReplica production.memberC {\n                                    properties {\n                                        \"architecture.id\" \"azure.cluster.az2.data.pgC.instance\"\n                                        \"member\" \"c\"\n                                        \"zone\" \"2\"\n                                        \"role\" \"standby\"\n                                    }\n                                }\n                                volume = infrastructureNode \"PGDATA C AZ 2\" \"Independent durable data directory for this instance.\" \"Premium SSD ZRS / CSI\" {\n                                    tags \"Database\"\n                                    properties {\n                                        \"architecture.id\" \"azure.cluster.az2.data.pgC.volume\"\n                                    }\n                                }\n                            }\n                            besub2 = deploymentNode \"Besu B2 validator pod\" \"Unique node key and data directory; node anti-affinity; private P2P.\" \"Kubernetes StatefulSet\" {\n                                tags \"Blockchain\"\n                                properties {\n                                    \"architecture.id\" \"azure.cluster.az2.data.besub2\"\n                                }\n                                instance = containerInstance besu.node production.blockchain {\n                                    description \"B2: validator; owner B; AZ 2. Dedicated node key and ledger.\"\n                                    properties {\n                                        \"architecture.id\" \"azure.cluster.az2.data.besub2.instance\"\n                                        \"member\" \"b\"\n                                        \"zone\" \"2\"\n                                        \"role\" \"validator\"\n                                    }\n                                }\n                                volume = infrastructureNode \"Besu ledger B2\" \"Dedicated node data, retained during replacement.\" \"Premium SSD ZRS / CSI\" {\n                                    tags \"Database\"\n                                    properties {\n                                        \"architecture.id\" \"azure.cluster.az2.data.besub2.volume\"\n                                    }\n                                }\n                            }\n                            besuc1 = deploymentNode \"Besu C1 validator pod\" \"Unique node key and data directory; node anti-affinity; private P2P.\" \"Kubernetes StatefulSet\" {\n                                tags \"Blockchain\"\n                                properties {\n                                    \"architecture.id\" \"azure.cluster.az2.data.besuc1\"\n                                }\n                                instance = containerInstance besu.node production.blockchain {\n                                    description \"C1: validator; owner C; AZ 2. Dedicated node key and ledger.\"\n                                    properties {\n                                        \"architecture.id\" \"azure.cluster.az2.data.besuc1.instance\"\n                                        \"member\" \"c\"\n                                        \"zone\" \"2\"\n                                        \"role\" \"validator\"\n                                    }\n                                }\n                                volume = infrastructureNode \"Besu ledger C1\" \"Dedicated node data, retained during replacement.\" \"Premium SSD ZRS / CSI\" {\n                                    tags \"Database\"\n                                    properties {\n                                        \"architecture.id\" \"azure.cluster.az2.data.besuc1.volume\"\n                                    }\n                                }\n                            }\n                            besurpc2 = deploymentNode \"Besu RPC2 RPC pod\" \"Unique node key and data directory; node anti-affinity; private P2P.\" \"Kubernetes StatefulSet\" {\n                                tags \"Blockchain\"\n                                properties {\n                                    \"architecture.id\" \"azure.cluster.az2.data.besurpc2\"\n                                }\n                                instance = containerInstance besu.node production.blockchain,production.rpcAccess {\n                                    description \"RPC2: rpc; owner CONSORTIUM; AZ 2. Dedicated node key and ledger.\"\n                                    properties {\n                                        \"architecture.id\" \"azure.cluster.az2.data.besurpc2.instance\"\n                                        \"member\" \"consortium\"\n                                        \"zone\" \"2\"\n                                        \"role\" \"rpc\"\n                                    }\n                                }\n                                volume = infrastructureNode \"Besu ledger RPC2\" \"Dedicated node data, retained during replacement.\" \"Premium SSD ZRS / CSI\" {\n                                    tags \"Database\"\n                                    properties {\n                                        \"architecture.id\" \"azure.cluster.az2.data.besurpc2.volume\"\n                                    }\n                                }\n                            }\n                        }\n                    }\n                    az3 = deploymentNode \"Availability Zone 3\" \"Independent fault domain AZ 3.\" \"Azure availability zone\" {\n                        tags \"Zone3\"\n                        properties {\n                            \"architecture.id\" \"azure.cluster.az3\"\n                        }\n                        system = deploymentNode \"System node pool\" \"System capacity in AZ 3.\" \"AKS VM scale set\" {\n                            properties {\n                                \"architecture.id\" \"azure.cluster.az3.system\"\n                            }\n                            agent = infrastructureNode \"Cluster services\" \"Runs DNS, networking and storage agents.\" \"CoreDNS / CNI / CSI\" {\n                                tags \"Operational\"\n                                properties {\n                                    \"architecture.id\" \"azure.cluster.az3.system.agent\"\n                                }\n                            }\n                        }\n                        apps = deploymentNode \"Application node pool\" \"Member pods; surviving zones retain spare recovery capacity.\" \"AKS Linux nodes\" {\n                            properties {\n                                \"architecture.id\" \"azure.cluster.az3.apps\"\n                            }\n                            gateway = deploymentNode \"Ingress pod\" \"Routes API requests and passes peer TLS through unchanged.\" \"Kubernetes Deployment\" {\n                                properties {\n                                    \"architecture.id\" \"azure.cluster.az3.apps.gateway\"\n                                }\n                                instance = containerInstance ops.gateway production.memberA,production.memberB,production.memberC,production.blockchain {\n                                    properties {\n                                        \"architecture.id\" \"azure.cluster.az3.apps.gateway.instance\"\n                                        \"member\" \"consortium\"\n                                        \"zone\" \"3\"\n                                        \"role\" \"active\"\n                                    }\n                                }\n                            }\n                            cnpg = deploymentNode \"cnpg pod\" \"Operational replicas are spread across zones.\" \"Kubernetes Deployment\" {\n                                properties {\n                                    \"architecture.id\" \"azure.cluster.az3.apps.cnpg\"\n                                }\n                                instance = containerInstance ops.cnpg production.memberA,production.memberB,production.memberC,production.blockchain {\n                                    properties {\n                                        \"architecture.id\" \"azure.cluster.az3.apps.cnpg.instance\"\n                                        \"member\" \"consortium\"\n                                        \"zone\" \"3\"\n                                        \"role\" \"active\"\n                                    }\n                                }\n                            }\n                            prometheus = deploymentNode \"prometheus pod\" \"Operational replicas are spread across zones.\" \"Kubernetes Deployment\" {\n                                properties {\n                                    \"architecture.id\" \"azure.cluster.az3.apps.prometheus\"\n                                }\n                                instance = containerInstance ops.prometheus production.memberA,production.memberB,production.memberC,production.blockchain {\n                                    properties {\n                                        \"architecture.id\" \"azure.cluster.az3.apps.prometheus.instance\"\n                                        \"member\" \"consortium\"\n                                        \"zone\" \"3\"\n                                        \"role\" \"active\"\n                                    }\n                                }\n                            }\n                            memberC = deploymentNode \"Member C namespace - active services\" \"Separate identity and NetworkPolicies; restart eligible in AZ 1/2/3.\" \"Kubernetes namespace / placement slice\" {\n                                tags \"MemberC\"\n                                properties {\n                                    \"architecture.id\" \"azure.cluster.az3.apps.memberC\"\n                                }\n                                core = deploymentNode \"FireFly Core pod\" \"One active member instance; fence before replacement after node loss.\" \"Kubernetes StatefulSet\" {\n                                    properties {\n                                        \"architecture.id\" \"azure.cluster.az3.apps.memberC.core\"\n                                    }\n                                    instance = containerInstance firefly.core production.memberC {\n                                        properties {\n                                            \"architecture.id\" \"azure.cluster.az3.apps.memberC.core.instance\"\n                                            \"member\" \"c\"\n                                            \"zone\" \"3\"\n                                            \"role\" \"active\"\n                                        }\n                                    }\n                                }\n                                evm = deploymentNode \"EVMConnect + FFTM pod\" \"One active member instance; fence before replacement after node loss.\" \"Kubernetes StatefulSet\" {\n                                    properties {\n                                        \"architecture.id\" \"azure.cluster.az3.apps.memberC.evm\"\n                                    }\n                                    instance = containerInstance firefly.evm production.memberC {\n                                        properties {\n                                            \"architecture.id\" \"azure.cluster.az3.apps.memberC.evm.instance\"\n                                            \"member\" \"c\"\n                                            \"zone\" \"3\"\n                                            \"role\" \"active\"\n                                        }\n                                    }\n                                }\n                                signer = deploymentNode \"FireFly Signer pod\" \"One active member instance; fence before replacement after node loss.\" \"Kubernetes Deployment\" {\n                                    properties {\n                                        \"architecture.id\" \"azure.cluster.az3.apps.memberC.signer\"\n                                    }\n                                    instance = containerInstance firefly.signer production.memberC,production.rpcAccess {\n                                        properties {\n                                            \"architecture.id\" \"azure.cluster.az3.apps.memberC.signer.instance\"\n                                            \"member\" \"c\"\n                                            \"zone\" \"3\"\n                                            \"role\" \"active\"\n                                        }\n                                    }\n                                }\n                                dx = deploymentNode \"HTTPS Data Exchange pod\" \"One active member instance; fence before replacement after node loss.\" \"Kubernetes StatefulSet\" {\n                                    properties {\n                                        \"architecture.id\" \"azure.cluster.az3.apps.memberC.dx\"\n                                    }\n                                    instance = containerInstance firefly.dx production.memberC,production.privateExchange {\n                                        properties {\n                                            \"architecture.id\" \"azure.cluster.az3.apps.memberC.dx.instance\"\n                                            \"member\" \"c\"\n                                            \"zone\" \"3\"\n                                            \"role\" \"active\"\n                                        }\n                                    }\n                                }\n                                erc20 = deploymentNode \"ERC-20 / ERC-721 connector pod\" \"One active member instance; fence before replacement after node loss.\" \"Kubernetes Deployment\" {\n                                    properties {\n                                        \"architecture.id\" \"azure.cluster.az3.apps.memberC.erc20\"\n                                    }\n                                    instance = containerInstance firefly.erc20 production.memberC {\n                                        properties {\n                                            \"architecture.id\" \"azure.cluster.az3.apps.memberC.erc20.instance\"\n                                            \"member\" \"c\"\n                                            \"zone\" \"3\"\n                                            \"role\" \"active\"\n                                        }\n                                    }\n                                }\n                                erc1155 = deploymentNode \"ERC-1155 connector pod\" \"One active member instance; fence before replacement after node loss.\" \"Kubernetes Deployment\" {\n                                    properties {\n                                        \"architecture.id\" \"azure.cluster.az3.apps.memberC.erc1155\"\n                                    }\n                                    instance = containerInstance firefly.erc1155 production.memberC {\n                                        properties {\n                                            \"architecture.id\" \"azure.cluster.az3.apps.memberC.erc1155.instance\"\n                                            \"member\" \"c\"\n                                            \"zone\" \"3\"\n                                            \"role\" \"active\"\n                                        }\n                                    }\n                                }\n                                ipfs = deploymentNode \"IPFS Kubo pod\" \"One active member instance; fence before replacement after node loss.\" \"Kubernetes StatefulSet\" {\n                                    properties {\n                                        \"architecture.id\" \"azure.cluster.az3.apps.memberC.ipfs\"\n                                    }\n                                    instance = containerInstance firefly.ipfs production.memberC,production.sharedContent {\n                                        properties {\n                                            \"architecture.id\" \"azure.cluster.az3.apps.memberC.ipfs.instance\"\n                                            \"member\" \"c\"\n                                            \"zone\" \"3\"\n                                            \"role\" \"active\"\n                                        }\n                                    }\n                                }\n                                blobs = deploymentNode \"ZRS volume - Private blob and peer store\" \"Replicated across three zones; RWO; fence and detach before reattach.\" \"Premium SSD ZRS / CSI\" {\n                                    properties {\n                                        \"architecture.id\" \"azure.cluster.az3.apps.memberC.blobs\"\n                                    }\n                                    store = containerInstance firefly.blobs production.memberC {\n                                        properties {\n                                            \"architecture.id\" \"azure.cluster.az3.apps.memberC.blobs.store\"\n                                            \"member\" \"c\"\n                                            \"zone\" \"regional\"\n                                            \"role\" \"persistent volume\"\n                                        }\n                                    }\n                                }\n                                ipfsRepo = deploymentNode \"ZRS volume - IPFS repository\" \"Replicated across three zones; RWO; fence and detach before reattach.\" \"Premium SSD ZRS / CSI\" {\n                                    properties {\n                                        \"architecture.id\" \"azure.cluster.az3.apps.memberC.ipfsRepo\"\n                                    }\n                                    store = containerInstance firefly.ipfsRepo production.memberC {\n                                        properties {\n                                            \"architecture.id\" \"azure.cluster.az3.apps.memberC.ipfsRepo.store\"\n                                            \"member\" \"c\"\n                                            \"zone\" \"regional\"\n                                            \"role\" \"persistent volume\"\n                                        }\n                                    }\n                                }\n                            }\n                        }\n                        data = deploymentNode \"Stateful node pool\" \"PostgreSQL and Besu; node anti-affinity separates replicas.\" \"AKS Linux nodes\" {\n                            properties {\n                                \"architecture.id\" \"azure.cluster.az3.data\"\n                            }\n                            pgA = deploymentNode \"Member A PostgreSQL standby\" \"One instance per zone; separate Core/FFTM databases; ANY 1 synchronous standby.\" \"CloudNativePG pod\" {\n                                tags \"MemberA\"\n                                properties {\n                                    \"architecture.id\" \"azure.cluster.az3.data.pgA\"\n                                }\n                                instance = containerInstance firefly.pgReplica production.memberA {\n                                    properties {\n                                        \"architecture.id\" \"azure.cluster.az3.data.pgA.instance\"\n                                        \"member\" \"a\"\n                                        \"zone\" \"3\"\n                                        \"role\" \"standby\"\n                                    }\n                                }\n                                volume = infrastructureNode \"PGDATA A AZ 3\" \"Independent durable data directory for this instance.\" \"Premium SSD ZRS / CSI\" {\n                                    tags \"Database\"\n                                    properties {\n                                        \"architecture.id\" \"azure.cluster.az3.data.pgA.volume\"\n                                    }\n                                }\n                            }\n                            pgB = deploymentNode \"Member B PostgreSQL standby\" \"One instance per zone; separate Core/FFTM databases; ANY 1 synchronous standby.\" \"CloudNativePG pod\" {\n                                tags \"MemberB\"\n                                properties {\n                                    \"architecture.id\" \"azure.cluster.az3.data.pgB\"\n                                }\n                                instance = containerInstance firefly.pgReplica production.memberB {\n                                    properties {\n                                        \"architecture.id\" \"azure.cluster.az3.data.pgB.instance\"\n                                        \"member\" \"b\"\n                                        \"zone\" \"3\"\n                                        \"role\" \"standby\"\n                                    }\n                                }\n                                volume = infrastructureNode \"PGDATA B AZ 3\" \"Independent durable data directory for this instance.\" \"Premium SSD ZRS / CSI\" {\n                                    tags \"Database\"\n                                    properties {\n                                        \"architecture.id\" \"azure.cluster.az3.data.pgB.volume\"\n                                    }\n                                }\n                            }\n                            pgC = deploymentNode \"Member C PostgreSQL primary\" \"One instance per zone; separate Core/FFTM databases; ANY 1 synchronous standby.\" \"CloudNativePG pod\" {\n                                tags \"MemberC\"\n                                properties {\n                                    \"architecture.id\" \"azure.cluster.az3.data.pgC\"\n                                }\n                                instance = containerInstance firefly.pg production.memberC {\n                                    properties {\n                                        \"architecture.id\" \"azure.cluster.az3.data.pgC.instance\"\n                                        \"member\" \"c\"\n                                        \"zone\" \"3\"\n                                        \"role\" \"primary\"\n                                    }\n                                }\n                                volume = infrastructureNode \"PGDATA C AZ 3\" \"Independent durable data directory for this instance.\" \"Premium SSD ZRS / CSI\" {\n                                    tags \"Database\"\n                                    properties {\n                                        \"architecture.id\" \"azure.cluster.az3.data.pgC.volume\"\n                                    }\n                                }\n                            }\n                            besuc2 = deploymentNode \"Besu C2 validator pod\" \"Unique node key and data directory; node anti-affinity; private P2P.\" \"Kubernetes StatefulSet\" {\n                                tags \"Blockchain\"\n                                properties {\n                                    \"architecture.id\" \"azure.cluster.az3.data.besuc2\"\n                                }\n                                instance = containerInstance besu.node production.blockchain {\n                                    description \"C2: validator; owner C; AZ 3. Dedicated node key and ledger.\"\n                                    properties {\n                                        \"architecture.id\" \"azure.cluster.az3.data.besuc2.instance\"\n                                        \"member\" \"c\"\n                                        \"zone\" \"3\"\n                                        \"role\" \"validator\"\n                                    }\n                                }\n                                volume = infrastructureNode \"Besu ledger C2\" \"Dedicated node data, retained during replacement.\" \"Premium SSD ZRS / CSI\" {\n                                    tags \"Database\"\n                                    properties {\n                                        \"architecture.id\" \"azure.cluster.az3.data.besuc2.volume\"\n                                    }\n                                }\n                            }\n                            besua2 = deploymentNode \"Besu A2 validator pod\" \"Unique node key and data directory; node anti-affinity; private P2P.\" \"Kubernetes StatefulSet\" {\n                                tags \"Blockchain\"\n                                properties {\n                                    \"architecture.id\" \"azure.cluster.az3.data.besua2\"\n                                }\n                                instance = containerInstance besu.node production.blockchain {\n                                    description \"A2: validator; owner A; AZ 3. Dedicated node key and ledger.\"\n                                    properties {\n                                        \"architecture.id\" \"azure.cluster.az3.data.besua2.instance\"\n                                        \"member\" \"a\"\n                                        \"zone\" \"3\"\n                                        \"role\" \"validator\"\n                                    }\n                                }\n                                volume = infrastructureNode \"Besu ledger A2\" \"Dedicated node data, retained during replacement.\" \"Premium SSD ZRS / CSI\" {\n                                    tags \"Database\"\n                                    properties {\n                                        \"architecture.id\" \"azure.cluster.az3.data.besua2.volume\"\n                                    }\n                                }\n                            }\n                            besurpc3 = deploymentNode \"Besu RPC3 RPC pod\" \"Unique node key and data directory; node anti-affinity; private P2P.\" \"Kubernetes StatefulSet\" {\n                                tags \"Blockchain\"\n                                properties {\n                                    \"architecture.id\" \"azure.cluster.az3.data.besurpc3\"\n                                }\n                                instance = containerInstance besu.node production.blockchain,production.rpcAccess {\n                                    description \"RPC3: rpc and bootnode; owner CONSORTIUM; AZ 3. Dedicated node key and ledger.\"\n                                    properties {\n                                        \"architecture.id\" \"azure.cluster.az3.data.besurpc3.instance\"\n                                        \"member\" \"consortium\"\n                                        \"zone\" \"3\"\n                                        \"role\" \"rpc and bootnode\"\n                                    }\n                                }\n                                volume = infrastructureNode \"Besu ledger RPC3\" \"Dedicated node data, retained during replacement.\" \"Premium SSD ZRS / CSI\" {\n                                    tags \"Database\"\n                                    properties {\n                                        \"architecture.id\" \"azure.cluster.az3.data.besurpc3.volume\"\n                                    }\n                                }\n                            }\n                        }\n                    }\n                }\n                control = infrastructureNode \"Managed control plane\" \"Schedules workloads and stores Kubernetes objects; Azure-managed.\" \"AKS API / etcd\" {\n                    tags \"Operational\"\n                    properties {\n                        \"architecture.id\" \"azure.control\"\n                    }\n                    -> production.azure.cluster.az1.system.agent \"Schedules and reconciles system workloads\" \"Kubernetes API / TLS\" \"Operational\"\n                    -> production.azure.cluster.az2.system.agent \"Schedules and reconciles system workloads\" \"Kubernetes API / TLS\" \"Operational\"\n                    -> production.azure.cluster.az3.system.agent \"Schedules and reconciles system workloads\" \"Kubernetes API / TLS\" \"Operational\"\n                }\n                lb = infrastructureNode \"Zone-redundant load balancer\" \"Exposes private member API and passthrough peer endpoints.\" \"Azure Standard Load Balancer\" {\n                    tags \"Operational\"\n                    properties {\n                        \"architecture.id\" \"azure.lb\"\n                    }\n                    -> production.azure.cluster.az1.apps.gateway.instance \"Routes HTTPS and peer TLS sessions\" \"TCP / TLS\" \"Operational\"\n                    -> production.azure.cluster.az2.apps.gateway.instance \"Routes HTTPS and peer TLS sessions\" \"TCP / TLS\" \"Operational\"\n                    -> production.azure.cluster.az3.apps.gateway.instance \"Routes HTTPS and peer TLS sessions\" \"TCP / TLS\" \"Operational\"\n                }\n                secrets = infrastructureNode \"Kubernetes secret projection\" \"Projects namespaced configuration and distinct node keys.\" \"Kubernetes API / Secret volumes\" {\n                    tags \"Operational\"\n                    properties {\n                        \"architecture.id\" \"azure.secrets\"\n                    }\n                }\n                csi = infrastructureNode \"Azure Disk CSI controller\" \"Provisions volumes and coordinates safe reattachment.\" \"Azure Disk CSI / ARM\" {\n                    tags \"Operational\"\n                    properties {\n                        \"architecture.id\" \"azure.csi\"\n                    }\n                    -> production.azure.cluster.az1.apps.memberA.blobs.store \"Provisions and safely attaches member storage\" \"CSI / Azure ARM\" \"Operational\"\n                    -> production.azure.cluster.az1.apps.memberA.ipfsRepo.store \"Provisions and safely attaches member storage\" \"CSI / Azure ARM\" \"Operational\"\n                    -> production.azure.cluster.az1.data.pgA.volume \"Provisions a dedicated PGDATA volume\" \"CSI / Azure ARM\" \"Operational\"\n                    -> production.azure.cluster.az2.data.pgA.volume \"Provisions a dedicated PGDATA volume\" \"CSI / Azure ARM\" \"Operational\"\n                    -> production.azure.cluster.az3.data.pgA.volume \"Provisions a dedicated PGDATA volume\" \"CSI / Azure ARM\" \"Operational\"\n                    -> production.azure.cluster.az2.apps.memberB.blobs.store \"Provisions and safely attaches member storage\" \"CSI / Azure ARM\" \"Operational\"\n                    -> production.azure.cluster.az2.apps.memberB.ipfsRepo.store \"Provisions and safely attaches member storage\" \"CSI / Azure ARM\" \"Operational\"\n                    -> production.azure.cluster.az1.data.pgB.volume \"Provisions a dedicated PGDATA volume\" \"CSI / Azure ARM\" \"Operational\"\n                    -> production.azure.cluster.az2.data.pgB.volume \"Provisions a dedicated PGDATA volume\" \"CSI / Azure ARM\" \"Operational\"\n                    -> production.azure.cluster.az3.data.pgB.volume \"Provisions a dedicated PGDATA volume\" \"CSI / Azure ARM\" \"Operational\"\n                    -> production.azure.cluster.az3.apps.memberC.blobs.store \"Provisions and safely attaches member storage\" \"CSI / Azure ARM\" \"Operational\"\n                    -> production.azure.cluster.az3.apps.memberC.ipfsRepo.store \"Provisions and safely attaches member storage\" \"CSI / Azure ARM\" \"Operational\"\n                    -> production.azure.cluster.az1.data.pgC.volume \"Provisions a dedicated PGDATA volume\" \"CSI / Azure ARM\" \"Operational\"\n                    -> production.azure.cluster.az2.data.pgC.volume \"Provisions a dedicated PGDATA volume\" \"CSI / Azure ARM\" \"Operational\"\n                    -> production.azure.cluster.az3.data.pgC.volume \"Provisions a dedicated PGDATA volume\" \"CSI / Azure ARM\" \"Operational\"\n                    -> production.azure.cluster.az1.data.besua1.volume \"Provisions a node-specific ledger volume\" \"CSI / Azure ARM\" \"Operational\"\n                    -> production.azure.cluster.az1.data.besub1.volume \"Provisions a node-specific ledger volume\" \"CSI / Azure ARM\" \"Operational\"\n                    -> production.azure.cluster.az2.data.besub2.volume \"Provisions a node-specific ledger volume\" \"CSI / Azure ARM\" \"Operational\"\n                    -> production.azure.cluster.az2.data.besuc1.volume \"Provisions a node-specific ledger volume\" \"CSI / Azure ARM\" \"Operational\"\n                    -> production.azure.cluster.az3.data.besuc2.volume \"Provisions a node-specific ledger volume\" \"CSI / Azure ARM\" \"Operational\"\n                    -> production.azure.cluster.az3.data.besua2.volume \"Provisions a node-specific ledger volume\" \"CSI / Azure ARM\" \"Operational\"\n                    -> production.azure.cluster.az1.data.besurpc1.volume \"Provisions a node-specific ledger volume\" \"CSI / Azure ARM\" \"Operational\"\n                    -> production.azure.cluster.az2.data.besurpc2.volume \"Provisions a node-specific ledger volume\" \"CSI / Azure ARM\" \"Operational\"\n                    -> production.azure.cluster.az3.data.besurpc3.volume \"Provisions a node-specific ledger volume\" \"CSI / Azure ARM\" \"Operational\"\n                }\n                secretStores = deploymentNode \"Member secret stores\" \"Separate namespace objects containing encrypted keystores and credentials.\" \"Kubernetes Secrets\" {\n                    properties {\n                        \"architecture.id\" \"azure.secretStores\"\n                    }\n                    a = containerInstance firefly.secrets production.memberA {\n                        properties {\n                            \"architecture.id\" \"azure.secretStores.a\"\n                            \"member\" \"a\"\n                            \"zone\" \"regional\"\n                            \"role\" \"projected configuration\"\n                        }\n                    }\n                    b = containerInstance firefly.secrets production.memberB {\n                        properties {\n                            \"architecture.id\" \"azure.secretStores.b\"\n                            \"member\" \"b\"\n                            \"zone\" \"regional\"\n                            \"role\" \"projected configuration\"\n                        }\n                    }\n                    c = containerInstance firefly.secrets production.memberC {\n                        properties {\n                            \"architecture.id\" \"azure.secretStores.c\"\n                            \"member\" \"c\"\n                            \"zone\" \"regional\"\n                            \"role\" \"projected configuration\"\n                        }\n                    }\n                }\n                rpc = infrastructureNode \"Private RPC Service\" \"Routes to synchronized RPC nodes; session affinity protects node-local filters.\" \"Kubernetes Service / session affinity\" {\n                    tags \"Operational\"\n                    properties {\n                        \"architecture.id\" \"azure.rpc\"\n                    }\n                    -> production.azure.cluster.az1.data.besurpc1.instance \"Routes pinned JSON-RPC sessions\" \"HTTP JSON-RPC\" \"Operational\"\n                    -> production.azure.cluster.az2.data.besurpc2.instance \"Routes pinned JSON-RPC sessions\" \"HTTP JSON-RPC\" \"Operational\"\n                    -> production.azure.cluster.az3.data.besurpc3.instance \"Routes pinned JSON-RPC sessions\" \"HTTP JSON-RPC\" \"Operational\"\n                }\n            }\n        }",
+    "        !element production.azure.control {\n            -> production.azure.secrets \"Stores and projects namespace configuration\" \"Kubernetes API / TLS\" \"Operational\"\n            -> production.azure.csi \"Reconciles volume attachments\" \"Kubernetes API / TLS\" \"Operational\"\n        }",
+    "        !element production.azure.cluster.az1.apps.cnpg.instance {\n            -> production.azure.control \"Watches clusters and updates primary Services\" \"Kubernetes API / TLS\" \"Operational\"\n        }",
+    "        !element production.azure.cluster.az2.apps.cnpg.instance {\n            -> production.azure.control \"Watches clusters and updates primary Services\" \"Kubernetes API / TLS\" \"Operational\"\n        }",
+    "        !element production.azure.cluster.az3.apps.cnpg.instance {\n            -> production.azure.control \"Watches clusters and updates primary Services\" \"Kubernetes API / TLS\" \"Operational\"\n        }",
+    "        !element production.azure.cluster.az1.apps.memberA.core.instance {\n            -> production.azure.secrets \"Reads projected member configuration\" \"Read-only projected files\" \"Operational\"\n        }",
+    "        !element production.azure.cluster.az1.apps.memberA.evm.instance {\n            -> production.azure.secrets \"Reads projected member configuration\" \"Read-only projected files\" \"Operational\"\n        }",
+    "        !element production.azure.cluster.az1.apps.memberA.signer.instance {\n            -> production.azure.secrets \"Reads projected member configuration\" \"Read-only projected files\" \"Operational\"\n            -> production.azure.rpc \"Sends signed transactions and queries\" \"HTTP JSON-RPC\" \"Operational\"\n        }",
+    "        !element production.azure.cluster.az1.apps.memberA.dx.instance {\n            -> production.azure.secrets \"Reads projected member configuration\" \"Read-only projected files\" \"Operational\"\n        }",
+    "        !element production.azure.cluster.az1.apps.memberA.erc20.instance {\n            -> production.azure.secrets \"Reads projected member configuration\" \"Read-only projected files\" \"Operational\"\n        }",
+    "        !element production.azure.cluster.az1.apps.memberA.erc1155.instance {\n            -> production.azure.secrets \"Reads projected member configuration\" \"Read-only projected files\" \"Operational\"\n        }",
+    "        !element production.azure.cluster.az1.apps.memberA.ipfs.instance {\n            -> production.azure.secrets \"Reads projected member configuration\" \"Read-only projected files\" \"Operational\"\n        }",
+    "        !element production.azure.cluster.az1.data.pgA.instance {\n            -> production.azure.cluster.az1.data.pgA.volume \"Reads and writes database pages and WAL\" \"Filesystem I/O\" \"Operational\"\n        }",
+    "        !element production.azure.cluster.az2.data.pgA.instance {\n            -> production.azure.cluster.az2.data.pgA.volume \"Reads and writes database pages and WAL\" \"Filesystem I/O\" \"Operational\"\n        }",
+    "        !element production.azure.cluster.az3.data.pgA.instance {\n            -> production.azure.cluster.az3.data.pgA.volume \"Reads and writes database pages and WAL\" \"Filesystem I/O\" \"Operational\"\n        }",
+    "        !element production.azure.cluster.az2.apps.memberB.core.instance {\n            -> production.azure.secrets \"Reads projected member configuration\" \"Read-only projected files\" \"Operational\"\n        }",
+    "        !element production.azure.cluster.az2.apps.memberB.evm.instance {\n            -> production.azure.secrets \"Reads projected member configuration\" \"Read-only projected files\" \"Operational\"\n        }",
+    "        !element production.azure.cluster.az2.apps.memberB.signer.instance {\n            -> production.azure.secrets \"Reads projected member configuration\" \"Read-only projected files\" \"Operational\"\n            -> production.azure.rpc \"Sends signed transactions and queries\" \"HTTP JSON-RPC\" \"Operational\"\n        }",
+    "        !element production.azure.cluster.az2.apps.memberB.dx.instance {\n            -> production.azure.secrets \"Reads projected member configuration\" \"Read-only projected files\" \"Operational\"\n        }",
+    "        !element production.azure.cluster.az2.apps.memberB.erc20.instance {\n            -> production.azure.secrets \"Reads projected member configuration\" \"Read-only projected files\" \"Operational\"\n        }",
+    "        !element production.azure.cluster.az2.apps.memberB.erc1155.instance {\n            -> production.azure.secrets \"Reads projected member configuration\" \"Read-only projected files\" \"Operational\"\n        }",
+    "        !element production.azure.cluster.az2.apps.memberB.ipfs.instance {\n            -> production.azure.secrets \"Reads projected member configuration\" \"Read-only projected files\" \"Operational\"\n        }",
+    "        !element production.azure.cluster.az1.data.pgB.instance {\n            -> production.azure.cluster.az1.data.pgB.volume \"Reads and writes database pages and WAL\" \"Filesystem I/O\" \"Operational\"\n        }",
+    "        !element production.azure.cluster.az2.data.pgB.instance {\n            -> production.azure.cluster.az2.data.pgB.volume \"Reads and writes database pages and WAL\" \"Filesystem I/O\" \"Operational\"\n        }",
+    "        !element production.azure.cluster.az3.data.pgB.instance {\n            -> production.azure.cluster.az3.data.pgB.volume \"Reads and writes database pages and WAL\" \"Filesystem I/O\" \"Operational\"\n        }",
+    "        !element production.azure.cluster.az3.apps.memberC.core.instance {\n            -> production.azure.secrets \"Reads projected member configuration\" \"Read-only projected files\" \"Operational\"\n        }",
+    "        !element production.azure.cluster.az3.apps.memberC.evm.instance {\n            -> production.azure.secrets \"Reads projected member configuration\" \"Read-only projected files\" \"Operational\"\n        }",
+    "        !element production.azure.cluster.az3.apps.memberC.signer.instance {\n            -> production.azure.secrets \"Reads projected member configuration\" \"Read-only projected files\" \"Operational\"\n            -> production.azure.rpc \"Sends signed transactions and queries\" \"HTTP JSON-RPC\" \"Operational\"\n        }",
+    "        !element production.azure.cluster.az3.apps.memberC.dx.instance {\n            -> production.azure.secrets \"Reads projected member configuration\" \"Read-only projected files\" \"Operational\"\n        }",
+    "        !element production.azure.cluster.az3.apps.memberC.erc20.instance {\n            -> production.azure.secrets \"Reads projected member configuration\" \"Read-only projected files\" \"Operational\"\n        }",
+    "        !element production.azure.cluster.az3.apps.memberC.erc1155.instance {\n            -> production.azure.secrets \"Reads projected member configuration\" \"Read-only projected files\" \"Operational\"\n        }",
+    "        !element production.azure.cluster.az3.apps.memberC.ipfs.instance {\n            -> production.azure.secrets \"Reads projected member configuration\" \"Read-only projected files\" \"Operational\"\n        }",
+    "        !element production.azure.cluster.az1.data.pgC.instance {\n            -> production.azure.cluster.az1.data.pgC.volume \"Reads and writes database pages and WAL\" \"Filesystem I/O\" \"Operational\"\n        }",
+    "        !element production.azure.cluster.az2.data.pgC.instance {\n            -> production.azure.cluster.az2.data.pgC.volume \"Reads and writes database pages and WAL\" \"Filesystem I/O\" \"Operational\"\n        }",
+    "        !element production.azure.cluster.az3.data.pgC.instance {\n            -> production.azure.cluster.az3.data.pgC.volume \"Reads and writes database pages and WAL\" \"Filesystem I/O\" \"Operational\"\n        }",
+    "        !element production.azure.cluster.az1.data.besua1.instance {\n            -> production.azure.cluster.az1.data.besua1.volume \"Persists ledger, receipts and world state\" \"Filesystem I/O\" \"Operational\"\n            -> production.azure.secrets \"Reads its unique Besu node key\" \"Read-only projected secret\" \"Operational\"\n        }",
+    "        !element production.azure.cluster.az1.data.besub1.instance {\n            -> production.azure.cluster.az1.data.besub1.volume \"Persists ledger, receipts and world state\" \"Filesystem I/O\" \"Operational\"\n            -> production.azure.secrets \"Reads its unique Besu node key\" \"Read-only projected secret\" \"Operational\"\n        }",
+    "        !element production.azure.cluster.az2.data.besub2.instance {\n            -> production.azure.cluster.az2.data.besub2.volume \"Persists ledger, receipts and world state\" \"Filesystem I/O\" \"Operational\"\n            -> production.azure.secrets \"Reads its unique Besu node key\" \"Read-only projected secret\" \"Operational\"\n        }",
+    "        !element production.azure.cluster.az2.data.besuc1.instance {\n            -> production.azure.cluster.az2.data.besuc1.volume \"Persists ledger, receipts and world state\" \"Filesystem I/O\" \"Operational\"\n            -> production.azure.secrets \"Reads its unique Besu node key\" \"Read-only projected secret\" \"Operational\"\n        }",
+    "        !element production.azure.cluster.az3.data.besuc2.instance {\n            -> production.azure.cluster.az3.data.besuc2.volume \"Persists ledger, receipts and world state\" \"Filesystem I/O\" \"Operational\"\n            -> production.azure.secrets \"Reads its unique Besu node key\" \"Read-only projected secret\" \"Operational\"\n        }",
+    "        !element production.azure.cluster.az3.data.besua2.instance {\n            -> production.azure.cluster.az3.data.besua2.volume \"Persists ledger, receipts and world state\" \"Filesystem I/O\" \"Operational\"\n            -> production.azure.secrets \"Reads its unique Besu node key\" \"Read-only projected secret\" \"Operational\"\n        }",
+    "        !element production.azure.cluster.az1.data.besurpc1.instance {\n            -> production.azure.cluster.az1.data.besurpc1.volume \"Persists ledger, receipts and world state\" \"Filesystem I/O\" \"Operational\"\n            -> production.azure.secrets \"Reads its unique Besu node key\" \"Read-only projected secret\" \"Operational\"\n        }",
+    "        !element production.azure.cluster.az2.data.besurpc2.instance {\n            -> production.azure.cluster.az2.data.besurpc2.volume \"Persists ledger, receipts and world state\" \"Filesystem I/O\" \"Operational\"\n            -> production.azure.secrets \"Reads its unique Besu node key\" \"Read-only projected secret\" \"Operational\"\n        }",
+    "        !element production.azure.cluster.az3.data.besurpc3.instance {\n            -> production.azure.cluster.az3.data.besurpc3.volume \"Persists ledger, receipts and world state\" \"Filesystem I/O\" \"Operational\"\n            -> production.azure.secrets \"Reads its unique Besu node key\" \"Read-only projected secret\" \"Operational\"\n        }",
+    "        deployment * production \"80-deployment-a\" \"Deployment - Member A across three AKS zones\" {\n            title \"Deployment - Member A across three AKS zones\"\n            include production.azure.secretStores.a production.azure.cluster.az1.apps.memberA.core.instance production.azure.cluster.az1.apps.memberA.evm.instance production.azure.cluster.az1.apps.memberA.signer.instance production.azure.cluster.az1.apps.memberA.dx.instance production.azure.cluster.az1.apps.memberA.erc20.instance production.azure.cluster.az1.apps.memberA.erc1155.instance production.azure.cluster.az1.apps.memberA.ipfs.instance production.azure.cluster.az1.apps.memberA.blobs.store production.azure.cluster.az1.apps.memberA.ipfsRepo.store production.azure.cluster.az1.data.pgA.instance production.azure.cluster.az2.data.pgA.instance production.azure.cluster.az3.data.pgA.instance production.azure.control production.azure.secrets production.azure.csi production.azure.cluster.az1.data.pgA.volume production.azure.cluster.az2.data.pgA.volume production.azure.cluster.az3.data.pgA.volume production.azure.rpc\n            autoLayout lr 360 200\n        }",
+    "        deployment * production \"80-deployment-b\" \"Deployment - Member B across three AKS zones\" {\n            title \"Deployment - Member B across three AKS zones\"\n            include production.azure.secretStores.b production.azure.cluster.az2.apps.memberB.core.instance production.azure.cluster.az2.apps.memberB.evm.instance production.azure.cluster.az2.apps.memberB.signer.instance production.azure.cluster.az2.apps.memberB.dx.instance production.azure.cluster.az2.apps.memberB.erc20.instance production.azure.cluster.az2.apps.memberB.erc1155.instance production.azure.cluster.az2.apps.memberB.ipfs.instance production.azure.cluster.az2.apps.memberB.blobs.store production.azure.cluster.az2.apps.memberB.ipfsRepo.store production.azure.cluster.az1.data.pgB.instance production.azure.cluster.az2.data.pgB.instance production.azure.cluster.az3.data.pgB.instance production.azure.control production.azure.secrets production.azure.csi production.azure.cluster.az1.data.pgB.volume production.azure.cluster.az2.data.pgB.volume production.azure.cluster.az3.data.pgB.volume production.azure.rpc\n            autoLayout lr 360 200\n        }",
+    "        deployment * production \"80-deployment-c\" \"Deployment - Member C across three AKS zones\" {\n            title \"Deployment - Member C across three AKS zones\"\n            include production.azure.secretStores.c production.azure.cluster.az3.apps.memberC.core.instance production.azure.cluster.az3.apps.memberC.evm.instance production.azure.cluster.az3.apps.memberC.signer.instance production.azure.cluster.az3.apps.memberC.dx.instance production.azure.cluster.az3.apps.memberC.erc20.instance production.azure.cluster.az3.apps.memberC.erc1155.instance production.azure.cluster.az3.apps.memberC.ipfs.instance production.azure.cluster.az3.apps.memberC.blobs.store production.azure.cluster.az3.apps.memberC.ipfsRepo.store production.azure.cluster.az1.data.pgC.instance production.azure.cluster.az2.data.pgC.instance production.azure.cluster.az3.data.pgC.instance production.azure.control production.azure.secrets production.azure.csi production.azure.cluster.az1.data.pgC.volume production.azure.cluster.az2.data.pgC.volume production.azure.cluster.az3.data.pgC.volume production.azure.rpc\n            autoLayout lr 360 200\n        }",
+    "        deployment * production \"81-deployment-besu\" \"Deployment - six QBFT validators and three RPC nodes\" {\n            title \"Deployment - six QBFT validators and three RPC nodes\"\n            include production.azure.cluster.az1.data.besua1.instance production.azure.cluster.az1.data.besub1.instance production.azure.cluster.az2.data.besub2.instance production.azure.cluster.az2.data.besuc1.instance production.azure.cluster.az3.data.besuc2.instance production.azure.cluster.az3.data.besua2.instance production.azure.cluster.az1.data.besurpc1.instance production.azure.cluster.az2.data.besurpc2.instance production.azure.cluster.az3.data.besurpc3.instance production.azure.secrets production.azure.cluster.az1.data.besua1.volume production.azure.cluster.az1.data.besub1.volume production.azure.cluster.az2.data.besub2.volume production.azure.cluster.az2.data.besuc1.volume production.azure.cluster.az3.data.besuc2.volume production.azure.cluster.az3.data.besua2.volume production.azure.cluster.az1.data.besurpc1.volume production.azure.cluster.az2.data.besurpc2.volume production.azure.cluster.az3.data.besurpc3.volume production.azure.rpc\n            autoLayout tb 360 200\n        }",
+    "        deployment * production \"82-deployment-operations\" \"Deployment - AKS operations and control\" {\n            title \"Deployment - AKS operations and control\"\n            include production.azure.cluster.az1.apps.gateway.instance production.azure.cluster.az1.apps.cnpg.instance production.azure.cluster.az1.apps.prometheus.instance production.azure.cluster.az1.apps.grafana.instance production.azure.cluster.az2.apps.gateway.instance production.azure.cluster.az2.apps.cnpg.instance production.azure.cluster.az2.apps.prometheus.instance production.azure.cluster.az3.apps.gateway.instance production.azure.cluster.az3.apps.cnpg.instance production.azure.cluster.az3.apps.prometheus.instance production.azure.control production.azure.lb production.azure.secrets production.azure.csi production.azure.cluster.az1.system.agent production.azure.cluster.az2.system.agent production.azure.cluster.az3.system.agent\n            autoLayout lr 360 200\n        }",
+    "        deployment * production \"99-deployment-complete\" \"Deployment - complete three-member three-zone AKS reference\" {\n            title \"Deployment - complete three-member three-zone AKS reference\"\n            include production.azure.control production.azure.lb production.azure.secrets production.azure.csi production.azure.secretStores.a production.azure.secretStores.b production.azure.secretStores.c production.azure.cluster.az1.system.agent production.azure.cluster.az1.apps.gateway.instance production.azure.cluster.az1.apps.cnpg.instance production.azure.cluster.az1.apps.prometheus.instance production.azure.cluster.az1.apps.grafana.instance production.azure.cluster.az2.system.agent production.azure.cluster.az2.apps.gateway.instance production.azure.cluster.az2.apps.cnpg.instance production.azure.cluster.az2.apps.prometheus.instance production.azure.cluster.az3.system.agent production.azure.cluster.az3.apps.gateway.instance production.azure.cluster.az3.apps.cnpg.instance production.azure.cluster.az3.apps.prometheus.instance production.azure.cluster.az1.apps.memberA.core.instance production.azure.cluster.az1.apps.memberA.evm.instance production.azure.cluster.az1.apps.memberA.signer.instance production.azure.cluster.az1.apps.memberA.dx.instance production.azure.cluster.az1.apps.memberA.erc20.instance production.azure.cluster.az1.apps.memberA.erc1155.instance production.azure.cluster.az1.apps.memberA.ipfs.instance production.azure.cluster.az1.apps.memberA.blobs.store production.azure.cluster.az1.apps.memberA.ipfsRepo.store production.azure.cluster.az1.data.pgA.instance production.azure.cluster.az1.data.pgA.volume production.azure.cluster.az2.data.pgA.instance production.azure.cluster.az2.data.pgA.volume production.azure.cluster.az3.data.pgA.instance production.azure.cluster.az3.data.pgA.volume production.azure.cluster.az2.apps.memberB.core.instance production.azure.cluster.az2.apps.memberB.evm.instance production.azure.cluster.az2.apps.memberB.signer.instance production.azure.cluster.az2.apps.memberB.dx.instance production.azure.cluster.az2.apps.memberB.erc20.instance production.azure.cluster.az2.apps.memberB.erc1155.instance production.azure.cluster.az2.apps.memberB.ipfs.instance production.azure.cluster.az2.apps.memberB.blobs.store production.azure.cluster.az2.apps.memberB.ipfsRepo.store production.azure.cluster.az1.data.pgB.instance production.azure.cluster.az1.data.pgB.volume production.azure.cluster.az2.data.pgB.instance production.azure.cluster.az2.data.pgB.volume production.azure.cluster.az3.data.pgB.instance production.azure.cluster.az3.data.pgB.volume production.azure.cluster.az3.apps.memberC.core.instance production.azure.cluster.az3.apps.memberC.evm.instance production.azure.cluster.az3.apps.memberC.signer.instance production.azure.cluster.az3.apps.memberC.dx.instance production.azure.cluster.az3.apps.memberC.erc20.instance production.azure.cluster.az3.apps.memberC.erc1155.instance production.azure.cluster.az3.apps.memberC.ipfs.instance production.azure.cluster.az3.apps.memberC.blobs.store production.azure.cluster.az3.apps.memberC.ipfsRepo.store production.azure.cluster.az1.data.pgC.instance production.azure.cluster.az1.data.pgC.volume production.azure.cluster.az2.data.pgC.instance production.azure.cluster.az2.data.pgC.volume production.azure.cluster.az3.data.pgC.instance production.azure.cluster.az3.data.pgC.volume production.azure.cluster.az1.data.besua1.instance production.azure.cluster.az1.data.besua1.volume production.azure.cluster.az1.data.besub1.instance production.azure.cluster.az1.data.besub1.volume production.azure.cluster.az2.data.besub2.instance production.azure.cluster.az2.data.besub2.volume production.azure.cluster.az2.data.besuc1.instance production.azure.cluster.az2.data.besuc1.volume production.azure.cluster.az3.data.besuc2.instance production.azure.cluster.az3.data.besuc2.volume production.azure.cluster.az3.data.besua2.instance production.azure.cluster.az3.data.besua2.volume production.azure.cluster.az1.data.besurpc1.instance production.azure.cluster.az1.data.besurpc1.volume production.azure.cluster.az2.data.besurpc2.instance production.azure.cluster.az2.data.besurpc2.volume production.azure.cluster.az3.data.besurpc3.instance production.azure.cluster.az3.data.besurpc3.volume production.azure.rpc\n            autoLayout tb 360 200\n        }"
+  ]
+}

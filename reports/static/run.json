@@ -1,6 +1,6 @@
 {
-  "started_at": "2026-09-18T21:29:39.253508+00:00",
-  "completed_at": "2026-09-18T21:29:48.942575+00:00",
+  "started_at": "2026-09-18T22:39:01.286540+00:00",
+  "completed_at": "2026-09-18T22:39:14.229307+00:00",
   "passed": true,
   "image": "structurizr/structurizr:2026.06.28-noble",
   "commands": [
@@ -46,7 +46,7 @@
         "structurizr/structurizr:2026.06.28-noble",
         "validate",
         "-workspace",
-        "workspace-static.dsl"
+        "workspace.dsl"
       ],
       "exit_code": 0,
       "report": "validate.txt"
@@ -62,7 +62,7 @@
         "structurizr/structurizr:2026.06.28-noble",
         "inspect",
         "-workspace",
-        "workspace-static.dsl"
+        "workspace.dsl"
       ],
       "exit_code": 4,
       "report": "inspect.txt"
@@ -78,7 +78,7 @@
         "structurizr/structurizr:2026.06.28-noble",
         "inspect",
         "-workspace",
-        "workspace-static.dsl",
+        "workspace.dsl",
         "-severity",
         "error,warning"
       ],
@@ -96,11 +96,11 @@
         "structurizr/structurizr:2026.06.28-noble",
         "export",
         "-workspace",
-        "workspace-static.dsl",
+        "workspace.dsl",
         "-format",
         "json",
         "-output",
-        ".cache/static-validation/d128f8f3a4bf42a8838647fa7d2782af"
+        ".cache/static-validation/fe09f707fa7a43469560dac830cf1d87"
       ],
       "exit_code": 0,
       "report": "parse-json.txt"
@@ -147,24 +147,24 @@
       {
         "severity": "INFO",
         "type": "workspace.scope",
-        "message": "This workspace describes the internal details of 5 software systems. It is recommended that a workspace contains the model, views, and documentation for a single software system only."
+        "message": "This workspace describes the internal details of 12 software systems. It is recommended that a workspace contains the model, views, and documentation for a single software system only."
       },
       {
         "severity": "INFO",
         "type": "workspace.scope",
-        "message": "System context views exist for 2 software systems. It is recommended that a workspace includes system context views for a single software system only."
+        "message": "System context views exist for 9 software systems. It is recommended that a workspace includes system context views for a single software system only."
       },
       {
         "severity": "INFO",
         "type": "workspace.scope",
-        "message": "Container views exist for 5 software systems. It is recommended that a workspace includes container views for a single software system only."
+        "message": "Container views exist for 12 software systems. It is recommended that a workspace includes container views for a single software system only."
       }
     ],
     "unexpected": []
   },
   "failure": null,
-  "parsed_workspace": ".cache\\static-validation\\d128f8f3a4bf42a8838647fa7d2782af\\workspace-static.json",
-  "workspace_sha256": "f390205a8efd2a351c771ce0ae6e9226409a4e2bf07510664f7831196ab1ce4f",
+  "parsed_workspace": ".cache\\static-validation\\fe09f707fa7a43469560dac830cf1d87\\workspace.json",
+  "workspace_sha256": "c02997e7715e5788f20fd34e0faa1e41ffb0653306a7f37fefd37fb959d59519",
   "deployment_validation": "NOT RUN",
   "diagram_exports": "NOT RUN"
 }

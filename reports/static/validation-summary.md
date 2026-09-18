@@ -1,12 +1,12 @@
 # Static C4 validation report
 
-Recorded: 2026-09-18T21:29:48.942575+00:00
+Recorded: 2026-09-18T22:39:14.229307+00:00
 
 **Result: PASS**
 
 Image: `structurizr/structurizr:2026.06.28-noble`
 
-Inspected input: `workspace-static.dsl`. The main workspace includes preserved, unvalidated deployment definitions.
+Inspected input: `workspace.dsl`, the sole canonical workspace. Legacy deployment material is archived separately and is not loaded.
 
 ## Commands
 
@@ -24,21 +24,22 @@ Inspected input: `workspace-static.dsl`. The main workspace includes preserved, 
 
 ## Parsed-model checks
 
-- 51 static views, 234 logical elements, 177 components, 418 relationships.
-- 1041 assertions; 0 failures.
+- 89 static views, 331 logical elements, 243 components, 673 relationships.
+- 1884 assertions; 0 failures.
 - Every view has visible, labeled, directed static dataflows and no disconnected boxes.
 - Every component appears in its owning container's component views.
 - Parsed element selections and arrow endpoints exactly match the authored model.
-- Deployment definitions and all existing exports pass preservation comparisons. This is not deployment validation.
+- Only one active DSL workspace and one generated model catalog exist; no opaque relationship identifiers are emitted.
+- Archived deployment material and all historical exports pass preservation comparisons. This is not deployment validation.
 
 ## Retained scope advisories
 
 Only `workspace.scope` is informational. All other inspection severities retain their defaults. Full inspect returns the displayed violation count (some command wrappers collapse it to 1); the separate error/warning gate must return 0.
 
 - This workspace has no defined scope. It is recommended that the workspace scope is set to "Landscape" or "SoftwareSystem".
-- This workspace describes the internal details of 5 software systems. It is recommended that a workspace contains the model, views, and documentation for a single software system only.
-- System context views exist for 2 software systems. It is recommended that a workspace includes system context views for a single software system only.
-- Container views exist for 5 software systems. It is recommended that a workspace includes container views for a single software system only.
+- This workspace describes the internal details of 12 software systems. It is recommended that a workspace contains the model, views, and documentation for a single software system only.
+- System context views exist for 9 software systems. It is recommended that a workspace includes system context views for a single software system only.
+- Container views exist for 12 software systems. It is recommended that a workspace includes container views for a single software system only.
 
 ## Evidence and deferred work
 

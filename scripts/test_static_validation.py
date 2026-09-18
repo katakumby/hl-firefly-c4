@@ -9,6 +9,7 @@ from check_inspect import assess
 from audit_static_workspace import audit, ROOT
 from audit_security_catalog import audit_security_catalog
 from dsl_relationships import relationship_selectors
+from audit_logical_boundaries import audit_logical_boundaries
 
 class InspectionPolicy(unittest.TestCase):
     def test_scope_findings_have_no_fixed_count(self):
@@ -67,6 +68,55 @@ class ParsedModelFaults(unittest.TestCase):
         self.check_fault(change,'Parsed relationships exactly match authored endpoints')
     def test_deployment_content_is_rejected(self):
         self.check_fault(lambda w:w['model'].update(deploymentNodes=[{'id':'unexpected'}]),'Static input contains no deployment nodes')
+
+    def test_group_loss_is_rejected(self):
+        def change(w):
+            system=next(s for s in w['model']['softwareSystems'] if s.get('group'))
+            system.pop('group')
+        self.check_fault(change,'Parsed groups exactly match')
+
+    def test_wrong_context_scope_is_rejected(self):
+        def change(w):
+            v=w['views']['systemContextViews'][0]
+            v['softwareSystemId']=next(s['id'] for s in w['model']['softwareSystems'] if s['id']!=v['softwareSystemId'])
+        self.check_fault(change,'parsed system-context scope matches catalog')
+
+class LogicalBoundaryFaults(unittest.TestCase):
+    @classmethod
+    def setUpClass(cls):
+        cls.catalog=json.loads((ROOT/'model-catalog.json').read_text(encoding='utf-8'))
+
+    def check_fault(self,modify,expected):
+        catalog=deepcopy(self.catalog)
+        modify(catalog)
+        failures=[c['check'] for c in audit_logical_boundaries(catalog) if not c['passed']]
+        self.assertTrue(any(expected in f for f in failures),failures)
+
+    def test_cross_process_in_process_label_is_rejected(self):
+        def change(c):
+            r=next(r for r in c['relationships'] if r['source']=='firefly.explorer' and r['destination']=='firefly.core')
+            r['technology']='In-process calls / Go'
+        self.check_fault(change,'in-process relationships stay within one runtime')
+
+    def test_duplicate_relationship_is_rejected(self):
+        self.check_fault(lambda c:c['relationships'].append(deepcopy(c['relationships'][0])),
+                         'no duplicate directed relationship definitions')
+
+    def test_invisible_relationship_is_rejected(self):
+        def change(c):
+            identifier=c['relationships'][0]['id']
+            for v in c['views']:
+                v['relationships']=[r for r in v['relationships'] if r!=identifier]
+        self.check_fault(change,'every authored relationship appears')
+
+    def test_connected_pairs_are_not_a_connected_diagram(self):
+        def change(c):
+            pairs=[r for r in c['relationships'] if (r['source'],r['destination']) in
+                   {('firefly.core','firefly.pg'),('firefly.evm','firefly.fftmDb')}]
+            c['views'].append({'key':'broken-two-islands','scope':'firefly','kind':'container',
+                              'elements':['firefly.core','firefly.pg','firefly.evm','firefly.fftmDb'],
+                              'relationships':[r['id'] for r in pairs]})
+        self.check_fault(change,'broken-two-islands is one connected diagram')
 
 class SecurityCatalogFaults(unittest.TestCase):
     @classmethod

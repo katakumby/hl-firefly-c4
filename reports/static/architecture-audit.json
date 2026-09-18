@@ -1,10 +1,10 @@
 {
   "passed": true,
-  "elements": 331,
+  "elements": 333,
   "components": 243,
-  "relationships": 673,
-  "views": 89,
-  "assertions": 1884,
+  "relationships": 696,
+  "views": 95,
+  "assertions": 2147,
   "errors": [],
   "deployment_validation": "NOT RUN (legacy material archived)",
   "diagram_exports": "NOT RUN",
@@ -19,6 +19,10 @@
     },
     {
       "check": "Every authored logical element survives parsing",
+      "passed": true
+    },
+    {
+      "check": "Parsed groups exactly match authored navigation groups",
       "passed": true
     },
     {
@@ -71,18 +75,6 @@
     },
     {
       "check": "firefly.core.api: correct C4 parent",
-      "passed": true
-    },
-    {
-      "check": "firefly.core.explorer: name and responsibility present",
-      "passed": true
-    },
-    {
-      "check": "firefly.core.explorer: implementation technology present",
-      "passed": true
-    },
-    {
-      "check": "firefly.core.explorer: correct C4 parent",
       "passed": true
     },
     {
@@ -1250,15 +1242,15 @@
       "passed": true
     },
     {
-      "check": "firefly.pgReplica: name and responsibility present",
+      "check": "firefly.fftmDb: name and responsibility present",
       "passed": true
     },
     {
-      "check": "firefly.pgReplica: implementation technology present",
+      "check": "firefly.fftmDb: implementation technology present",
       "passed": true
     },
     {
-      "check": "firefly.pgReplica: correct C4 parent",
+      "check": "firefly.fftmDb: correct C4 parent",
       "passed": true
     },
     {
@@ -1295,6 +1287,30 @@
     },
     {
       "check": "firefly.secrets: correct C4 parent",
+      "passed": true
+    },
+    {
+      "check": "firefly.explorer: name and responsibility present",
+      "passed": true
+    },
+    {
+      "check": "firefly.explorer: implementation technology present",
+      "passed": true
+    },
+    {
+      "check": "firefly.explorer: correct C4 parent",
+      "passed": true
+    },
+    {
+      "check": "firefly.explorer.app: name and responsibility present",
+      "passed": true
+    },
+    {
+      "check": "firefly.explorer.app: implementation technology present",
+      "passed": true
+    },
+    {
+      "check": "firefly.explorer.app: correct C4 parent",
       "passed": true
     },
     {
@@ -2066,6 +2082,314 @@
       "passed": true
     },
     {
+      "check": "tools: name and responsibility present",
+      "passed": true
+    },
+    {
+      "check": "tools.cli: name and responsibility present",
+      "passed": true
+    },
+    {
+      "check": "tools.cli: implementation technology present",
+      "passed": true
+    },
+    {
+      "check": "tools.cli: correct C4 parent",
+      "passed": true
+    },
+    {
+      "check": "tools.cli.commands: name and responsibility present",
+      "passed": true
+    },
+    {
+      "check": "tools.cli.commands: implementation technology present",
+      "passed": true
+    },
+    {
+      "check": "tools.cli.commands: correct C4 parent",
+      "passed": true
+    },
+    {
+      "check": "tools.cli.stacks: name and responsibility present",
+      "passed": true
+    },
+    {
+      "check": "tools.cli.stacks: implementation technology present",
+      "passed": true
+    },
+    {
+      "check": "tools.cli.stacks: correct C4 parent",
+      "passed": true
+    },
+    {
+      "check": "tools.cli.docker: name and responsibility present",
+      "passed": true
+    },
+    {
+      "check": "tools.cli.docker: implementation technology present",
+      "passed": true
+    },
+    {
+      "check": "tools.cli.docker: correct C4 parent",
+      "passed": true
+    },
+    {
+      "check": "tools.cli.blockchains: name and responsibility present",
+      "passed": true
+    },
+    {
+      "check": "tools.cli.blockchains: implementation technology present",
+      "passed": true
+    },
+    {
+      "check": "tools.cli.blockchains: correct C4 parent",
+      "passed": true
+    },
+    {
+      "check": "tools.cli.tokens: name and responsibility present",
+      "passed": true
+    },
+    {
+      "check": "tools.cli.tokens: implementation technology present",
+      "passed": true
+    },
+    {
+      "check": "tools.cli.tokens: correct C4 parent",
+      "passed": true
+    },
+    {
+      "check": "tools.cli.core: name and responsibility present",
+      "passed": true
+    },
+    {
+      "check": "tools.cli.core: implementation technology present",
+      "passed": true
+    },
+    {
+      "check": "tools.cli.core: correct C4 parent",
+      "passed": true
+    },
+    {
+      "check": "tools.sandbox: name and responsibility present",
+      "passed": true
+    },
+    {
+      "check": "tools.sandbox: implementation technology present",
+      "passed": true
+    },
+    {
+      "check": "tools.sandbox: correct C4 parent",
+      "passed": true
+    },
+    {
+      "check": "tools.sandbox.backend: name and responsibility present",
+      "passed": true
+    },
+    {
+      "check": "tools.sandbox.backend: implementation technology present",
+      "passed": true
+    },
+    {
+      "check": "tools.sandbox.backend: correct C4 parent",
+      "passed": true
+    },
+    {
+      "check": "tools.sandbox.sdk: name and responsibility present",
+      "passed": true
+    },
+    {
+      "check": "tools.sandbox.sdk: implementation technology present",
+      "passed": true
+    },
+    {
+      "check": "tools.sandbox.sdk: correct C4 parent",
+      "passed": true
+    },
+    {
+      "check": "tools.sandbox.sdkHttp: name and responsibility present",
+      "passed": true
+    },
+    {
+      "check": "tools.sandbox.sdkHttp: implementation technology present",
+      "passed": true
+    },
+    {
+      "check": "tools.sandbox.sdkHttp: correct C4 parent",
+      "passed": true
+    },
+    {
+      "check": "tools.sandbox.sdkEvents: name and responsibility present",
+      "passed": true
+    },
+    {
+      "check": "tools.sandbox.sdkEvents: implementation technology present",
+      "passed": true
+    },
+    {
+      "check": "tools.sandbox.sdkEvents: correct C4 parent",
+      "passed": true
+    },
+    {
+      "check": "tools.sandboxUi: name and responsibility present",
+      "passed": true
+    },
+    {
+      "check": "tools.sandboxUi: implementation technology present",
+      "passed": true
+    },
+    {
+      "check": "tools.sandboxUi: correct C4 parent",
+      "passed": true
+    },
+    {
+      "check": "tools.sandboxUi.app: name and responsibility present",
+      "passed": true
+    },
+    {
+      "check": "tools.sandboxUi.app: implementation technology present",
+      "passed": true
+    },
+    {
+      "check": "tools.sandboxUi.app: correct C4 parent",
+      "passed": true
+    },
+    {
+      "check": "tools.perf: name and responsibility present",
+      "passed": true
+    },
+    {
+      "check": "tools.perf: implementation technology present",
+      "passed": true
+    },
+    {
+      "check": "tools.perf: correct C4 parent",
+      "passed": true
+    },
+    {
+      "check": "tools.perf.commands: name and responsibility present",
+      "passed": true
+    },
+    {
+      "check": "tools.perf.commands: implementation technology present",
+      "passed": true
+    },
+    {
+      "check": "tools.perf.commands: correct C4 parent",
+      "passed": true
+    },
+    {
+      "check": "tools.perf.runner: name and responsibility present",
+      "passed": true
+    },
+    {
+      "check": "tools.perf.runner: implementation technology present",
+      "passed": true
+    },
+    {
+      "check": "tools.perf.runner: correct C4 parent",
+      "passed": true
+    },
+    {
+      "check": "tools.perf.server: name and responsibility present",
+      "passed": true
+    },
+    {
+      "check": "tools.perf.server: implementation technology present",
+      "passed": true
+    },
+    {
+      "check": "tools.perf.server: correct C4 parent",
+      "passed": true
+    },
+    {
+      "check": "tools.perf.report: name and responsibility present",
+      "passed": true
+    },
+    {
+      "check": "tools.perf.report: implementation technology present",
+      "passed": true
+    },
+    {
+      "check": "tools.perf.report: correct C4 parent",
+      "passed": true
+    },
+    {
+      "check": "tools.eventAudit: name and responsibility present",
+      "passed": true
+    },
+    {
+      "check": "tools.eventAudit: implementation technology present",
+      "passed": true
+    },
+    {
+      "check": "tools.eventAudit: correct C4 parent",
+      "passed": true
+    },
+    {
+      "check": "tools.eventAudit.reader: name and responsibility present",
+      "passed": true
+    },
+    {
+      "check": "tools.eventAudit.reader: implementation technology present",
+      "passed": true
+    },
+    {
+      "check": "tools.eventAudit.reader: correct C4 parent",
+      "passed": true
+    },
+    {
+      "check": "tools.eventAudit.ordering: name and responsibility present",
+      "passed": true
+    },
+    {
+      "check": "tools.eventAudit.ordering: implementation technology present",
+      "passed": true
+    },
+    {
+      "check": "tools.eventAudit.ordering: correct C4 parent",
+      "passed": true
+    },
+    {
+      "check": "tools.config: name and responsibility present",
+      "passed": true
+    },
+    {
+      "check": "tools.config: implementation technology present",
+      "passed": true
+    },
+    {
+      "check": "tools.config: correct C4 parent",
+      "passed": true
+    },
+    {
+      "check": "tools.config.commands: name and responsibility present",
+      "passed": true
+    },
+    {
+      "check": "tools.config.commands: implementation technology present",
+      "passed": true
+    },
+    {
+      "check": "tools.config.commands: correct C4 parent",
+      "passed": true
+    },
+    {
+      "check": "tools.config.migration: name and responsibility present",
+      "passed": true
+    },
+    {
+      "check": "tools.config.migration: implementation technology present",
+      "passed": true
+    },
+    {
+      "check": "tools.config.migration: correct C4 parent",
+      "passed": true
+    },
+    {
+      "check": "peerMembers: name and responsibility present",
+      "passed": true
+    },
+    {
       "check": "besu: name and responsibility present",
       "passed": true
     },
@@ -2274,6 +2598,10 @@
       "passed": true
     },
     {
+      "check": "evmNetworks: name and responsibility present",
+      "passed": true
+    },
+    {
       "check": "apps: name and responsibility present",
       "passed": true
     },
@@ -2350,298 +2678,6 @@
       "passed": true
     },
     {
-      "check": "tools: name and responsibility present",
-      "passed": true
-    },
-    {
-      "check": "tools.cli: name and responsibility present",
-      "passed": true
-    },
-    {
-      "check": "tools.cli: implementation technology present",
-      "passed": true
-    },
-    {
-      "check": "tools.cli: correct C4 parent",
-      "passed": true
-    },
-    {
-      "check": "tools.cli.commands: name and responsibility present",
-      "passed": true
-    },
-    {
-      "check": "tools.cli.commands: implementation technology present",
-      "passed": true
-    },
-    {
-      "check": "tools.cli.commands: correct C4 parent",
-      "passed": true
-    },
-    {
-      "check": "tools.cli.stacks: name and responsibility present",
-      "passed": true
-    },
-    {
-      "check": "tools.cli.stacks: implementation technology present",
-      "passed": true
-    },
-    {
-      "check": "tools.cli.stacks: correct C4 parent",
-      "passed": true
-    },
-    {
-      "check": "tools.cli.docker: name and responsibility present",
-      "passed": true
-    },
-    {
-      "check": "tools.cli.docker: implementation technology present",
-      "passed": true
-    },
-    {
-      "check": "tools.cli.docker: correct C4 parent",
-      "passed": true
-    },
-    {
-      "check": "tools.cli.blockchains: name and responsibility present",
-      "passed": true
-    },
-    {
-      "check": "tools.cli.blockchains: implementation technology present",
-      "passed": true
-    },
-    {
-      "check": "tools.cli.blockchains: correct C4 parent",
-      "passed": true
-    },
-    {
-      "check": "tools.cli.tokens: name and responsibility present",
-      "passed": true
-    },
-    {
-      "check": "tools.cli.tokens: implementation technology present",
-      "passed": true
-    },
-    {
-      "check": "tools.cli.tokens: correct C4 parent",
-      "passed": true
-    },
-    {
-      "check": "tools.cli.core: name and responsibility present",
-      "passed": true
-    },
-    {
-      "check": "tools.cli.core: implementation technology present",
-      "passed": true
-    },
-    {
-      "check": "tools.cli.core: correct C4 parent",
-      "passed": true
-    },
-    {
-      "check": "tools.sandbox: name and responsibility present",
-      "passed": true
-    },
-    {
-      "check": "tools.sandbox: implementation technology present",
-      "passed": true
-    },
-    {
-      "check": "tools.sandbox: correct C4 parent",
-      "passed": true
-    },
-    {
-      "check": "tools.sandbox.frontend: name and responsibility present",
-      "passed": true
-    },
-    {
-      "check": "tools.sandbox.frontend: implementation technology present",
-      "passed": true
-    },
-    {
-      "check": "tools.sandbox.frontend: correct C4 parent",
-      "passed": true
-    },
-    {
-      "check": "tools.sandbox.backend: name and responsibility present",
-      "passed": true
-    },
-    {
-      "check": "tools.sandbox.backend: implementation technology present",
-      "passed": true
-    },
-    {
-      "check": "tools.sandbox.backend: correct C4 parent",
-      "passed": true
-    },
-    {
-      "check": "tools.sandbox.sdk: name and responsibility present",
-      "passed": true
-    },
-    {
-      "check": "tools.sandbox.sdk: implementation technology present",
-      "passed": true
-    },
-    {
-      "check": "tools.sandbox.sdk: correct C4 parent",
-      "passed": true
-    },
-    {
-      "check": "tools.sandbox.sdkHttp: name and responsibility present",
-      "passed": true
-    },
-    {
-      "check": "tools.sandbox.sdkHttp: implementation technology present",
-      "passed": true
-    },
-    {
-      "check": "tools.sandbox.sdkHttp: correct C4 parent",
-      "passed": true
-    },
-    {
-      "check": "tools.sandbox.sdkEvents: name and responsibility present",
-      "passed": true
-    },
-    {
-      "check": "tools.sandbox.sdkEvents: implementation technology present",
-      "passed": true
-    },
-    {
-      "check": "tools.sandbox.sdkEvents: correct C4 parent",
-      "passed": true
-    },
-    {
-      "check": "tools.perf: name and responsibility present",
-      "passed": true
-    },
-    {
-      "check": "tools.perf: implementation technology present",
-      "passed": true
-    },
-    {
-      "check": "tools.perf: correct C4 parent",
-      "passed": true
-    },
-    {
-      "check": "tools.perf.commands: name and responsibility present",
-      "passed": true
-    },
-    {
-      "check": "tools.perf.commands: implementation technology present",
-      "passed": true
-    },
-    {
-      "check": "tools.perf.commands: correct C4 parent",
-      "passed": true
-    },
-    {
-      "check": "tools.perf.runner: name and responsibility present",
-      "passed": true
-    },
-    {
-      "check": "tools.perf.runner: implementation technology present",
-      "passed": true
-    },
-    {
-      "check": "tools.perf.runner: correct C4 parent",
-      "passed": true
-    },
-    {
-      "check": "tools.perf.server: name and responsibility present",
-      "passed": true
-    },
-    {
-      "check": "tools.perf.server: implementation technology present",
-      "passed": true
-    },
-    {
-      "check": "tools.perf.server: correct C4 parent",
-      "passed": true
-    },
-    {
-      "check": "tools.perf.report: name and responsibility present",
-      "passed": true
-    },
-    {
-      "check": "tools.perf.report: implementation technology present",
-      "passed": true
-    },
-    {
-      "check": "tools.perf.report: correct C4 parent",
-      "passed": true
-    },
-    {
-      "check": "tools.eventAudit: name and responsibility present",
-      "passed": true
-    },
-    {
-      "check": "tools.eventAudit: implementation technology present",
-      "passed": true
-    },
-    {
-      "check": "tools.eventAudit: correct C4 parent",
-      "passed": true
-    },
-    {
-      "check": "tools.eventAudit.reader: name and responsibility present",
-      "passed": true
-    },
-    {
-      "check": "tools.eventAudit.reader: implementation technology present",
-      "passed": true
-    },
-    {
-      "check": "tools.eventAudit.reader: correct C4 parent",
-      "passed": true
-    },
-    {
-      "check": "tools.eventAudit.ordering: name and responsibility present",
-      "passed": true
-    },
-    {
-      "check": "tools.eventAudit.ordering: implementation technology present",
-      "passed": true
-    },
-    {
-      "check": "tools.eventAudit.ordering: correct C4 parent",
-      "passed": true
-    },
-    {
-      "check": "tools.config: name and responsibility present",
-      "passed": true
-    },
-    {
-      "check": "tools.config: implementation technology present",
-      "passed": true
-    },
-    {
-      "check": "tools.config: correct C4 parent",
-      "passed": true
-    },
-    {
-      "check": "tools.config.commands: name and responsibility present",
-      "passed": true
-    },
-    {
-      "check": "tools.config.commands: implementation technology present",
-      "passed": true
-    },
-    {
-      "check": "tools.config.commands: correct C4 parent",
-      "passed": true
-    },
-    {
-      "check": "tools.config.migration: name and responsibility present",
-      "passed": true
-    },
-    {
-      "check": "tools.config.migration: implementation technology present",
-      "passed": true
-    },
-    {
-      "check": "tools.config.migration: correct C4 parent",
-      "passed": true
-    },
-    {
       "check": "ops: name and responsibility present",
       "passed": true
     },
@@ -2698,7 +2734,15 @@
       "passed": true
     },
     {
+      "check": "fabricCA: name and responsibility present",
+      "passed": true
+    },
+    {
       "check": "tezos: name and responsibility present",
+      "passed": true
+    },
+    {
+      "check": "signatory: name and responsibility present",
       "passed": true
     },
     {
@@ -2706,15 +2750,11 @@
       "passed": true
     },
     {
+      "check": "blockfrostService: name and responsibility present",
+      "passed": true
+    },
+    {
       "check": "corda: name and responsibility present",
-      "passed": true
-    },
-    {
-      "check": "peerMembers: name and responsibility present",
-      "passed": true
-    },
-    {
-      "check": "evmNetworks: name and responsibility present",
       "passed": true
     },
     {
@@ -2723,18 +2763,6 @@
     },
     {
       "check": "mongo: name and responsibility present",
-      "passed": true
-    },
-    {
-      "check": "fabricCA: name and responsibility present",
-      "passed": true
-    },
-    {
-      "check": "signatory: name and responsibility present",
-      "passed": true
-    },
-    {
-      "check": "blockfrostService: name and responsibility present",
       "passed": true
     },
     {
@@ -2747,6 +2775,106 @@
     },
     {
       "check": "azureManagement: name and responsibility present",
+      "passed": true
+    },
+    {
+      "check": "managedHsm: name and responsibility present",
+      "passed": true
+    },
+    {
+      "check": "managedHsm.service: name and responsibility present",
+      "passed": true
+    },
+    {
+      "check": "managedHsm.service: implementation technology present",
+      "passed": true
+    },
+    {
+      "check": "managedHsm.service: correct C4 parent",
+      "passed": true
+    },
+    {
+      "check": "managedHsm.service.api: name and responsibility present",
+      "passed": true
+    },
+    {
+      "check": "managedHsm.service.api: implementation technology present",
+      "passed": true
+    },
+    {
+      "check": "managedHsm.service.api: correct C4 parent",
+      "passed": true
+    },
+    {
+      "check": "managedHsm.service.authentication: name and responsibility present",
+      "passed": true
+    },
+    {
+      "check": "managedHsm.service.authentication: implementation technology present",
+      "passed": true
+    },
+    {
+      "check": "managedHsm.service.authentication: correct C4 parent",
+      "passed": true
+    },
+    {
+      "check": "managedHsm.service.authorization: name and responsibility present",
+      "passed": true
+    },
+    {
+      "check": "managedHsm.service.authorization: implementation technology present",
+      "passed": true
+    },
+    {
+      "check": "managedHsm.service.authorization: correct C4 parent",
+      "passed": true
+    },
+    {
+      "check": "managedHsm.service.lifecycle: name and responsibility present",
+      "passed": true
+    },
+    {
+      "check": "managedHsm.service.lifecycle: implementation technology present",
+      "passed": true
+    },
+    {
+      "check": "managedHsm.service.lifecycle: correct C4 parent",
+      "passed": true
+    },
+    {
+      "check": "managedHsm.service.crypto: name and responsibility present",
+      "passed": true
+    },
+    {
+      "check": "managedHsm.service.crypto: implementation technology present",
+      "passed": true
+    },
+    {
+      "check": "managedHsm.service.crypto: correct C4 parent",
+      "passed": true
+    },
+    {
+      "check": "managedHsm.service.audit: name and responsibility present",
+      "passed": true
+    },
+    {
+      "check": "managedHsm.service.audit: implementation technology present",
+      "passed": true
+    },
+    {
+      "check": "managedHsm.service.audit: correct C4 parent",
+      "passed": true
+    },
+    {
+      "check": "managedHsm.keys: name and responsibility present",
+      "passed": true
+    },
+    {
+      "check": "managedHsm.keys: implementation technology present",
+      "passed": true
+    },
+    {
+      "check": "managedHsm.keys: correct C4 parent",
       "passed": true
     },
     {
@@ -2871,474 +2999,6 @@
     },
     {
       "check": "keycloak.database: correct C4 parent",
-      "passed": true
-    },
-    {
-      "check": "managedHsm: name and responsibility present",
-      "passed": true
-    },
-    {
-      "check": "managedHsm.service: name and responsibility present",
-      "passed": true
-    },
-    {
-      "check": "managedHsm.service: implementation technology present",
-      "passed": true
-    },
-    {
-      "check": "managedHsm.service: correct C4 parent",
-      "passed": true
-    },
-    {
-      "check": "managedHsm.service.api: name and responsibility present",
-      "passed": true
-    },
-    {
-      "check": "managedHsm.service.api: implementation technology present",
-      "passed": true
-    },
-    {
-      "check": "managedHsm.service.api: correct C4 parent",
-      "passed": true
-    },
-    {
-      "check": "managedHsm.service.authentication: name and responsibility present",
-      "passed": true
-    },
-    {
-      "check": "managedHsm.service.authentication: implementation technology present",
-      "passed": true
-    },
-    {
-      "check": "managedHsm.service.authentication: correct C4 parent",
-      "passed": true
-    },
-    {
-      "check": "managedHsm.service.authorization: name and responsibility present",
-      "passed": true
-    },
-    {
-      "check": "managedHsm.service.authorization: implementation technology present",
-      "passed": true
-    },
-    {
-      "check": "managedHsm.service.authorization: correct C4 parent",
-      "passed": true
-    },
-    {
-      "check": "managedHsm.service.lifecycle: name and responsibility present",
-      "passed": true
-    },
-    {
-      "check": "managedHsm.service.lifecycle: implementation technology present",
-      "passed": true
-    },
-    {
-      "check": "managedHsm.service.lifecycle: correct C4 parent",
-      "passed": true
-    },
-    {
-      "check": "managedHsm.service.crypto: name and responsibility present",
-      "passed": true
-    },
-    {
-      "check": "managedHsm.service.crypto: implementation technology present",
-      "passed": true
-    },
-    {
-      "check": "managedHsm.service.crypto: correct C4 parent",
-      "passed": true
-    },
-    {
-      "check": "managedHsm.service.audit: name and responsibility present",
-      "passed": true
-    },
-    {
-      "check": "managedHsm.service.audit: implementation technology present",
-      "passed": true
-    },
-    {
-      "check": "managedHsm.service.audit: correct C4 parent",
-      "passed": true
-    },
-    {
-      "check": "managedHsm.keys: name and responsibility present",
-      "passed": true
-    },
-    {
-      "check": "managedHsm.keys: implementation technology present",
-      "passed": true
-    },
-    {
-      "check": "managedHsm.keys: correct C4 parent",
-      "passed": true
-    },
-    {
-      "check": "cyberarkPam: name and responsibility present",
-      "passed": true
-    },
-    {
-      "check": "cyberarkPam.vault: name and responsibility present",
-      "passed": true
-    },
-    {
-      "check": "cyberarkPam.vault: implementation technology present",
-      "passed": true
-    },
-    {
-      "check": "cyberarkPam.vault: correct C4 parent",
-      "passed": true
-    },
-    {
-      "check": "cyberarkPam.vault.access: name and responsibility present",
-      "passed": true
-    },
-    {
-      "check": "cyberarkPam.vault.access: implementation technology present",
-      "passed": true
-    },
-    {
-      "check": "cyberarkPam.vault.access: correct C4 parent",
-      "passed": true
-    },
-    {
-      "check": "cyberarkPam.vault.policy: name and responsibility present",
-      "passed": true
-    },
-    {
-      "check": "cyberarkPam.vault.policy: implementation technology present",
-      "passed": true
-    },
-    {
-      "check": "cyberarkPam.vault.policy: correct C4 parent",
-      "passed": true
-    },
-    {
-      "check": "cyberarkPam.vault.storage: name and responsibility present",
-      "passed": true
-    },
-    {
-      "check": "cyberarkPam.vault.storage: implementation technology present",
-      "passed": true
-    },
-    {
-      "check": "cyberarkPam.vault.storage: correct C4 parent",
-      "passed": true
-    },
-    {
-      "check": "cyberarkPam.vault.audit: name and responsibility present",
-      "passed": true
-    },
-    {
-      "check": "cyberarkPam.vault.audit: implementation technology present",
-      "passed": true
-    },
-    {
-      "check": "cyberarkPam.vault.audit: correct C4 parent",
-      "passed": true
-    },
-    {
-      "check": "cyberarkPam.pvwa: name and responsibility present",
-      "passed": true
-    },
-    {
-      "check": "cyberarkPam.pvwa: implementation technology present",
-      "passed": true
-    },
-    {
-      "check": "cyberarkPam.pvwa: correct C4 parent",
-      "passed": true
-    },
-    {
-      "check": "cyberarkPam.pvwa.portal: name and responsibility present",
-      "passed": true
-    },
-    {
-      "check": "cyberarkPam.pvwa.portal: implementation technology present",
-      "passed": true
-    },
-    {
-      "check": "cyberarkPam.pvwa.portal: correct C4 parent",
-      "passed": true
-    },
-    {
-      "check": "cyberarkPam.pvwa.approval: name and responsibility present",
-      "passed": true
-    },
-    {
-      "check": "cyberarkPam.pvwa.approval: implementation technology present",
-      "passed": true
-    },
-    {
-      "check": "cyberarkPam.pvwa.approval: correct C4 parent",
-      "passed": true
-    },
-    {
-      "check": "cyberarkPam.pvwa.vaultClient: name and responsibility present",
-      "passed": true
-    },
-    {
-      "check": "cyberarkPam.pvwa.vaultClient: implementation technology present",
-      "passed": true
-    },
-    {
-      "check": "cyberarkPam.pvwa.vaultClient: correct C4 parent",
-      "passed": true
-    },
-    {
-      "check": "cyberarkPam.pvwa.sessions: name and responsibility present",
-      "passed": true
-    },
-    {
-      "check": "cyberarkPam.pvwa.sessions: implementation technology present",
-      "passed": true
-    },
-    {
-      "check": "cyberarkPam.pvwa.sessions: correct C4 parent",
-      "passed": true
-    },
-    {
-      "check": "cyberarkPam.cpm: name and responsibility present",
-      "passed": true
-    },
-    {
-      "check": "cyberarkPam.cpm: implementation technology present",
-      "passed": true
-    },
-    {
-      "check": "cyberarkPam.cpm: correct C4 parent",
-      "passed": true
-    },
-    {
-      "check": "cyberarkPam.cpm.scheduler: name and responsibility present",
-      "passed": true
-    },
-    {
-      "check": "cyberarkPam.cpm.scheduler: implementation technology present",
-      "passed": true
-    },
-    {
-      "check": "cyberarkPam.cpm.scheduler: correct C4 parent",
-      "passed": true
-    },
-    {
-      "check": "cyberarkPam.cpm.rotation: name and responsibility present",
-      "passed": true
-    },
-    {
-      "check": "cyberarkPam.cpm.rotation: implementation technology present",
-      "passed": true
-    },
-    {
-      "check": "cyberarkPam.cpm.rotation: correct C4 parent",
-      "passed": true
-    },
-    {
-      "check": "cyberarkPam.cpm.target: name and responsibility present",
-      "passed": true
-    },
-    {
-      "check": "cyberarkPam.cpm.target: implementation technology present",
-      "passed": true
-    },
-    {
-      "check": "cyberarkPam.cpm.target: correct C4 parent",
-      "passed": true
-    },
-    {
-      "check": "cyberarkPam.cpm.vaultClient: name and responsibility present",
-      "passed": true
-    },
-    {
-      "check": "cyberarkPam.cpm.vaultClient: implementation technology present",
-      "passed": true
-    },
-    {
-      "check": "cyberarkPam.cpm.vaultClient: correct C4 parent",
-      "passed": true
-    },
-    {
-      "check": "cyberarkPam.psm: name and responsibility present",
-      "passed": true
-    },
-    {
-      "check": "cyberarkPam.psm: implementation technology present",
-      "passed": true
-    },
-    {
-      "check": "cyberarkPam.psm: correct C4 parent",
-      "passed": true
-    },
-    {
-      "check": "cyberarkPam.psm.broker: name and responsibility present",
-      "passed": true
-    },
-    {
-      "check": "cyberarkPam.psm.broker: implementation technology present",
-      "passed": true
-    },
-    {
-      "check": "cyberarkPam.psm.broker: correct C4 parent",
-      "passed": true
-    },
-    {
-      "check": "cyberarkPam.psm.target: name and responsibility present",
-      "passed": true
-    },
-    {
-      "check": "cyberarkPam.psm.target: implementation technology present",
-      "passed": true
-    },
-    {
-      "check": "cyberarkPam.psm.target: correct C4 parent",
-      "passed": true
-    },
-    {
-      "check": "cyberarkPam.psm.recorder: name and responsibility present",
-      "passed": true
-    },
-    {
-      "check": "cyberarkPam.psm.recorder: implementation technology present",
-      "passed": true
-    },
-    {
-      "check": "cyberarkPam.psm.recorder: correct C4 parent",
-      "passed": true
-    },
-    {
-      "check": "conjur: name and responsibility present",
-      "passed": true
-    },
-    {
-      "check": "conjur.service: name and responsibility present",
-      "passed": true
-    },
-    {
-      "check": "conjur.service: implementation technology present",
-      "passed": true
-    },
-    {
-      "check": "conjur.service: correct C4 parent",
-      "passed": true
-    },
-    {
-      "check": "conjur.service.api: name and responsibility present",
-      "passed": true
-    },
-    {
-      "check": "conjur.service.api: implementation technology present",
-      "passed": true
-    },
-    {
-      "check": "conjur.service.api: correct C4 parent",
-      "passed": true
-    },
-    {
-      "check": "conjur.service.authentication: name and responsibility present",
-      "passed": true
-    },
-    {
-      "check": "conjur.service.authentication: implementation technology present",
-      "passed": true
-    },
-    {
-      "check": "conjur.service.authentication: correct C4 parent",
-      "passed": true
-    },
-    {
-      "check": "conjur.service.policy: name and responsibility present",
-      "passed": true
-    },
-    {
-      "check": "conjur.service.policy: implementation technology present",
-      "passed": true
-    },
-    {
-      "check": "conjur.service.policy: correct C4 parent",
-      "passed": true
-    },
-    {
-      "check": "conjur.service.secrets: name and responsibility present",
-      "passed": true
-    },
-    {
-      "check": "conjur.service.secrets: implementation technology present",
-      "passed": true
-    },
-    {
-      "check": "conjur.service.secrets: correct C4 parent",
-      "passed": true
-    },
-    {
-      "check": "conjur.service.audit: name and responsibility present",
-      "passed": true
-    },
-    {
-      "check": "conjur.service.audit: implementation technology present",
-      "passed": true
-    },
-    {
-      "check": "conjur.service.audit: correct C4 parent",
-      "passed": true
-    },
-    {
-      "check": "conjur.store: name and responsibility present",
-      "passed": true
-    },
-    {
-      "check": "conjur.store: implementation technology present",
-      "passed": true
-    },
-    {
-      "check": "conjur.store: correct C4 parent",
-      "passed": true
-    },
-    {
-      "check": "conjur.synchronizer: name and responsibility present",
-      "passed": true
-    },
-    {
-      "check": "conjur.synchronizer: implementation technology present",
-      "passed": true
-    },
-    {
-      "check": "conjur.synchronizer: correct C4 parent",
-      "passed": true
-    },
-    {
-      "check": "conjur.synchronizer.reader: name and responsibility present",
-      "passed": true
-    },
-    {
-      "check": "conjur.synchronizer.reader: implementation technology present",
-      "passed": true
-    },
-    {
-      "check": "conjur.synchronizer.reader: correct C4 parent",
-      "passed": true
-    },
-    {
-      "check": "conjur.synchronizer.mapping: name and responsibility present",
-      "passed": true
-    },
-    {
-      "check": "conjur.synchronizer.mapping: implementation technology present",
-      "passed": true
-    },
-    {
-      "check": "conjur.synchronizer.mapping: correct C4 parent",
-      "passed": true
-    },
-    {
-      "check": "conjur.synchronizer.writer: name and responsibility present",
-      "passed": true
-    },
-    {
-      "check": "conjur.synchronizer.writer: implementation technology present",
-      "passed": true
-    },
-    {
-      "check": "conjur.synchronizer.writer: correct C4 parent",
       "passed": true
     },
     {
@@ -3762,6 +3422,374 @@
       "passed": true
     },
     {
+      "check": "cyberarkPam: name and responsibility present",
+      "passed": true
+    },
+    {
+      "check": "cyberarkPam.vault: name and responsibility present",
+      "passed": true
+    },
+    {
+      "check": "cyberarkPam.vault: implementation technology present",
+      "passed": true
+    },
+    {
+      "check": "cyberarkPam.vault: correct C4 parent",
+      "passed": true
+    },
+    {
+      "check": "cyberarkPam.vault.access: name and responsibility present",
+      "passed": true
+    },
+    {
+      "check": "cyberarkPam.vault.access: implementation technology present",
+      "passed": true
+    },
+    {
+      "check": "cyberarkPam.vault.access: correct C4 parent",
+      "passed": true
+    },
+    {
+      "check": "cyberarkPam.vault.policy: name and responsibility present",
+      "passed": true
+    },
+    {
+      "check": "cyberarkPam.vault.policy: implementation technology present",
+      "passed": true
+    },
+    {
+      "check": "cyberarkPam.vault.policy: correct C4 parent",
+      "passed": true
+    },
+    {
+      "check": "cyberarkPam.vault.storage: name and responsibility present",
+      "passed": true
+    },
+    {
+      "check": "cyberarkPam.vault.storage: implementation technology present",
+      "passed": true
+    },
+    {
+      "check": "cyberarkPam.vault.storage: correct C4 parent",
+      "passed": true
+    },
+    {
+      "check": "cyberarkPam.vault.audit: name and responsibility present",
+      "passed": true
+    },
+    {
+      "check": "cyberarkPam.vault.audit: implementation technology present",
+      "passed": true
+    },
+    {
+      "check": "cyberarkPam.vault.audit: correct C4 parent",
+      "passed": true
+    },
+    {
+      "check": "cyberarkPam.pvwa: name and responsibility present",
+      "passed": true
+    },
+    {
+      "check": "cyberarkPam.pvwa: implementation technology present",
+      "passed": true
+    },
+    {
+      "check": "cyberarkPam.pvwa: correct C4 parent",
+      "passed": true
+    },
+    {
+      "check": "cyberarkPam.pvwa.portal: name and responsibility present",
+      "passed": true
+    },
+    {
+      "check": "cyberarkPam.pvwa.portal: implementation technology present",
+      "passed": true
+    },
+    {
+      "check": "cyberarkPam.pvwa.portal: correct C4 parent",
+      "passed": true
+    },
+    {
+      "check": "cyberarkPam.pvwa.approval: name and responsibility present",
+      "passed": true
+    },
+    {
+      "check": "cyberarkPam.pvwa.approval: implementation technology present",
+      "passed": true
+    },
+    {
+      "check": "cyberarkPam.pvwa.approval: correct C4 parent",
+      "passed": true
+    },
+    {
+      "check": "cyberarkPam.pvwa.vaultClient: name and responsibility present",
+      "passed": true
+    },
+    {
+      "check": "cyberarkPam.pvwa.vaultClient: implementation technology present",
+      "passed": true
+    },
+    {
+      "check": "cyberarkPam.pvwa.vaultClient: correct C4 parent",
+      "passed": true
+    },
+    {
+      "check": "cyberarkPam.pvwa.sessions: name and responsibility present",
+      "passed": true
+    },
+    {
+      "check": "cyberarkPam.pvwa.sessions: implementation technology present",
+      "passed": true
+    },
+    {
+      "check": "cyberarkPam.pvwa.sessions: correct C4 parent",
+      "passed": true
+    },
+    {
+      "check": "cyberarkPam.cpm: name and responsibility present",
+      "passed": true
+    },
+    {
+      "check": "cyberarkPam.cpm: implementation technology present",
+      "passed": true
+    },
+    {
+      "check": "cyberarkPam.cpm: correct C4 parent",
+      "passed": true
+    },
+    {
+      "check": "cyberarkPam.cpm.scheduler: name and responsibility present",
+      "passed": true
+    },
+    {
+      "check": "cyberarkPam.cpm.scheduler: implementation technology present",
+      "passed": true
+    },
+    {
+      "check": "cyberarkPam.cpm.scheduler: correct C4 parent",
+      "passed": true
+    },
+    {
+      "check": "cyberarkPam.cpm.rotation: name and responsibility present",
+      "passed": true
+    },
+    {
+      "check": "cyberarkPam.cpm.rotation: implementation technology present",
+      "passed": true
+    },
+    {
+      "check": "cyberarkPam.cpm.rotation: correct C4 parent",
+      "passed": true
+    },
+    {
+      "check": "cyberarkPam.cpm.target: name and responsibility present",
+      "passed": true
+    },
+    {
+      "check": "cyberarkPam.cpm.target: implementation technology present",
+      "passed": true
+    },
+    {
+      "check": "cyberarkPam.cpm.target: correct C4 parent",
+      "passed": true
+    },
+    {
+      "check": "cyberarkPam.cpm.vaultClient: name and responsibility present",
+      "passed": true
+    },
+    {
+      "check": "cyberarkPam.cpm.vaultClient: implementation technology present",
+      "passed": true
+    },
+    {
+      "check": "cyberarkPam.cpm.vaultClient: correct C4 parent",
+      "passed": true
+    },
+    {
+      "check": "cyberarkPam.psm: name and responsibility present",
+      "passed": true
+    },
+    {
+      "check": "cyberarkPam.psm: implementation technology present",
+      "passed": true
+    },
+    {
+      "check": "cyberarkPam.psm: correct C4 parent",
+      "passed": true
+    },
+    {
+      "check": "cyberarkPam.psm.broker: name and responsibility present",
+      "passed": true
+    },
+    {
+      "check": "cyberarkPam.psm.broker: implementation technology present",
+      "passed": true
+    },
+    {
+      "check": "cyberarkPam.psm.broker: correct C4 parent",
+      "passed": true
+    },
+    {
+      "check": "cyberarkPam.psm.target: name and responsibility present",
+      "passed": true
+    },
+    {
+      "check": "cyberarkPam.psm.target: implementation technology present",
+      "passed": true
+    },
+    {
+      "check": "cyberarkPam.psm.target: correct C4 parent",
+      "passed": true
+    },
+    {
+      "check": "cyberarkPam.psm.recorder: name and responsibility present",
+      "passed": true
+    },
+    {
+      "check": "cyberarkPam.psm.recorder: implementation technology present",
+      "passed": true
+    },
+    {
+      "check": "cyberarkPam.psm.recorder: correct C4 parent",
+      "passed": true
+    },
+    {
+      "check": "conjur: name and responsibility present",
+      "passed": true
+    },
+    {
+      "check": "conjur.service: name and responsibility present",
+      "passed": true
+    },
+    {
+      "check": "conjur.service: implementation technology present",
+      "passed": true
+    },
+    {
+      "check": "conjur.service: correct C4 parent",
+      "passed": true
+    },
+    {
+      "check": "conjur.service.api: name and responsibility present",
+      "passed": true
+    },
+    {
+      "check": "conjur.service.api: implementation technology present",
+      "passed": true
+    },
+    {
+      "check": "conjur.service.api: correct C4 parent",
+      "passed": true
+    },
+    {
+      "check": "conjur.service.authentication: name and responsibility present",
+      "passed": true
+    },
+    {
+      "check": "conjur.service.authentication: implementation technology present",
+      "passed": true
+    },
+    {
+      "check": "conjur.service.authentication: correct C4 parent",
+      "passed": true
+    },
+    {
+      "check": "conjur.service.policy: name and responsibility present",
+      "passed": true
+    },
+    {
+      "check": "conjur.service.policy: implementation technology present",
+      "passed": true
+    },
+    {
+      "check": "conjur.service.policy: correct C4 parent",
+      "passed": true
+    },
+    {
+      "check": "conjur.service.secrets: name and responsibility present",
+      "passed": true
+    },
+    {
+      "check": "conjur.service.secrets: implementation technology present",
+      "passed": true
+    },
+    {
+      "check": "conjur.service.secrets: correct C4 parent",
+      "passed": true
+    },
+    {
+      "check": "conjur.service.audit: name and responsibility present",
+      "passed": true
+    },
+    {
+      "check": "conjur.service.audit: implementation technology present",
+      "passed": true
+    },
+    {
+      "check": "conjur.service.audit: correct C4 parent",
+      "passed": true
+    },
+    {
+      "check": "conjur.store: name and responsibility present",
+      "passed": true
+    },
+    {
+      "check": "conjur.store: implementation technology present",
+      "passed": true
+    },
+    {
+      "check": "conjur.store: correct C4 parent",
+      "passed": true
+    },
+    {
+      "check": "conjur.synchronizer: name and responsibility present",
+      "passed": true
+    },
+    {
+      "check": "conjur.synchronizer: implementation technology present",
+      "passed": true
+    },
+    {
+      "check": "conjur.synchronizer: correct C4 parent",
+      "passed": true
+    },
+    {
+      "check": "conjur.synchronizer.reader: name and responsibility present",
+      "passed": true
+    },
+    {
+      "check": "conjur.synchronizer.reader: implementation technology present",
+      "passed": true
+    },
+    {
+      "check": "conjur.synchronizer.reader: correct C4 parent",
+      "passed": true
+    },
+    {
+      "check": "conjur.synchronizer.mapping: name and responsibility present",
+      "passed": true
+    },
+    {
+      "check": "conjur.synchronizer.mapping: implementation technology present",
+      "passed": true
+    },
+    {
+      "check": "conjur.synchronizer.mapping: correct C4 parent",
+      "passed": true
+    },
+    {
+      "check": "conjur.synchronizer.writer: name and responsibility present",
+      "passed": true
+    },
+    {
+      "check": "conjur.synchronizer.writer: implementation technology present",
+      "passed": true
+    },
+    {
+      "check": "conjur.synchronizer.writer: correct C4 parent",
+      "passed": true
+    },
+    {
       "check": "Parsed relationships exactly match authored endpoints, labels and mechanisms",
       "passed": true
     },
@@ -3806,6 +3834,10 @@
       "passed": true
     },
     {
+      "check": "20-firefly-core-api: parsed component scope matches catalog",
+      "passed": true
+    },
+    {
       "check": "20-firefly-core-identity: visible static dataflow exists",
       "passed": true
     },
@@ -3831,6 +3863,10 @@
     },
     {
       "check": "20-firefly-core-identity: components belong to the scoped container",
+      "passed": true
+    },
+    {
+      "check": "20-firefly-core-identity: parsed component scope matches catalog",
       "passed": true
     },
     {
@@ -3862,6 +3898,10 @@
       "passed": true
     },
     {
+      "check": "20-firefly-core-messaging: parsed component scope matches catalog",
+      "passed": true
+    },
+    {
       "check": "20-firefly-core-contracts: visible static dataflow exists",
       "passed": true
     },
@@ -3887,6 +3927,10 @@
     },
     {
       "check": "20-firefly-core-contracts: components belong to the scoped container",
+      "passed": true
+    },
+    {
+      "check": "20-firefly-core-contracts: parsed component scope matches catalog",
       "passed": true
     },
     {
@@ -3918,6 +3962,10 @@
       "passed": true
     },
     {
+      "check": "20-firefly-core-events: parsed component scope matches catalog",
+      "passed": true
+    },
+    {
       "check": "20-firefly-core-persistence: visible static dataflow exists",
       "passed": true
     },
@@ -3943,6 +3991,10 @@
     },
     {
       "check": "20-firefly-core-persistence: components belong to the scoped container",
+      "passed": true
+    },
+    {
+      "check": "20-firefly-core-persistence: parsed component scope matches catalog",
       "passed": true
     },
     {
@@ -3974,6 +4026,10 @@
       "passed": true
     },
     {
+      "check": "30-firefly-evm-transactions: parsed component scope matches catalog",
+      "passed": true
+    },
+    {
       "check": "30-firefly-evm-events: visible static dataflow exists",
       "passed": true
     },
@@ -3999,6 +4055,10 @@
     },
     {
       "check": "30-firefly-evm-events: components belong to the scoped container",
+      "passed": true
+    },
+    {
+      "check": "30-firefly-evm-events: parsed component scope matches catalog",
       "passed": true
     },
     {
@@ -4030,6 +4090,10 @@
       "passed": true
     },
     {
+      "check": "40-firefly-signer: parsed component scope matches catalog",
+      "passed": true
+    },
+    {
       "check": "40-firefly-dx: visible static dataflow exists",
       "passed": true
     },
@@ -4055,6 +4119,10 @@
     },
     {
       "check": "40-firefly-dx: components belong to the scoped container",
+      "passed": true
+    },
+    {
+      "check": "40-firefly-dx: parsed component scope matches catalog",
       "passed": true
     },
     {
@@ -4086,6 +4154,10 @@
       "passed": true
     },
     {
+      "check": "40-firefly-erc20: parsed component scope matches catalog",
+      "passed": true
+    },
+    {
       "check": "40-firefly-erc1155: visible static dataflow exists",
       "passed": true
     },
@@ -4111,6 +4183,10 @@
     },
     {
       "check": "40-firefly-erc1155: components belong to the scoped container",
+      "passed": true
+    },
+    {
+      "check": "40-firefly-erc1155: parsed component scope matches catalog",
       "passed": true
     },
     {
@@ -4142,6 +4218,10 @@
       "passed": true
     },
     {
+      "check": "51-besu-network: parsed component scope matches catalog",
+      "passed": true
+    },
+    {
       "check": "51-besu-consensus: visible static dataflow exists",
       "passed": true
     },
@@ -4167,6 +4247,10 @@
     },
     {
       "check": "51-besu-consensus: components belong to the scoped container",
+      "passed": true
+    },
+    {
+      "check": "51-besu-consensus: parsed component scope matches catalog",
       "passed": true
     },
     {
@@ -4198,6 +4282,10 @@
       "passed": true
     },
     {
+      "check": "51-besu-execution: parsed component scope matches catalog",
+      "passed": true
+    },
+    {
       "check": "62-sandbox: visible static dataflow exists",
       "passed": true
     },
@@ -4223,6 +4311,74 @@
     },
     {
       "check": "62-sandbox: components belong to the scoped container",
+      "passed": true
+    },
+    {
+      "check": "62-sandbox: parsed component scope matches catalog",
+      "passed": true
+    },
+    {
+      "check": "68-sandbox-browser: visible static dataflow exists",
+      "passed": true
+    },
+    {
+      "check": "68-sandbox-browser: every arrow has visible endpoints",
+      "passed": true
+    },
+    {
+      "check": "68-sandbox-browser: every arrow names its action and mechanism",
+      "passed": true
+    },
+    {
+      "check": "68-sandbox-browser: no disconnected boxes",
+      "passed": true
+    },
+    {
+      "check": "68-sandbox-browser: parsed view includes exactly its intended elements",
+      "passed": true
+    },
+    {
+      "check": "68-sandbox-browser: every selected dataflow survives view filtering",
+      "passed": true
+    },
+    {
+      "check": "68-sandbox-browser: components belong to the scoped container",
+      "passed": true
+    },
+    {
+      "check": "68-sandbox-browser: parsed component scope matches catalog",
+      "passed": true
+    },
+    {
+      "check": "24-explorer-browser: visible static dataflow exists",
+      "passed": true
+    },
+    {
+      "check": "24-explorer-browser: every arrow has visible endpoints",
+      "passed": true
+    },
+    {
+      "check": "24-explorer-browser: every arrow names its action and mechanism",
+      "passed": true
+    },
+    {
+      "check": "24-explorer-browser: no disconnected boxes",
+      "passed": true
+    },
+    {
+      "check": "24-explorer-browser: parsed view includes exactly its intended elements",
+      "passed": true
+    },
+    {
+      "check": "24-explorer-browser: every selected dataflow survives view filtering",
+      "passed": true
+    },
+    {
+      "check": "24-explorer-browser: components belong to the scoped container",
+      "passed": true
+    },
+    {
+      "check": "24-explorer-browser: parsed component scope matches catalog",
       "passed": true
     },
     {
@@ -4254,6 +4410,10 @@
       "passed": true
     },
     {
+      "check": "21-core-blockchain-adapters: parsed component scope matches catalog",
+      "passed": true
+    },
+    {
       "check": "22-core-storage-adapters: visible static dataflow exists",
       "passed": true
     },
@@ -4279,6 +4439,10 @@
     },
     {
       "check": "22-core-storage-adapters: components belong to the scoped container",
+      "passed": true
+    },
+    {
+      "check": "22-core-storage-adapters: parsed component scope matches catalog",
       "passed": true
     },
     {
@@ -4310,6 +4474,10 @@
       "passed": true
     },
     {
+      "check": "23-core-event-token-adapters: parsed component scope matches catalog",
+      "passed": true
+    },
+    {
       "check": "31-evm-persistence-delivery: visible static dataflow exists",
       "passed": true
     },
@@ -4335,6 +4503,10 @@
     },
     {
       "check": "31-evm-persistence-delivery: components belong to the scoped container",
+      "passed": true
+    },
+    {
+      "check": "31-evm-persistence-delivery: parsed component scope matches catalog",
       "passed": true
     },
     {
@@ -4366,6 +4538,10 @@
       "passed": true
     },
     {
+      "check": "75-ethconnect-requests: parsed component scope matches catalog",
+      "passed": true
+    },
+    {
       "check": "75-ethconnect-events: visible static dataflow exists",
       "passed": true
     },
@@ -4391,6 +4567,10 @@
     },
     {
       "check": "75-ethconnect-events: components belong to the scoped container",
+      "passed": true
+    },
+    {
+      "check": "75-ethconnect-events: parsed component scope matches catalog",
       "passed": true
     },
     {
@@ -4422,6 +4602,10 @@
       "passed": true
     },
     {
+      "check": "75-fabconnect-transactions: parsed component scope matches catalog",
+      "passed": true
+    },
+    {
       "check": "75-fabconnect-events: visible static dataflow exists",
       "passed": true
     },
@@ -4447,6 +4631,10 @@
     },
     {
       "check": "75-fabconnect-events: components belong to the scoped container",
+      "passed": true
+    },
+    {
+      "check": "75-fabconnect-events: parsed component scope matches catalog",
       "passed": true
     },
     {
@@ -4478,6 +4666,10 @@
       "passed": true
     },
     {
+      "check": "75-tezosconnect-transactions: parsed component scope matches catalog",
+      "passed": true
+    },
+    {
       "check": "75-tezosconnect-events: visible static dataflow exists",
       "passed": true
     },
@@ -4503,6 +4695,10 @@
     },
     {
       "check": "75-tezosconnect-events: components belong to the scoped container",
+      "passed": true
+    },
+    {
+      "check": "75-tezosconnect-events: parsed component scope matches catalog",
       "passed": true
     },
     {
@@ -4534,6 +4730,10 @@
       "passed": true
     },
     {
+      "check": "75-cardanoconnect-operations: parsed component scope matches catalog",
+      "passed": true
+    },
+    {
       "check": "75-cardanoconnect-contracts-events: visible static dataflow exists",
       "passed": true
     },
@@ -4559,6 +4759,10 @@
     },
     {
       "check": "75-cardanoconnect-contracts-events: components belong to the scoped container",
+      "passed": true
+    },
+    {
+      "check": "75-cardanoconnect-contracts-events: parsed component scope matches catalog",
       "passed": true
     },
     {
@@ -4590,6 +4794,10 @@
       "passed": true
     },
     {
+      "check": "75-cardanosigner-signing: parsed component scope matches catalog",
+      "passed": true
+    },
+    {
       "check": "75-cordaconnect-starter: visible static dataflow exists",
       "passed": true
     },
@@ -4615,6 +4823,10 @@
     },
     {
       "check": "75-cordaconnect-starter: components belong to the scoped container",
+      "passed": true
+    },
+    {
+      "check": "75-cordaconnect-starter: parsed component scope matches catalog",
       "passed": true
     },
     {
@@ -4646,6 +4858,10 @@
       "passed": true
     },
     {
+      "check": "64-cli: parsed component scope matches catalog",
+      "passed": true
+    },
+    {
       "check": "65-performance: visible static dataflow exists",
       "passed": true
     },
@@ -4671,6 +4887,10 @@
     },
     {
       "check": "65-performance: components belong to the scoped container",
+      "passed": true
+    },
+    {
+      "check": "65-performance: parsed component scope matches catalog",
       "passed": true
     },
     {
@@ -4702,6 +4922,10 @@
       "passed": true
     },
     {
+      "check": "66-event-audit: parsed component scope matches catalog",
+      "passed": true
+    },
+    {
       "check": "67-config-migration: visible static dataflow exists",
       "passed": true
     },
@@ -4727,6 +4951,10 @@
     },
     {
       "check": "67-config-migration: components belong to the scoped container",
+      "passed": true
+    },
+    {
+      "check": "67-config-migration: parsed component scope matches catalog",
       "passed": true
     },
     {
@@ -4758,6 +4986,10 @@
       "passed": true
     },
     {
+      "check": "100-security-keycloak-server-components: parsed component scope matches catalog",
+      "passed": true
+    },
+    {
       "check": "100-security-managedHsm-service-components: visible static dataflow exists",
       "passed": true
     },
@@ -4783,6 +5015,10 @@
     },
     {
       "check": "100-security-managedHsm-service-components: components belong to the scoped container",
+      "passed": true
+    },
+    {
+      "check": "100-security-managedHsm-service-components: parsed component scope matches catalog",
       "passed": true
     },
     {
@@ -4814,6 +5050,10 @@
       "passed": true
     },
     {
+      "check": "100-security-cyberarkPam-vault-components: parsed component scope matches catalog",
+      "passed": true
+    },
+    {
       "check": "100-security-cyberarkPam-pvwa-components: visible static dataflow exists",
       "passed": true
     },
@@ -4839,6 +5079,10 @@
     },
     {
       "check": "100-security-cyberarkPam-pvwa-components: components belong to the scoped container",
+      "passed": true
+    },
+    {
+      "check": "100-security-cyberarkPam-pvwa-components: parsed component scope matches catalog",
       "passed": true
     },
     {
@@ -4870,6 +5114,10 @@
       "passed": true
     },
     {
+      "check": "100-security-cyberarkPam-cpm-components: parsed component scope matches catalog",
+      "passed": true
+    },
+    {
       "check": "100-security-cyberarkPam-psm-components: visible static dataflow exists",
       "passed": true
     },
@@ -4895,6 +5143,10 @@
     },
     {
       "check": "100-security-cyberarkPam-psm-components: components belong to the scoped container",
+      "passed": true
+    },
+    {
+      "check": "100-security-cyberarkPam-psm-components: parsed component scope matches catalog",
       "passed": true
     },
     {
@@ -4926,6 +5178,10 @@
       "passed": true
     },
     {
+      "check": "100-security-conjur-service-components: parsed component scope matches catalog",
+      "passed": true
+    },
+    {
       "check": "100-security-conjur-synchronizer-components: visible static dataflow exists",
       "passed": true
     },
@@ -4951,6 +5207,10 @@
     },
     {
       "check": "100-security-conjur-synchronizer-components: components belong to the scoped container",
+      "passed": true
+    },
+    {
+      "check": "100-security-conjur-synchronizer-components: parsed component scope matches catalog",
       "passed": true
     },
     {
@@ -4982,6 +5242,10 @@
       "passed": true
     },
     {
+      "check": "100-security-entraId-authentication-components: parsed component scope matches catalog",
+      "passed": true
+    },
+    {
       "check": "100-security-entraId-directory-components: visible static dataflow exists",
       "passed": true
     },
@@ -5007,6 +5271,10 @@
     },
     {
       "check": "100-security-entraId-directory-components: components belong to the scoped container",
+      "passed": true
+    },
+    {
+      "check": "100-security-entraId-directory-components: parsed component scope matches catalog",
       "passed": true
     },
     {
@@ -5038,6 +5306,10 @@
       "passed": true
     },
     {
+      "check": "100-security-entraId-provisioning-components: parsed component scope matches catalog",
+      "passed": true
+    },
+    {
       "check": "100-security-entraId-agent-components: visible static dataflow exists",
       "passed": true
     },
@@ -5063,6 +5335,10 @@
     },
     {
       "check": "100-security-entraId-agent-components: components belong to the scoped container",
+      "passed": true
+    },
+    {
+      "check": "100-security-entraId-agent-components: parsed component scope matches catalog",
       "passed": true
     },
     {
@@ -5094,6 +5370,10 @@
       "passed": true
     },
     {
+      "check": "100-security-adDs-directory-components: parsed component scope matches catalog",
+      "passed": true
+    },
+    {
       "check": "100-security-adFs-service-components: visible static dataflow exists",
       "passed": true
     },
@@ -5119,6 +5399,10 @@
     },
     {
       "check": "100-security-adFs-service-components: components belong to the scoped container",
+      "passed": true
+    },
+    {
+      "check": "100-security-adFs-service-components: parsed component scope matches catalog",
       "passed": true
     },
     {
@@ -5150,6 +5434,10 @@
       "passed": true
     },
     {
+      "check": "100-security-apps-hsmSigner-components: parsed component scope matches catalog",
+      "passed": true
+    },
+    {
       "check": "10-firefly-runtime: visible static dataflow exists",
       "passed": true
     },
@@ -5175,6 +5463,10 @@
     },
     {
       "check": "10-firefly-runtime: correct level-2 abstraction",
+      "passed": true
+    },
+    {
+      "check": "10-firefly-runtime: parsed container scope matches catalog",
       "passed": true
     },
     {
@@ -5206,6 +5498,10 @@
       "passed": true
     },
     {
+      "check": "11-firefly-state: parsed container scope matches catalog",
+      "passed": true
+    },
+    {
       "check": "50-besu-network: visible static dataflow exists",
       "passed": true
     },
@@ -5231,6 +5527,10 @@
     },
     {
       "check": "50-besu-network: correct level-2 abstraction",
+      "passed": true
+    },
+    {
+      "check": "50-besu-network: parsed container scope matches catalog",
       "passed": true
     },
     {
@@ -5262,6 +5562,10 @@
       "passed": true
     },
     {
+      "check": "60-applications: parsed container scope matches catalog",
+      "passed": true
+    },
+    {
       "check": "61-tools: visible static dataflow exists",
       "passed": true
     },
@@ -5287,6 +5591,10 @@
     },
     {
       "check": "61-tools: correct level-2 abstraction",
+      "passed": true
+    },
+    {
+      "check": "61-tools: parsed container scope matches catalog",
       "passed": true
     },
     {
@@ -5318,6 +5626,42 @@
       "passed": true
     },
     {
+      "check": "63-operations: parsed container scope matches catalog",
+      "passed": true
+    },
+    {
+      "check": "77-other-evm-network: visible static dataflow exists",
+      "passed": true
+    },
+    {
+      "check": "77-other-evm-network: every arrow has visible endpoints",
+      "passed": true
+    },
+    {
+      "check": "77-other-evm-network: every arrow names its action and mechanism",
+      "passed": true
+    },
+    {
+      "check": "77-other-evm-network: no disconnected boxes",
+      "passed": true
+    },
+    {
+      "check": "77-other-evm-network: parsed view includes exactly its intended elements",
+      "passed": true
+    },
+    {
+      "check": "77-other-evm-network: every selected dataflow survives view filtering",
+      "passed": true
+    },
+    {
+      "check": "77-other-evm-network: correct level-2 abstraction",
+      "passed": true
+    },
+    {
+      "check": "77-other-evm-network: parsed container scope matches catalog",
+      "passed": true
+    },
+    {
       "check": "12-embedded-storage-options: visible static dataflow exists",
       "passed": true
     },
@@ -5343,6 +5687,10 @@
     },
     {
       "check": "12-embedded-storage-options: correct level-2 abstraction",
+      "passed": true
+    },
+    {
+      "check": "12-embedded-storage-options: parsed container scope matches catalog",
       "passed": true
     },
     {
@@ -5374,6 +5722,10 @@
       "passed": true
     },
     {
+      "check": "70-option-ethconnect: parsed container scope matches catalog",
+      "passed": true
+    },
+    {
       "check": "71-option-fabconnect: visible static dataflow exists",
       "passed": true
     },
@@ -5399,6 +5751,10 @@
     },
     {
       "check": "71-option-fabconnect: correct level-2 abstraction",
+      "passed": true
+    },
+    {
+      "check": "71-option-fabconnect: parsed container scope matches catalog",
       "passed": true
     },
     {
@@ -5430,6 +5786,10 @@
       "passed": true
     },
     {
+      "check": "72-option-tezosconnect: parsed container scope matches catalog",
+      "passed": true
+    },
+    {
       "check": "73-option-cardanoconnect: visible static dataflow exists",
       "passed": true
     },
@@ -5455,6 +5815,10 @@
     },
     {
       "check": "73-option-cardanoconnect: correct level-2 abstraction",
+      "passed": true
+    },
+    {
+      "check": "73-option-cardanoconnect: parsed container scope matches catalog",
       "passed": true
     },
     {
@@ -5486,6 +5850,10 @@
       "passed": true
     },
     {
+      "check": "74-option-cordaconnect: parsed container scope matches catalog",
+      "passed": true
+    },
+    {
       "check": "76-legacy-broker-options: visible static dataflow exists",
       "passed": true
     },
@@ -5511,6 +5879,10 @@
     },
     {
       "check": "76-legacy-broker-options: correct level-2 abstraction",
+      "passed": true
+    },
+    {
+      "check": "76-legacy-broker-options: parsed container scope matches catalog",
       "passed": true
     },
     {
@@ -5542,6 +5914,10 @@
       "passed": true
     },
     {
+      "check": "100-security-keycloak-containers: parsed container scope matches catalog",
+      "passed": true
+    },
+    {
       "check": "100-security-managedHsm-containers: visible static dataflow exists",
       "passed": true
     },
@@ -5567,6 +5943,10 @@
     },
     {
       "check": "100-security-managedHsm-containers: correct level-2 abstraction",
+      "passed": true
+    },
+    {
+      "check": "100-security-managedHsm-containers: parsed container scope matches catalog",
       "passed": true
     },
     {
@@ -5598,6 +5978,10 @@
       "passed": true
     },
     {
+      "check": "100-security-cyberarkPam-containers: parsed container scope matches catalog",
+      "passed": true
+    },
+    {
       "check": "100-security-conjur-containers: visible static dataflow exists",
       "passed": true
     },
@@ -5623,6 +6007,10 @@
     },
     {
       "check": "100-security-conjur-containers: correct level-2 abstraction",
+      "passed": true
+    },
+    {
+      "check": "100-security-conjur-containers: parsed container scope matches catalog",
       "passed": true
     },
     {
@@ -5654,6 +6042,10 @@
       "passed": true
     },
     {
+      "check": "100-security-entraId-containers: parsed container scope matches catalog",
+      "passed": true
+    },
+    {
       "check": "100-security-adDs-containers: visible static dataflow exists",
       "passed": true
     },
@@ -5679,6 +6071,10 @@
     },
     {
       "check": "100-security-adDs-containers: correct level-2 abstraction",
+      "passed": true
+    },
+    {
+      "check": "100-security-adDs-containers: parsed container scope matches catalog",
       "passed": true
     },
     {
@@ -5710,6 +6106,10 @@
       "passed": true
     },
     {
+      "check": "100-security-adFs-containers: parsed container scope matches catalog",
+      "passed": true
+    },
+    {
       "check": "100-security-example-login-ad: visible static dataflow exists",
       "passed": true
     },
@@ -5735,6 +6135,10 @@
     },
     {
       "check": "100-security-example-login-ad: correct level-2 abstraction",
+      "passed": true
+    },
+    {
+      "check": "100-security-example-login-ad: parsed container scope matches catalog",
       "passed": true
     },
     {
@@ -5766,6 +6170,10 @@
       "passed": true
     },
     {
+      "check": "100-security-example-broker-entra: parsed container scope matches catalog",
+      "passed": true
+    },
+    {
       "check": "100-security-example-broker-adfs: visible static dataflow exists",
       "passed": true
     },
@@ -5791,6 +6199,10 @@
     },
     {
       "check": "100-security-example-broker-adfs: correct level-2 abstraction",
+      "passed": true
+    },
+    {
+      "check": "100-security-example-broker-adfs: parsed container scope matches catalog",
       "passed": true
     },
     {
@@ -5822,6 +6234,10 @@
       "passed": true
     },
     {
+      "check": "100-security-example-directory-sync: parsed container scope matches catalog",
+      "passed": true
+    },
+    {
       "check": "100-security-example-privileged-access: visible static dataflow exists",
       "passed": true
     },
@@ -5847,6 +6263,10 @@
     },
     {
       "check": "100-security-example-privileged-access: correct level-2 abstraction",
+      "passed": true
+    },
+    {
+      "check": "100-security-example-privileged-access: parsed container scope matches catalog",
       "passed": true
     },
     {
@@ -5878,6 +6298,10 @@
       "passed": true
     },
     {
+      "check": "100-security-example-secret-delivery: parsed container scope matches catalog",
+      "passed": true
+    },
+    {
       "check": "100-security-example-key-protection: visible static dataflow exists",
       "passed": true
     },
@@ -5903,6 +6327,10 @@
     },
     {
       "check": "100-security-example-key-protection: correct level-2 abstraction",
+      "passed": true
+    },
+    {
+      "check": "100-security-example-key-protection: parsed container scope matches catalog",
       "passed": true
     },
     {
@@ -5934,6 +6362,10 @@
       "passed": true
     },
     {
+      "check": "100-security-example-dlt-signing: parsed container scope matches catalog",
+      "passed": true
+    },
+    {
       "check": "02-context-firefly: visible static dataflow exists",
       "passed": true
     },
@@ -5959,6 +6391,10 @@
     },
     {
       "check": "02-context-firefly: correct level-1 abstraction",
+      "passed": true
+    },
+    {
+      "check": "02-context-firefly: parsed system-context scope matches catalog",
       "passed": true
     },
     {
@@ -5990,6 +6426,10 @@
       "passed": true
     },
     {
+      "check": "03-context-besu: parsed system-context scope matches catalog",
+      "passed": true
+    },
+    {
       "check": "100-security-keycloak-context: visible static dataflow exists",
       "passed": true
     },
@@ -6015,6 +6455,10 @@
     },
     {
       "check": "100-security-keycloak-context: correct level-1 abstraction",
+      "passed": true
+    },
+    {
+      "check": "100-security-keycloak-context: parsed system-context scope matches catalog",
       "passed": true
     },
     {
@@ -6046,6 +6490,10 @@
       "passed": true
     },
     {
+      "check": "100-security-managedHsm-context: parsed system-context scope matches catalog",
+      "passed": true
+    },
+    {
       "check": "100-security-cyberarkPam-context: visible static dataflow exists",
       "passed": true
     },
@@ -6071,6 +6519,10 @@
     },
     {
       "check": "100-security-cyberarkPam-context: correct level-1 abstraction",
+      "passed": true
+    },
+    {
+      "check": "100-security-cyberarkPam-context: parsed system-context scope matches catalog",
       "passed": true
     },
     {
@@ -6102,6 +6554,10 @@
       "passed": true
     },
     {
+      "check": "100-security-conjur-context: parsed system-context scope matches catalog",
+      "passed": true
+    },
+    {
       "check": "100-security-entraId-context: visible static dataflow exists",
       "passed": true
     },
@@ -6127,6 +6583,10 @@
     },
     {
       "check": "100-security-entraId-context: correct level-1 abstraction",
+      "passed": true
+    },
+    {
+      "check": "100-security-entraId-context: parsed system-context scope matches catalog",
       "passed": true
     },
     {
@@ -6158,6 +6618,10 @@
       "passed": true
     },
     {
+      "check": "100-security-adDs-context: parsed system-context scope matches catalog",
+      "passed": true
+    },
+    {
       "check": "100-security-adFs-context: visible static dataflow exists",
       "passed": true
     },
@@ -6183,6 +6647,106 @@
     },
     {
       "check": "100-security-adFs-context: correct level-1 abstraction",
+      "passed": true
+    },
+    {
+      "check": "100-security-adFs-context: parsed system-context scope matches catalog",
+      "passed": true
+    },
+    {
+      "check": "05-context-applications: visible static dataflow exists",
+      "passed": true
+    },
+    {
+      "check": "05-context-applications: every arrow has visible endpoints",
+      "passed": true
+    },
+    {
+      "check": "05-context-applications: every arrow names its action and mechanism",
+      "passed": true
+    },
+    {
+      "check": "05-context-applications: no disconnected boxes",
+      "passed": true
+    },
+    {
+      "check": "05-context-applications: parsed view includes exactly its intended elements",
+      "passed": true
+    },
+    {
+      "check": "05-context-applications: every selected dataflow survives view filtering",
+      "passed": true
+    },
+    {
+      "check": "05-context-applications: correct level-1 abstraction",
+      "passed": true
+    },
+    {
+      "check": "05-context-applications: parsed system-context scope matches catalog",
+      "passed": true
+    },
+    {
+      "check": "06-context-tools: visible static dataflow exists",
+      "passed": true
+    },
+    {
+      "check": "06-context-tools: every arrow has visible endpoints",
+      "passed": true
+    },
+    {
+      "check": "06-context-tools: every arrow names its action and mechanism",
+      "passed": true
+    },
+    {
+      "check": "06-context-tools: no disconnected boxes",
+      "passed": true
+    },
+    {
+      "check": "06-context-tools: parsed view includes exactly its intended elements",
+      "passed": true
+    },
+    {
+      "check": "06-context-tools: every selected dataflow survives view filtering",
+      "passed": true
+    },
+    {
+      "check": "06-context-tools: correct level-1 abstraction",
+      "passed": true
+    },
+    {
+      "check": "06-context-tools: parsed system-context scope matches catalog",
+      "passed": true
+    },
+    {
+      "check": "07-context-operations: visible static dataflow exists",
+      "passed": true
+    },
+    {
+      "check": "07-context-operations: every arrow has visible endpoints",
+      "passed": true
+    },
+    {
+      "check": "07-context-operations: every arrow names its action and mechanism",
+      "passed": true
+    },
+    {
+      "check": "07-context-operations: no disconnected boxes",
+      "passed": true
+    },
+    {
+      "check": "07-context-operations: parsed view includes exactly its intended elements",
+      "passed": true
+    },
+    {
+      "check": "07-context-operations: every selected dataflow survives view filtering",
+      "passed": true
+    },
+    {
+      "check": "07-context-operations: correct level-1 abstraction",
+      "passed": true
+    },
+    {
+      "check": "07-context-operations: parsed system-context scope matches catalog",
       "passed": true
     },
     {
@@ -7422,6 +7986,14 @@
       "passed": true
     },
     {
+      "check": "Security catalog: https://learn.microsoft.com/en-us/rest/api/keyvault/keys/sign/sign?view=rest-keyvault-keys-2025-07-01 has fingerprint, retrieval time and capture method",
+      "passed": true
+    },
+    {
+      "check": "Security catalog: https://learn.microsoft.com/en-us/rest/api/keyvault/keys/get-key/get-key?view=rest-keyvault-keys-2025-07-01 has fingerprint, retrieval time and capture method",
+      "passed": true
+    },
+    {
       "check": "Security catalog: every added dataflow has evidence and inference classification",
       "passed": true
     },
@@ -7519,6 +8091,486 @@
     },
     {
       "check": "Security catalog: only static C4 levels 1-3 are added",
+      "passed": true
+    },
+    {
+      "check": "Logical review: element identifiers are unique",
+      "passed": true
+    },
+    {
+      "check": "Logical review: relationship identifiers are unique",
+      "passed": true
+    },
+    {
+      "check": "Logical review: no duplicate directed relationship definitions",
+      "passed": true
+    },
+    {
+      "check": "Logical review: no duplicate names within the same C4 owner",
+      "passed": true
+    },
+    {
+      "check": "Logical review: catalog relationship identifiers match their current meaning",
+      "passed": true
+    },
+    {
+      "check": "Logical review: every authored relationship appears in a static view",
+      "passed": true
+    },
+    {
+      "check": "Logical review: no duplicate view selections within one scope",
+      "passed": true
+    },
+    {
+      "check": "Logical review: in-process relationships stay within one runtime container",
+      "passed": true
+    },
+    {
+      "check": "Logical review: 01-landscape is one connected diagram",
+      "passed": true
+    },
+    {
+      "check": "Logical review: 02-context-firefly is one connected diagram",
+      "passed": true
+    },
+    {
+      "check": "Logical review: 03-context-besu is one connected diagram",
+      "passed": true
+    },
+    {
+      "check": "Logical review: 04-alternatives is one connected diagram",
+      "passed": true
+    },
+    {
+      "check": "Logical review: 10-firefly-runtime is one connected diagram",
+      "passed": true
+    },
+    {
+      "check": "Logical review: 11-firefly-state is one connected diagram",
+      "passed": true
+    },
+    {
+      "check": "Logical review: 20-firefly-core-api is one connected diagram",
+      "passed": true
+    },
+    {
+      "check": "Logical review: 20-firefly-core-identity is one connected diagram",
+      "passed": true
+    },
+    {
+      "check": "Logical review: 20-firefly-core-messaging is one connected diagram",
+      "passed": true
+    },
+    {
+      "check": "Logical review: 20-firefly-core-contracts is one connected diagram",
+      "passed": true
+    },
+    {
+      "check": "Logical review: 20-firefly-core-events is one connected diagram",
+      "passed": true
+    },
+    {
+      "check": "Logical review: 20-firefly-core-persistence is one connected diagram",
+      "passed": true
+    },
+    {
+      "check": "Logical review: 30-firefly-evm-transactions is one connected diagram",
+      "passed": true
+    },
+    {
+      "check": "Logical review: 30-firefly-evm-events is one connected diagram",
+      "passed": true
+    },
+    {
+      "check": "Logical review: 40-firefly-signer is one connected diagram",
+      "passed": true
+    },
+    {
+      "check": "Logical review: 40-firefly-dx is one connected diagram",
+      "passed": true
+    },
+    {
+      "check": "Logical review: 40-firefly-erc20 is one connected diagram",
+      "passed": true
+    },
+    {
+      "check": "Logical review: 40-firefly-erc1155 is one connected diagram",
+      "passed": true
+    },
+    {
+      "check": "Logical review: 50-besu-network is one connected diagram",
+      "passed": true
+    },
+    {
+      "check": "Logical review: 51-besu-network is one connected diagram",
+      "passed": true
+    },
+    {
+      "check": "Logical review: 51-besu-consensus is one connected diagram",
+      "passed": true
+    },
+    {
+      "check": "Logical review: 51-besu-execution is one connected diagram",
+      "passed": true
+    },
+    {
+      "check": "Logical review: 60-applications is one connected diagram",
+      "passed": true
+    },
+    {
+      "check": "Logical review: 61-tools is one connected diagram",
+      "passed": true
+    },
+    {
+      "check": "Logical review: 62-sandbox is one connected diagram",
+      "passed": true
+    },
+    {
+      "check": "Logical review: 68-sandbox-browser is one connected diagram",
+      "passed": true
+    },
+    {
+      "check": "Logical review: 24-explorer-browser is one connected diagram",
+      "passed": true
+    },
+    {
+      "check": "Logical review: 63-operations is one connected diagram",
+      "passed": true
+    },
+    {
+      "check": "Logical review: 21-core-blockchain-adapters is one connected diagram",
+      "passed": true
+    },
+    {
+      "check": "Logical review: 22-core-storage-adapters is one connected diagram",
+      "passed": true
+    },
+    {
+      "check": "Logical review: 23-core-event-token-adapters is one connected diagram",
+      "passed": true
+    },
+    {
+      "check": "Logical review: 31-evm-persistence-delivery is one connected diagram",
+      "passed": true
+    },
+    {
+      "check": "Logical review: 77-other-evm-network is one connected diagram",
+      "passed": true
+    },
+    {
+      "check": "Logical review: 12-embedded-storage-options is one connected diagram",
+      "passed": true
+    },
+    {
+      "check": "Logical review: 70-option-ethconnect is one connected diagram",
+      "passed": true
+    },
+    {
+      "check": "Logical review: 71-option-fabconnect is one connected diagram",
+      "passed": true
+    },
+    {
+      "check": "Logical review: 72-option-tezosconnect is one connected diagram",
+      "passed": true
+    },
+    {
+      "check": "Logical review: 73-option-cardanoconnect is one connected diagram",
+      "passed": true
+    },
+    {
+      "check": "Logical review: 74-option-cordaconnect is one connected diagram",
+      "passed": true
+    },
+    {
+      "check": "Logical review: 75-ethconnect-requests is one connected diagram",
+      "passed": true
+    },
+    {
+      "check": "Logical review: 75-ethconnect-events is one connected diagram",
+      "passed": true
+    },
+    {
+      "check": "Logical review: 75-fabconnect-transactions is one connected diagram",
+      "passed": true
+    },
+    {
+      "check": "Logical review: 75-fabconnect-events is one connected diagram",
+      "passed": true
+    },
+    {
+      "check": "Logical review: 75-tezosconnect-transactions is one connected diagram",
+      "passed": true
+    },
+    {
+      "check": "Logical review: 75-tezosconnect-events is one connected diagram",
+      "passed": true
+    },
+    {
+      "check": "Logical review: 75-cardanoconnect-operations is one connected diagram",
+      "passed": true
+    },
+    {
+      "check": "Logical review: 75-cardanoconnect-contracts-events is one connected diagram",
+      "passed": true
+    },
+    {
+      "check": "Logical review: 75-cardanosigner-signing is one connected diagram",
+      "passed": true
+    },
+    {
+      "check": "Logical review: 75-cordaconnect-starter is one connected diagram",
+      "passed": true
+    },
+    {
+      "check": "Logical review: 76-legacy-broker-options is one connected diagram",
+      "passed": true
+    },
+    {
+      "check": "Logical review: 64-cli is one connected diagram",
+      "passed": true
+    },
+    {
+      "check": "Logical review: 65-performance is one connected diagram",
+      "passed": true
+    },
+    {
+      "check": "Logical review: 66-event-audit is one connected diagram",
+      "passed": true
+    },
+    {
+      "check": "Logical review: 67-config-migration is one connected diagram",
+      "passed": true
+    },
+    {
+      "check": "Logical review: 100-security-landscape is one connected diagram",
+      "passed": true
+    },
+    {
+      "check": "Logical review: 100-security-keycloak-context is one connected diagram",
+      "passed": true
+    },
+    {
+      "check": "Logical review: 100-security-keycloak-containers is one connected diagram",
+      "passed": true
+    },
+    {
+      "check": "Logical review: 100-security-managedHsm-context is one connected diagram",
+      "passed": true
+    },
+    {
+      "check": "Logical review: 100-security-managedHsm-containers is one connected diagram",
+      "passed": true
+    },
+    {
+      "check": "Logical review: 100-security-cyberarkPam-context is one connected diagram",
+      "passed": true
+    },
+    {
+      "check": "Logical review: 100-security-cyberarkPam-containers is one connected diagram",
+      "passed": true
+    },
+    {
+      "check": "Logical review: 100-security-conjur-context is one connected diagram",
+      "passed": true
+    },
+    {
+      "check": "Logical review: 100-security-conjur-containers is one connected diagram",
+      "passed": true
+    },
+    {
+      "check": "Logical review: 100-security-entraId-context is one connected diagram",
+      "passed": true
+    },
+    {
+      "check": "Logical review: 100-security-entraId-containers is one connected diagram",
+      "passed": true
+    },
+    {
+      "check": "Logical review: 100-security-adDs-context is one connected diagram",
+      "passed": true
+    },
+    {
+      "check": "Logical review: 100-security-adDs-containers is one connected diagram",
+      "passed": true
+    },
+    {
+      "check": "Logical review: 100-security-adFs-context is one connected diagram",
+      "passed": true
+    },
+    {
+      "check": "Logical review: 100-security-adFs-containers is one connected diagram",
+      "passed": true
+    },
+    {
+      "check": "Logical review: 100-security-keycloak-server-components is one connected diagram",
+      "passed": true
+    },
+    {
+      "check": "Logical review: 100-security-managedHsm-service-components is one connected diagram",
+      "passed": true
+    },
+    {
+      "check": "Logical review: 100-security-cyberarkPam-vault-components is one connected diagram",
+      "passed": true
+    },
+    {
+      "check": "Logical review: 100-security-cyberarkPam-pvwa-components is one connected diagram",
+      "passed": true
+    },
+    {
+      "check": "Logical review: 100-security-cyberarkPam-cpm-components is one connected diagram",
+      "passed": true
+    },
+    {
+      "check": "Logical review: 100-security-cyberarkPam-psm-components is one connected diagram",
+      "passed": true
+    },
+    {
+      "check": "Logical review: 100-security-conjur-service-components is one connected diagram",
+      "passed": true
+    },
+    {
+      "check": "Logical review: 100-security-conjur-synchronizer-components is one connected diagram",
+      "passed": true
+    },
+    {
+      "check": "Logical review: 100-security-entraId-authentication-components is one connected diagram",
+      "passed": true
+    },
+    {
+      "check": "Logical review: 100-security-entraId-directory-components is one connected diagram",
+      "passed": true
+    },
+    {
+      "check": "Logical review: 100-security-entraId-provisioning-components is one connected diagram",
+      "passed": true
+    },
+    {
+      "check": "Logical review: 100-security-entraId-agent-components is one connected diagram",
+      "passed": true
+    },
+    {
+      "check": "Logical review: 100-security-adDs-directory-components is one connected diagram",
+      "passed": true
+    },
+    {
+      "check": "Logical review: 100-security-adFs-service-components is one connected diagram",
+      "passed": true
+    },
+    {
+      "check": "Logical review: 100-security-apps-hsmSigner-components is one connected diagram",
+      "passed": true
+    },
+    {
+      "check": "Logical review: 100-security-example-login-ad is one connected diagram",
+      "passed": true
+    },
+    {
+      "check": "Logical review: 100-security-example-broker-entra is one connected diagram",
+      "passed": true
+    },
+    {
+      "check": "Logical review: 100-security-example-broker-adfs is one connected diagram",
+      "passed": true
+    },
+    {
+      "check": "Logical review: 100-security-example-directory-sync is one connected diagram",
+      "passed": true
+    },
+    {
+      "check": "Logical review: 100-security-example-privileged-access is one connected diagram",
+      "passed": true
+    },
+    {
+      "check": "Logical review: 100-security-example-secret-delivery is one connected diagram",
+      "passed": true
+    },
+    {
+      "check": "Logical review: 100-security-example-key-protection is one connected diagram",
+      "passed": true
+    },
+    {
+      "check": "Logical review: 100-security-example-dlt-signing is one connected diagram",
+      "passed": true
+    },
+    {
+      "check": "Logical review: 05-context-applications is one connected diagram",
+      "passed": true
+    },
+    {
+      "check": "Logical review: 06-context-tools is one connected diagram",
+      "passed": true
+    },
+    {
+      "check": "Logical review: 07-context-operations is one connected diagram",
+      "passed": true
+    },
+    {
+      "check": "Logical review: firefly has a context view for its decomposed system boundary",
+      "passed": true
+    },
+    {
+      "check": "Logical review: besu has a context view for its decomposed system boundary",
+      "passed": true
+    },
+    {
+      "check": "Logical review: apps has a context view for its decomposed system boundary",
+      "passed": true
+    },
+    {
+      "check": "Logical review: tools has a context view for its decomposed system boundary",
+      "passed": true
+    },
+    {
+      "check": "Logical review: ops has a context view for its decomposed system boundary",
+      "passed": true
+    },
+    {
+      "check": "Logical review: keycloak has a context view for its decomposed system boundary",
+      "passed": true
+    },
+    {
+      "check": "Logical review: managedHsm has a context view for its decomposed system boundary",
+      "passed": true
+    },
+    {
+      "check": "Logical review: cyberarkPam has a context view for its decomposed system boundary",
+      "passed": true
+    },
+    {
+      "check": "Logical review: conjur has a context view for its decomposed system boundary",
+      "passed": true
+    },
+    {
+      "check": "Logical review: entraId has a context view for its decomposed system boundary",
+      "passed": true
+    },
+    {
+      "check": "Logical review: adDs has a context view for its decomposed system boundary",
+      "passed": true
+    },
+    {
+      "check": "Logical review: adFs has a context view for its decomposed system boundary",
+      "passed": true
+    },
+    {
+      "check": "Logical review: replica deployment instances do not duplicate logical databases",
+      "passed": true
+    },
+    {
+      "check": "Logical review: Core and FFTM have separate logical database boundaries",
+      "passed": true
+    },
+    {
+      "check": "Logical review: FFTM does not persist into the Core database",
+      "passed": true
+    },
+    {
+      "check": "Logical review: firefly.explorer has its own browser runtime boundary",
+      "passed": true
+    },
+    {
+      "check": "Logical review: tools.sandboxUi has its own browser runtime boundary",
       "passed": true
     },
     {

@@ -20,6 +20,13 @@ adapter. The existing FireFly filesystem wallet, API authentication and Besu
 node-key responsibilities are unchanged. Entra tokens do not themselves grant
 Managed HSM key permissions; local HSM authorization remains a separate check.
 
+Explorer and the Sandbox UI are browser runtime containers; bundling their
+assets into a server image does not make their code an in-process server
+component. Core and FFTM own different logical database containers. A database
+replica is an instance of its deployment, not an additional logical data store.
+The member-application and operations systems are explicitly reference solution
+boundaries. Groups organize related products without merging those boundaries.
+
 All diagram relationships are directed and describe exchanged information or
 in-process requests. Optional configurations have dedicated views. Sources are
 pinned in sources.json; the source inventory and coverage reports identify the

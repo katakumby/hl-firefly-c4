@@ -29,1931 +29,2202 @@ workspace "FireFly ecosystem + private Besu + security catalog" "C4 levels 1-3 w
                 "evidence" "Reference choice"
             }
         }
-        firefly = softwareSystem "Hyperledger FireFly" "Reusable supernode architecture; each consortium member deploys an isolated instance." {
-            url "https://github.com/hyperledger-firefly/firefly/tree/9d20f3081c9074d5b012427e5572ebc03da8d95d"
-            properties {
-                "architecture.id" "firefly"
-                "evidence" "Implementation"
-            }
-            !docs docs/static/system
-            !adrs docs/static/decisions
-            core = container "FireFly Core" "Exposes member APIs and bundled Explorer; orchestrates multiparty operations." "Go + React" {
-                url "https://github.com/hyperledger-firefly/firefly/tree/9d20f3081c9074d5b012427e5572ebc03da8d95d/internal/orchestrator"
+        group "FireFly ecosystem" {
+            firefly = softwareSystem "Hyperledger FireFly" "Reusable supernode architecture; each consortium member deploys an isolated instance." {
+                url "https://github.com/hyperledger-firefly/firefly/tree/9d20f3081c9074d5b012427e5572ebc03da8d95d"
                 properties {
-                    "architecture.id" "firefly.core"
+                    "architecture.id" "firefly"
                     "evidence" "Implementation"
                 }
-                api = component "REST API and routing" "Accepts namespace-scoped commands and queries." "Go" {
-                    url "https://github.com/hyperledger-firefly/firefly/tree/9d20f3081c9074d5b012427e5572ebc03da8d95d/internal/apiserver"
-                    properties {
-                        "architecture.id" "firefly.core.api"
-                        "evidence" "Implementation"
-                    }
-                }
-                explorer = component "Explorer UI" "Serves the bundled React operator interface." "React / TypeScript" {
-                    url "https://github.com/hyperledger-firefly/ui/tree/658bae40220f124e0e20182cc48b231473e754c5/src"
-                    properties {
-                        "architecture.id" "firefly.core.explorer"
-                        "evidence" "Implementation"
-                    }
-                    -> firefly.core.api "Queries messages, operations and network state" "In-process calls / Go" "Dataflow"
-                }
-                auth = component "API authentication" "Applies configured namespace authorization; Basic Auth reference plugin." "Go" {
-                    url "https://github.com/hyperledger-firefly/common/tree/b91a1eb645e5bc39c54ed20ad0e917cff7d15d2e/pkg/auth"
-                    properties {
-                        "architecture.id" "firefly.core.auth"
-                        "evidence" "Implementation"
-                    }
-                }
-                namespaces = component "Namespace manager" "Initializes isolated orchestrators and configured plugins." "Go" {
-                    url "https://github.com/hyperledger-firefly/firefly/tree/9d20f3081c9074d5b012427e5572ebc03da8d95d/internal/namespace"
-                    properties {
-                        "architecture.id" "firefly.core.namespaces"
-                        "evidence" "Implementation"
-                    }
-                }
-                orchestrator = component "Orchestrator" "Coordinates API operations and subsystem lifecycles." "Go" {
+                !docs docs/static/system
+                !adrs docs/static/decisions
+                core = container "FireFly Core" "Exposes member APIs, serves Explorer assets and orchestrates multiparty operations." "Go" {
                     url "https://github.com/hyperledger-firefly/firefly/tree/9d20f3081c9074d5b012427e5572ebc03da8d95d/internal/orchestrator"
                     properties {
-                        "architecture.id" "firefly.core.orchestrator"
+                        "architecture.id" "firefly.core"
                         "evidence" "Implementation"
                     }
-                }
-                identity = component "Identity manager" "Resolves organizations, nodes and transaction signing identities." "Go" {
-                    url "https://github.com/hyperledger-firefly/firefly/tree/9d20f3081c9074d5b012427e5572ebc03da8d95d/internal/identity"
-                    properties {
-                        "architecture.id" "firefly.core.identity"
-                        "evidence" "Implementation"
+                    api = component "REST API and routing" "Accepts namespace-scoped commands and queries." "Go" {
+                        url "https://github.com/hyperledger-firefly/firefly/tree/9d20f3081c9074d5b012427e5572ebc03da8d95d/internal/apiserver"
+                        properties {
+                            "architecture.id" "firefly.core.api"
+                            "evidence" "Implementation"
+                        }
+                    }
+                    auth = component "API authentication" "Applies configured namespace authorization; Basic Auth reference plugin." "Go" {
+                        url "https://github.com/hyperledger-firefly/common/tree/b91a1eb645e5bc39c54ed20ad0e917cff7d15d2e/pkg/auth"
+                        properties {
+                            "architecture.id" "firefly.core.auth"
+                            "evidence" "Implementation"
+                        }
+                    }
+                    namespaces = component "Namespace manager" "Initializes isolated orchestrators and configured plugins." "Go" {
+                        url "https://github.com/hyperledger-firefly/firefly/tree/9d20f3081c9074d5b012427e5572ebc03da8d95d/internal/namespace"
+                        properties {
+                            "architecture.id" "firefly.core.namespaces"
+                            "evidence" "Implementation"
+                        }
+                    }
+                    orchestrator = component "Orchestrator" "Coordinates API operations and subsystem lifecycles." "Go" {
+                        url "https://github.com/hyperledger-firefly/firefly/tree/9d20f3081c9074d5b012427e5572ebc03da8d95d/internal/orchestrator"
+                        properties {
+                            "architecture.id" "firefly.core.orchestrator"
+                            "evidence" "Implementation"
+                        }
+                    }
+                    identity = component "Identity manager" "Resolves organizations, nodes and transaction signing identities." "Go" {
+                        url "https://github.com/hyperledger-firefly/firefly/tree/9d20f3081c9074d5b012427e5572ebc03da8d95d/internal/identity"
+                        properties {
+                            "architecture.id" "firefly.core.identity"
+                            "evidence" "Implementation"
+                        }
+                    }
+                    networkmap = component "Network map" "Indexes registered members, nodes and their endpoints." "Go" {
+                        url "https://github.com/hyperledger-firefly/firefly/tree/9d20f3081c9074d5b012427e5572ebc03da8d95d/internal/networkmap"
+                        properties {
+                            "architecture.id" "firefly.core.networkmap"
+                            "evidence" "Implementation"
+                        }
+                    }
+                    definitions = component "Definition exchange" "Publishes and processes schemas, interfaces and token definitions." "Go" {
+                        url "https://github.com/hyperledger-firefly/firefly/tree/9d20f3081c9074d5b012427e5572ebc03da8d95d/internal/definitions"
+                        properties {
+                            "architecture.id" "firefly.core.definitions"
+                            "evidence" "Implementation"
+                        }
+                    }
+                    data = component "Data manager" "Validates, hashes and retrieves structured data and blob references." "Go" {
+                        url "https://github.com/hyperledger-firefly/firefly/tree/9d20f3081c9074d5b012427e5572ebc03da8d95d/internal/data"
+                        properties {
+                            "architecture.id" "firefly.core.data"
+                            "evidence" "Implementation"
+                        }
+                    }
+                    schema = component "Schema validation" "Checks JSON payloads against registered datatype definitions." "Go" {
+                        url "https://github.com/hyperledger-firefly/firefly/tree/9d20f3081c9074d5b012427e5572ebc03da8d95d/internal/data"
+                        properties {
+                            "architecture.id" "firefly.core.schema"
+                            "evidence" "Implementation"
+                        }
+                    }
+                    batch = component "Batch manager" "Selects outbound messages and dispatches recoverable batches." "Go" {
+                        url "https://github.com/hyperledger-firefly/firefly/tree/9d20f3081c9074d5b012427e5572ebc03da8d95d/internal/batch"
+                        properties {
+                            "architecture.id" "firefly.core.batch"
+                            "evidence" "Implementation"
+                        }
+                    }
+                    batchprocessor = component "Batch processor" "Assembles ordered message batches and aggregate hashes." "Go" {
+                        url "https://github.com/hyperledger-firefly/firefly/tree/9d20f3081c9074d5b012427e5572ebc03da8d95d/internal/batch"
+                        properties {
+                            "architecture.id" "firefly.core.batchprocessor"
+                            "evidence" "Implementation"
+                        }
+                        -> firefly.core.data "Loads payloads for batch assembly" "In-process calls / Go" "Dataflow"
+                    }
+                    broadcast = component "Broadcast manager" "Publishes shared payloads and orchestrates ledger pinning." "Go" {
+                        url "https://github.com/hyperledger-firefly/firefly/tree/9d20f3081c9074d5b012427e5572ebc03da8d95d/internal/broadcast"
+                        properties {
+                            "architecture.id" "firefly.core.broadcast"
+                            "evidence" "Implementation"
+                        }
+                    }
+                    private = component "Private messaging and groups" "Routes messages to recipient groups and coordinates delivery." "Go" {
+                        url "https://github.com/hyperledger-firefly/firefly/tree/9d20f3081c9074d5b012427e5572ebc03da8d95d/internal/privatemessaging"
+                        properties {
+                            "architecture.id" "firefly.core.private"
+                            "evidence" "Implementation"
+                        }
+                        -> firefly.core.identity "Resolves group recipients and endpoints" "In-process calls / Go" "Dataflow"
+                    }
+                    multiparty = component "Multiparty manager" "Coordinates network actions and FireFly contract pinning." "Go" {
+                        url "https://github.com/hyperledger-firefly/firefly/tree/9d20f3081c9074d5b012427e5572ebc03da8d95d/internal/multiparty"
+                        properties {
+                            "architecture.id" "firefly.core.multiparty"
+                            "evidence" "Implementation"
+                        }
+                    }
+                    download = component "Shared download manager" "Retrieves referenced broadcast batches and blobs." "Go" {
+                        url "https://github.com/hyperledger-firefly/firefly/tree/9d20f3081c9074d5b012427e5572ebc03da8d95d/internal/shareddownload"
+                        properties {
+                            "architecture.id" "firefly.core.download"
+                            "evidence" "Implementation"
+                        }
+                        -> firefly.core.data "Validates downloaded data and stores metadata" "In-process calls / Go" "Dataflow"
+                    }
+                    contracts = component "Contract manager" "Maps FFIs and APIs to contract calls and event listeners." "Go" {
+                        url "https://github.com/hyperledger-firefly/firefly/tree/9d20f3081c9074d5b012427e5572ebc03da8d95d/internal/contracts"
+                        properties {
+                            "architecture.id" "firefly.core.contracts"
+                            "evidence" "Implementation"
+                        }
+                    }
+                    assets = component "Asset manager" "Coordinates token pools, balances and transfers." "Go" {
+                        url "https://github.com/hyperledger-firefly/firefly/tree/9d20f3081c9074d5b012427e5572ebc03da8d95d/internal/assets"
+                        properties {
+                            "architecture.id" "firefly.core.assets"
+                            "evidence" "Implementation"
+                        }
+                        -> firefly.core.contracts "Resolves token contract interfaces" "In-process calls / Go" "Dataflow"
+                    }
+                    operations = component "Operations manager" "Tracks asynchronous connector requests and results." "Go" {
+                        url "https://github.com/hyperledger-firefly/firefly/tree/9d20f3081c9074d5b012427e5572ebc03da8d95d/internal/operations"
+                        properties {
+                            "architecture.id" "firefly.core.operations"
+                            "evidence" "Implementation"
+                        }
+                    }
+                    txhelper = component "Transaction helper" "Correlates operations, messages and blockchain transactions." "Go" {
+                        url "https://github.com/hyperledger-firefly/firefly/tree/9d20f3081c9074d5b012427e5572ebc03da8d95d/internal/txcommon"
+                        properties {
+                            "architecture.id" "firefly.core.txhelper"
+                            "evidence" "Implementation"
+                        }
+                    }
+                    txwriter = component "Transaction writer" "Batches transaction persistence and submission work." "Go" {
+                        url "https://github.com/hyperledger-firefly/firefly/tree/9d20f3081c9074d5b012427e5572ebc03da8d95d/internal/txwriter"
+                        properties {
+                            "architecture.id" "firefly.core.txwriter"
+                            "evidence" "Implementation"
+                        }
+                    }
+                    aggregator = component "Inbound event aggregator" "Correlates ledger pins with payloads and sequences confirmed messages." "Go" {
+                        url "https://github.com/hyperledger-firefly/firefly/tree/9d20f3081c9074d5b012427e5572ebc03da8d95d/internal/events/aggregator.go"
+                        properties {
+                            "architecture.id" "firefly.core.aggregator"
+                            "evidence" "Implementation"
+                        }
+                        -> firefly.core.download "Requests missing shared data" "In-process calls / Go" "Dataflow"
+                    }
+                    subscriptions = component "Subscription manager" "Filters events and persists subscriber offsets." "Go" {
+                        url "https://github.com/hyperledger-firefly/firefly/tree/9d20f3081c9074d5b012427e5572ebc03da8d95d/internal/events/subscription_manager.go"
+                        properties {
+                            "architecture.id" "firefly.core.subscriptions"
+                            "evidence" "Implementation"
+                        }
+                    }
+                    dispatcher = component "Event dispatcher" "Delivers ordered event batches and processes acknowledgements." "Go" {
+                        url "https://github.com/hyperledger-firefly/firefly/tree/9d20f3081c9074d5b012427e5572ebc03da8d95d/internal/events/event_dispatcher.go"
+                        properties {
+                            "architecture.id" "firefly.core.dispatcher"
+                            "evidence" "Implementation"
+                        }
+                    }
+                    syncasync = component "Sync/async bridge" "Correlates asynchronous completion with waiting API requests." "Go" {
+                        url "https://github.com/hyperledger-firefly/firefly/tree/9d20f3081c9074d5b012427e5572ebc03da8d95d/internal/syncasync"
+                        properties {
+                            "architecture.id" "firefly.core.syncasync"
+                            "evidence" "Implementation"
+                        }
+                    }
+                    cache = component "Cache manager" "Caches reusable namespace resources and lookups." "Go" {
+                        url "https://github.com/hyperledger-firefly/firefly/tree/9d20f3081c9074d5b012427e5572ebc03da8d95d/internal/cache"
+                        properties {
+                            "architecture.id" "firefly.core.cache"
+                            "evidence" "Implementation"
+                        }
+                    }
+                    metrics = component "Metrics" "Exposes runtime and operation measurements." "Go" {
+                        url "https://github.com/hyperledger-firefly/firefly/tree/9d20f3081c9074d5b012427e5572ebc03da8d95d/internal/metrics"
+                        properties {
+                            "architecture.id" "firefly.core.metrics"
+                            "evidence" "Implementation"
+                        }
+                    }
+                    spievents = component "SPI event manager" "Publishes internal lifecycle and namespace change events." "Go" {
+                        url "https://github.com/hyperledger-firefly/firefly/tree/9d20f3081c9074d5b012427e5572ebc03da8d95d/internal/spievents"
+                        properties {
+                            "architecture.id" "firefly.core.spievents"
+                            "evidence" "Implementation"
+                        }
+                    }
+                    blockchain = component "Blockchain plugin" "Defines blockchain operations and dispatches to the configured chain adapter." "Go" {
+                        url "https://github.com/hyperledger-firefly/firefly/tree/9d20f3081c9074d5b012427e5572ebc03da8d95d/internal/blockchain"
+                        properties {
+                            "architecture.id" "firefly.core.blockchain"
+                            "evidence" "Implementation"
+                        }
+                        -> firefly.core.aggregator "Delivers confirmed ledger events" "In-process calls / Go" "Dataflow"
+                    }
+                    database = component "Database plugin" "Defines transactional persistence and dispatches to the selected SQL adapter." "Go" {
+                        url "https://github.com/hyperledger-firefly/firefly/tree/9d20f3081c9074d5b012427e5572ebc03da8d95d/internal/database"
+                        properties {
+                            "architecture.id" "firefly.core.database"
+                            "evidence" "Implementation"
+                        }
+                    }
+                    dataexchange = component "Data exchange plugin" "Binds message, blob and peer operations to the HTTPS connector." "Go" {
+                        url "https://github.com/hyperledger-firefly/firefly/tree/9d20f3081c9074d5b012427e5572ebc03da8d95d/internal/dataexchange"
+                        properties {
+                            "architecture.id" "firefly.core.dataexchange"
+                            "evidence" "Implementation"
+                        }
+                        -> firefly.core.aggregator "Delivers received payload notifications" "In-process calls / Go" "Dataflow"
+                    }
+                    sharedstorage = component "Shared storage plugin" "Publishes and retrieves content through IPFS APIs." "Go" {
+                        url "https://github.com/hyperledger-firefly/firefly/tree/9d20f3081c9074d5b012427e5572ebc03da8d95d/internal/sharedstorage"
+                        properties {
+                            "architecture.id" "firefly.core.sharedstorage"
+                            "evidence" "Implementation"
+                        }
+                    }
+                    tokens = component "Token plugin" "Binds standard token operations to remote token connectors." "Go" {
+                        url "https://github.com/hyperledger-firefly/firefly/tree/9d20f3081c9074d5b012427e5572ebc03da8d95d/internal/tokens"
+                        properties {
+                            "architecture.id" "firefly.core.tokens"
+                            "evidence" "Implementation"
+                        }
+                        -> firefly.core.aggregator "Delivers token creation and transfer events" "In-process calls / Go" "Dataflow"
+                    }
+                    identityplugin = component "Identity extension placeholder" "Registers the onchain compatibility placeholder; external identity resolution is not implemented." "Go" {
+                        url "https://github.com/hyperledger-firefly/firefly/tree/9d20f3081c9074d5b012427e5572ebc03da8d95d/internal/identity/tbd"
+                        properties {
+                            "architecture.id" "firefly.core.identityplugin"
+                            "evidence" "Unfinished extension"
+                        }
+                    }
+                    eventplugin = component "Event transport interface" "Binds subscriber delivery to a configured event transport." "Go" {
+                        url "https://github.com/hyperledger-firefly/firefly/tree/9d20f3081c9074d5b012427e5572ebc03da8d95d/internal/events"
+                        properties {
+                            "architecture.id" "firefly.core.eventplugin"
+                            "evidence" "Implementation"
+                        }
+                    }
+                    config = component "Configuration and plugin initialization" "Loads namespace settings and initializes plugin factories." "Go" {
+                        url "https://github.com/hyperledger-firefly/firefly/tree/9d20f3081c9074d5b012427e5572ebc03da8d95d/internal/coreconfig"
+                        properties {
+                            "architecture.id" "firefly.core.config"
+                            "evidence" "Implementation"
+                        }
+                    }
+                    basicAuth = component "HTTP Basic authentication" "Verifies htpasswd bcrypt credentials for configured namespaces." "Go" {
+                        url "https://github.com/hyperledger-firefly/common/tree/b91a1eb645e5bc39c54ed20ad0e917cff7d15d2e/pkg/auth/basic"
+                        properties {
+                            "architecture.id" "firefly.core.basicAuth"
+                            "evidence" "Implementation"
+                        }
+                    }
+                    ethereum = component "Ethereum blockchain adapter" "Maps Core operations to EVMConnect or legacy EthConnect." "Go" {
+                        url "https://github.com/hyperledger-firefly/firefly/tree/9d20f3081c9074d5b012427e5572ebc03da8d95d/internal/blockchain/ethereum"
+                        properties {
+                            "architecture.id" "firefly.core.ethereum"
+                            "evidence" "Implementation"
+                        }
+                    }
+                    fabricAdapter = component "Fabric blockchain adapter" "Maps chaincode operations and ledger events to FabConnect." "Go" {
+                        url "https://github.com/hyperledger-firefly/firefly/tree/9d20f3081c9074d5b012427e5572ebc03da8d95d/internal/blockchain/fabric"
+                        properties {
+                            "architecture.id" "firefly.core.fabricAdapter"
+                            "evidence" "Implementation"
+                        }
+                    }
+                    tezosAdapter = component "Tezos blockchain adapter" "Maps FireFly contract operations to TezosConnect." "Go" {
+                        url "https://github.com/hyperledger-firefly/firefly/tree/9d20f3081c9074d5b012427e5572ebc03da8d95d/internal/blockchain/tezos"
+                        properties {
+                            "architecture.id" "firefly.core.tezosAdapter"
+                            "evidence" "Implementation"
+                        }
+                    }
+                    cardanoAdapter = component "Cardano blockchain adapter" "Maps transactions and contract operations to CardanoConnect." "Go" {
+                        url "https://github.com/hyperledger-firefly/firefly/tree/9d20f3081c9074d5b012427e5572ebc03da8d95d/internal/blockchain/cardano"
+                        properties {
+                            "architecture.id" "firefly.core.cardanoAdapter"
+                            "evidence" "Implementation"
+                        }
+                    }
+                    postgres = component "PostgreSQL adapter" "Implements Core persistence through the shared SQL layer." "Go" {
+                        url "https://github.com/hyperledger-firefly/firefly/tree/9d20f3081c9074d5b012427e5572ebc03da8d95d/internal/database/postgres"
+                        properties {
+                            "architecture.id" "firefly.core.postgres"
+                            "evidence" "Implementation"
+                        }
+                    }
+                    sqlite = component "SQLite adapter" "Implements Core persistence in an embedded SQLite database." "Go" {
+                        url "https://github.com/hyperledger-firefly/firefly/tree/9d20f3081c9074d5b012427e5572ebc03da8d95d/internal/database/sqlite3"
+                        properties {
+                            "architecture.id" "firefly.core.sqlite"
+                            "evidence" "Implementation"
+                        }
+                    }
+                    sql = component "SQL persistence implementation" "Builds resource queries and transactions for SQL backends." "Go" {
+                        url "https://github.com/hyperledger-firefly/firefly/tree/9d20f3081c9074d5b012427e5572ebc03da8d95d/internal/database/sqlcommon"
+                        properties {
+                            "architecture.id" "firefly.core.sql"
+                            "evidence" "Implementation"
+                        }
+                    }
+                    ffdx = component "HTTPS Data Exchange adapter" "Maps private envelopes, blobs, peers and acknowledgements to FFDX." "Go" {
+                        url "https://github.com/hyperledger-firefly/firefly/tree/9d20f3081c9074d5b012427e5572ebc03da8d95d/internal/dataexchange/ffdx"
+                        properties {
+                            "architecture.id" "firefly.core.ffdx"
+                            "evidence" "Implementation"
+                        }
+                    }
+                    ipfs = component "IPFS shared-storage adapter" "Adds and retrieves broadcast content by CID." "Go" {
+                        url "https://github.com/hyperledger-firefly/firefly/tree/9d20f3081c9074d5b012427e5572ebc03da8d95d/internal/sharedstorage/ipfs"
+                        properties {
+                            "architecture.id" "firefly.core.ipfs"
+                            "evidence" "Implementation"
+                        }
+                    }
+                    fftokens = component "Token connector adapter" "Maps token operations and events to standard remote token APIs." "Go" {
+                        url "https://github.com/hyperledger-firefly/firefly/tree/9d20f3081c9074d5b012427e5572ebc03da8d95d/internal/tokens/fftokens"
+                        properties {
+                            "architecture.id" "firefly.core.fftokens"
+                            "evidence" "Implementation"
+                        }
+                    }
+                    websockets = component "WebSocket event transport" "Delivers subscription batches and consumes acknowledgements." "Go" {
+                        url "https://github.com/hyperledger-firefly/firefly/tree/9d20f3081c9074d5b012427e5572ebc03da8d95d/internal/events/websockets"
+                        properties {
+                            "architecture.id" "firefly.core.websockets"
+                            "evidence" "Implementation"
+                        }
+                    }
+                    webhooks = component "Webhook event transport" "Posts event batches to configured callback endpoints." "Go" {
+                        url "https://github.com/hyperledger-firefly/firefly/tree/9d20f3081c9074d5b012427e5572ebc03da8d95d/internal/events/webhooks"
+                        properties {
+                            "architecture.id" "firefly.core.webhooks"
+                            "evidence" "Implementation"
+                        }
+                    }
+                    systemEvents = component "System event transport" "Delivers internal subscriptions to Core event consumers." "Go" {
+                        url "https://github.com/hyperledger-firefly/firefly/tree/9d20f3081c9074d5b012427e5572ebc03da8d95d/internal/events/system"
+                        properties {
+                            "architecture.id" "firefly.core.systemEvents"
+                            "evidence" "Implementation"
+                        }
+                        -> firefly.core.aggregator "Routes internal subscription notifications" "In-process calls / Go" "Dataflow"
+                    }
+                    !element firefly.core.api {
+                        -> firefly.core.auth "Passes request credentials for authorization" "In-process calls / Go" "Dataflow"
+                        -> firefly.core.namespaces "Resolves the requested namespace" "In-process calls / Go" "Dataflow"
+                        -> firefly.core.orchestrator "Submits validated commands and queries" "In-process calls / Go" "Dataflow"
+                    }
+                    !element firefly.core.namespaces {
+                        -> firefly.core.orchestrator "Initializes namespace resources and plugins" "In-process calls / Go" "Dataflow"
+                        -> firefly.core.spievents "Publishes namespace lifecycle changes" "In-process calls / Go" "Dataflow"
+                        -> firefly.core.config "Loads namespace configuration and plugin selections" "In-process calls / Go" "Dataflow"
+                    }
+                    !element firefly.core.orchestrator {
+                        -> firefly.core.syncasync "Waits for asynchronous request completion" "In-process calls / Go" "Dataflow"
+                        -> firefly.core.identity "Resolves signing identities" "In-process calls / Go" "Dataflow"
+                        -> firefly.core.multiparty "Submits consortium network actions" "In-process calls / Go" "Dataflow"
+                        -> firefly.core.data "Submits payloads and datatype definitions" "In-process calls / Go" "Dataflow"
+                        -> firefly.core.batch "Queues outbound messages" "In-process calls / Go" "Dataflow"
+                        -> firefly.core.contracts "Submits contract queries and invocations" "In-process calls / Go" "Dataflow"
+                        -> firefly.core.assets "Submits token pool and transfer requests" "In-process calls / Go" "Dataflow"
+                        -> firefly.core.metrics "Records API and subsystem measurements" "In-process calls / Go" "Dataflow"
+                    }
+                    !element firefly.core.identity {
+                        -> firefly.core.identityplugin "Initializes the configured onchain placeholder" "In-process calls / Go" "Dataflow"
+                        -> firefly.core.networkmap "Looks up members and node endpoints" "In-process calls / Go" "Dataflow"
+                    }
+                    !element firefly.core.networkmap {
+                        -> firefly.core.definitions "Registers shared member definitions" "In-process calls / Go" "Dataflow"
+                    }
+                    !element firefly.core.definitions {
+                        -> firefly.core.broadcast "Publishes network definitions" "In-process calls / Go" "Dataflow"
+                    }
+                    !element firefly.core.multiparty {
+                        -> firefly.core.blockchain "Submits contract pinning transactions" "In-process calls / Go" "Dataflow"
+                    }
+                    !element firefly.core.data {
+                        -> firefly.core.schema "Validates structured payloads" "In-process calls / Go" "Dataflow"
+                        -> firefly.core.database "Persists payload metadata and hashes" "In-process calls / Go" "Dataflow"
+                        -> firefly.core.cache "Caches reusable data and schema lookups" "In-process calls / Go" "Dataflow"
+                    }
+                    !element firefly.core.batch {
+                        -> firefly.core.batchprocessor "Assigns messages to recoverable batches" "In-process calls / Go" "Dataflow"
+                    }
+                    !element firefly.core.batchprocessor {
+                        -> firefly.core.broadcast "Dispatches broadcast batches" "In-process calls / Go" "Dataflow"
+                        -> firefly.core.private "Dispatches recipient-scoped batches" "In-process calls / Go" "Dataflow"
+                    }
+                    !element firefly.core.broadcast {
+                        -> firefly.core.sharedstorage "Uploads broadcast payloads" "In-process calls / Go" "Dataflow"
+                        -> firefly.core.multiparty "Pins batch hashes on the ledger" "In-process calls / Go" "Dataflow"
+                    }
+                    !element firefly.core.private {
+                        -> firefly.core.dataexchange "Sends private payloads to recipient nodes" "In-process calls / Go" "Dataflow"
+                        -> firefly.core.multiparty "Pins private batch hashes when requested" "In-process calls / Go" "Dataflow"
+                    }
+                    !element firefly.core.contracts {
+                        -> firefly.core.blockchain "Submits ABI-backed calls and listeners" "In-process calls / Go" "Dataflow"
+                        -> firefly.core.operations "Tracks contract operation completion" "In-process calls / Go" "Dataflow"
+                        -> firefly.core.cache "Caches contract definitions" "In-process calls / Go" "Dataflow"
+                    }
+                    !element firefly.core.assets {
+                        -> firefly.core.tokens "Requests standard token operations" "In-process calls / Go" "Dataflow"
+                        -> firefly.core.operations "Tracks token operation completion" "In-process calls / Go" "Dataflow"
+                    }
+                    !element firefly.core.operations {
+                        -> firefly.core.txhelper "Correlates operation and transaction identifiers" "In-process calls / Go" "Dataflow"
+                        -> firefly.core.database "Persists operation state and retries" "In-process calls / Go" "Dataflow"
+                        -> firefly.core.metrics "Records operation outcomes" "In-process calls / Go" "Dataflow"
+                    }
+                    !element firefly.core.txhelper {
+                        -> firefly.core.txwriter "Queues transaction records for persistence" "In-process calls / Go" "Dataflow"
+                    }
+                    !element firefly.core.txwriter {
+                        -> firefly.core.database "Flushes transaction records" "In-process calls / Go" "Dataflow"
+                    }
+                    !element firefly.core.download {
+                        -> firefly.core.sharedstorage "Fetches content-addressed batches and blobs" "In-process calls / Go" "Dataflow"
+                    }
+                    !element firefly.core.aggregator {
+                        -> firefly.core.database "Persists sequenced events and message state" "In-process calls / Go" "Dataflow"
+                        -> firefly.core.subscriptions "Publishes locally ordered events" "In-process calls / Go" "Dataflow"
+                    }
+                    !element firefly.core.subscriptions {
+                        -> firefly.core.database "Persists subscriptions and acknowledged offsets" "In-process calls / Go" "Dataflow"
+                        -> firefly.core.dispatcher "Dispatches filtered event batches" "In-process calls / Go" "Dataflow"
+                    }
+                    !element firefly.core.dispatcher {
+                        -> firefly.core.eventplugin "Delivers events via configured transports" "In-process calls / Go" "Dataflow"
+                        -> firefly.core.syncasync "Completes waiting requests" "In-process calls / Go" "Dataflow"
+                    }
+                    !element firefly.core.spievents {
+                        -> firefly.core.eventplugin "Publishes system notifications" "In-process calls / Go" "Dataflow"
+                    }
+                    !element firefly.core.auth {
+                        -> firefly.core.basicAuth "Verifies configured Basic credentials" "In-process calls / Go" "Dataflow"
+                    }
+                    !element firefly.core.blockchain {
+                        -> firefly.core.ethereum "Dispatches EVM operations when configured" "In-process calls / Go" "Dataflow"
+                        -> firefly.core.fabricAdapter "Dispatches Fabric operations when configured" "In-process calls / Go" "Dataflow"
+                        -> firefly.core.tezosAdapter "Dispatches Tezos operations when configured" "In-process calls / Go" "Dataflow"
+                        -> firefly.core.cardanoAdapter "Dispatches Cardano operations when configured" "In-process calls / Go" "Dataflow"
+                    }
+                    !element firefly.core.database {
+                        -> firefly.core.postgres "Dispatches PostgreSQL persistence when configured" "In-process calls / Go" "Dataflow"
+                        -> firefly.core.sqlite "Dispatches embedded SQLite persistence when configured" "In-process calls / Go" "Dataflow"
+                    }
+                    !element firefly.core.postgres {
+                        -> firefly.core.sql "Executes PostgreSQL resource queries and transactions" "In-process calls / Go" "Dataflow"
+                    }
+                    !element firefly.core.sqlite {
+                        -> firefly.core.sql "Executes SQLite resource queries and transactions" "In-process calls / Go" "Dataflow"
+                    }
+                    !element firefly.core.dataexchange {
+                        -> firefly.core.ffdx "Dispatches private data-transfer operations" "In-process calls / Go" "Dataflow"
+                    }
+                    !element firefly.core.sharedstorage {
+                        -> firefly.core.ipfs "Dispatches shared-content operations" "In-process calls / Go" "Dataflow"
+                    }
+                    !element firefly.core.tokens {
+                        -> firefly.core.fftokens "Dispatches standard token operations" "In-process calls / Go" "Dataflow"
+                    }
+                    !element firefly.core.eventplugin {
+                        -> firefly.core.websockets "Delivers WebSocket subscription batches" "In-process calls / Go" "Dataflow"
+                        -> firefly.core.webhooks "Delivers webhook subscription batches" "In-process calls / Go" "Dataflow"
+                        -> firefly.core.systemEvents "Delivers internal subscription batches" "In-process calls / Go" "Dataflow"
                     }
                 }
-                networkmap = component "Network map" "Indexes registered members, nodes and their endpoints." "Go" {
-                    url "https://github.com/hyperledger-firefly/firefly/tree/9d20f3081c9074d5b012427e5572ebc03da8d95d/internal/networkmap"
-                    properties {
-                        "architecture.id" "firefly.core.networkmap"
-                        "evidence" "Implementation"
-                    }
-                }
-                definitions = component "Definition exchange" "Publishes and processes schemas, interfaces and token definitions." "Go" {
-                    url "https://github.com/hyperledger-firefly/firefly/tree/9d20f3081c9074d5b012427e5572ebc03da8d95d/internal/definitions"
-                    properties {
-                        "architecture.id" "firefly.core.definitions"
-                        "evidence" "Implementation"
-                    }
-                }
-                data = component "Data manager" "Validates, hashes and retrieves structured data and blob references." "Go" {
-                    url "https://github.com/hyperledger-firefly/firefly/tree/9d20f3081c9074d5b012427e5572ebc03da8d95d/internal/data"
-                    properties {
-                        "architecture.id" "firefly.core.data"
-                        "evidence" "Implementation"
-                    }
-                }
-                schema = component "Schema validation" "Checks JSON payloads against registered datatype definitions." "Go" {
-                    url "https://github.com/hyperledger-firefly/firefly/tree/9d20f3081c9074d5b012427e5572ebc03da8d95d/internal/data"
-                    properties {
-                        "architecture.id" "firefly.core.schema"
-                        "evidence" "Implementation"
-                    }
-                }
-                batch = component "Batch manager" "Selects outbound messages and dispatches recoverable batches." "Go" {
-                    url "https://github.com/hyperledger-firefly/firefly/tree/9d20f3081c9074d5b012427e5572ebc03da8d95d/internal/batch"
-                    properties {
-                        "architecture.id" "firefly.core.batch"
-                        "evidence" "Implementation"
-                    }
-                }
-                batchprocessor = component "Batch processor" "Assembles ordered message batches and aggregate hashes." "Go" {
-                    url "https://github.com/hyperledger-firefly/firefly/tree/9d20f3081c9074d5b012427e5572ebc03da8d95d/internal/batch"
-                    properties {
-                        "architecture.id" "firefly.core.batchprocessor"
-                        "evidence" "Implementation"
-                    }
-                    -> firefly.core.data "Loads payloads for batch assembly" "In-process calls / Go" "Dataflow"
-                }
-                broadcast = component "Broadcast manager" "Publishes shared payloads and orchestrates ledger pinning." "Go" {
-                    url "https://github.com/hyperledger-firefly/firefly/tree/9d20f3081c9074d5b012427e5572ebc03da8d95d/internal/broadcast"
-                    properties {
-                        "architecture.id" "firefly.core.broadcast"
-                        "evidence" "Implementation"
-                    }
-                }
-                private = component "Private messaging and groups" "Routes messages to recipient groups and coordinates delivery." "Go" {
-                    url "https://github.com/hyperledger-firefly/firefly/tree/9d20f3081c9074d5b012427e5572ebc03da8d95d/internal/privatemessaging"
-                    properties {
-                        "architecture.id" "firefly.core.private"
-                        "evidence" "Implementation"
-                    }
-                    -> firefly.core.identity "Resolves group recipients and endpoints" "In-process calls / Go" "Dataflow"
-                }
-                multiparty = component "Multiparty manager" "Coordinates network actions and FireFly contract pinning." "Go" {
-                    url "https://github.com/hyperledger-firefly/firefly/tree/9d20f3081c9074d5b012427e5572ebc03da8d95d/internal/multiparty"
-                    properties {
-                        "architecture.id" "firefly.core.multiparty"
-                        "evidence" "Implementation"
-                    }
-                }
-                download = component "Shared download manager" "Retrieves referenced broadcast batches and blobs." "Go" {
-                    url "https://github.com/hyperledger-firefly/firefly/tree/9d20f3081c9074d5b012427e5572ebc03da8d95d/internal/shareddownload"
-                    properties {
-                        "architecture.id" "firefly.core.download"
-                        "evidence" "Implementation"
-                    }
-                    -> firefly.core.data "Validates downloaded data and stores metadata" "In-process calls / Go" "Dataflow"
-                }
-                contracts = component "Contract manager" "Maps FFIs and APIs to contract calls and event listeners." "Go" {
-                    url "https://github.com/hyperledger-firefly/firefly/tree/9d20f3081c9074d5b012427e5572ebc03da8d95d/internal/contracts"
-                    properties {
-                        "architecture.id" "firefly.core.contracts"
-                        "evidence" "Implementation"
-                    }
-                }
-                assets = component "Asset manager" "Coordinates token pools, balances and transfers." "Go" {
-                    url "https://github.com/hyperledger-firefly/firefly/tree/9d20f3081c9074d5b012427e5572ebc03da8d95d/internal/assets"
-                    properties {
-                        "architecture.id" "firefly.core.assets"
-                        "evidence" "Implementation"
-                    }
-                    -> firefly.core.contracts "Resolves token contract interfaces" "In-process calls / Go" "Dataflow"
-                }
-                operations = component "Operations manager" "Tracks asynchronous connector requests and results." "Go" {
-                    url "https://github.com/hyperledger-firefly/firefly/tree/9d20f3081c9074d5b012427e5572ebc03da8d95d/internal/operations"
-                    properties {
-                        "architecture.id" "firefly.core.operations"
-                        "evidence" "Implementation"
-                    }
-                }
-                txhelper = component "Transaction helper" "Correlates operations, messages and blockchain transactions." "Go" {
-                    url "https://github.com/hyperledger-firefly/firefly/tree/9d20f3081c9074d5b012427e5572ebc03da8d95d/internal/txcommon"
-                    properties {
-                        "architecture.id" "firefly.core.txhelper"
-                        "evidence" "Implementation"
-                    }
-                }
-                txwriter = component "Transaction writer" "Batches transaction persistence and submission work." "Go" {
-                    url "https://github.com/hyperledger-firefly/firefly/tree/9d20f3081c9074d5b012427e5572ebc03da8d95d/internal/txwriter"
-                    properties {
-                        "architecture.id" "firefly.core.txwriter"
-                        "evidence" "Implementation"
-                    }
-                }
-                aggregator = component "Inbound event aggregator" "Correlates ledger pins with payloads and sequences confirmed messages." "Go" {
-                    url "https://github.com/hyperledger-firefly/firefly/tree/9d20f3081c9074d5b012427e5572ebc03da8d95d/internal/events/aggregator.go"
-                    properties {
-                        "architecture.id" "firefly.core.aggregator"
-                        "evidence" "Implementation"
-                    }
-                    -> firefly.core.download "Requests missing shared data" "In-process calls / Go" "Dataflow"
-                }
-                subscriptions = component "Subscription manager" "Filters events and persists subscriber offsets." "Go" {
-                    url "https://github.com/hyperledger-firefly/firefly/tree/9d20f3081c9074d5b012427e5572ebc03da8d95d/internal/events/subscription_manager.go"
-                    properties {
-                        "architecture.id" "firefly.core.subscriptions"
-                        "evidence" "Implementation"
-                    }
-                }
-                dispatcher = component "Event dispatcher" "Delivers ordered event batches and processes acknowledgements." "Go" {
-                    url "https://github.com/hyperledger-firefly/firefly/tree/9d20f3081c9074d5b012427e5572ebc03da8d95d/internal/events/event_dispatcher.go"
-                    properties {
-                        "architecture.id" "firefly.core.dispatcher"
-                        "evidence" "Implementation"
-                    }
-                }
-                syncasync = component "Sync/async bridge" "Correlates asynchronous completion with waiting API requests." "Go" {
-                    url "https://github.com/hyperledger-firefly/firefly/tree/9d20f3081c9074d5b012427e5572ebc03da8d95d/internal/syncasync"
-                    properties {
-                        "architecture.id" "firefly.core.syncasync"
-                        "evidence" "Implementation"
-                    }
-                }
-                cache = component "Cache manager" "Caches reusable namespace resources and lookups." "Go" {
-                    url "https://github.com/hyperledger-firefly/firefly/tree/9d20f3081c9074d5b012427e5572ebc03da8d95d/internal/cache"
-                    properties {
-                        "architecture.id" "firefly.core.cache"
-                        "evidence" "Implementation"
-                    }
-                }
-                metrics = component "Metrics" "Exposes runtime and operation measurements." "Go" {
-                    url "https://github.com/hyperledger-firefly/firefly/tree/9d20f3081c9074d5b012427e5572ebc03da8d95d/internal/metrics"
-                    properties {
-                        "architecture.id" "firefly.core.metrics"
-                        "evidence" "Implementation"
-                    }
-                }
-                spievents = component "SPI event manager" "Publishes internal lifecycle and namespace change events." "Go" {
-                    url "https://github.com/hyperledger-firefly/firefly/tree/9d20f3081c9074d5b012427e5572ebc03da8d95d/internal/spievents"
-                    properties {
-                        "architecture.id" "firefly.core.spievents"
-                        "evidence" "Implementation"
-                    }
-                }
-                blockchain = component "Blockchain plugin" "Defines blockchain operations and dispatches to the configured chain adapter." "Go" {
-                    url "https://github.com/hyperledger-firefly/firefly/tree/9d20f3081c9074d5b012427e5572ebc03da8d95d/internal/blockchain"
-                    properties {
-                        "architecture.id" "firefly.core.blockchain"
-                        "evidence" "Implementation"
-                    }
-                    -> firefly.core.aggregator "Delivers confirmed ledger events" "In-process calls / Go" "Dataflow"
-                }
-                database = component "Database plugin" "Defines transactional persistence and dispatches to the selected SQL adapter." "Go" {
-                    url "https://github.com/hyperledger-firefly/firefly/tree/9d20f3081c9074d5b012427e5572ebc03da8d95d/internal/database"
-                    properties {
-                        "architecture.id" "firefly.core.database"
-                        "evidence" "Implementation"
-                    }
-                }
-                dataexchange = component "Data exchange plugin" "Binds message, blob and peer operations to the HTTPS connector." "Go" {
-                    url "https://github.com/hyperledger-firefly/firefly/tree/9d20f3081c9074d5b012427e5572ebc03da8d95d/internal/dataexchange"
-                    properties {
-                        "architecture.id" "firefly.core.dataexchange"
-                        "evidence" "Implementation"
-                    }
-                    -> firefly.core.aggregator "Delivers received payload notifications" "In-process calls / Go" "Dataflow"
-                }
-                sharedstorage = component "Shared storage plugin" "Publishes and retrieves content through IPFS APIs." "Go" {
-                    url "https://github.com/hyperledger-firefly/firefly/tree/9d20f3081c9074d5b012427e5572ebc03da8d95d/internal/sharedstorage"
-                    properties {
-                        "architecture.id" "firefly.core.sharedstorage"
-                        "evidence" "Implementation"
-                    }
-                }
-                tokens = component "Token plugin" "Binds standard token operations to remote token connectors." "Go" {
-                    url "https://github.com/hyperledger-firefly/firefly/tree/9d20f3081c9074d5b012427e5572ebc03da8d95d/internal/tokens"
-                    properties {
-                        "architecture.id" "firefly.core.tokens"
-                        "evidence" "Implementation"
-                    }
-                    -> firefly.core.aggregator "Delivers token creation and transfer events" "In-process calls / Go" "Dataflow"
-                }
-                identityplugin = component "Identity extension placeholder" "Registers the onchain compatibility placeholder; external identity resolution is not implemented." "Go" {
-                    url "https://github.com/hyperledger-firefly/firefly/tree/9d20f3081c9074d5b012427e5572ebc03da8d95d/internal/identity/tbd"
-                    properties {
-                        "architecture.id" "firefly.core.identityplugin"
-                        "evidence" "Unfinished extension"
-                    }
-                }
-                eventplugin = component "Event transport interface" "Binds subscriber delivery to a configured event transport." "Go" {
-                    url "https://github.com/hyperledger-firefly/firefly/tree/9d20f3081c9074d5b012427e5572ebc03da8d95d/internal/events"
-                    properties {
-                        "architecture.id" "firefly.core.eventplugin"
-                        "evidence" "Implementation"
-                    }
-                }
-                config = component "Configuration and plugin initialization" "Loads namespace settings and initializes plugin factories." "Go" {
-                    url "https://github.com/hyperledger-firefly/firefly/tree/9d20f3081c9074d5b012427e5572ebc03da8d95d/internal/coreconfig"
-                    properties {
-                        "architecture.id" "firefly.core.config"
-                        "evidence" "Implementation"
-                    }
-                }
-                basicAuth = component "HTTP Basic authentication" "Verifies htpasswd bcrypt credentials for configured namespaces." "Go" {
-                    url "https://github.com/hyperledger-firefly/common/tree/b91a1eb645e5bc39c54ed20ad0e917cff7d15d2e/pkg/auth/basic"
-                    properties {
-                        "architecture.id" "firefly.core.basicAuth"
-                        "evidence" "Implementation"
-                    }
-                }
-                ethereum = component "Ethereum blockchain adapter" "Maps Core operations to EVMConnect or legacy EthConnect." "Go" {
-                    url "https://github.com/hyperledger-firefly/firefly/tree/9d20f3081c9074d5b012427e5572ebc03da8d95d/internal/blockchain/ethereum"
-                    properties {
-                        "architecture.id" "firefly.core.ethereum"
-                        "evidence" "Implementation"
-                    }
-                }
-                fabricAdapter = component "Fabric blockchain adapter" "Maps chaincode operations and ledger events to FabConnect." "Go" {
-                    url "https://github.com/hyperledger-firefly/firefly/tree/9d20f3081c9074d5b012427e5572ebc03da8d95d/internal/blockchain/fabric"
-                    properties {
-                        "architecture.id" "firefly.core.fabricAdapter"
-                        "evidence" "Implementation"
-                    }
-                }
-                tezosAdapter = component "Tezos blockchain adapter" "Maps FireFly contract operations to TezosConnect." "Go" {
-                    url "https://github.com/hyperledger-firefly/firefly/tree/9d20f3081c9074d5b012427e5572ebc03da8d95d/internal/blockchain/tezos"
-                    properties {
-                        "architecture.id" "firefly.core.tezosAdapter"
-                        "evidence" "Implementation"
-                    }
-                }
-                cardanoAdapter = component "Cardano blockchain adapter" "Maps transactions and contract operations to CardanoConnect." "Go" {
-                    url "https://github.com/hyperledger-firefly/firefly/tree/9d20f3081c9074d5b012427e5572ebc03da8d95d/internal/blockchain/cardano"
-                    properties {
-                        "architecture.id" "firefly.core.cardanoAdapter"
-                        "evidence" "Implementation"
-                    }
-                }
-                postgres = component "PostgreSQL adapter" "Implements Core persistence through the shared SQL layer." "Go" {
-                    url "https://github.com/hyperledger-firefly/firefly/tree/9d20f3081c9074d5b012427e5572ebc03da8d95d/internal/database/postgres"
-                    properties {
-                        "architecture.id" "firefly.core.postgres"
-                        "evidence" "Implementation"
-                    }
-                }
-                sqlite = component "SQLite adapter" "Implements Core persistence in an embedded SQLite database." "Go" {
-                    url "https://github.com/hyperledger-firefly/firefly/tree/9d20f3081c9074d5b012427e5572ebc03da8d95d/internal/database/sqlite3"
-                    properties {
-                        "architecture.id" "firefly.core.sqlite"
-                        "evidence" "Implementation"
-                    }
-                }
-                sql = component "SQL persistence implementation" "Builds resource queries and transactions for SQL backends." "Go" {
-                    url "https://github.com/hyperledger-firefly/firefly/tree/9d20f3081c9074d5b012427e5572ebc03da8d95d/internal/database/sqlcommon"
-                    properties {
-                        "architecture.id" "firefly.core.sql"
-                        "evidence" "Implementation"
-                    }
-                }
-                ffdx = component "HTTPS Data Exchange adapter" "Maps private envelopes, blobs, peers and acknowledgements to FFDX." "Go" {
-                    url "https://github.com/hyperledger-firefly/firefly/tree/9d20f3081c9074d5b012427e5572ebc03da8d95d/internal/dataexchange/ffdx"
-                    properties {
-                        "architecture.id" "firefly.core.ffdx"
-                        "evidence" "Implementation"
-                    }
-                }
-                ipfs = component "IPFS shared-storage adapter" "Adds and retrieves broadcast content by CID." "Go" {
-                    url "https://github.com/hyperledger-firefly/firefly/tree/9d20f3081c9074d5b012427e5572ebc03da8d95d/internal/sharedstorage/ipfs"
-                    properties {
-                        "architecture.id" "firefly.core.ipfs"
-                        "evidence" "Implementation"
-                    }
-                }
-                fftokens = component "Token connector adapter" "Maps token operations and events to standard remote token APIs." "Go" {
-                    url "https://github.com/hyperledger-firefly/firefly/tree/9d20f3081c9074d5b012427e5572ebc03da8d95d/internal/tokens/fftokens"
-                    properties {
-                        "architecture.id" "firefly.core.fftokens"
-                        "evidence" "Implementation"
-                    }
-                }
-                websockets = component "WebSocket event transport" "Delivers subscription batches and consumes acknowledgements." "Go" {
-                    url "https://github.com/hyperledger-firefly/firefly/tree/9d20f3081c9074d5b012427e5572ebc03da8d95d/internal/events/websockets"
-                    properties {
-                        "architecture.id" "firefly.core.websockets"
-                        "evidence" "Implementation"
-                    }
-                }
-                webhooks = component "Webhook event transport" "Posts event batches to configured callback endpoints." "Go" {
-                    url "https://github.com/hyperledger-firefly/firefly/tree/9d20f3081c9074d5b012427e5572ebc03da8d95d/internal/events/webhooks"
-                    properties {
-                        "architecture.id" "firefly.core.webhooks"
-                        "evidence" "Implementation"
-                    }
-                }
-                systemEvents = component "System event transport" "Delivers internal subscriptions to Core event consumers." "Go" {
-                    url "https://github.com/hyperledger-firefly/firefly/tree/9d20f3081c9074d5b012427e5572ebc03da8d95d/internal/events/system"
-                    properties {
-                        "architecture.id" "firefly.core.systemEvents"
-                        "evidence" "Implementation"
-                    }
-                    -> firefly.core.aggregator "Routes internal subscription notifications" "In-process calls / Go" "Dataflow"
-                }
-                !element firefly.core.api {
-                    -> firefly.core.auth "Passes request credentials for authorization" "In-process calls / Go" "Dataflow"
-                    -> firefly.core.namespaces "Resolves the requested namespace" "In-process calls / Go" "Dataflow"
-                    -> firefly.core.orchestrator "Submits validated commands and queries" "In-process calls / Go" "Dataflow"
-                }
-                !element firefly.core.namespaces {
-                    -> firefly.core.orchestrator "Initializes namespace resources and plugins" "In-process calls / Go" "Dataflow"
-                    -> firefly.core.spievents "Publishes namespace lifecycle changes" "In-process calls / Go" "Dataflow"
-                    -> firefly.core.config "Loads namespace configuration and plugin selections" "In-process calls / Go" "Dataflow"
-                }
-                !element firefly.core.orchestrator {
-                    -> firefly.core.syncasync "Waits for asynchronous request completion" "In-process calls / Go" "Dataflow"
-                    -> firefly.core.identity "Resolves signing identities" "In-process calls / Go" "Dataflow"
-                    -> firefly.core.multiparty "Submits consortium network actions" "In-process calls / Go" "Dataflow"
-                    -> firefly.core.data "Submits payloads and datatype definitions" "In-process calls / Go" "Dataflow"
-                    -> firefly.core.batch "Queues outbound messages" "In-process calls / Go" "Dataflow"
-                    -> firefly.core.contracts "Submits contract queries and invocations" "In-process calls / Go" "Dataflow"
-                    -> firefly.core.assets "Submits token pool and transfer requests" "In-process calls / Go" "Dataflow"
-                    -> firefly.core.metrics "Records API and subsystem measurements" "In-process calls / Go" "Dataflow"
-                }
-                !element firefly.core.identity {
-                    -> firefly.core.identityplugin "Initializes the configured onchain placeholder" "In-process calls / Go" "Dataflow"
-                    -> firefly.core.networkmap "Looks up members and node endpoints" "In-process calls / Go" "Dataflow"
-                }
-                !element firefly.core.networkmap {
-                    -> firefly.core.definitions "Registers shared member definitions" "In-process calls / Go" "Dataflow"
-                }
-                !element firefly.core.definitions {
-                    -> firefly.core.broadcast "Publishes network definitions" "In-process calls / Go" "Dataflow"
-                }
-                !element firefly.core.multiparty {
-                    -> firefly.core.blockchain "Submits contract pinning transactions" "In-process calls / Go" "Dataflow"
-                }
-                !element firefly.core.data {
-                    -> firefly.core.schema "Validates structured payloads" "In-process calls / Go" "Dataflow"
-                    -> firefly.core.database "Persists payload metadata and hashes" "In-process calls / Go" "Dataflow"
-                    -> firefly.core.cache "Caches reusable data and schema lookups" "In-process calls / Go" "Dataflow"
-                }
-                !element firefly.core.batch {
-                    -> firefly.core.batchprocessor "Assigns messages to recoverable batches" "In-process calls / Go" "Dataflow"
-                }
-                !element firefly.core.batchprocessor {
-                    -> firefly.core.broadcast "Dispatches broadcast batches" "In-process calls / Go" "Dataflow"
-                    -> firefly.core.private "Dispatches recipient-scoped batches" "In-process calls / Go" "Dataflow"
-                }
-                !element firefly.core.broadcast {
-                    -> firefly.core.sharedstorage "Uploads broadcast payloads" "In-process calls / Go" "Dataflow"
-                    -> firefly.core.multiparty "Pins batch hashes on the ledger" "In-process calls / Go" "Dataflow"
-                }
-                !element firefly.core.private {
-                    -> firefly.core.dataexchange "Sends private payloads to recipient nodes" "In-process calls / Go" "Dataflow"
-                    -> firefly.core.multiparty "Pins private batch hashes when requested" "In-process calls / Go" "Dataflow"
-                }
-                !element firefly.core.contracts {
-                    -> firefly.core.blockchain "Submits ABI-backed calls and listeners" "In-process calls / Go" "Dataflow"
-                    -> firefly.core.operations "Tracks contract operation completion" "In-process calls / Go" "Dataflow"
-                    -> firefly.core.cache "Caches contract definitions" "In-process calls / Go" "Dataflow"
-                }
-                !element firefly.core.assets {
-                    -> firefly.core.tokens "Requests standard token operations" "In-process calls / Go" "Dataflow"
-                    -> firefly.core.operations "Tracks token operation completion" "In-process calls / Go" "Dataflow"
-                }
-                !element firefly.core.operations {
-                    -> firefly.core.txhelper "Correlates operation and transaction identifiers" "In-process calls / Go" "Dataflow"
-                    -> firefly.core.database "Persists operation state and retries" "In-process calls / Go" "Dataflow"
-                    -> firefly.core.metrics "Records operation outcomes" "In-process calls / Go" "Dataflow"
-                }
-                !element firefly.core.txhelper {
-                    -> firefly.core.txwriter "Queues transaction records for persistence" "In-process calls / Go" "Dataflow"
-                }
-                !element firefly.core.txwriter {
-                    -> firefly.core.database "Flushes transaction records" "In-process calls / Go" "Dataflow"
-                }
-                !element firefly.core.download {
-                    -> firefly.core.sharedstorage "Fetches content-addressed batches and blobs" "In-process calls / Go" "Dataflow"
-                }
-                !element firefly.core.aggregator {
-                    -> firefly.core.database "Persists sequenced events and message state" "In-process calls / Go" "Dataflow"
-                    -> firefly.core.subscriptions "Publishes locally ordered events" "In-process calls / Go" "Dataflow"
-                }
-                !element firefly.core.subscriptions {
-                    -> firefly.core.database "Persists subscriptions and acknowledged offsets" "In-process calls / Go" "Dataflow"
-                    -> firefly.core.dispatcher "Dispatches filtered event batches" "In-process calls / Go" "Dataflow"
-                }
-                !element firefly.core.dispatcher {
-                    -> firefly.core.eventplugin "Delivers events via configured transports" "In-process calls / Go" "Dataflow"
-                    -> firefly.core.syncasync "Completes waiting requests" "In-process calls / Go" "Dataflow"
-                }
-                !element firefly.core.spievents {
-                    -> firefly.core.eventplugin "Publishes system notifications" "In-process calls / Go" "Dataflow"
-                }
-                !element firefly.core.auth {
-                    -> firefly.core.basicAuth "Verifies configured Basic credentials" "In-process calls / Go" "Dataflow"
-                }
-                !element firefly.core.blockchain {
-                    -> firefly.core.ethereum "Dispatches EVM operations when configured" "In-process calls / Go" "Dataflow"
-                    -> firefly.core.fabricAdapter "Dispatches Fabric operations when configured" "In-process calls / Go" "Dataflow"
-                    -> firefly.core.tezosAdapter "Dispatches Tezos operations when configured" "In-process calls / Go" "Dataflow"
-                    -> firefly.core.cardanoAdapter "Dispatches Cardano operations when configured" "In-process calls / Go" "Dataflow"
-                }
-                !element firefly.core.database {
-                    -> firefly.core.postgres "Dispatches PostgreSQL persistence when configured" "In-process calls / Go" "Dataflow"
-                    -> firefly.core.sqlite "Dispatches embedded SQLite persistence when configured" "In-process calls / Go" "Dataflow"
-                }
-                !element firefly.core.postgres {
-                    -> firefly.core.sql "Executes PostgreSQL resource queries and transactions" "In-process calls / Go" "Dataflow"
-                }
-                !element firefly.core.sqlite {
-                    -> firefly.core.sql "Executes SQLite resource queries and transactions" "In-process calls / Go" "Dataflow"
-                }
-                !element firefly.core.dataexchange {
-                    -> firefly.core.ffdx "Dispatches private data-transfer operations" "In-process calls / Go" "Dataflow"
-                }
-                !element firefly.core.sharedstorage {
-                    -> firefly.core.ipfs "Dispatches shared-content operations" "In-process calls / Go" "Dataflow"
-                }
-                !element firefly.core.tokens {
-                    -> firefly.core.fftokens "Dispatches standard token operations" "In-process calls / Go" "Dataflow"
-                }
-                !element firefly.core.eventplugin {
-                    -> firefly.core.websockets "Delivers WebSocket subscription batches" "In-process calls / Go" "Dataflow"
-                    -> firefly.core.webhooks "Delivers webhook subscription batches" "In-process calls / Go" "Dataflow"
-                    -> firefly.core.systemEvents "Delivers internal subscription batches" "In-process calls / Go" "Dataflow"
-                }
-            }
-            evm = container "EVMConnect + FFTM" "Submits Ethereum transactions and streams confirmed events; one nonce writer." "Go" {
-                url "https://github.com/hyperledger-firefly/evmconnect/tree/6e12bb4c050677780cf5dd975a926923868b0cb8/cmd/evmconnect.go"
-                properties {
-                    "architecture.id" "firefly.evm"
-                    "evidence" "Implementation"
-                }
-                api = component "Connector REST API" "Accepts transaction, query and event-stream requests." "Go" {
+                evm = container "EVMConnect + FFTM" "Submits Ethereum transactions and streams confirmed events; one nonce writer." "Go" {
                     url "https://github.com/hyperledger-firefly/evmconnect/tree/6e12bb4c050677780cf5dd975a926923868b0cb8/cmd/evmconnect.go"
                     properties {
-                        "architecture.id" "firefly.evm.api"
+                        "architecture.id" "firefly.evm"
                         "evidence" "Implementation"
                     }
-                }
-                manager = component "Transaction manager" "Coordinates durable transaction and stream lifecycles." "Go" {
-                    url "https://github.com/hyperledger-firefly/transaction-manager/tree/5915cbc4e0e30dea25068b770dadbcc8bdfa9321/pkg/fftm"
-                    properties {
-                        "architecture.id" "firefly.evm.manager"
-                        "evidence" "Implementation"
+                    api = component "Connector REST API" "Accepts transaction, query and event-stream requests." "Go" {
+                        url "https://github.com/hyperledger-firefly/evmconnect/tree/6e12bb4c050677780cf5dd975a926923868b0cb8/cmd/evmconnect.go"
+                        properties {
+                            "architecture.id" "firefly.evm.api"
+                            "evidence" "Implementation"
+                        }
                     }
-                }
-                handler = component "Transaction policy handler" "Schedules signing, submission, gas and retry policy." "Go" {
-                    url "https://github.com/hyperledger-firefly/transaction-manager/tree/5915cbc4e0e30dea25068b770dadbcc8bdfa9321/pkg/txhandler"
-                    properties {
-                        "architecture.id" "firefly.evm.handler"
-                        "evidence" "Implementation"
+                    manager = component "Transaction manager" "Coordinates durable transaction and stream lifecycles." "Go" {
+                        url "https://github.com/hyperledger-firefly/transaction-manager/tree/5915cbc4e0e30dea25068b770dadbcc8bdfa9321/pkg/fftm"
+                        properties {
+                            "architecture.id" "firefly.evm.manager"
+                            "evidence" "Implementation"
+                        }
                     }
-                }
-                nonce = component "Nonce allocation" "Assigns and persists ordered nonces per signing address." "Go" {
-                    url "https://github.com/hyperledger-firefly/transaction-manager/tree/5915cbc4e0e30dea25068b770dadbcc8bdfa9321/internal/persistence"
-                    properties {
-                        "architecture.id" "firefly.evm.nonce"
-                        "evidence" "Implementation"
+                    handler = component "Transaction policy handler" "Schedules signing, submission, gas and retry policy." "Go" {
+                        url "https://github.com/hyperledger-firefly/transaction-manager/tree/5915cbc4e0e30dea25068b770dadbcc8bdfa9321/pkg/txhandler"
+                        properties {
+                            "architecture.id" "firefly.evm.handler"
+                            "evidence" "Implementation"
+                        }
                     }
-                }
-                abi = component "EVM API adapter" "Encodes ABIs and implements the blockchain connector API." "Go" {
-                    url "https://github.com/hyperledger-firefly/evmconnect/tree/6e12bb4c050677780cf5dd975a926923868b0cb8/internal/ethereum"
-                    properties {
-                        "architecture.id" "firefly.evm.abi"
-                        "evidence" "Implementation"
+                    nonce = component "Nonce allocation" "Assigns and persists ordered nonces per signing address." "Go" {
+                        url "https://github.com/hyperledger-firefly/transaction-manager/tree/5915cbc4e0e30dea25068b770dadbcc8bdfa9321/internal/persistence"
+                        properties {
+                            "architecture.id" "firefly.evm.nonce"
+                            "evidence" "Implementation"
+                        }
                     }
-                }
-                rpc = component "Ethereum JSON-RPC client" "Submits calls and transactions through the signing proxy." "Go" {
-                    url "https://github.com/hyperledger-firefly/evmconnect/tree/6e12bb4c050677780cf5dd975a926923868b0cb8/pkg/ethrpc"
-                    properties {
-                        "architecture.id" "firefly.evm.rpc"
-                        "evidence" "Implementation"
+                    abi = component "EVM API adapter" "Encodes ABIs and implements the blockchain connector API." "Go" {
+                        url "https://github.com/hyperledger-firefly/evmconnect/tree/6e12bb4c050677780cf5dd975a926923868b0cb8/internal/ethereum"
+                        properties {
+                            "architecture.id" "firefly.evm.abi"
+                            "evidence" "Implementation"
+                        }
                     }
-                }
-                blocks = component "Block listener" "Tracks chain heads and block/filter updates." "Go" {
-                    url "https://github.com/hyperledger-firefly/evmconnect/tree/6e12bb4c050677780cf5dd975a926923868b0cb8/pkg/ethblocklistener"
-                    properties {
-                        "architecture.id" "firefly.evm.blocks"
-                        "evidence" "Implementation"
+                    rpc = component "Ethereum JSON-RPC client" "Submits calls and transactions through the signing proxy." "Go" {
+                        url "https://github.com/hyperledger-firefly/evmconnect/tree/6e12bb4c050677780cf5dd975a926923868b0cb8/pkg/ethrpc"
+                        properties {
+                            "architecture.id" "firefly.evm.rpc"
+                            "evidence" "Implementation"
+                        }
                     }
-                }
-                receipts = component "Receipt tracking" "Polls receipt status for submitted transactions." "Go" {
-                    url "https://github.com/hyperledger-firefly/transaction-manager/tree/5915cbc4e0e30dea25068b770dadbcc8bdfa9321/pkg/fftm"
-                    properties {
-                        "architecture.id" "firefly.evm.receipts"
-                        "evidence" "Implementation"
+                    blocks = component "Block listener" "Tracks chain heads and block/filter updates." "Go" {
+                        url "https://github.com/hyperledger-firefly/evmconnect/tree/6e12bb4c050677780cf5dd975a926923868b0cb8/pkg/ethblocklistener"
+                        properties {
+                            "architecture.id" "firefly.evm.blocks"
+                            "evidence" "Implementation"
+                        }
                     }
-                    -> firefly.evm.rpc "Queries transaction receipt status" "In-process calls / Go" "Dataflow"
-                }
-                confirmations = component "Confirmation manager" "Confirms receipts and events against the observed chain." "Go" {
-                    url "https://github.com/hyperledger-firefly/transaction-manager/tree/5915cbc4e0e30dea25068b770dadbcc8bdfa9321/internal/confirmations"
-                    properties {
-                        "architecture.id" "firefly.evm.confirmations"
-                        "evidence" "Implementation"
+                    receipts = component "Receipt tracking" "Polls receipt status for submitted transactions." "Go" {
+                        url "https://github.com/hyperledger-firefly/transaction-manager/tree/5915cbc4e0e30dea25068b770dadbcc8bdfa9321/pkg/fftm"
+                        properties {
+                            "architecture.id" "firefly.evm.receipts"
+                            "evidence" "Implementation"
+                        }
+                        -> firefly.evm.rpc "Queries transaction receipt status" "In-process calls / Go" "Dataflow"
                     }
-                }
-                streams = component "Event streams" "Orders and batches confirmed listener events." "Go" {
-                    url "https://github.com/hyperledger-firefly/transaction-manager/tree/5915cbc4e0e30dea25068b770dadbcc8bdfa9321/internal/events"
-                    properties {
-                        "architecture.id" "firefly.evm.streams"
-                        "evidence" "Implementation"
+                    confirmations = component "Confirmation manager" "Confirms receipts and events against the observed chain." "Go" {
+                        url "https://github.com/hyperledger-firefly/transaction-manager/tree/5915cbc4e0e30dea25068b770dadbcc8bdfa9321/internal/confirmations"
+                        properties {
+                            "architecture.id" "firefly.evm.confirmations"
+                            "evidence" "Implementation"
+                        }
                     }
-                }
-                delivery = component "WebSocket and webhook delivery" "Delivers batches and accepts consumer acknowledgements." "Go" {
-                    url "https://github.com/hyperledger-firefly/transaction-manager/tree/5915cbc4e0e30dea25068b770dadbcc8bdfa9321/internal/ws"
-                    properties {
-                        "architecture.id" "firefly.evm.delivery"
-                        "evidence" "Implementation"
+                    streams = component "Event streams" "Orders and batches confirmed listener events." "Go" {
+                        url "https://github.com/hyperledger-firefly/transaction-manager/tree/5915cbc4e0e30dea25068b770dadbcc8bdfa9321/internal/events"
+                        properties {
+                            "architecture.id" "firefly.evm.streams"
+                            "evidence" "Implementation"
+                        }
                     }
-                    -> firefly.evm.streams "Acknowledges consumed batches" "In-process calls / Go" "Dataflow"
-                    -> firefly.core "Delivers confirmed event batches" "WebSocket / JSON" "Dataflow"
-                }
-                persistence = component "Persistence adapter" "Stores transactions, nonces, streams and checkpoints." "Go" {
-                    url "https://github.com/hyperledger-firefly/transaction-manager/tree/5915cbc4e0e30dea25068b770dadbcc8bdfa9321/internal/persistence"
-                    properties {
-                        "architecture.id" "firefly.evm.persistence"
-                        "evidence" "Implementation"
+                    delivery = component "WebSocket batch delivery" "Delivers WebSocket batches and accepts consumer acknowledgements." "Go" {
+                        url "https://github.com/hyperledger-firefly/transaction-manager/tree/5915cbc4e0e30dea25068b770dadbcc8bdfa9321/internal/ws"
+                        properties {
+                            "architecture.id" "firefly.evm.delivery"
+                            "evidence" "Implementation"
+                        }
+                        -> firefly.evm.streams "Acknowledges consumed batches" "In-process calls / Go" "Dataflow"
+                        -> firefly.core "Delivers confirmed event batches" "WebSocket / JSON" "Dataflow"
                     }
-                }
-                postgres = component "PostgreSQL persistence" "Persists managed transactions and streams in SQL tables." "Go" {
-                    url "https://github.com/hyperledger-firefly/transaction-manager/tree/5915cbc4e0e30dea25068b770dadbcc8bdfa9321/internal/persistence/postgres"
-                    properties {
-                        "architecture.id" "firefly.evm.postgres"
-                        "evidence" "Implementation"
+                    persistence = component "Persistence adapter" "Stores transactions, nonces, streams and checkpoints." "Go" {
+                        url "https://github.com/hyperledger-firefly/transaction-manager/tree/5915cbc4e0e30dea25068b770dadbcc8bdfa9321/internal/persistence"
+                        properties {
+                            "architecture.id" "firefly.evm.persistence"
+                            "evidence" "Implementation"
+                        }
                     }
-                }
-                leveldb = component "LevelDB persistence" "Persists transactions and stream state in local key-value files." "Go" {
-                    url "https://github.com/hyperledger-firefly/transaction-manager/tree/5915cbc4e0e30dea25068b770dadbcc8bdfa9321/internal/persistence/leveldb"
-                    properties {
-                        "architecture.id" "firefly.evm.leveldb"
-                        "evidence" "Implementation"
+                    postgres = component "PostgreSQL persistence" "Persists managed transactions and streams in SQL tables." "Go" {
+                        url "https://github.com/hyperledger-firefly/transaction-manager/tree/5915cbc4e0e30dea25068b770dadbcc8bdfa9321/internal/persistence/postgres"
+                        properties {
+                            "architecture.id" "firefly.evm.postgres"
+                            "evidence" "Implementation"
+                        }
                     }
-                }
-                blocklistener = component "Durable block notifications" "Coordinates block updates for listeners and confirmations." "Go" {
-                    url "https://github.com/hyperledger-firefly/transaction-manager/tree/5915cbc4e0e30dea25068b770dadbcc8bdfa9321/internal/blocklistener"
-                    properties {
-                        "architecture.id" "firefly.evm.blocklistener"
-                        "evidence" "Implementation"
+                    leveldb = component "LevelDB persistence" "Persists transactions and stream state in local key-value files." "Go" {
+                        url "https://github.com/hyperledger-firefly/transaction-manager/tree/5915cbc4e0e30dea25068b770dadbcc8bdfa9321/internal/persistence/leveldb"
+                        properties {
+                            "architecture.id" "firefly.evm.leveldb"
+                            "evidence" "Implementation"
+                        }
                     }
-                    -> firefly.evm.confirmations "Updates tracked canonical block history" "In-process calls / Go" "Dataflow"
-                }
-                metrics = component "Transaction and stream metrics" "Records transaction and event-processing measurements." "Go" {
-                    url "https://github.com/hyperledger-firefly/transaction-manager/tree/5915cbc4e0e30dea25068b770dadbcc8bdfa9321/internal/metrics"
-                    properties {
-                        "architecture.id" "firefly.evm.metrics"
-                        "evidence" "Implementation"
+                    blocklistener = component "Durable block notifications" "Coordinates block updates for listeners and confirmations." "Go" {
+                        url "https://github.com/hyperledger-firefly/transaction-manager/tree/5915cbc4e0e30dea25068b770dadbcc8bdfa9321/internal/blocklistener"
+                        properties {
+                            "architecture.id" "firefly.evm.blocklistener"
+                            "evidence" "Implementation"
+                        }
+                        -> firefly.evm.confirmations "Updates tracked canonical block history" "In-process calls / Go" "Dataflow"
                     }
-                }
-                webhook = component "Webhook batch delivery" "Delivers event batches using configured HTTP callbacks." "Go" {
-                    url "https://github.com/hyperledger-firefly/transaction-manager/tree/5915cbc4e0e30dea25068b770dadbcc8bdfa9321/internal/events"
-                    properties {
-                        "architecture.id" "firefly.evm.webhook"
-                        "evidence" "Implementation"
+                    metrics = component "Transaction and stream metrics" "Records transaction and event-processing measurements." "Go" {
+                        url "https://github.com/hyperledger-firefly/transaction-manager/tree/5915cbc4e0e30dea25068b770dadbcc8bdfa9321/internal/metrics"
+                        properties {
+                            "architecture.id" "firefly.evm.metrics"
+                            "evidence" "Implementation"
+                        }
                     }
+                    webhook = component "Webhook batch delivery" "Delivers event batches using configured HTTP callbacks." "Go" {
+                        url "https://github.com/hyperledger-firefly/transaction-manager/tree/5915cbc4e0e30dea25068b770dadbcc8bdfa9321/internal/events"
+                        properties {
+                            "architecture.id" "firefly.evm.webhook"
+                            "evidence" "Implementation"
+                        }
+                    }
+                    !element firefly.evm.api {
+                        -> firefly.evm.manager "Submits transaction and stream requests" "In-process calls / Go" "Dataflow"
+                    }
+                    !element firefly.evm.manager {
+                        -> firefly.evm.handler "Schedules managed transaction processing" "In-process calls / Go" "Dataflow"
+                        -> firefly.evm.streams "Configures listeners and stream lifecycle" "In-process calls / Go" "Dataflow"
+                        -> firefly.evm.persistence "Persists transaction lifecycle state" "In-process calls / Go" "Dataflow"
+                        -> firefly.evm.metrics "Records transaction processing measurements" "In-process calls / Go" "Dataflow"
+                    }
+                    !element firefly.evm.handler {
+                        -> firefly.evm.nonce "Allocates the next sender nonce" "In-process calls / Go" "Dataflow"
+                        -> firefly.evm.abi "Prepares calls and encoded transactions" "In-process calls / Go" "Dataflow"
+                        -> firefly.evm.receipts "Tracks submitted transaction receipts" "In-process calls / Go" "Dataflow"
+                    }
+                    !element firefly.evm.nonce {
+                        -> firefly.evm.persistence "Persists sender transaction ordering" "In-process calls / Go" "Dataflow"
+                    }
+                    !element firefly.evm.abi {
+                        -> firefly.evm.rpc "Issues Ethereum JSON-RPC requests" "In-process calls / Go" "Dataflow"
+                    }
+                    !element firefly.evm.rpc {
+                        -> firefly.evm.blocks "Returns block and filter responses" "In-process calls / Go" "Dataflow"
+                    }
+                    !element firefly.evm.blocks {
+                        -> firefly.evm.confirmations "Publishes chain head updates" "In-process calls / Go" "Dataflow"
+                        -> firefly.evm.blocklistener "Supplies blockchain head notifications" "In-process calls / Go" "Dataflow"
+                    }
+                    !element firefly.evm.receipts {
+                        -> firefly.evm.confirmations "Submits receipts for confirmation" "In-process calls / Go" "Dataflow"
+                    }
+                    !element firefly.evm.confirmations {
+                        -> firefly.evm.streams "Releases confirmed blockchain events" "In-process calls / Go" "Dataflow"
+                    }
+                    !element firefly.evm.streams {
+                        -> firefly.evm.delivery "Delivers ordered event batches" "In-process calls / Go" "Dataflow"
+                        -> firefly.evm.persistence "Persists acknowledged checkpoints" "In-process calls / Go" "Dataflow"
+                        -> firefly.evm.webhook "Dispatches batches when webhook delivery is selected" "In-process calls / Go" "Dataflow"
+                        -> firefly.evm.metrics "Records event-processing measurements" "In-process calls / Go" "Dataflow"
+                    }
+                    !element firefly.evm.persistence {
+                        -> firefly.evm.postgres "Writes state through the selected PostgreSQL backend" "In-process calls / Go" "Dataflow"
+                        -> firefly.evm.leveldb "Writes state through the selected LevelDB backend" "In-process calls / Go" "Dataflow"
+                    }
+                    -> firefly.core "Streams confirmed events and transaction results" "WebSocket / JSON" "Dataflow"
                 }
-                !element firefly.evm.api {
-                    -> firefly.evm.manager "Submits transaction and stream requests" "In-process calls / Go" "Dataflow"
-                }
-                !element firefly.evm.manager {
-                    -> firefly.evm.handler "Schedules managed transaction processing" "In-process calls / Go" "Dataflow"
-                    -> firefly.evm.streams "Configures listeners and stream lifecycle" "In-process calls / Go" "Dataflow"
-                    -> firefly.evm.persistence "Persists transaction lifecycle state" "In-process calls / Go" "Dataflow"
-                    -> firefly.evm.metrics "Records transaction processing measurements" "In-process calls / Go" "Dataflow"
-                }
-                !element firefly.evm.handler {
-                    -> firefly.evm.nonce "Allocates the next sender nonce" "In-process calls / Go" "Dataflow"
-                    -> firefly.evm.abi "Prepares calls and encoded transactions" "In-process calls / Go" "Dataflow"
-                    -> firefly.evm.receipts "Tracks submitted transaction receipts" "In-process calls / Go" "Dataflow"
-                }
-                !element firefly.evm.nonce {
-                    -> firefly.evm.persistence "Persists sender transaction ordering" "In-process calls / Go" "Dataflow"
-                }
-                !element firefly.evm.abi {
-                    -> firefly.evm.rpc "Issues Ethereum JSON-RPC requests" "In-process calls / Go" "Dataflow"
-                }
-                !element firefly.evm.rpc {
-                    -> firefly.evm.blocks "Returns block and filter responses" "In-process calls / Go" "Dataflow"
-                }
-                !element firefly.evm.blocks {
-                    -> firefly.evm.confirmations "Publishes chain head updates" "In-process calls / Go" "Dataflow"
-                    -> firefly.evm.blocklistener "Supplies blockchain head notifications" "In-process calls / Go" "Dataflow"
-                }
-                !element firefly.evm.receipts {
-                    -> firefly.evm.confirmations "Submits receipts for confirmation" "In-process calls / Go" "Dataflow"
-                }
-                !element firefly.evm.confirmations {
-                    -> firefly.evm.streams "Releases confirmed blockchain events" "In-process calls / Go" "Dataflow"
-                }
-                !element firefly.evm.streams {
-                    -> firefly.evm.delivery "Delivers ordered event batches" "In-process calls / Go" "Dataflow"
-                    -> firefly.evm.persistence "Persists acknowledged checkpoints" "In-process calls / Go" "Dataflow"
-                    -> firefly.evm.webhook "Dispatches batches when webhook delivery is selected" "In-process calls / Go" "Dataflow"
-                    -> firefly.evm.metrics "Records event-processing measurements" "In-process calls / Go" "Dataflow"
-                }
-                !element firefly.evm.persistence {
-                    -> firefly.evm.postgres "Writes state through the selected PostgreSQL backend" "In-process calls / Go" "Dataflow"
-                    -> firefly.evm.leveldb "Writes state through the selected LevelDB backend" "In-process calls / Go" "Dataflow"
-                }
-                -> firefly.core "Streams confirmed events and transaction results" "WebSocket / JSON" "Dataflow"
-            }
-            signer = container "FireFly Signer" "Signs member transactions and proxies Ethereum RPC calls." "Go" {
-                url "https://github.com/hyperledger-firefly/signer/tree/cfafd71fb4d2c3061a946f6466269877c3f04d9d/internal/rpcserver"
-                properties {
-                    "architecture.id" "firefly.signer"
-                    "evidence" "Implementation"
-                }
-                proxy = component "JSON-RPC proxy" "Intercepts transaction requests and forwards read calls." "Go" {
+                signer = container "FireFly Signer" "Signs member transactions and proxies Ethereum RPC calls." "Go" {
                     url "https://github.com/hyperledger-firefly/signer/tree/cfafd71fb4d2c3061a946f6466269877c3f04d9d/internal/rpcserver"
                     properties {
-                        "architecture.id" "firefly.signer.proxy"
+                        "architecture.id" "firefly.signer"
                         "evidence" "Implementation"
                     }
+                    proxy = component "JSON-RPC proxy" "Intercepts transaction requests and forwards read calls." "Go" {
+                        url "https://github.com/hyperledger-firefly/signer/tree/cfafd71fb4d2c3061a946f6466269877c3f04d9d/internal/rpcserver"
+                        properties {
+                            "architecture.id" "firefly.signer.proxy"
+                            "evidence" "Implementation"
+                        }
+                    }
+                    wallet = component "Filesystem wallet" "Loads member keystore files and resolves signing accounts." "Go" {
+                        url "https://github.com/hyperledger-firefly/signer/tree/cfafd71fb4d2c3061a946f6466269877c3f04d9d/pkg/fswallet"
+                        properties {
+                            "architecture.id" "firefly.signer.wallet"
+                            "evidence" "Implementation"
+                        }
+                    }
+                    keystore = component "Keystore V3 decoder" "Decrypts encrypted account key files." "Go" {
+                        url "https://github.com/hyperledger-firefly/signer/tree/cfafd71fb4d2c3061a946f6466269877c3f04d9d/pkg/keystorev3"
+                        properties {
+                            "architecture.id" "firefly.signer.keystore"
+                            "evidence" "Implementation"
+                        }
+                    }
+                    signing = component "Ethereum signing" "Encodes and signs EIP-155 and EIP-1559 transactions." "Go" {
+                        url "https://github.com/hyperledger-firefly/signer/tree/cfafd71fb4d2c3061a946f6466269877c3f04d9d/pkg/ethsigner"
+                        properties {
+                            "architecture.id" "firefly.signer.signing"
+                            "evidence" "Implementation"
+                        }
+                        -> firefly.signer.wallet "Retrieves the selected signing key" "In-process calls / Go" "Dataflow"
+                    }
+                    backend = component "RPC backend" "Forwards signed raw transactions to Besu." "Go" {
+                        url "https://github.com/hyperledger-firefly/signer/tree/cfafd71fb4d2c3061a946f6466269877c3f04d9d/pkg/rpcbackend"
+                        properties {
+                            "architecture.id" "firefly.signer.backend"
+                            "evidence" "Implementation"
+                        }
+                    }
+                    !element firefly.signer.proxy {
+                        -> firefly.signer.wallet "Resolves requested signing accounts" "In-process calls / Go" "Dataflow"
+                        -> firefly.signer.signing "Submits transactions for signing" "In-process calls / Go" "Dataflow"
+                        -> firefly.signer.backend "Forwards unmodified RPC read requests" "In-process calls / Go" "Dataflow"
+                    }
+                    !element firefly.signer.wallet {
+                        -> firefly.signer.keystore "Decrypts selected key material" "In-process calls / Go" "Dataflow"
+                    }
+                    !element firefly.signer.signing {
+                        -> firefly.signer.backend "Submits signed raw transactions" "In-process calls / Go" "Dataflow"
+                    }
                 }
-                wallet = component "Filesystem wallet" "Loads member keystore files and resolves signing accounts." "Go" {
-                    url "https://github.com/hyperledger-firefly/signer/tree/cfafd71fb4d2c3061a946f6466269877c3f04d9d/pkg/fswallet"
+                dx = container "HTTPS Data Exchange" "Exchanges private envelopes and blobs with authenticated members." "TypeScript / Node.js" {
+                    tags "Private"
+                    url "https://github.com/hyperledger-firefly/dataexchange-https/tree/b6a212d531da1ff1c24e762e7156e2593c73d052/src"
                     properties {
-                        "architecture.id" "firefly.signer.wallet"
+                        "architecture.id" "firefly.dx"
                         "evidence" "Implementation"
                     }
+                    api = component "Internal REST API" "Accepts private messages, blobs and peer configuration." "TypeScript / Node.js" {
+                        url "https://github.com/hyperledger-firefly/dataexchange-https/tree/b6a212d531da1ff1c24e762e7156e2593c73d052/src/routers/api.ts"
+                        properties {
+                            "architecture.id" "firefly.dx.api"
+                            "evidence" "Implementation"
+                        }
+                    }
+                    peers = component "Peer and certificate registry" "Resolves remote endpoints and trusted peer certificates." "TypeScript / Node.js" {
+                        url "https://github.com/hyperledger-firefly/dataexchange-https/tree/b6a212d531da1ff1c24e762e7156e2593c73d052/src/lib"
+                        properties {
+                            "architecture.id" "firefly.dx.peers"
+                            "evidence" "Implementation"
+                        }
+                    }
+                    p2p = component "Mutual TLS peer endpoint" "Authenticates remote members and transfers private data." "TypeScript / Node.js" {
+                        url "https://github.com/hyperledger-firefly/dataexchange-https/tree/b6a212d531da1ff1c24e762e7156e2593c73d052/src/routers/p2p.ts"
+                        properties {
+                            "architecture.id" "firefly.dx.p2p"
+                            "evidence" "Implementation"
+                        }
+                    }
+                    messages = component "Message transfer handler" "Sends and receives recipient-scoped message envelopes." "TypeScript / Node.js" {
+                        url "https://github.com/hyperledger-firefly/dataexchange-https/tree/b6a212d531da1ff1c24e762e7156e2593c73d052/src/handlers/messages.ts"
+                        properties {
+                            "architecture.id" "firefly.dx.messages"
+                            "evidence" "Implementation"
+                        }
+                        -> firefly.dx.peers "Resolves destination and trust material" "In-process calls / TypeScript" "Dataflow"
+                        -> firefly.dx.p2p "Transfers private message envelopes" "In-process calls / TypeScript" "Dataflow"
+                    }
+                    blobs = component "Blob transfer handler" "Streams binary content to durable member storage." "TypeScript / Node.js" {
+                        url "https://github.com/hyperledger-firefly/dataexchange-https/tree/b6a212d531da1ff1c24e762e7156e2593c73d052/src/handlers/blobs.ts"
+                        properties {
+                            "architecture.id" "firefly.dx.blobs"
+                            "evidence" "Implementation"
+                        }
+                        -> firefly.dx.p2p "Transfers encrypted blob streams" "In-process calls / TypeScript" "Dataflow"
+                    }
+                    events = component "Event queue and acknowledgements" "Queues delivery notifications in memory and processes acknowledgements." "TypeScript / Node.js" {
+                        url "https://github.com/hyperledger-firefly/dataexchange-https/tree/b6a212d531da1ff1c24e762e7156e2593c73d052/src/handlers/events.ts"
+                        properties {
+                            "architecture.id" "firefly.dx.events"
+                            "evidence" "Implementation"
+                        }
+                        -> firefly.dx.api "Delivers notifications and receives acknowledgements" "In-process calls / TypeScript" "Dataflow"
+                        -> firefly.core "Delivers message and blob transfer notifications" "WebSocket / JSON" "Dataflow"
+                    }
+                    !element firefly.dx.api {
+                        -> firefly.dx.peers "Updates peer endpoints and certificates" "In-process calls / TypeScript" "Dataflow"
+                        -> firefly.dx.messages "Submits recipient-scoped messages" "In-process calls / TypeScript" "Dataflow"
+                        -> firefly.dx.blobs "Uploads private binary content" "In-process calls / TypeScript" "Dataflow"
+                    }
+                    !element firefly.dx.p2p {
+                        -> firefly.dx.messages "Delivers authenticated inbound messages" "In-process calls / TypeScript" "Dataflow"
+                        -> firefly.dx.blobs "Stores authenticated inbound blobs" "In-process calls / TypeScript" "Dataflow"
+                    }
+                    !element firefly.dx.messages {
+                        -> firefly.dx.events "Enqueues message delivery results" "In-process calls / TypeScript" "Dataflow"
+                    }
+                    !element firefly.dx.blobs {
+                        -> firefly.dx.events "Enqueues blob delivery results" "In-process calls / TypeScript" "Dataflow"
+                    }
+                    -> firefly.core "Delivers transfer notifications and awaits ACKs" "WebSocket / JSON" "Dataflow"
                 }
-                keystore = component "Keystore V3 decoder" "Decrypts encrypted account key files." "Go" {
-                    url "https://github.com/hyperledger-firefly/signer/tree/cfafd71fb4d2c3061a946f6466269877c3f04d9d/pkg/keystorev3"
+                erc20 = container "ERC-20 / ERC-721 connector" "Maps fungible and non-fungible token APIs to EVM contracts." "TypeScript / NestJS" {
+                    url "https://github.com/hyperledger-firefly/tokens-erc20-erc721/tree/7993b308284a396950587b5206370f7f254073d9/src"
                     properties {
-                        "architecture.id" "firefly.signer.keystore"
+                        "architecture.id" "firefly.erc20"
                         "evidence" "Implementation"
                     }
+                    api = component "Token REST controller" "Accepts pool, mint, burn, transfer and approval requests." "TypeScript / NestJS" {
+                        url "https://github.com/hyperledger-firefly/tokens-erc20-erc721/tree/7993b308284a396950587b5206370f7f254073d9/src/tokens/tokens.controller.ts"
+                        properties {
+                            "architecture.id" "firefly.erc20.api"
+                            "evidence" "Implementation"
+                        }
+                    }
+                    service = component "Token service" "Applies token-specific behavior and tracks pools." "TypeScript / NestJS" {
+                        url "https://github.com/hyperledger-firefly/tokens-erc20-erc721/tree/7993b308284a396950587b5206370f7f254073d9/src/tokens/tokens.service.ts"
+                        properties {
+                            "architecture.id" "firefly.erc20.service"
+                            "evidence" "Implementation"
+                        }
+                    }
+                    mapper = component "ABI and standard adapters" "Maps token operations to contract ABIs." "TypeScript / NestJS" {
+                        url "https://github.com/hyperledger-firefly/tokens-erc20-erc721/tree/7993b308284a396950587b5206370f7f254073d9/src/tokens"
+                        properties {
+                            "architecture.id" "firefly.erc20.mapper"
+                            "evidence" "Implementation"
+                        }
+                    }
+                    blockchain = component "Blockchain connector client" "Submits contract calls through EVMConnect." "TypeScript / NestJS" {
+                        url "https://github.com/hyperledger-firefly/tokens-erc20-erc721/tree/7993b308284a396950587b5206370f7f254073d9/src/tokens/blockchain.service.ts"
+                        properties {
+                            "architecture.id" "firefly.erc20.blockchain"
+                            "evidence" "Implementation"
+                        }
+                        -> firefly.evm "Submits contract calls and listeners" "HTTP REST / JSON" "Dataflow"
+                    }
+                    listener = component "Token event listener" "Interprets contract logs as standard token events." "TypeScript / NestJS" {
+                        url "https://github.com/hyperledger-firefly/tokens-erc20-erc721/tree/7993b308284a396950587b5206370f7f254073d9/src/tokens/tokens.listener.ts"
+                        properties {
+                            "architecture.id" "firefly.erc20.listener"
+                            "evidence" "Implementation"
+                        }
+                        -> firefly.erc20.service "Updates token pool state" "In-process calls / TypeScript" "Dataflow"
+                    }
+                    stream = component "Connector event stream" "Receives ordered blockchain events and acknowledges batches." "TypeScript / NestJS" {
+                        url "https://github.com/hyperledger-firefly/tokens-erc20-erc721/tree/7993b308284a396950587b5206370f7f254073d9/src/event-stream"
+                        properties {
+                            "architecture.id" "firefly.erc20.stream"
+                            "evidence" "Implementation"
+                        }
+                        -> firefly.erc20.listener "Delivers token contract logs" "In-process calls / TypeScript" "Dataflow"
+                    }
+                    proxy = component "Core event proxy" "Delivers token events to Core over WebSocket." "TypeScript / NestJS" {
+                        url "https://github.com/hyperledger-firefly/tokens-erc20-erc721/tree/7993b308284a396950587b5206370f7f254073d9/src/eventstream-proxy"
+                        properties {
+                            "architecture.id" "firefly.erc20.proxy"
+                            "evidence" "Implementation"
+                        }
+                        -> firefly.erc20.stream "Acknowledges consumed event batches" "In-process calls / TypeScript" "Dataflow"
+                        -> firefly.core "Delivers token events and receives ACKs" "WebSocket / JSON" "Dataflow"
+                    }
+                    !element firefly.erc20.api {
+                        -> firefly.erc20.service "Submits standard token operations" "In-process calls / TypeScript" "Dataflow"
+                    }
+                    !element firefly.erc20.service {
+                        -> firefly.erc20.mapper "Encodes token contract calls" "In-process calls / TypeScript" "Dataflow"
+                    }
+                    !element firefly.erc20.mapper {
+                        -> firefly.erc20.blockchain "Passes encoded contract requests" "In-process calls / TypeScript" "Dataflow"
+                    }
+                    !element firefly.erc20.blockchain {
+                        -> firefly.erc20.stream "Registers contract event listeners" "In-process calls / TypeScript" "Dataflow"
+                    }
+                    !element firefly.erc20.listener {
+                        -> firefly.erc20.proxy "Publishes normalized token events" "In-process calls / TypeScript" "Dataflow"
+                    }
+                    -> firefly.core "Delivers normalized token events" "WebSocket / JSON" "Dataflow"
+                    -> firefly.evm "Submits contract calls and consumes event streams" "HTTP REST + WebSocket" "Dataflow"
                 }
-                signing = component "Ethereum signing" "Encodes and signs EIP-155 and EIP-1559 transactions." "Go" {
-                    url "https://github.com/hyperledger-firefly/signer/tree/cfafd71fb4d2c3061a946f6466269877c3f04d9d/pkg/ethsigner"
+                erc1155 = container "ERC-1155 connector" "Maps multi-token operations and events to FireFly." "TypeScript / NestJS" {
+                    url "https://github.com/hyperledger-firefly/tokens-erc1155/tree/0355a0eb11fd12e311829a41bcbfea6148e52469/src"
                     properties {
-                        "architecture.id" "firefly.signer.signing"
+                        "architecture.id" "firefly.erc1155"
                         "evidence" "Implementation"
                     }
-                    -> firefly.signer.wallet "Retrieves the selected signing key" "In-process calls / Go" "Dataflow"
+                    api = component "Token REST controller" "Accepts pool, mint, burn, transfer and approval requests." "TypeScript / NestJS" {
+                        url "https://github.com/hyperledger-firefly/tokens-erc1155/tree/0355a0eb11fd12e311829a41bcbfea6148e52469/src/tokens/tokens.controller.ts"
+                        properties {
+                            "architecture.id" "firefly.erc1155.api"
+                            "evidence" "Implementation"
+                        }
+                    }
+                    service = component "Token service" "Applies token-specific behavior and tracks pools." "TypeScript / NestJS" {
+                        url "https://github.com/hyperledger-firefly/tokens-erc1155/tree/0355a0eb11fd12e311829a41bcbfea6148e52469/src/tokens/tokens.service.ts"
+                        properties {
+                            "architecture.id" "firefly.erc1155.service"
+                            "evidence" "Implementation"
+                        }
+                    }
+                    mapper = component "ABI and standard adapters" "Maps token operations to contract ABIs." "TypeScript / NestJS" {
+                        url "https://github.com/hyperledger-firefly/tokens-erc1155/tree/0355a0eb11fd12e311829a41bcbfea6148e52469/src/tokens"
+                        properties {
+                            "architecture.id" "firefly.erc1155.mapper"
+                            "evidence" "Implementation"
+                        }
+                    }
+                    blockchain = component "Blockchain connector client" "Submits contract calls through EVMConnect." "TypeScript / NestJS" {
+                        url "https://github.com/hyperledger-firefly/tokens-erc1155/tree/0355a0eb11fd12e311829a41bcbfea6148e52469/src/tokens/blockchain.service.ts"
+                        properties {
+                            "architecture.id" "firefly.erc1155.blockchain"
+                            "evidence" "Implementation"
+                        }
+                        -> firefly.evm "Submits contract calls and listeners" "HTTP REST / JSON" "Dataflow"
+                    }
+                    listener = component "Token event listener" "Interprets contract logs as standard token events." "TypeScript / NestJS" {
+                        url "https://github.com/hyperledger-firefly/tokens-erc1155/tree/0355a0eb11fd12e311829a41bcbfea6148e52469/src/tokens/tokens.listener.ts"
+                        properties {
+                            "architecture.id" "firefly.erc1155.listener"
+                            "evidence" "Implementation"
+                        }
+                        -> firefly.erc1155.service "Updates token pool state" "In-process calls / TypeScript" "Dataflow"
+                    }
+                    stream = component "Connector event stream" "Receives ordered blockchain events and acknowledges batches." "TypeScript / NestJS" {
+                        url "https://github.com/hyperledger-firefly/tokens-erc1155/tree/0355a0eb11fd12e311829a41bcbfea6148e52469/src/event-stream"
+                        properties {
+                            "architecture.id" "firefly.erc1155.stream"
+                            "evidence" "Implementation"
+                        }
+                        -> firefly.erc1155.listener "Delivers token contract logs" "In-process calls / TypeScript" "Dataflow"
+                    }
+                    proxy = component "Core event proxy" "Delivers token events to Core over WebSocket." "TypeScript / NestJS" {
+                        url "https://github.com/hyperledger-firefly/tokens-erc1155/tree/0355a0eb11fd12e311829a41bcbfea6148e52469/src/eventstream-proxy"
+                        properties {
+                            "architecture.id" "firefly.erc1155.proxy"
+                            "evidence" "Implementation"
+                        }
+                        -> firefly.erc1155.stream "Acknowledges consumed event batches" "In-process calls / TypeScript" "Dataflow"
+                        -> firefly.core "Delivers token events and receives ACKs" "WebSocket / JSON" "Dataflow"
+                    }
+                    !element firefly.erc1155.api {
+                        -> firefly.erc1155.service "Submits standard token operations" "In-process calls / TypeScript" "Dataflow"
+                    }
+                    !element firefly.erc1155.service {
+                        -> firefly.erc1155.mapper "Encodes token contract calls" "In-process calls / TypeScript" "Dataflow"
+                    }
+                    !element firefly.erc1155.mapper {
+                        -> firefly.erc1155.blockchain "Passes encoded contract requests" "In-process calls / TypeScript" "Dataflow"
+                    }
+                    !element firefly.erc1155.blockchain {
+                        -> firefly.erc1155.stream "Registers contract event listeners" "In-process calls / TypeScript" "Dataflow"
+                    }
+                    !element firefly.erc1155.listener {
+                        -> firefly.erc1155.proxy "Publishes normalized token events" "In-process calls / TypeScript" "Dataflow"
+                    }
+                    -> firefly.core "Delivers normalized token events" "WebSocket / JSON" "Dataflow"
+                    -> firefly.evm "Submits contract calls and consumes event streams" "HTTP REST + WebSocket" "Dataflow"
                 }
-                backend = component "RPC backend" "Forwards signed raw transactions to Besu." "Go" {
-                    url "https://github.com/hyperledger-firefly/signer/tree/cfafd71fb4d2c3061a946f6466269877c3f04d9d/pkg/rpcbackend"
+                ipfs = container "IPFS Kubo" "Publishes and retrieves consortium-shared content." "Go / Kubo" {
+                    tags "Shared"
+                    url "https://docs.ipfs.tech/concepts/how-ipfs-works/"
                     properties {
-                        "architecture.id" "firefly.signer.backend"
+                        "architecture.id" "firefly.ipfs"
                         "evidence" "Implementation"
                     }
                 }
-                !element firefly.signer.proxy {
-                    -> firefly.signer.wallet "Resolves requested signing accounts" "In-process calls / Go" "Dataflow"
-                    -> firefly.signer.signing "Submits transactions for signing" "In-process calls / Go" "Dataflow"
-                    -> firefly.signer.backend "Forwards unmodified RPC read requests" "In-process calls / Go" "Dataflow"
-                }
-                !element firefly.signer.wallet {
-                    -> firefly.signer.keystore "Decrypts selected key material" "In-process calls / Go" "Dataflow"
-                }
-                !element firefly.signer.signing {
-                    -> firefly.signer.backend "Submits signed raw transactions" "In-process calls / Go" "Dataflow"
-                }
-            }
-            dx = container "HTTPS Data Exchange" "Exchanges private envelopes and blobs with authenticated members." "TypeScript / Node.js" {
-                tags "Private"
-                url "https://github.com/hyperledger-firefly/dataexchange-https/tree/b6a212d531da1ff1c24e762e7156e2593c73d052/src"
-                properties {
-                    "architecture.id" "firefly.dx"
-                    "evidence" "Implementation"
-                }
-                api = component "Internal REST API" "Accepts private messages, blobs and peer configuration." "TypeScript / Node.js" {
-                    url "https://github.com/hyperledger-firefly/dataexchange-https/tree/b6a212d531da1ff1c24e762e7156e2593c73d052/src/routers/api.ts"
+                pg = container "Core PostgreSQL database" "Stores Core resources and offsets in its own logical database; server placement and replication are outside this model." "PostgreSQL" {
+                    tags "Database,Private"
+                    url "https://github.com/hyperledger-firefly/firefly/tree/9d20f3081c9074d5b012427e5572ebc03da8d95d/internal/database/postgres"
                     properties {
-                        "architecture.id" "firefly.dx.api"
+                        "architecture.id" "firefly.pg"
                         "evidence" "Implementation"
                     }
                 }
-                peers = component "Peer and certificate registry" "Resolves remote endpoints and trusted peer certificates." "TypeScript / Node.js" {
-                    url "https://github.com/hyperledger-firefly/dataexchange-https/tree/b6a212d531da1ff1c24e762e7156e2593c73d052/src/lib"
+                fftmDb = container "FFTM PostgreSQL database" "Stores EVMConnect transaction state, nonces and checkpoints in a separate logical database with separate credentials." "PostgreSQL" {
+                    tags "Database,Private"
+                    url "https://github.com/hyperledger-firefly/transaction-manager/tree/5915cbc4e0e30dea25068b770dadbcc8bdfa9321/internal/persistence/postgres"
                     properties {
-                        "architecture.id" "firefly.dx.peers"
+                        "architecture.id" "firefly.fftmDb"
                         "evidence" "Implementation"
                     }
                 }
-                p2p = component "Mutual TLS peer endpoint" "Authenticates remote members and transfers private data." "TypeScript / Node.js" {
-                    url "https://github.com/hyperledger-firefly/dataexchange-https/tree/b6a212d531da1ff1c24e762e7156e2593c73d052/src/routers/p2p.ts"
-                    properties {
-                        "architecture.id" "firefly.dx.p2p"
-                        "evidence" "Implementation"
-                    }
-                }
-                messages = component "Message transfer handler" "Sends and receives recipient-scoped message envelopes." "TypeScript / Node.js" {
-                    url "https://github.com/hyperledger-firefly/dataexchange-https/tree/b6a212d531da1ff1c24e762e7156e2593c73d052/src/handlers/messages.ts"
-                    properties {
-                        "architecture.id" "firefly.dx.messages"
-                        "evidence" "Implementation"
-                    }
-                    -> firefly.dx.peers "Resolves destination and trust material" "In-process calls / TypeScript" "Dataflow"
-                    -> firefly.dx.p2p "Transfers private message envelopes" "In-process calls / TypeScript" "Dataflow"
-                }
-                blobs = component "Blob transfer handler" "Streams binary content to durable member storage." "TypeScript / Node.js" {
+                blobs = container "Private blob and peer store" "Stores private binary payloads and peer metadata; storage-class placement is deferred." "Filesystem" {
+                    tags "Database,Private"
                     url "https://github.com/hyperledger-firefly/dataexchange-https/tree/b6a212d531da1ff1c24e762e7156e2593c73d052/src/handlers/blobs.ts"
                     properties {
-                        "architecture.id" "firefly.dx.blobs"
+                        "architecture.id" "firefly.blobs"
                         "evidence" "Implementation"
                     }
-                    -> firefly.dx.p2p "Transfers encrypted blob streams" "In-process calls / TypeScript" "Dataflow"
                 }
-                events = component "Event queue and acknowledgements" "Queues delivery notifications in memory and processes acknowledgements." "TypeScript / Node.js" {
-                    url "https://github.com/hyperledger-firefly/dataexchange-https/tree/b6a212d531da1ff1c24e762e7156e2593c73d052/src/handlers/events.ts"
+                ipfsRepo = container "IPFS repository" "Stores Kubo identity, pins and content blocks; storage-class placement is deferred." "Filesystem" {
+                    tags "Database,Shared"
+                    url "https://docs.ipfs.tech/concepts/how-ipfs-works/"
                     properties {
-                        "architecture.id" "firefly.dx.events"
+                        "architecture.id" "firefly.ipfsRepo"
                         "evidence" "Implementation"
                     }
-                    -> firefly.dx.api "Delivers notifications and receives acknowledgements" "In-process calls / TypeScript" "Dataflow"
-                    -> firefly.core "Delivers message and blob transfer notifications" "WebSocket / JSON" "Dataflow"
                 }
-                !element firefly.dx.api {
-                    -> firefly.dx.peers "Updates peer endpoints and certificates" "In-process calls / TypeScript" "Dataflow"
-                    -> firefly.dx.messages "Submits recipient-scoped messages" "In-process calls / TypeScript" "Dataflow"
-                    -> firefly.dx.blobs "Uploads private binary content" "In-process calls / TypeScript" "Dataflow"
-                }
-                !element firefly.dx.p2p {
-                    -> firefly.dx.messages "Delivers authenticated inbound messages" "In-process calls / TypeScript" "Dataflow"
-                    -> firefly.dx.blobs "Stores authenticated inbound blobs" "In-process calls / TypeScript" "Dataflow"
-                }
-                !element firefly.dx.messages {
-                    -> firefly.dx.events "Enqueues message delivery results" "In-process calls / TypeScript" "Dataflow"
-                }
-                !element firefly.dx.blobs {
-                    -> firefly.dx.events "Enqueues blob delivery results" "In-process calls / TypeScript" "Dataflow"
-                }
-                -> firefly.core "Delivers transfer notifications and awaits ACKs" "WebSocket / JSON" "Dataflow"
-            }
-            erc20 = container "ERC-20 / ERC-721 connector" "Maps fungible and non-fungible token APIs to EVM contracts." "TypeScript / NestJS" {
-                url "https://github.com/hyperledger-firefly/tokens-erc20-erc721/tree/7993b308284a396950587b5206370f7f254073d9/src"
-                properties {
-                    "architecture.id" "firefly.erc20"
-                    "evidence" "Implementation"
-                }
-                api = component "Token REST controller" "Accepts pool, mint, burn, transfer and approval requests." "TypeScript / NestJS" {
-                    url "https://github.com/hyperledger-firefly/tokens-erc20-erc721/tree/7993b308284a396950587b5206370f7f254073d9/src/tokens/tokens.controller.ts"
+                secrets = container "Member keys and configuration" "Stores signing keystores, mTLS material and configuration; Kubernetes projection belongs to the deferred deployment reference." "Configuration and key files" {
+                    tags "Database,Private"
+                    url "https://github.com/hyperledger-firefly/signer/tree/cfafd71fb4d2c3061a946f6466269877c3f04d9d/pkg/fswallet"
                     properties {
-                        "architecture.id" "firefly.erc20.api"
+                        "architecture.id" "firefly.secrets"
                         "evidence" "Implementation"
                     }
                 }
-                service = component "Token service" "Applies token-specific behavior and tracks pools." "TypeScript / NestJS" {
-                    url "https://github.com/hyperledger-firefly/tokens-erc20-erc721/tree/7993b308284a396950587b5206370f7f254073d9/src/tokens/tokens.service.ts"
+                explorer = container "FireFly Explorer" "Browser application served by Core; queries member state through the Core API." "React / TypeScript / browser" {
+                    url "https://github.com/hyperledger-firefly/ui/tree/658bae40220f124e0e20182cc48b231473e754c5/src"
                     properties {
-                        "architecture.id" "firefly.erc20.service"
+                        "architecture.id" "firefly.explorer"
                         "evidence" "Implementation"
                     }
+                    app = component "Explorer screens and API client" "Displays member resources and queries Core through browser HTTP requests." "React / TypeScript" {
+                        url "https://github.com/hyperledger-firefly/ui/tree/658bae40220f124e0e20182cc48b231473e754c5/src"
+                        properties {
+                            "architecture.id" "firefly.explorer.app"
+                            "evidence" "Implementation"
+                        }
+                        -> firefly.core "Requests member resources and renders returned state" "HTTP(S) / REST / JSON" "Dataflow"
+                    }
+                    -> firefly.core "Requests Explorer assets and queries member resources" "HTTP(S) / REST + static assets" "Dataflow"
+                    -> firefly.core.api "Queries messages, operations and network state" "HTTP(S) / REST / JSON" "Dataflow"
                 }
-                mapper = component "ABI and standard adapters" "Maps token operations to contract ABIs." "TypeScript / NestJS" {
-                    url "https://github.com/hyperledger-firefly/tokens-erc20-erc721/tree/7993b308284a396950587b5206370f7f254073d9/src/tokens"
+                sqlite = container "Core SQLite file" "Optional embedded Core database; no independent database server." "SQLite / filesystem" {
+                    tags "Database,Optional"
+                    url "https://github.com/hyperledger-firefly/firefly/tree/9d20f3081c9074d5b012427e5572ebc03da8d95d/internal/database/sqlite3"
                     properties {
-                        "architecture.id" "firefly.erc20.mapper"
+                        "architecture.id" "firefly.sqlite"
                         "evidence" "Implementation"
                     }
                 }
-                blockchain = component "Blockchain connector client" "Submits contract calls through EVMConnect." "TypeScript / NestJS" {
-                    url "https://github.com/hyperledger-firefly/tokens-erc20-erc721/tree/7993b308284a396950587b5206370f7f254073d9/src/tokens/blockchain.service.ts"
+                leveldb = container "FFTM LevelDB files" "Optional embedded transaction and stream persistence." "LevelDB / filesystem" {
+                    tags "Database,Optional"
+                    url "https://github.com/hyperledger-firefly/transaction-manager/tree/5915cbc4e0e30dea25068b770dadbcc8bdfa9321/internal/persistence/leveldb"
                     properties {
-                        "architecture.id" "firefly.erc20.blockchain"
+                        "architecture.id" "firefly.leveldb"
                         "evidence" "Implementation"
                     }
-                    -> firefly.evm "Submits contract calls and listeners" "HTTP REST / JSON" "Dataflow"
                 }
-                listener = component "Token event listener" "Interprets contract logs as standard token events." "TypeScript / NestJS" {
-                    url "https://github.com/hyperledger-firefly/tokens-erc20-erc721/tree/7993b308284a396950587b5206370f7f254073d9/src/tokens/tokens.listener.ts"
+                ethconnect = container "EthConnect (legacy option)" "Original Ethereum connector; REST/direct and optional Kafka bridge configurations." "Go" {
+                    tags "Optional"
+                    url "https://github.com/hyperledger-firefly/ethconnect/tree/e8ae0eda16cc61b8ac256cdbf5f09edeb571b8c0"
                     properties {
-                        "architecture.id" "firefly.erc20.listener"
+                        "architecture.id" "firefly.ethconnect"
                         "evidence" "Implementation"
                     }
-                    -> firefly.erc20.service "Updates token pool state" "In-process calls / TypeScript" "Dataflow"
-                }
-                stream = component "Connector event stream" "Receives ordered blockchain events and acknowledges batches." "TypeScript / NestJS" {
-                    url "https://github.com/hyperledger-firefly/tokens-erc20-erc721/tree/7993b308284a396950587b5206370f7f254073d9/src/event-stream"
-                    properties {
-                        "architecture.id" "firefly.erc20.stream"
-                        "evidence" "Implementation"
+                    rest = component "REST gateway and authorization" "Accepts requests and dispatches direct or asynchronous processing." "Go" {
+                        url "https://github.com/hyperledger-firefly/ethconnect/tree/e8ae0eda16cc61b8ac256cdbf5f09edeb571b8c0/internal/rest"
+                        properties {
+                            "architecture.id" "firefly.ethconnect.rest"
+                            "evidence" "Implementation"
+                        }
                     }
-                    -> firefly.erc20.listener "Delivers token contract logs" "In-process calls / TypeScript" "Dataflow"
-                }
-                proxy = component "Core event proxy" "Delivers token events to Core over WebSocket." "TypeScript / NestJS" {
-                    url "https://github.com/hyperledger-firefly/tokens-erc20-erc721/tree/7993b308284a396950587b5206370f7f254073d9/src/eventstream-proxy"
-                    properties {
-                        "architecture.id" "firefly.erc20.proxy"
-                        "evidence" "Implementation"
+                    auth = component "Authorization extension" "Applies configured request authorization hooks." "Go" {
+                        url "https://github.com/hyperledger-firefly/ethconnect/tree/e8ae0eda16cc61b8ac256cdbf5f09edeb571b8c0/internal/auth"
+                        properties {
+                            "architecture.id" "firefly.ethconnect.auth"
+                            "evidence" "Implementation"
+                        }
                     }
-                    -> firefly.erc20.stream "Acknowledges consumed event batches" "In-process calls / TypeScript" "Dataflow"
-                    -> firefly.core "Delivers token events and receives ACKs" "WebSocket / JSON" "Dataflow"
-                }
-                !element firefly.erc20.api {
-                    -> firefly.erc20.service "Submits standard token operations" "In-process calls / TypeScript" "Dataflow"
-                }
-                !element firefly.erc20.service {
-                    -> firefly.erc20.mapper "Encodes token contract calls" "In-process calls / TypeScript" "Dataflow"
-                }
-                !element firefly.erc20.mapper {
-                    -> firefly.erc20.blockchain "Passes encoded contract requests" "In-process calls / TypeScript" "Dataflow"
-                }
-                !element firefly.erc20.blockchain {
-                    -> firefly.erc20.stream "Registers contract event listeners" "In-process calls / TypeScript" "Dataflow"
-                }
-                !element firefly.erc20.listener {
-                    -> firefly.erc20.proxy "Publishes normalized token events" "In-process calls / TypeScript" "Dataflow"
-                }
-                -> firefly.core "Delivers normalized token events" "WebSocket / JSON" "Dataflow"
-                -> firefly.evm "Submits contract calls and consumes event streams" "HTTP REST + WebSocket" "Dataflow"
-            }
-            erc1155 = container "ERC-1155 connector" "Maps multi-token operations and events to FireFly." "TypeScript / NestJS" {
-                url "https://github.com/hyperledger-firefly/tokens-erc1155/tree/0355a0eb11fd12e311829a41bcbfea6148e52469/src"
-                properties {
-                    "architecture.id" "firefly.erc1155"
-                    "evidence" "Implementation"
-                }
-                api = component "Token REST controller" "Accepts pool, mint, burn, transfer and approval requests." "TypeScript / NestJS" {
-                    url "https://github.com/hyperledger-firefly/tokens-erc1155/tree/0355a0eb11fd12e311829a41bcbfea6148e52469/src/tokens/tokens.controller.ts"
-                    properties {
-                        "architecture.id" "firefly.erc1155.api"
-                        "evidence" "Implementation"
+                    contracts = component "Contract gateway" "Builds ABI-backed REST APIs and routes contract operations." "Go" {
+                        url "https://github.com/hyperledger-firefly/ethconnect/tree/e8ae0eda16cc61b8ac256cdbf5f09edeb571b8c0/internal/contractgateway"
+                        properties {
+                            "architecture.id" "firefly.ethconnect.contracts"
+                            "evidence" "Implementation"
+                        }
                     }
-                }
-                service = component "Token service" "Applies token-specific behavior and tracks pools." "TypeScript / NestJS" {
-                    url "https://github.com/hyperledger-firefly/tokens-erc1155/tree/0355a0eb11fd12e311829a41bcbfea6148e52469/src/tokens/tokens.service.ts"
-                    properties {
-                        "architecture.id" "firefly.erc1155.service"
-                        "evidence" "Implementation"
+                    registry = component "Contract registry and ABI metadata" "Stores deployed contract interfaces and resolves contract addresses." "Go" {
+                        url "https://github.com/hyperledger-firefly/ethconnect/tree/e8ae0eda16cc61b8ac256cdbf5f09edeb571b8c0/internal/contractregistry"
+                        properties {
+                            "architecture.id" "firefly.ethconnect.registry"
+                            "evidence" "Implementation"
+                        }
                     }
-                }
-                mapper = component "ABI and standard adapters" "Maps token operations to contract ABIs." "TypeScript / NestJS" {
-                    url "https://github.com/hyperledger-firefly/tokens-erc1155/tree/0355a0eb11fd12e311829a41bcbfea6148e52469/src/tokens"
-                    properties {
-                        "architecture.id" "firefly.erc1155.mapper"
-                        "evidence" "Implementation"
+                    openapi = component "OpenAPI generation" "Generates request schemas from contract ABIs." "Go" {
+                        url "https://github.com/hyperledger-firefly/ethconnect/tree/e8ae0eda16cc61b8ac256cdbf5f09edeb571b8c0/internal/openapi"
+                        properties {
+                            "architecture.id" "firefly.ethconnect.openapi"
+                            "evidence" "Implementation"
+                        }
                     }
-                }
-                blockchain = component "Blockchain connector client" "Submits contract calls through EVMConnect." "TypeScript / NestJS" {
-                    url "https://github.com/hyperledger-firefly/tokens-erc1155/tree/0355a0eb11fd12e311829a41bcbfea6148e52469/src/tokens/blockchain.service.ts"
-                    properties {
-                        "architecture.id" "firefly.erc1155.blockchain"
-                        "evidence" "Implementation"
+                    transactions = component "Transaction processor" "Allocates nonces, submits transactions and waits for receipts." "Go" {
+                        url "https://github.com/hyperledger-firefly/ethconnect/tree/e8ae0eda16cc61b8ac256cdbf5f09edeb571b8c0/internal/tx"
+                        properties {
+                            "architecture.id" "firefly.ethconnect.transactions"
+                            "evidence" "Implementation"
+                        }
                     }
-                    -> firefly.evm "Submits contract calls and listeners" "HTTP REST / JSON" "Dataflow"
-                }
-                listener = component "Token event listener" "Interprets contract logs as standard token events." "TypeScript / NestJS" {
-                    url "https://github.com/hyperledger-firefly/tokens-erc1155/tree/0355a0eb11fd12e311829a41bcbfea6148e52469/src/tokens/tokens.listener.ts"
-                    properties {
-                        "architecture.id" "firefly.erc1155.listener"
-                        "evidence" "Implementation"
+                    rpc = component "Ethereum RPC and ABI binding" "Encodes transactions, calls RPC and supports external signing." "Go" {
+                        url "https://github.com/hyperledger-firefly/ethconnect/tree/e8ae0eda16cc61b8ac256cdbf5f09edeb571b8c0/internal/eth"
+                        properties {
+                            "architecture.id" "firefly.ethconnect.rpc"
+                            "evidence" "Implementation"
+                        }
+                        -> firefly.signer "Requests Ethereum transaction signing and RPC forwarding" "HTTP JSON-RPC" "Dataflow"
                     }
-                    -> firefly.erc1155.service "Updates token pool state" "In-process calls / TypeScript" "Dataflow"
-                }
-                stream = component "Connector event stream" "Receives ordered blockchain events and acknowledges batches." "TypeScript / NestJS" {
-                    url "https://github.com/hyperledger-firefly/tokens-erc1155/tree/0355a0eb11fd12e311829a41bcbfea6148e52469/src/event-stream"
-                    properties {
-                        "architecture.id" "firefly.erc1155.stream"
-                        "evidence" "Implementation"
+                    events = component "Event subscriptions and confirmations" "Polls contract logs, confirms and batches them for delivery." "Go" {
+                        url "https://github.com/hyperledger-firefly/ethconnect/tree/e8ae0eda16cc61b8ac256cdbf5f09edeb571b8c0/internal/events"
+                        properties {
+                            "architecture.id" "firefly.ethconnect.events"
+                            "evidence" "Implementation"
+                        }
+                        -> firefly.ethconnect.rpc "Polls blocks and contract logs" "In-process calls / Go" "Dataflow"
                     }
-                    -> firefly.erc1155.listener "Delivers token contract logs" "In-process calls / TypeScript" "Dataflow"
-                }
-                proxy = component "Core event proxy" "Delivers token events to Core over WebSocket." "TypeScript / NestJS" {
-                    url "https://github.com/hyperledger-firefly/tokens-erc1155/tree/0355a0eb11fd12e311829a41bcbfea6148e52469/src/eventstream-proxy"
-                    properties {
-                        "architecture.id" "firefly.erc1155.proxy"
-                        "evidence" "Implementation"
+                    websockets = component "WebSocket delivery" "Maintains event clients and acknowledgements." "Go" {
+                        url "https://github.com/hyperledger-firefly/ethconnect/tree/e8ae0eda16cc61b8ac256cdbf5f09edeb571b8c0/internal/ws"
+                        properties {
+                            "architecture.id" "firefly.ethconnect.websockets"
+                            "evidence" "Implementation"
+                        }
+                        -> firefly.core "Delivers confirmed contract event batches" "WebSocket / JSON" "Dataflow"
                     }
-                    -> firefly.erc1155.stream "Acknowledges consumed event batches" "In-process calls / TypeScript" "Dataflow"
-                    -> firefly.core "Delivers token events and receives ACKs" "WebSocket / JSON" "Dataflow"
-                }
-                !element firefly.erc1155.api {
-                    -> firefly.erc1155.service "Submits standard token operations" "In-process calls / TypeScript" "Dataflow"
-                }
-                !element firefly.erc1155.service {
-                    -> firefly.erc1155.mapper "Encodes token contract calls" "In-process calls / TypeScript" "Dataflow"
-                }
-                !element firefly.erc1155.mapper {
-                    -> firefly.erc1155.blockchain "Passes encoded contract requests" "In-process calls / TypeScript" "Dataflow"
-                }
-                !element firefly.erc1155.blockchain {
-                    -> firefly.erc1155.stream "Registers contract event listeners" "In-process calls / TypeScript" "Dataflow"
-                }
-                !element firefly.erc1155.listener {
-                    -> firefly.erc1155.proxy "Publishes normalized token events" "In-process calls / TypeScript" "Dataflow"
-                }
-                -> firefly.core "Delivers normalized token events" "WebSocket / JSON" "Dataflow"
-                -> firefly.evm "Submits contract calls and consumes event streams" "HTTP REST + WebSocket" "Dataflow"
-            }
-            ipfs = container "IPFS Kubo" "Publishes and retrieves consortium-shared content." "Go / Kubo" {
-                tags "Shared"
-                url "https://docs.ipfs.tech/concepts/how-ipfs-works/"
-                properties {
-                    "architecture.id" "firefly.ipfs"
-                    "evidence" "Implementation"
-                }
-            }
-            pg = container "PostgreSQL primary" "Stores Core and FFTM in separate databases with separate credentials." "PostgreSQL / CloudNativePG" {
-                tags "Database,Private"
-                url "https://cloudnative-pg.io/docs/1.28/replication/"
-                properties {
-                    "architecture.id" "firefly.pg"
-                    "evidence" "Implementation"
-                }
-            }
-            pgReplica = container "PostgreSQL standby" "Replicates this member's primary; eligible for fenced promotion." "PostgreSQL / CloudNativePG" {
-                tags "Database,Private"
-                url "https://cloudnative-pg.io/docs/1.28/replication/"
-                properties {
-                    "architecture.id" "firefly.pgReplica"
-                    "evidence" "Implementation"
-                }
-            }
-            blobs = container "Private blob and peer store" "Stores private binary payloads and peer metadata; storage-class placement is deferred." "Filesystem / Premium SSD ZRS" {
-                tags "Database,Private"
-                url "https://github.com/hyperledger-firefly/dataexchange-https/tree/b6a212d531da1ff1c24e762e7156e2593c73d052/src/handlers/blobs.ts"
-                properties {
-                    "architecture.id" "firefly.blobs"
-                    "evidence" "Implementation"
-                }
-            }
-            ipfsRepo = container "IPFS repository" "Stores Kubo identity, pins and content blocks; storage-class placement is deferred." "Filesystem / Premium SSD ZRS" {
-                tags "Database,Shared"
-                url "https://docs.ipfs.tech/concepts/how-ipfs-works/"
-                properties {
-                    "architecture.id" "firefly.ipfsRepo"
-                    "evidence" "Implementation"
-                }
-            }
-            secrets = container "Member keys and configuration" "Stores signing keystores, mTLS material and configuration; Kubernetes projection belongs to the deferred deployment reference." "Kubernetes Secrets" {
-                tags "Database,Private"
-                url "https://github.com/hyperledger-firefly/signer/tree/cfafd71fb4d2c3061a946f6466269877c3f04d9d/pkg/fswallet"
-                properties {
-                    "architecture.id" "firefly.secrets"
-                    "evidence" "Implementation"
-                }
-            }
-            sqlite = container "Core SQLite file" "Optional embedded Core database; no independent database server." "SQLite / filesystem" {
-                tags "Database,Optional"
-                url "https://github.com/hyperledger-firefly/firefly/tree/9d20f3081c9074d5b012427e5572ebc03da8d95d/internal/database/sqlite3"
-                properties {
-                    "architecture.id" "firefly.sqlite"
-                    "evidence" "Implementation"
-                }
-            }
-            leveldb = container "FFTM LevelDB files" "Optional embedded transaction and stream persistence." "LevelDB / filesystem" {
-                tags "Database,Optional"
-                url "https://github.com/hyperledger-firefly/transaction-manager/tree/5915cbc4e0e30dea25068b770dadbcc8bdfa9321/internal/persistence/leveldb"
-                properties {
-                    "architecture.id" "firefly.leveldb"
-                    "evidence" "Implementation"
-                }
-            }
-            ethconnect = container "EthConnect (legacy option)" "Original Ethereum connector; REST/direct and optional Kafka bridge configurations." "Go" {
-                tags "Optional"
-                url "https://github.com/hyperledger-firefly/ethconnect/tree/e8ae0eda16cc61b8ac256cdbf5f09edeb571b8c0"
-                properties {
-                    "architecture.id" "firefly.ethconnect"
-                    "evidence" "Implementation"
-                }
-                rest = component "REST gateway and authorization" "Accepts requests and dispatches direct or asynchronous processing." "Go" {
-                    url "https://github.com/hyperledger-firefly/ethconnect/tree/e8ae0eda16cc61b8ac256cdbf5f09edeb571b8c0/internal/rest"
-                    properties {
-                        "architecture.id" "firefly.ethconnect.rest"
-                        "evidence" "Implementation"
+                    kafka = component "Kafka bridge" "Consumes transaction requests and publishes replies in Kafka mode." "Go" {
+                        url "https://github.com/hyperledger-firefly/ethconnect/tree/e8ae0eda16cc61b8ac256cdbf5f09edeb571b8c0/internal/kafka"
+                        properties {
+                            "architecture.id" "firefly.ethconnect.kafka"
+                            "evidence" "Implementation"
+                        }
+                        -> firefly.ethconnect.transactions "Dispatches consumed transaction requests" "In-process calls / Go" "Dataflow"
                     }
-                }
-                auth = component "Authorization extension" "Applies configured request authorization hooks." "Go" {
-                    url "https://github.com/hyperledger-firefly/ethconnect/tree/e8ae0eda16cc61b8ac256cdbf5f09edeb571b8c0/internal/auth"
-                    properties {
-                        "architecture.id" "firefly.ethconnect.auth"
-                        "evidence" "Implementation"
+                    receipts = component "Receipt store" "Persists transaction outcomes in a configured receipt backend." "Go" {
+                        url "https://github.com/hyperledger-firefly/ethconnect/tree/e8ae0eda16cc61b8ac256cdbf5f09edeb571b8c0/internal/receipts"
+                        properties {
+                            "architecture.id" "firefly.ethconnect.receipts"
+                            "evidence" "Implementation"
+                        }
                     }
-                }
-                contracts = component "Contract gateway" "Builds ABI-backed REST APIs and routes contract operations." "Go" {
-                    url "https://github.com/hyperledger-firefly/ethconnect/tree/e8ae0eda16cc61b8ac256cdbf5f09edeb571b8c0/internal/contractgateway"
-                    properties {
-                        "architecture.id" "firefly.ethconnect.contracts"
-                        "evidence" "Implementation"
+                    kv = component "Embedded key-value storage" "Stores event subscriptions and registry data in LevelDB." "Go" {
+                        url "https://github.com/hyperledger-firefly/ethconnect/tree/e8ae0eda16cc61b8ac256cdbf5f09edeb571b8c0/internal/kvstore"
+                        properties {
+                            "architecture.id" "firefly.ethconnect.kv"
+                            "evidence" "Implementation"
+                        }
                     }
-                }
-                registry = component "Contract registry and ABI metadata" "Stores deployed contract interfaces and resolves contract addresses." "Go" {
-                    url "https://github.com/hyperledger-firefly/ethconnect/tree/e8ae0eda16cc61b8ac256cdbf5f09edeb571b8c0/internal/contractregistry"
-                    properties {
-                        "architecture.id" "firefly.ethconnect.registry"
-                        "evidence" "Implementation"
+                    !element firefly.ethconnect.rest {
+                        -> firefly.ethconnect.auth "Checks configured authorization hooks" "In-process calls / Go" "Dataflow"
+                        -> firefly.ethconnect.contracts "Routes ABI-backed contract requests" "In-process calls / Go" "Dataflow"
+                        -> firefly.ethconnect.transactions "Dispatches direct transaction requests" "In-process calls / Go" "Dataflow"
+                        -> firefly.ethconnect.kafka "Publishes requests in Kafka bridge mode" "In-process calls / Go" "Dataflow"
                     }
-                }
-                openapi = component "OpenAPI generation" "Generates request schemas from contract ABIs." "Go" {
-                    url "https://github.com/hyperledger-firefly/ethconnect/tree/e8ae0eda16cc61b8ac256cdbf5f09edeb571b8c0/internal/openapi"
-                    properties {
-                        "architecture.id" "firefly.ethconnect.openapi"
-                        "evidence" "Implementation"
+                    !element firefly.ethconnect.contracts {
+                        -> firefly.ethconnect.registry "Resolves contract addresses and interfaces" "In-process calls / Go" "Dataflow"
+                        -> firefly.ethconnect.openapi "Generates contract request schemas" "In-process calls / Go" "Dataflow"
+                        -> firefly.ethconnect.transactions "Dispatches transaction requests" "In-process calls / Go" "Dataflow"
                     }
-                }
-                transactions = component "Transaction processor" "Allocates nonces, submits transactions and waits for receipts." "Go" {
-                    url "https://github.com/hyperledger-firefly/ethconnect/tree/e8ae0eda16cc61b8ac256cdbf5f09edeb571b8c0/internal/tx"
-                    properties {
-                        "architecture.id" "firefly.ethconnect.transactions"
-                        "evidence" "Implementation"
+                    !element firefly.ethconnect.transactions {
+                        -> firefly.ethconnect.rpc "Encodes and submits Ethereum transactions" "In-process calls / Go" "Dataflow"
+                        -> firefly.ethconnect.receipts "Persists completed transaction outcomes" "In-process calls / Go" "Dataflow"
                     }
-                }
-                rpc = component "Ethereum RPC and ABI binding" "Encodes transactions, calls RPC and supports external signing." "Go" {
-                    url "https://github.com/hyperledger-firefly/ethconnect/tree/e8ae0eda16cc61b8ac256cdbf5f09edeb571b8c0/internal/eth"
-                    properties {
-                        "architecture.id" "firefly.ethconnect.rpc"
-                        "evidence" "Implementation"
+                    !element firefly.ethconnect.events {
+                        -> firefly.ethconnect.websockets "Delivers confirmed event batches" "In-process calls / Go" "Dataflow"
+                        -> firefly.ethconnect.kv "Persists subscriptions and checkpoints" "In-process calls / Go" "Dataflow"
                     }
-                    -> firefly.signer "Requests Ethereum transaction signing and RPC forwarding" "HTTP JSON-RPC" "Dataflow"
-                }
-                events = component "Event subscriptions and confirmations" "Polls contract logs, confirms and batches them for delivery." "Go" {
-                    url "https://github.com/hyperledger-firefly/ethconnect/tree/e8ae0eda16cc61b8ac256cdbf5f09edeb571b8c0/internal/events"
-                    properties {
-                        "architecture.id" "firefly.ethconnect.events"
-                        "evidence" "Implementation"
+                    !element firefly.ethconnect.registry {
+                        -> firefly.ethconnect.kv "Persists contract metadata" "In-process calls / Go" "Dataflow"
                     }
-                    -> firefly.ethconnect.rpc "Polls blocks and contract logs" "In-process calls / Go" "Dataflow"
+                    -> firefly.signer "Submits unsigned transactions and read requests" "HTTP JSON-RPC" "Dataflow"
+                    -> firefly.core "Delivers confirmed contract events and transaction results" "WebSocket / JSON" "Dataflow"
                 }
-                websockets = component "WebSocket delivery" "Maintains event clients and acknowledgements." "Go" {
-                    url "https://github.com/hyperledger-firefly/ethconnect/tree/e8ae0eda16cc61b8ac256cdbf5f09edeb571b8c0/internal/ws"
-                    properties {
-                        "architecture.id" "firefly.ethconnect.websockets"
-                        "evidence" "Implementation"
-                    }
-                    -> firefly.core "Delivers confirmed contract event batches" "WebSocket / JSON" "Dataflow"
-                }
-                kafka = component "Kafka bridge" "Consumes transaction requests and publishes replies in Kafka mode." "Go" {
-                    url "https://github.com/hyperledger-firefly/ethconnect/tree/e8ae0eda16cc61b8ac256cdbf5f09edeb571b8c0/internal/kafka"
-                    properties {
-                        "architecture.id" "firefly.ethconnect.kafka"
-                        "evidence" "Implementation"
-                    }
-                    -> firefly.ethconnect.transactions "Dispatches consumed transaction requests" "In-process calls / Go" "Dataflow"
-                }
-                receipts = component "Receipt store" "Persists transaction outcomes in a configured receipt backend." "Go" {
-                    url "https://github.com/hyperledger-firefly/ethconnect/tree/e8ae0eda16cc61b8ac256cdbf5f09edeb571b8c0/internal/receipts"
-                    properties {
-                        "architecture.id" "firefly.ethconnect.receipts"
-                        "evidence" "Implementation"
-                    }
-                }
-                kv = component "Embedded key-value storage" "Stores event subscriptions and registry data in LevelDB." "Go" {
+                ethconnectState = container "EthConnect local state" "Optional LevelDB receipts, subscriptions and contract metadata." "LevelDB / filesystem" {
+                    tags "Database,Optional"
                     url "https://github.com/hyperledger-firefly/ethconnect/tree/e8ae0eda16cc61b8ac256cdbf5f09edeb571b8c0/internal/kvstore"
                     properties {
-                        "architecture.id" "firefly.ethconnect.kv"
+                        "architecture.id" "firefly.ethconnectState"
                         "evidence" "Implementation"
                     }
                 }
-                !element firefly.ethconnect.rest {
-                    -> firefly.ethconnect.auth "Checks configured authorization hooks" "In-process calls / Go" "Dataflow"
-                    -> firefly.ethconnect.contracts "Routes ABI-backed contract requests" "In-process calls / Go" "Dataflow"
-                    -> firefly.ethconnect.transactions "Dispatches direct transaction requests" "In-process calls / Go" "Dataflow"
-                    -> firefly.ethconnect.kafka "Publishes requests in Kafka bridge mode" "In-process calls / Go" "Dataflow"
-                }
-                !element firefly.ethconnect.contracts {
-                    -> firefly.ethconnect.registry "Resolves contract addresses and interfaces" "In-process calls / Go" "Dataflow"
-                    -> firefly.ethconnect.openapi "Generates contract request schemas" "In-process calls / Go" "Dataflow"
-                    -> firefly.ethconnect.transactions "Dispatches transaction requests" "In-process calls / Go" "Dataflow"
-                }
-                !element firefly.ethconnect.transactions {
-                    -> firefly.ethconnect.rpc "Encodes and submits Ethereum transactions" "In-process calls / Go" "Dataflow"
-                    -> firefly.ethconnect.receipts "Persists completed transaction outcomes" "In-process calls / Go" "Dataflow"
-                }
-                !element firefly.ethconnect.events {
-                    -> firefly.ethconnect.websockets "Delivers confirmed event batches" "In-process calls / Go" "Dataflow"
-                    -> firefly.ethconnect.kv "Persists subscriptions and checkpoints" "In-process calls / Go" "Dataflow"
-                }
-                !element firefly.ethconnect.registry {
-                    -> firefly.ethconnect.kv "Persists contract metadata" "In-process calls / Go" "Dataflow"
-                }
-                -> firefly.signer "Submits unsigned transactions and read requests" "HTTP JSON-RPC" "Dataflow"
-                -> firefly.core "Delivers confirmed contract events and transaction results" "WebSocket / JSON" "Dataflow"
-            }
-            ethconnectState = container "EthConnect local state" "Optional LevelDB receipts, subscriptions and contract metadata." "LevelDB / filesystem" {
-                tags "Database,Optional"
-                url "https://github.com/hyperledger-firefly/ethconnect/tree/e8ae0eda16cc61b8ac256cdbf5f09edeb571b8c0/internal/kvstore"
-                properties {
-                    "architecture.id" "firefly.ethconnectState"
-                    "evidence" "Implementation"
-                }
-            }
-            fabconnect = container "FabConnect" "Fabric transaction, identity and ledger-event connector." "Go / Fabric SDK" {
-                tags "Optional"
-                url "https://github.com/hyperledger-firefly/fabconnect/tree/efab8a2b0ff11863bbd9c5eb8a566820f560546b"
-                properties {
-                    "architecture.id" "firefly.fabconnect"
-                    "evidence" "Implementation"
-                }
-                rest = component "REST gateway and dispatch" "Routes identity, transaction and receipt requests." "Go" {
-                    url "https://github.com/hyperledger-firefly/fabconnect/tree/efab8a2b0ff11863bbd9c5eb8a566820f560546b/internal/rest"
+                fabconnect = container "FabConnect" "Fabric transaction, identity and ledger-event connector." "Go / Fabric SDK" {
+                    tags "Optional"
+                    url "https://github.com/hyperledger-firefly/fabconnect/tree/efab8a2b0ff11863bbd9c5eb8a566820f560546b"
                     properties {
-                        "architecture.id" "firefly.fabconnect.rest"
+                        "architecture.id" "firefly.fabconnect"
                         "evidence" "Implementation"
                     }
+                    rest = component "REST gateway and dispatch" "Routes identity, transaction and receipt requests." "Go" {
+                        url "https://github.com/hyperledger-firefly/fabconnect/tree/efab8a2b0ff11863bbd9c5eb8a566820f560546b/internal/rest"
+                        properties {
+                            "architecture.id" "firefly.fabconnect.rest"
+                            "evidence" "Implementation"
+                        }
+                    }
+                    auth = component "Authorization extension" "Applies configured API authorization hooks." "Go" {
+                        url "https://github.com/hyperledger-firefly/fabconnect/tree/efab8a2b0ff11863bbd9c5eb8a566820f560546b/internal/auth"
+                        properties {
+                            "architecture.id" "firefly.fabconnect.auth"
+                            "evidence" "Implementation"
+                        }
+                    }
+                    identity = component "Identity enrollment API" "Registers and enrolls Fabric signing identities." "Go" {
+                        url "https://github.com/hyperledger-firefly/fabconnect/tree/efab8a2b0ff11863bbd9c5eb8a566820f560546b/internal/rest/identity"
+                        properties {
+                            "architecture.id" "firefly.fabconnect.identity"
+                            "evidence" "Implementation"
+                        }
+                    }
+                    transactions = component "Transaction processor" "Submits chaincode transactions and tracks completion." "Go" {
+                        url "https://github.com/hyperledger-firefly/fabconnect/tree/efab8a2b0ff11863bbd9c5eb8a566820f560546b/internal/tx"
+                        properties {
+                            "architecture.id" "firefly.fabconnect.transactions"
+                            "evidence" "Implementation"
+                        }
+                    }
+                    client = component "Fabric clients and wallet" "Uses connection profiles or discovery to access peers and ordering services." "Go" {
+                        url "https://github.com/hyperledger-firefly/fabconnect/tree/efab8a2b0ff11863bbd9c5eb8a566820f560546b/internal/fabric/client"
+                        properties {
+                            "architecture.id" "firefly.fabconnect.client"
+                            "evidence" "Implementation"
+                        }
+                    }
+                    events = component "Event subscriptions and checkpoints" "Filters Fabric events and manages delivery checkpoints." "Go" {
+                        url "https://github.com/hyperledger-firefly/fabconnect/tree/efab8a2b0ff11863bbd9c5eb8a566820f560546b/internal/events"
+                        properties {
+                            "architecture.id" "firefly.fabconnect.events"
+                            "evidence" "Implementation"
+                        }
+                        -> firefly.fabconnect.client "Subscribes to Fabric ledger events" "In-process calls / Go" "Dataflow"
+                    }
+                    websockets = component "WebSocket delivery" "Delivers event batches and consumes acknowledgements." "Go" {
+                        url "https://github.com/hyperledger-firefly/fabconnect/tree/efab8a2b0ff11863bbd9c5eb8a566820f560546b/internal/ws"
+                        properties {
+                            "architecture.id" "firefly.fabconnect.websockets"
+                            "evidence" "Implementation"
+                        }
+                        -> firefly.core "Delivers acknowledged Fabric event batches" "WebSocket / JSON" "Dataflow"
+                    }
+                    kafka = component "Kafka bridge" "Supports optional asynchronous transaction request/reply messaging." "Go" {
+                        url "https://github.com/hyperledger-firefly/fabconnect/tree/efab8a2b0ff11863bbd9c5eb8a566820f560546b/internal/kafka"
+                        properties {
+                            "architecture.id" "firefly.fabconnect.kafka"
+                            "evidence" "Implementation"
+                        }
+                        -> firefly.fabconnect.transactions "Dispatches consumed transaction requests" "In-process calls / Go" "Dataflow"
+                    }
+                    receipts = component "Receipt persistence" "Stores transaction results in configured receipt backends." "Go" {
+                        url "https://github.com/hyperledger-firefly/fabconnect/tree/efab8a2b0ff11863bbd9c5eb8a566820f560546b/internal/rest/receipt"
+                        properties {
+                            "architecture.id" "firefly.fabconnect.receipts"
+                            "evidence" "Implementation"
+                        }
+                    }
+                    kv = component "Key-value persistence" "Persists connector event state in LevelDB." "Go" {
+                        url "https://github.com/hyperledger-firefly/fabconnect/tree/efab8a2b0ff11863bbd9c5eb8a566820f560546b/internal/kvstore"
+                        properties {
+                            "architecture.id" "firefly.fabconnect.kv"
+                            "evidence" "Implementation"
+                        }
+                    }
+                    !element firefly.fabconnect.rest {
+                        -> firefly.fabconnect.auth "Checks configured authorization hooks" "In-process calls / Go" "Dataflow"
+                        -> firefly.fabconnect.identity "Routes identity enrollment requests" "In-process calls / Go" "Dataflow"
+                        -> firefly.fabconnect.transactions "Dispatches chaincode transaction requests" "In-process calls / Go" "Dataflow"
+                        -> firefly.fabconnect.kafka "Publishes requests in asynchronous Kafka mode" "In-process calls / Go" "Dataflow"
+                    }
+                    !element firefly.fabconnect.identity {
+                        -> firefly.fabconnect.client "Registers and enrolls signing identities" "In-process calls / Go" "Dataflow"
+                    }
+                    !element firefly.fabconnect.transactions {
+                        -> firefly.fabconnect.client "Submits chaincode invocations" "In-process calls / Go" "Dataflow"
+                        -> firefly.fabconnect.receipts "Persists transaction results" "In-process calls / Go" "Dataflow"
+                    }
+                    !element firefly.fabconnect.events {
+                        -> firefly.fabconnect.websockets "Delivers filtered ledger event batches" "In-process calls / Go" "Dataflow"
+                        -> firefly.fabconnect.kv "Persists subscriptions and checkpoints" "In-process calls / Go" "Dataflow"
+                    }
+                    -> firefly.core "Delivers Fabric events and transaction results" "WebSocket / JSON" "Dataflow"
                 }
-                auth = component "Authorization extension" "Applies configured API authorization hooks." "Go" {
-                    url "https://github.com/hyperledger-firefly/fabconnect/tree/efab8a2b0ff11863bbd9c5eb8a566820f560546b/internal/auth"
+                fabricState = container "FabConnect local state" "Connector LevelDB state and Fabric wallet identity material." "LevelDB + wallet files" {
+                    tags "Database,Optional"
+                    url "https://github.com/hyperledger-firefly/fabconnect/tree/efab8a2b0ff11863bbd9c5eb8a566820f560546b/internal/fabric/client/store.go"
                     properties {
-                        "architecture.id" "firefly.fabconnect.auth"
+                        "architecture.id" "firefly.fabricState"
                         "evidence" "Implementation"
                     }
                 }
-                identity = component "Identity enrollment API" "Registers and enrolls Fabric signing identities." "Go" {
-                    url "https://github.com/hyperledger-firefly/fabconnect/tree/efab8a2b0ff11863bbd9c5eb8a566820f560546b/internal/rest/identity"
+                tezosconnect = container "TezosConnect + FFTM" "Tezos connector with its dependency-pinned embedded transaction manager." "Go" {
+                    tags "Optional"
+                    url "https://github.com/hyperledger-firefly/tezosconnect/tree/508ec1e8bb8b671c1eb6e9c090a1d219043dbd8b"
                     properties {
-                        "architecture.id" "firefly.fabconnect.identity"
+                        "architecture.id" "firefly.tezosconnect"
                         "evidence" "Implementation"
                     }
-                }
-                transactions = component "Transaction processor" "Submits chaincode transactions and tracks completion." "Go" {
-                    url "https://github.com/hyperledger-firefly/fabconnect/tree/efab8a2b0ff11863bbd9c5eb8a566820f560546b/internal/tx"
-                    properties {
-                        "architecture.id" "firefly.fabconnect.transactions"
-                        "evidence" "Implementation"
+                    api = component "Connector API and transaction manager" "Accepts and manages durable transaction and stream requests." "Go" {
+                        url "https://github.com/hyperledger-firefly/transaction-manager/tree/7a882ddaeaf2e7b9b2203a053402576e436debd9/pkg/fftm"
+                        properties {
+                            "architecture.id" "firefly.tezosconnect.api"
+                            "evidence" "Implementation"
+                        }
                     }
-                }
-                client = component "Fabric clients and wallet" "Uses connection profiles or discovery to access peers and ordering services." "Go" {
-                    url "https://github.com/hyperledger-firefly/fabconnect/tree/efab8a2b0ff11863bbd9c5eb8a566820f560546b/internal/fabric/client"
-                    properties {
-                        "architecture.id" "firefly.fabconnect.client"
-                        "evidence" "Implementation"
+                    policy = component "Transaction policy and nonce management" "Schedules Tezos operation submission, retries and counter allocation." "Go" {
+                        url "https://github.com/hyperledger-firefly/transaction-manager/tree/7a882ddaeaf2e7b9b2203a053402576e436debd9/pkg/txhandler"
+                        properties {
+                            "architecture.id" "firefly.tezosconnect.policy"
+                            "evidence" "Implementation"
+                        }
                     }
-                }
-                events = component "Event subscriptions and checkpoints" "Filters Fabric events and manages delivery checkpoints." "Go" {
-                    url "https://github.com/hyperledger-firefly/fabconnect/tree/efab8a2b0ff11863bbd9c5eb8a566820f560546b/internal/events"
-                    properties {
-                        "architecture.id" "firefly.fabconnect.events"
-                        "evidence" "Implementation"
+                    adapter = component "Tezos operation adapter" "Prepares, queries, estimates and submits Tezos operations." "Go" {
+                        url "https://github.com/hyperledger-firefly/tezosconnect/tree/508ec1e8bb8b671c1eb6e9c090a1d219043dbd8b/internal/tezos"
+                        properties {
+                            "architecture.id" "firefly.tezosconnect.adapter"
+                            "evidence" "Implementation"
+                        }
                     }
-                    -> firefly.fabconnect.client "Subscribes to Fabric ledger events" "In-process calls / Go" "Dataflow"
-                }
-                websockets = component "WebSocket delivery" "Delivers event batches and consumes acknowledgements." "Go" {
-                    url "https://github.com/hyperledger-firefly/fabconnect/tree/efab8a2b0ff11863bbd9c5eb8a566820f560546b/internal/ws"
-                    properties {
-                        "architecture.id" "firefly.fabconnect.websockets"
-                        "evidence" "Implementation"
+                    signing = component "Remote signing client" "Requests operation signatures from Signatory." "Go" {
+                        url "https://github.com/hyperledger-firefly/tezosconnect/tree/508ec1e8bb8b671c1eb6e9c090a1d219043dbd8b/internal/tezos/send_transaction.go"
+                        properties {
+                            "architecture.id" "firefly.tezosconnect.signing"
+                            "evidence" "Implementation"
+                        }
                     }
-                    -> firefly.core "Delivers acknowledged Fabric event batches" "WebSocket / JSON" "Dataflow"
-                }
-                kafka = component "Kafka bridge" "Supports optional asynchronous transaction request/reply messaging." "Go" {
-                    url "https://github.com/hyperledger-firefly/fabconnect/tree/efab8a2b0ff11863bbd9c5eb8a566820f560546b/internal/kafka"
-                    properties {
-                        "architecture.id" "firefly.fabconnect.kafka"
-                        "evidence" "Implementation"
+                    blocks = component "Tezos block listener" "Monitors chain heads for events and receipts." "Go" {
+                        url "https://github.com/hyperledger-firefly/tezosconnect/tree/508ec1e8bb8b671c1eb6e9c090a1d219043dbd8b/internal/tezos/blocklistener.go"
+                        properties {
+                            "architecture.id" "firefly.tezosconnect.blocks"
+                            "evidence" "Implementation"
+                        }
                     }
-                    -> firefly.fabconnect.transactions "Dispatches consumed transaction requests" "In-process calls / Go" "Dataflow"
-                }
-                receipts = component "Receipt persistence" "Stores transaction results in configured receipt backends." "Go" {
-                    url "https://github.com/hyperledger-firefly/fabconnect/tree/efab8a2b0ff11863bbd9c5eb8a566820f560546b/internal/rest/receipt"
-                    properties {
-                        "architecture.id" "firefly.fabconnect.receipts"
-                        "evidence" "Implementation"
+                    events = component "Event listener and stream adapter" "Converts Tezos contract events to connector events." "Go" {
+                        url "https://github.com/hyperledger-firefly/tezosconnect/tree/508ec1e8bb8b671c1eb6e9c090a1d219043dbd8b/internal/tezos/event_stream.go"
+                        properties {
+                            "architecture.id" "firefly.tezosconnect.events"
+                            "evidence" "Implementation"
+                        }
                     }
-                }
-                kv = component "Key-value persistence" "Persists connector event state in LevelDB." "Go" {
-                    url "https://github.com/hyperledger-firefly/fabconnect/tree/efab8a2b0ff11863bbd9c5eb8a566820f560546b/internal/kvstore"
-                    properties {
-                        "architecture.id" "firefly.fabconnect.kv"
-                        "evidence" "Implementation"
+                    streams = component "FFTM confirmations and event delivery" "Confirms and delivers checkpointed event batches." "Go" {
+                        url "https://github.com/hyperledger-firefly/transaction-manager/tree/7a882ddaeaf2e7b9b2203a053402576e436debd9/internal/events"
+                        properties {
+                            "architecture.id" "firefly.tezosconnect.streams"
+                            "evidence" "Implementation"
+                        }
+                        -> firefly.core "Delivers confirmed event batches" "WebSocket / JSON" "Dataflow"
                     }
-                }
-                !element firefly.fabconnect.rest {
-                    -> firefly.fabconnect.auth "Checks configured authorization hooks" "In-process calls / Go" "Dataflow"
-                    -> firefly.fabconnect.identity "Routes identity enrollment requests" "In-process calls / Go" "Dataflow"
-                    -> firefly.fabconnect.transactions "Dispatches chaincode transaction requests" "In-process calls / Go" "Dataflow"
-                    -> firefly.fabconnect.kafka "Publishes requests in asynchronous Kafka mode" "In-process calls / Go" "Dataflow"
-                }
-                !element firefly.fabconnect.identity {
-                    -> firefly.fabconnect.client "Registers and enrolls signing identities" "In-process calls / Go" "Dataflow"
-                }
-                !element firefly.fabconnect.transactions {
-                    -> firefly.fabconnect.client "Submits chaincode invocations" "In-process calls / Go" "Dataflow"
-                    -> firefly.fabconnect.receipts "Persists transaction results" "In-process calls / Go" "Dataflow"
-                }
-                !element firefly.fabconnect.events {
-                    -> firefly.fabconnect.websockets "Delivers filtered ledger event batches" "In-process calls / Go" "Dataflow"
-                    -> firefly.fabconnect.kv "Persists subscriptions and checkpoints" "In-process calls / Go" "Dataflow"
-                }
-                -> firefly.core "Delivers Fabric events and transaction results" "WebSocket / JSON" "Dataflow"
-            }
-            fabricState = container "FabConnect local state" "Connector LevelDB state and Fabric wallet identity material." "LevelDB + wallet files" {
-                tags "Database,Optional"
-                url "https://github.com/hyperledger-firefly/fabconnect/tree/efab8a2b0ff11863bbd9c5eb8a566820f560546b/internal/fabric/client/store.go"
-                properties {
-                    "architecture.id" "firefly.fabricState"
-                    "evidence" "Implementation"
-                }
-            }
-            tezosconnect = container "TezosConnect + FFTM" "Tezos connector with its dependency-pinned embedded transaction manager." "Go" {
-                tags "Optional"
-                url "https://github.com/hyperledger-firefly/tezosconnect/tree/508ec1e8bb8b671c1eb6e9c090a1d219043dbd8b"
-                properties {
-                    "architecture.id" "firefly.tezosconnect"
-                    "evidence" "Implementation"
-                }
-                api = component "Connector API and transaction manager" "Accepts and manages durable transaction and stream requests." "Go" {
-                    url "https://github.com/hyperledger-firefly/transaction-manager/tree/7a882ddaeaf2e7b9b2203a053402576e436debd9/pkg/fftm"
-                    properties {
-                        "architecture.id" "firefly.tezosconnect.api"
-                        "evidence" "Implementation"
+                    persistence = component "FFTM persistence" "Stores managed transactions and event checkpoints." "Go" {
+                        url "https://github.com/hyperledger-firefly/transaction-manager/tree/7a882ddaeaf2e7b9b2203a053402576e436debd9/internal/persistence"
+                        properties {
+                            "architecture.id" "firefly.tezosconnect.persistence"
+                            "evidence" "Implementation"
+                        }
                     }
-                }
-                policy = component "Transaction policy and nonce management" "Schedules Tezos operation submission, retries and counter allocation." "Go" {
-                    url "https://github.com/hyperledger-firefly/transaction-manager/tree/7a882ddaeaf2e7b9b2203a053402576e436debd9/pkg/txhandler"
-                    properties {
-                        "architecture.id" "firefly.tezosconnect.policy"
-                        "evidence" "Implementation"
+                    !element firefly.tezosconnect.api {
+                        -> firefly.tezosconnect.policy "Schedules durable operation submission" "In-process calls / Go" "Dataflow"
+                        -> firefly.tezosconnect.streams "Configures event streams" "In-process calls / Go" "Dataflow"
+                        -> firefly.tezosconnect.persistence "Persists managed transaction state" "In-process calls / Go" "Dataflow"
                     }
-                }
-                adapter = component "Tezos operation adapter" "Prepares, queries, estimates and submits Tezos operations." "Go" {
-                    url "https://github.com/hyperledger-firefly/tezosconnect/tree/508ec1e8bb8b671c1eb6e9c090a1d219043dbd8b/internal/tezos"
-                    properties {
-                        "architecture.id" "firefly.tezosconnect.adapter"
-                        "evidence" "Implementation"
+                    !element firefly.tezosconnect.policy {
+                        -> firefly.tezosconnect.adapter "Prepares and submits Tezos operations" "In-process calls / Go" "Dataflow"
                     }
-                }
-                signing = component "Remote signing client" "Requests operation signatures from Signatory." "Go" {
-                    url "https://github.com/hyperledger-firefly/tezosconnect/tree/508ec1e8bb8b671c1eb6e9c090a1d219043dbd8b/internal/tezos/send_transaction.go"
-                    properties {
-                        "architecture.id" "firefly.tezosconnect.signing"
-                        "evidence" "Implementation"
+                    !element firefly.tezosconnect.adapter {
+                        -> firefly.tezosconnect.signing "Requests a signature for encoded operations" "In-process calls / Go" "Dataflow"
                     }
-                }
-                blocks = component "Tezos block listener" "Monitors chain heads for events and receipts." "Go" {
-                    url "https://github.com/hyperledger-firefly/tezosconnect/tree/508ec1e8bb8b671c1eb6e9c090a1d219043dbd8b/internal/tezos/blocklistener.go"
-                    properties {
-                        "architecture.id" "firefly.tezosconnect.blocks"
-                        "evidence" "Implementation"
+                    !element firefly.tezosconnect.blocks {
+                        -> firefly.tezosconnect.events "Supplies observed Tezos blocks" "In-process calls / Go" "Dataflow"
                     }
-                }
-                events = component "Event listener and stream adapter" "Converts Tezos contract events to connector events." "Go" {
-                    url "https://github.com/hyperledger-firefly/tezosconnect/tree/508ec1e8bb8b671c1eb6e9c090a1d219043dbd8b/internal/tezos/event_stream.go"
-                    properties {
-                        "architecture.id" "firefly.tezosconnect.events"
-                        "evidence" "Implementation"
+                    !element firefly.tezosconnect.events {
+                        -> firefly.tezosconnect.streams "Supplies decoded contract events" "In-process calls / Go" "Dataflow"
                     }
-                }
-                streams = component "FFTM confirmations and event delivery" "Confirms and delivers checkpointed event batches." "Go" {
-                    url "https://github.com/hyperledger-firefly/transaction-manager/tree/7a882ddaeaf2e7b9b2203a053402576e436debd9/internal/events"
-                    properties {
-                        "architecture.id" "firefly.tezosconnect.streams"
-                        "evidence" "Implementation"
+                    !element firefly.tezosconnect.streams {
+                        -> firefly.tezosconnect.persistence "Persists acknowledged checkpoints" "In-process calls / Go" "Dataflow"
                     }
-                    -> firefly.core "Delivers confirmed event batches" "WebSocket / JSON" "Dataflow"
+                    -> firefly.core "Delivers confirmed Tezos events" "WebSocket / JSON" "Dataflow"
                 }
-                persistence = component "FFTM persistence" "Stores managed transactions and event checkpoints." "Go" {
+                tezosState = container "TezosConnect state" "Optional PostgreSQL or LevelDB persistence for the embedded FFTM." "PostgreSQL or LevelDB" {
+                    tags "Database,Optional"
                     url "https://github.com/hyperledger-firefly/transaction-manager/tree/7a882ddaeaf2e7b9b2203a053402576e436debd9/internal/persistence"
                     properties {
-                        "architecture.id" "firefly.tezosconnect.persistence"
+                        "architecture.id" "firefly.tezosState"
                         "evidence" "Implementation"
                     }
                 }
-                !element firefly.tezosconnect.api {
-                    -> firefly.tezosconnect.policy "Schedules durable operation submission" "In-process calls / Go" "Dataflow"
-                    -> firefly.tezosconnect.streams "Configures event streams" "In-process calls / Go" "Dataflow"
-                    -> firefly.tezosconnect.persistence "Persists managed transaction state" "In-process calls / Go" "Dataflow"
-                }
-                !element firefly.tezosconnect.policy {
-                    -> firefly.tezosconnect.adapter "Prepares and submits Tezos operations" "In-process calls / Go" "Dataflow"
-                }
-                !element firefly.tezosconnect.adapter {
-                    -> firefly.tezosconnect.signing "Requests a signature for encoded operations" "In-process calls / Go" "Dataflow"
-                }
-                !element firefly.tezosconnect.blocks {
-                    -> firefly.tezosconnect.events "Supplies observed Tezos blocks" "In-process calls / Go" "Dataflow"
-                }
-                !element firefly.tezosconnect.events {
-                    -> firefly.tezosconnect.streams "Supplies decoded contract events" "In-process calls / Go" "Dataflow"
-                }
-                !element firefly.tezosconnect.streams {
-                    -> firefly.tezosconnect.persistence "Persists acknowledged checkpoints" "In-process calls / Go" "Dataflow"
-                }
-                -> firefly.core "Delivers confirmed Tezos events" "WebSocket / JSON" "Dataflow"
-            }
-            tezosState = container "TezosConnect state" "Optional PostgreSQL or LevelDB persistence for the embedded FFTM." "PostgreSQL or LevelDB" {
-                tags "Database,Optional"
-                url "https://github.com/hyperledger-firefly/transaction-manager/tree/7a882ddaeaf2e7b9b2203a053402576e436debd9/internal/persistence"
-                properties {
-                    "architecture.id" "firefly.tezosState"
-                    "evidence" "Implementation"
-                }
-            }
-            cardanoconnect = container "CardanoConnect" "Native Cardano connector with operation, contract and event managers." "Rust / Axum" {
-                tags "Optional"
-                url "https://github.com/hyperledger-firefly/cardano/tree/0300bca6b0b99d2a16a81b94f65496934999346e/firefly-cardanoconnect"
-                properties {
-                    "architecture.id" "firefly.cardanoconnect"
-                    "evidence" "Implementation"
-                }
-                api = component "HTTP and WebSocket API" "Routes transaction, contract, operation and stream requests." "Rust" {
-                    url "https://github.com/hyperledger-firefly/cardano/tree/0300bca6b0b99d2a16a81b94f65496934999346e/firefly-cardanoconnect/src/routes"
+                cardanoconnect = container "CardanoConnect" "Native Cardano connector with operation, contract and event managers." "Rust / Axum" {
+                    tags "Optional"
+                    url "https://github.com/hyperledger-firefly/cardano/tree/0300bca6b0b99d2a16a81b94f65496934999346e/firefly-cardanoconnect"
                     properties {
-                        "architecture.id" "firefly.cardanoconnect.api"
+                        "architecture.id" "firefly.cardanoconnect"
                         "evidence" "Implementation"
                     }
+                    api = component "HTTP and WebSocket API" "Routes transaction, contract, operation and stream requests." "Rust" {
+                        url "https://github.com/hyperledger-firefly/cardano/tree/0300bca6b0b99d2a16a81b94f65496934999346e/firefly-cardanoconnect/src/routes"
+                        properties {
+                            "architecture.id" "firefly.cardanoconnect.api"
+                            "evidence" "Implementation"
+                        }
+                    }
+                    operations = component "Operations manager" "Coordinates transaction construction, signing and submission." "Rust" {
+                        url "https://github.com/hyperledger-firefly/cardano/tree/0300bca6b0b99d2a16a81b94f65496934999346e/firefly-cardanoconnect/src/operations"
+                        properties {
+                            "architecture.id" "firefly.cardanoconnect.operations"
+                            "evidence" "Implementation"
+                        }
+                    }
+                    blockchain = component "Blockchain client" "Selects Blockfrost or direct node-to-client ledger access." "Rust" {
+                        url "https://github.com/hyperledger-firefly/cardano/tree/0300bca6b0b99d2a16a81b94f65496934999346e/firefly-cardanoconnect/src/blockchain"
+                        properties {
+                            "architecture.id" "firefly.cardanoconnect.blockchain"
+                            "evidence" "Implementation"
+                        }
+                    }
+                    blockfrost = component "Blockfrost adapter" "Reads chain data and submits transactions through Blockfrost." "Rust" {
+                        url "https://github.com/hyperledger-firefly/cardano/tree/0300bca6b0b99d2a16a81b94f65496934999346e/firefly-cardanoconnect/src/blockchain/blockfrost"
+                        properties {
+                            "architecture.id" "firefly.cardanoconnect.blockfrost"
+                            "evidence" "Implementation"
+                        }
+                    }
+                    n2c = component "Node-to-client adapter" "Reads local node state and chain synchronization through Pallas." "Rust" {
+                        url "https://github.com/hyperledger-firefly/cardano/tree/0300bca6b0b99d2a16a81b94f65496934999346e/firefly-cardanoconnect/src/blockchain/n2c"
+                        properties {
+                            "architecture.id" "firefly.cardanoconnect.n2c"
+                            "evidence" "Implementation"
+                        }
+                    }
+                    signer = component "Signer service client" "Obtains transaction witnesses from the separate signer." "Rust" {
+                        url "https://github.com/hyperledger-firefly/cardano/tree/0300bca6b0b99d2a16a81b94f65496934999346e/firefly-cardanoconnect/src/signer.rs"
+                        properties {
+                            "architecture.id" "firefly.cardanoconnect.signer"
+                            "evidence" "Implementation"
+                        }
+                    }
+                    contracts = component "Contract manager and Balius runtime" "Runs optional application WASM workers over Cardano ledger data." "Rust" {
+                        url "https://github.com/hyperledger-firefly/cardano/tree/0300bca6b0b99d2a16a81b94f65496934999346e/firefly-cardanoconnect/src/contracts"
+                        properties {
+                            "architecture.id" "firefly.cardanoconnect.contracts"
+                            "evidence" "Implementation"
+                        }
+                        -> firefly.cardanoconnect.blockchain "Retrieves ledger data for contract workers" "In-process calls / Rust" "Dataflow"
+                    }
+                    balius = component "FireFly Balius worker SDK" "Implements WASM worker logic, monitoring and contract events." "Rust" {
+                        url "https://github.com/hyperledger-firefly/cardano/tree/0300bca6b0b99d2a16a81b94f65496934999346e/firefly-balius/src"
+                        properties {
+                            "architecture.id" "firefly.cardanoconnect.balius"
+                            "evidence" "Implementation"
+                        }
+                    }
+                    streams = component "Stream manager and event multiplexer" "Orders operation and blockchain notifications for consumers." "Rust" {
+                        url "https://github.com/hyperledger-firefly/cardano/tree/0300bca6b0b99d2a16a81b94f65496934999346e/firefly-cardanoconnect/src/streams"
+                        properties {
+                            "architecture.id" "firefly.cardanoconnect.streams"
+                            "evidence" "Implementation"
+                        }
+                        -> firefly.cardanoconnect.blockchain "Tracks ledger updates" "In-process calls / Rust" "Dataflow"
+                        -> firefly.cardanoconnect.contracts "Consumes application contract events" "In-process calls / Rust" "Dataflow"
+                        -> firefly.core "Delivers ordered operation and contract events" "WebSocket / JSON" "Dataflow"
+                    }
+                    persistence = component "SQLite persistence" "Persists operations, checkpoints and contract key-value state." "Rust" {
+                        url "https://github.com/hyperledger-firefly/cardano/tree/0300bca6b0b99d2a16a81b94f65496934999346e/firefly-cardanoconnect/src/persistence"
+                        properties {
+                            "architecture.id" "firefly.cardanoconnect.persistence"
+                            "evidence" "Implementation"
+                        }
+                    }
+                    server = component "Shared HTTP server and instrumentation" "Hosts routes, configuration and tracing; an embedded library." "Rust" {
+                        url "https://github.com/hyperledger-firefly/cardano/tree/0300bca6b0b99d2a16a81b94f65496934999346e/firefly-server/src"
+                        properties {
+                            "architecture.id" "firefly.cardanoconnect.server"
+                            "evidence" "Implementation"
+                        }
+                        -> firefly.cardanoconnect.api "Hosts connector HTTP and WebSocket routes" "In-process calls / Rust" "Dataflow"
+                    }
+                    !element firefly.cardanoconnect.api {
+                        -> firefly.cardanoconnect.operations "Submits operation requests" "In-process calls / Rust" "Dataflow"
+                        -> firefly.cardanoconnect.streams "Creates streams and consumes notifications" "In-process calls / Rust" "Dataflow"
+                    }
+                    !element firefly.cardanoconnect.operations {
+                        -> firefly.cardanoconnect.blockchain "Builds and submits ledger transactions" "In-process calls / Rust" "Dataflow"
+                        -> firefly.cardanoconnect.signer "Requests transaction witnesses" "In-process calls / Rust" "Dataflow"
+                        -> firefly.cardanoconnect.contracts "Invokes configured contract workers" "In-process calls / Rust" "Dataflow"
+                        -> firefly.cardanoconnect.persistence "Persists operation lifecycle state" "In-process calls / Rust" "Dataflow"
+                    }
+                    !element firefly.cardanoconnect.blockchain {
+                        -> firefly.cardanoconnect.blockfrost "Dispatches requests when Blockfrost is configured" "In-process calls / Rust" "Dataflow"
+                        -> firefly.cardanoconnect.n2c "Dispatches requests when direct node access is configured" "In-process calls / Rust" "Dataflow"
+                    }
+                    !element firefly.cardanoconnect.contracts {
+                        -> firefly.cardanoconnect.balius "Loads FireFly-compatible WASM worker logic" "In-process calls / Rust" "Dataflow"
+                        -> firefly.cardanoconnect.persistence "Persists contract worker state" "In-process calls / Rust" "Dataflow"
+                    }
+                    !element firefly.cardanoconnect.streams {
+                        -> firefly.cardanoconnect.persistence "Persists stream checkpoints" "In-process calls / Rust" "Dataflow"
+                    }
+                    -> firefly.core "Delivers Cardano operation and contract events" "WebSocket / JSON" "Dataflow"
                 }
-                operations = component "Operations manager" "Coordinates transaction construction, signing and submission." "Rust" {
-                    url "https://github.com/hyperledger-firefly/cardano/tree/0300bca6b0b99d2a16a81b94f65496934999346e/firefly-cardanoconnect/src/operations"
+                cardanosigner = container "Cardano Signer" "Signs CBOR transaction bodies using separately stored Cardano keys." "Rust / Axum" {
+                    tags "Optional"
+                    url "https://github.com/hyperledger-firefly/cardano/tree/0300bca6b0b99d2a16a81b94f65496934999346e/firefly-cardanosigner"
                     properties {
-                        "architecture.id" "firefly.cardanoconnect.operations"
+                        "architecture.id" "firefly.cardanosigner"
                         "evidence" "Implementation"
                     }
-                }
-                blockchain = component "Blockchain client" "Selects Blockfrost or direct node-to-client ledger access." "Rust" {
-                    url "https://github.com/hyperledger-firefly/cardano/tree/0300bca6b0b99d2a16a81b94f65496934999346e/firefly-cardanoconnect/src/blockchain"
-                    properties {
-                        "architecture.id" "firefly.cardanoconnect.blockchain"
-                        "evidence" "Implementation"
+                    api = component "Signing HTTP API" "Accepts signing requests and returns CBOR witness sets." "Rust" {
+                        url "https://github.com/hyperledger-firefly/cardano/tree/0300bca6b0b99d2a16a81b94f65496934999346e/firefly-cardanosigner/src/routes.rs"
+                        properties {
+                            "architecture.id" "firefly.cardanosigner.api"
+                            "evidence" "Implementation"
+                        }
+                    }
+                    keys = component "Address-indexed key store" "Loads configured key files and resolves signing addresses." "Rust" {
+                        url "https://github.com/hyperledger-firefly/cardano/tree/0300bca6b0b99d2a16a81b94f65496934999346e/firefly-cardanosigner/src/keys.rs"
+                        properties {
+                            "architecture.id" "firefly.cardanosigner.keys"
+                            "evidence" "Implementation"
+                        }
+                    }
+                    crypto = component "Ed25519 signing" "Signs Cardano transaction-body hashes." "Rust" {
+                        url "https://github.com/hyperledger-firefly/cardano/tree/0300bca6b0b99d2a16a81b94f65496934999346e/firefly-cardanosigner/src/private_key.rs"
+                        properties {
+                            "architecture.id" "firefly.cardanosigner.crypto"
+                            "evidence" "Implementation"
+                        }
+                    }
+                    server = component "Shared HTTP server" "Hosts signer routes and instrumentation." "Rust" {
+                        url "https://github.com/hyperledger-firefly/cardano/tree/0300bca6b0b99d2a16a81b94f65496934999346e/firefly-server/src"
+                        properties {
+                            "architecture.id" "firefly.cardanosigner.server"
+                            "evidence" "Implementation"
+                        }
+                        -> firefly.cardanosigner.api "Hosts signing API requests" "In-process calls / Rust" "Dataflow"
+                    }
+                    !element firefly.cardanosigner.api {
+                        -> firefly.cardanosigner.keys "Looks up the requested address key" "In-process calls / Rust" "Dataflow"
+                        -> firefly.cardanosigner.crypto "Signs the transaction-body hash" "In-process calls / Rust" "Dataflow"
+                    }
+                    !element firefly.cardanosigner.keys {
+                        -> firefly.cardanosigner.crypto "Supplies the resolved private key" "In-process calls / Rust" "Dataflow"
                     }
                 }
-                blockfrost = component "Blockfrost adapter" "Reads chain data and submits transactions through Blockfrost." "Rust" {
-                    url "https://github.com/hyperledger-firefly/cardano/tree/0300bca6b0b99d2a16a81b94f65496934999346e/firefly-cardanoconnect/src/blockchain/blockfrost"
-                    properties {
-                        "architecture.id" "firefly.cardanoconnect.blockfrost"
-                        "evidence" "Implementation"
-                    }
-                }
-                n2c = component "Node-to-client adapter" "Reads local node state and chain synchronization through Pallas." "Rust" {
-                    url "https://github.com/hyperledger-firefly/cardano/tree/0300bca6b0b99d2a16a81b94f65496934999346e/firefly-cardanoconnect/src/blockchain/n2c"
-                    properties {
-                        "architecture.id" "firefly.cardanoconnect.n2c"
-                        "evidence" "Implementation"
-                    }
-                }
-                signer = component "Signer service client" "Obtains transaction witnesses from the separate signer." "Rust" {
-                    url "https://github.com/hyperledger-firefly/cardano/tree/0300bca6b0b99d2a16a81b94f65496934999346e/firefly-cardanoconnect/src/signer.rs"
-                    properties {
-                        "architecture.id" "firefly.cardanoconnect.signer"
-                        "evidence" "Implementation"
-                    }
-                }
-                contracts = component "Contract manager and Balius runtime" "Runs optional application WASM workers over Cardano ledger data." "Rust" {
-                    url "https://github.com/hyperledger-firefly/cardano/tree/0300bca6b0b99d2a16a81b94f65496934999346e/firefly-cardanoconnect/src/contracts"
-                    properties {
-                        "architecture.id" "firefly.cardanoconnect.contracts"
-                        "evidence" "Implementation"
-                    }
-                    -> firefly.cardanoconnect.blockchain "Retrieves ledger data for contract workers" "In-process calls / Rust" "Dataflow"
-                }
-                balius = component "FireFly Balius worker SDK" "Implements WASM worker logic, monitoring and contract events." "Rust" {
-                    url "https://github.com/hyperledger-firefly/cardano/tree/0300bca6b0b99d2a16a81b94f65496934999346e/firefly-balius/src"
-                    properties {
-                        "architecture.id" "firefly.cardanoconnect.balius"
-                        "evidence" "Implementation"
-                    }
-                }
-                streams = component "Stream manager and event multiplexer" "Orders operation and blockchain notifications for consumers." "Rust" {
-                    url "https://github.com/hyperledger-firefly/cardano/tree/0300bca6b0b99d2a16a81b94f65496934999346e/firefly-cardanoconnect/src/streams"
-                    properties {
-                        "architecture.id" "firefly.cardanoconnect.streams"
-                        "evidence" "Implementation"
-                    }
-                    -> firefly.cardanoconnect.blockchain "Tracks ledger updates" "In-process calls / Rust" "Dataflow"
-                    -> firefly.cardanoconnect.contracts "Consumes application contract events" "In-process calls / Rust" "Dataflow"
-                    -> firefly.core "Delivers ordered operation and contract events" "WebSocket / JSON" "Dataflow"
-                }
-                persistence = component "SQLite persistence" "Persists operations, checkpoints and contract key-value state." "Rust" {
+                cardanoState = container "CardanoConnect SQLite files" "Operation, checkpoint and optional contract worker state." "SQLite / filesystem" {
+                    tags "Database,Optional"
                     url "https://github.com/hyperledger-firefly/cardano/tree/0300bca6b0b99d2a16a81b94f65496934999346e/firefly-cardanoconnect/src/persistence"
                     properties {
-                        "architecture.id" "firefly.cardanoconnect.persistence"
+                        "architecture.id" "firefly.cardanoState"
                         "evidence" "Implementation"
                     }
                 }
-                server = component "Shared HTTP server and instrumentation" "Hosts routes, configuration and tracing; an embedded library." "Rust" {
-                    url "https://github.com/hyperledger-firefly/cardano/tree/0300bca6b0b99d2a16a81b94f65496934999346e/firefly-server/src"
-                    properties {
-                        "architecture.id" "firefly.cardanoconnect.server"
-                        "evidence" "Implementation"
-                    }
-                    -> firefly.cardanoconnect.api "Hosts connector HTTP and WebSocket routes" "In-process calls / Rust" "Dataflow"
-                }
-                !element firefly.cardanoconnect.api {
-                    -> firefly.cardanoconnect.operations "Submits operation requests" "In-process calls / Rust" "Dataflow"
-                    -> firefly.cardanoconnect.streams "Creates streams and consumes notifications" "In-process calls / Rust" "Dataflow"
-                }
-                !element firefly.cardanoconnect.operations {
-                    -> firefly.cardanoconnect.blockchain "Builds and submits ledger transactions" "In-process calls / Rust" "Dataflow"
-                    -> firefly.cardanoconnect.signer "Requests transaction witnesses" "In-process calls / Rust" "Dataflow"
-                    -> firefly.cardanoconnect.contracts "Invokes configured contract workers" "In-process calls / Rust" "Dataflow"
-                    -> firefly.cardanoconnect.persistence "Persists operation lifecycle state" "In-process calls / Rust" "Dataflow"
-                }
-                !element firefly.cardanoconnect.blockchain {
-                    -> firefly.cardanoconnect.blockfrost "Dispatches requests when Blockfrost is configured" "In-process calls / Rust" "Dataflow"
-                    -> firefly.cardanoconnect.n2c "Dispatches requests when direct node access is configured" "In-process calls / Rust" "Dataflow"
-                }
-                !element firefly.cardanoconnect.contracts {
-                    -> firefly.cardanoconnect.balius "Loads FireFly-compatible WASM worker logic" "In-process calls / Rust" "Dataflow"
-                    -> firefly.cardanoconnect.persistence "Persists contract worker state" "In-process calls / Rust" "Dataflow"
-                }
-                !element firefly.cardanoconnect.streams {
-                    -> firefly.cardanoconnect.persistence "Persists stream checkpoints" "In-process calls / Rust" "Dataflow"
-                }
-                -> firefly.core "Delivers Cardano operation and contract events" "WebSocket / JSON" "Dataflow"
-            }
-            cardanosigner = container "Cardano Signer" "Signs CBOR transaction bodies using separately stored Cardano keys." "Rust / Axum" {
-                tags "Optional"
-                url "https://github.com/hyperledger-firefly/cardano/tree/0300bca6b0b99d2a16a81b94f65496934999346e/firefly-cardanosigner"
-                properties {
-                    "architecture.id" "firefly.cardanosigner"
-                    "evidence" "Implementation"
-                }
-                api = component "Signing HTTP API" "Accepts signing requests and returns CBOR witness sets." "Rust" {
-                    url "https://github.com/hyperledger-firefly/cardano/tree/0300bca6b0b99d2a16a81b94f65496934999346e/firefly-cardanosigner/src/routes.rs"
-                    properties {
-                        "architecture.id" "firefly.cardanosigner.api"
-                        "evidence" "Implementation"
-                    }
-                }
-                keys = component "Address-indexed key store" "Loads configured key files and resolves signing addresses." "Rust" {
+                cardanoKeys = container "Cardano signing keys" "Address-indexed signing key files held by the Cardano Signer." "Filesystem keystore" {
+                    tags "Database,Optional"
                     url "https://github.com/hyperledger-firefly/cardano/tree/0300bca6b0b99d2a16a81b94f65496934999346e/firefly-cardanosigner/src/keys.rs"
                     properties {
-                        "architecture.id" "firefly.cardanosigner.keys"
+                        "architecture.id" "firefly.cardanoKeys"
                         "evidence" "Implementation"
                     }
                 }
-                crypto = component "Ed25519 signing" "Signs Cardano transaction-body hashes." "Rust" {
-                    url "https://github.com/hyperledger-firefly/cardano/tree/0300bca6b0b99d2a16a81b94f65496934999346e/firefly-cardanosigner/src/private_key.rs"
+                cordaconnect = container "Corda connector starter" "Spring Boot reference starter; application CorDapps and a Core binding require customization." "Java / Spring Boot" {
+                    tags "Optional"
+                    url "https://github.com/hyperledger-firefly/cordaconnect/tree/6579ca46e0d46c9c330c8b2b95f1dd83f0804640/connector"
                     properties {
-                        "architecture.id" "firefly.cardanosigner.crypto"
-                        "evidence" "Implementation"
+                        "architecture.id" "firefly.cordaconnect"
+                        "evidence" "Starter requiring customization"
+                    }
+                    api = component "REST controllers" "Accepts FireFly flow, subscription and stream requests." "Java" {
+                        url "https://github.com/hyperledger-firefly/cordaconnect/tree/6579ca46e0d46c9c330c8b2b95f1dd83f0804640/connector/src/main/java/io/kaleido/cordaconnector/controller"
+                        properties {
+                            "architecture.id" "firefly.cordaconnect.api"
+                            "evidence" "Implementation"
+                        }
+                    }
+                    flows = component "CorDapp service and RPC client" "Starts application-specific flows through Corda RPC." "Java" {
+                        url "https://github.com/hyperledger-firefly/cordaconnect/tree/6579ca46e0d46c9c330c8b2b95f1dd83f0804640/connector/src/main/java/io/kaleido/cordaconnector/rpc"
+                        properties {
+                            "architecture.id" "firefly.cordaconnect.flows"
+                            "evidence" "Implementation"
+                        }
+                    }
+                    events = component "Event streams and subscriptions" "Collects vault events and batches them for subscribers." "Java" {
+                        url "https://github.com/hyperledger-firefly/cordaconnect/tree/6579ca46e0d46c9c330c8b2b95f1dd83f0804640/connector/src/main/java/io/kaleido/cordaconnector/service"
+                        properties {
+                            "architecture.id" "firefly.cordaconnect.events"
+                            "evidence" "Implementation"
+                        }
+                    }
+                    websockets = component "WebSocket delivery" "Delivers event batches to connector clients." "Java" {
+                        url "https://github.com/hyperledger-firefly/cordaconnect/tree/6579ca46e0d46c9c330c8b2b95f1dd83f0804640/connector/src/main/java/io/kaleido/cordaconnector/ws"
+                        properties {
+                            "architecture.id" "firefly.cordaconnect.websockets"
+                            "evidence" "Implementation"
+                        }
+                        -> developer "Delivers starter event batches to an integration developer" "WebSocket / JSON" "Dataflow"
+                    }
+                    persistence = component "JPA repositories" "Persists event-stream and subscription definitions." "Java" {
+                        url "https://github.com/hyperledger-firefly/cordaconnect/tree/6579ca46e0d46c9c330c8b2b95f1dd83f0804640/connector/src/main/java/io/kaleido/cordaconnector/db"
+                        properties {
+                            "architecture.id" "firefly.cordaconnect.persistence"
+                            "evidence" "Implementation"
+                        }
+                    }
+                    !element firefly.cordaconnect.api {
+                        -> firefly.cordaconnect.flows "Submits configured CorDapp flow requests" "In-process calls / Java" "Dataflow"
+                        -> firefly.cordaconnect.events "Configures event streams and subscriptions" "In-process calls / Java" "Dataflow"
+                    }
+                    !element firefly.cordaconnect.flows {
+                        -> firefly.cordaconnect.events "Supplies observed CorDapp state changes" "In-process calls / Java" "Dataflow"
+                    }
+                    !element firefly.cordaconnect.events {
+                        -> firefly.cordaconnect.websockets "Publishes event batches" "In-process calls / Java" "Dataflow"
+                        -> firefly.cordaconnect.persistence "Persists stream and subscription definitions" "In-process calls / Java" "Dataflow"
                     }
                 }
-                server = component "Shared HTTP server" "Hosts signer routes and instrumentation." "Rust" {
-                    url "https://github.com/hyperledger-firefly/cardano/tree/0300bca6b0b99d2a16a81b94f65496934999346e/firefly-server/src"
+                cordaState = container "Corda starter database" "Starter JPA database; the supplied configuration uses in-memory H2 and is not durable." "H2 / in-memory default" {
+                    tags "Database,Optional"
+                    url "https://github.com/hyperledger-firefly/cordaconnect/tree/6579ca46e0d46c9c330c8b2b95f1dd83f0804640/connector/src/main/resources"
                     properties {
-                        "architecture.id" "firefly.cardanosigner.server"
+                        "architecture.id" "firefly.cordaState"
                         "evidence" "Implementation"
                     }
-                    -> firefly.cardanosigner.api "Hosts signing API requests" "In-process calls / Rust" "Dataflow"
                 }
-                !element firefly.cardanosigner.api {
-                    -> firefly.cardanosigner.keys "Looks up the requested address key" "In-process calls / Rust" "Dataflow"
-                    -> firefly.cardanosigner.crypto "Signs the transaction-body hash" "In-process calls / Rust" "Dataflow"
+                !element firefly.core {
+                    -> firefly.evm "Submits contract calls, pins and listeners" "HTTP REST / JSON" "Dataflow"
+                    -> firefly.dx "Submits private messages, blobs and peer configuration" "HTTP REST / JSON + binary" "Dataflow"
+                    -> firefly.erc20 "Submits ERC-20 and ERC-721 operations" "HTTP REST / JSON" "Dataflow"
+                    -> firefly.erc1155 "Submits ERC-1155 operations" "HTTP REST / JSON" "Dataflow"
+                    -> firefly.pg "Reads and writes the private Core database" "PostgreSQL wire / TLS" "Dataflow"
+                    -> firefly.ipfs "Adds shared content and retrieves CIDs" "IPFS HTTP RPC / gateway" "Dataflow"
+                    -> firefly.secrets "Loads namespace and plugin configuration" "Read-only projected files" "Dataflow"
+                    -> firefly.sqlite "Persists Core state when SQLite is selected" "Embedded SQLite / filesystem" "Dataflow"
+                    -> firefly.dx.events "Acknowledges consumed transfer notifications" "WebSocket / JSON" "Dataflow"
+                    -> firefly.ethconnect "Submits calls and consumes events in the legacy configuration" "HTTP REST + WebSocket" "Dataflow"
+                    -> firefly.fabconnect "Submits Fabric requests when configured" "HTTP REST + WebSocket" "Dataflow"
+                    -> firefly.tezosconnect "Submits Tezos operations when configured" "HTTP REST + WebSocket" "Dataflow"
+                    -> firefly.cardanoconnect "Submits Cardano operations when configured" "HTTP REST + WebSocket" "Dataflow"
+                    -> firefly.ethconnect.rest "Submits configured ledger requests" "HTTP REST / JSON" "Dataflow"
+                    -> firefly.fabconnect.rest "Submits configured ledger requests" "HTTP REST / JSON" "Dataflow"
+                    -> firefly.tezosconnect.api "Submits configured ledger requests" "HTTP REST / JSON" "Dataflow"
+                    -> firefly.cardanoconnect.api "Submits configured ledger requests" "HTTP REST / JSON" "Dataflow"
+                }
+                !element firefly.evm {
+                    -> firefly.signer "Submits Ethereum calls and unsigned transactions" "HTTP JSON-RPC" "Dataflow"
+                    -> firefly.fftmDb "Reads and writes the separate FFTM database" "PostgreSQL wire / TLS" "Dataflow"
+                    -> firefly.secrets "Loads connector endpoints and credentials" "Read-only projected files" "Dataflow"
+                    -> firefly.erc20.stream "Streams confirmed token logs" "WebSocket / JSON" "Dataflow"
+                    -> firefly.erc1155.stream "Streams confirmed token logs" "WebSocket / JSON" "Dataflow"
+                    -> firefly.leveldb "Persists transaction state when LevelDB is selected" "Embedded LevelDB / filesystem" "Dataflow"
+                }
+                !element firefly.dx {
+                    -> firefly.blobs "Reads and writes private blobs and peer records" "Filesystem I/O" "Dataflow"
+                    -> firefly.secrets "Loads member mTLS certificate and key" "Read-only projected files" "Dataflow"
+                    -> firefly.dx "Transfers private envelopes and blobs to peers; receives ACKs" "HTTPS / mutual TLS" "PrivateFlow"
+                }
+                !element firefly.ipfs {
+                    -> firefly.ipfsRepo "Reads and writes Kubo keys, pins and blocks" "Filesystem I/O" "Dataflow"
+                    -> firefly.ipfs "Retrieves shared content blocks from peers by CID" "IPFS / libp2p" "SharedFlow"
+                }
+                !element firefly.signer {
+                    -> firefly.secrets "Loads member signing keystore files" "Read-only projected files" "Dataflow"
+                }
+                !element firefly.core.blockchain {
+                    -> firefly.evm "Submits blockchain operations" "HTTP REST / JSON" "Dataflow"
+                }
+                !element firefly.core.database {
+                    -> firefly.pg "Persists Core resources and offsets" "PostgreSQL wire / TLS" "Dataflow"
+                }
+                !element firefly.core.dataexchange {
+                    -> firefly.dx "Exchanges private data and notifications" "HTTP + WebSocket" "Dataflow"
+                }
+                !element firefly.core.sharedstorage {
+                    -> firefly.ipfs "Publishes and retrieves CIDs" "IPFS HTTP RPC" "Dataflow"
+                }
+                !element firefly.core.tokens {
+                    -> firefly.erc20 "Submits ERC-20 and ERC-721 operations" "HTTP REST / JSON" "Dataflow"
+                    -> firefly.erc1155 "Submits ERC-1155 operations" "HTTP REST / JSON" "Dataflow"
+                }
+                !element firefly.evm.persistence {
+                    -> firefly.fftmDb "Persists FFTM transactions and checkpoints" "PostgreSQL wire / TLS" "Dataflow"
+                }
+                !element firefly.evm.rpc {
+                    -> firefly.signer "Forwards transactions and read calls" "HTTP JSON-RPC" "Dataflow"
+                }
+                !element firefly.signer.wallet {
+                    -> firefly.secrets "Loads encrypted account keystores" "Read-only projected files" "Dataflow"
+                }
+                !element firefly.dx.blobs {
+                    -> firefly.blobs "Stores durable private blobs" "Filesystem I/O" "Dataflow"
+                }
+                !element firefly.dx.peers {
+                    -> firefly.blobs "Persists endpoints and peer certificates" "Filesystem I/O" "Dataflow"
+                }
+                !element firefly.dx.p2p {
+                    -> firefly.secrets "Loads the member mTLS identity" "Read-only projected files" "Dataflow"
+                }
+                !element firefly.core.ethereum {
+                    -> firefly.evm "Submits EVM calls, transactions and listeners" "HTTP REST / JSON" "Dataflow"
+                    -> firefly.ethconnect "Submits Ethereum requests in the legacy configuration" "HTTP REST + WebSocket" "Dataflow"
+                }
+                !element firefly.core.postgres {
+                    -> firefly.pg "Reads and writes the Core SQL database" "PostgreSQL wire protocol" "Dataflow"
+                }
+                !element firefly.core.ffdx {
+                    -> firefly.dx "Transfers messages, blobs and peer configuration" "HTTP REST + WebSocket" "Dataflow"
+                }
+                !element firefly.core.ipfs {
+                    -> firefly.ipfs "Publishes and retrieves shared CIDs" "IPFS HTTP RPC" "Dataflow"
+                }
+                !element firefly.core.fftokens {
+                    -> firefly.erc20 "Submits ERC-20 and ERC-721 operations" "HTTP REST + WebSocket" "Dataflow"
+                    -> firefly.erc1155 "Submits ERC-1155 operations" "HTTP REST + WebSocket" "Dataflow"
+                }
+                !element firefly.core.sqlite {
+                    -> firefly.sqlite "Reads and writes embedded database pages" "SQLite API / filesystem" "Dataflow"
+                }
+                !element firefly.evm.postgres {
+                    -> firefly.fftmDb "Persists the separate FFTM SQL database" "PostgreSQL wire protocol" "Dataflow"
+                }
+                !element firefly.evm.leveldb {
+                    -> firefly.leveldb "Reads and writes local transaction state" "LevelDB API / filesystem" "Dataflow"
+                }
+                !element firefly.ethconnect {
+                    -> firefly.ethconnectState "Persists connector state in local files" "LevelDB / filesystem" "Dataflow"
+                }
+                !element firefly.ethconnect.kv {
+                    -> firefly.ethconnectState "Reads and writes event and registry records" "LevelDB API / filesystem" "Dataflow"
+                }
+                !element firefly.ethconnect.receipts {
+                    -> firefly.ethconnectState "Persists receipts when LevelDB is selected" "LevelDB API / filesystem" "Dataflow"
+                }
+                !element firefly.core.fabricAdapter {
+                    -> firefly.fabconnect "Submits chaincode calls and event subscriptions" "HTTP REST + WebSocket" "Dataflow"
+                }
+                !element firefly.fabconnect {
+                    -> firefly.fabricState "Persists wallet and event state" "Filesystem / LevelDB" "Dataflow"
+                }
+                !element firefly.fabconnect.client {
+                    -> firefly.fabricState "Reads and writes wallet identities" "Filesystem I/O" "Dataflow"
+                }
+                !element firefly.fabconnect.kv {
+                    -> firefly.fabricState "Persists event checkpoints" "LevelDB API / filesystem" "Dataflow"
+                }
+                !element firefly.fabconnect.receipts {
+                    -> firefly.fabricState "Persists receipts when LevelDB is selected" "LevelDB API / filesystem" "Dataflow"
+                }
+                !element firefly.core.tezosAdapter {
+                    -> firefly.tezosconnect "Submits Tezos operations and listeners" "HTTP REST + WebSocket" "Dataflow"
+                }
+                !element firefly.tezosconnect {
+                    -> firefly.tezosState "Persists transaction and stream state" "PostgreSQL wire or LevelDB API" "Dataflow"
+                }
+                !element firefly.tezosconnect.persistence {
+                    -> firefly.tezosState "Reads and writes managed state" "PostgreSQL wire or LevelDB API" "Dataflow"
+                }
+                !element firefly.core.cardanoAdapter {
+                    -> firefly.cardanoconnect "Submits Cardano operations and subscriptions" "HTTP REST + WebSocket" "Dataflow"
+                }
+                !element firefly.cardanoconnect {
+                    -> firefly.cardanosigner "Requests transaction witnesses" "HTTP / JSON" "Dataflow"
+                    -> firefly.cardanoState "Persists operation and stream state" "SQLite / filesystem" "Dataflow"
+                    -> firefly.cardanosigner.api "Requests a CBOR transaction witness set" "HTTP / JSON" "Dataflow"
+                }
+                !element firefly.cardanoconnect.signer {
+                    -> firefly.cardanosigner "Requests transaction witnesses" "HTTP / JSON" "Dataflow"
+                }
+                !element firefly.cardanoconnect.persistence {
+                    -> firefly.cardanoState "Reads and writes operation and checkpoint records" "SQLite API / filesystem" "Dataflow"
+                }
+                !element firefly.cardanosigner {
+                    -> firefly.cardanoKeys "Loads Cardano signing keys" "Filesystem I/O" "Dataflow"
                 }
                 !element firefly.cardanosigner.keys {
-                    -> firefly.cardanosigner.crypto "Supplies the resolved private key" "In-process calls / Rust" "Dataflow"
+                    -> firefly.cardanoKeys "Loads address-indexed signing key files" "Filesystem I/O" "Dataflow"
                 }
-            }
-            cardanoState = container "CardanoConnect SQLite files" "Operation, checkpoint and optional contract worker state." "SQLite / filesystem" {
-                tags "Database,Optional"
-                url "https://github.com/hyperledger-firefly/cardano/tree/0300bca6b0b99d2a16a81b94f65496934999346e/firefly-cardanoconnect/src/persistence"
-                properties {
-                    "architecture.id" "firefly.cardanoState"
-                    "evidence" "Implementation"
+                !element firefly.cordaconnect {
+                    -> firefly.cordaState "Persists starter stream definitions" "JPA / embedded H2" "Dataflow"
                 }
-            }
-            cardanoKeys = container "Cardano signing keys" "Address-indexed signing key files held by the Cardano Signer." "Filesystem keystore" {
-                tags "Database,Optional"
-                url "https://github.com/hyperledger-firefly/cardano/tree/0300bca6b0b99d2a16a81b94f65496934999346e/firefly-cardanosigner/src/keys.rs"
-                properties {
-                    "architecture.id" "firefly.cardanoKeys"
-                    "evidence" "Implementation"
+                !element firefly.cordaconnect.persistence {
+                    -> firefly.cordaState "Reads and writes subscription definitions" "JPA / embedded H2" "Dataflow"
                 }
+                -> developer "Returns customized starter event batches" "WebSocket / JSON" "Dataflow"
             }
-            cordaconnect = container "Corda connector starter" "Spring Boot reference starter; application CorDapps and a Core binding require customization." "Java / Spring Boot" {
+            tools = softwareSystem "FireFly developer tools" "Development utilities and optional sample applications." {
                 tags "Optional"
-                url "https://github.com/hyperledger-firefly/cordaconnect/tree/6579ca46e0d46c9c330c8b2b95f1dd83f0804640/connector"
+                url "https://github.com/hyperledger-firefly/firefly/tree/9d20f3081c9074d5b012427e5572ebc03da8d95d/doc-site/docs/overview/key_components/tools.md"
                 properties {
-                    "architecture.id" "firefly.cordaconnect"
-                    "evidence" "Starter requiring customization"
-                }
-                api = component "REST controllers" "Accepts FireFly flow, subscription and stream requests." "Java" {
-                    url "https://github.com/hyperledger-firefly/cordaconnect/tree/6579ca46e0d46c9c330c8b2b95f1dd83f0804640/connector/src/main/java/io/kaleido/cordaconnector/controller"
-                    properties {
-                        "architecture.id" "firefly.cordaconnect.api"
-                        "evidence" "Implementation"
-                    }
-                }
-                flows = component "CorDapp service and RPC client" "Starts application-specific flows through Corda RPC." "Java" {
-                    url "https://github.com/hyperledger-firefly/cordaconnect/tree/6579ca46e0d46c9c330c8b2b95f1dd83f0804640/connector/src/main/java/io/kaleido/cordaconnector/rpc"
-                    properties {
-                        "architecture.id" "firefly.cordaconnect.flows"
-                        "evidence" "Implementation"
-                    }
-                }
-                events = component "Event streams and subscriptions" "Collects vault events and batches them for subscribers." "Java" {
-                    url "https://github.com/hyperledger-firefly/cordaconnect/tree/6579ca46e0d46c9c330c8b2b95f1dd83f0804640/connector/src/main/java/io/kaleido/cordaconnector/service"
-                    properties {
-                        "architecture.id" "firefly.cordaconnect.events"
-                        "evidence" "Implementation"
-                    }
-                }
-                websockets = component "WebSocket delivery" "Delivers event batches to connector clients." "Java" {
-                    url "https://github.com/hyperledger-firefly/cordaconnect/tree/6579ca46e0d46c9c330c8b2b95f1dd83f0804640/connector/src/main/java/io/kaleido/cordaconnector/ws"
-                    properties {
-                        "architecture.id" "firefly.cordaconnect.websockets"
-                        "evidence" "Implementation"
-                    }
-                    -> developer "Delivers starter event batches to an integration developer" "WebSocket / JSON" "Dataflow"
-                }
-                persistence = component "JPA repositories" "Persists event-stream and subscription definitions." "Java" {
-                    url "https://github.com/hyperledger-firefly/cordaconnect/tree/6579ca46e0d46c9c330c8b2b95f1dd83f0804640/connector/src/main/java/io/kaleido/cordaconnector/db"
-                    properties {
-                        "architecture.id" "firefly.cordaconnect.persistence"
-                        "evidence" "Implementation"
-                    }
-                }
-                !element firefly.cordaconnect.api {
-                    -> firefly.cordaconnect.flows "Submits configured CorDapp flow requests" "In-process calls / Java" "Dataflow"
-                    -> firefly.cordaconnect.events "Configures event streams and subscriptions" "In-process calls / Java" "Dataflow"
-                }
-                !element firefly.cordaconnect.flows {
-                    -> firefly.cordaconnect.events "Supplies observed CorDapp state changes" "In-process calls / Java" "Dataflow"
-                }
-                !element firefly.cordaconnect.events {
-                    -> firefly.cordaconnect.websockets "Publishes event batches" "In-process calls / Java" "Dataflow"
-                    -> firefly.cordaconnect.persistence "Persists stream and subscription definitions" "In-process calls / Java" "Dataflow"
-                }
-            }
-            cordaState = container "Corda starter database" "Starter JPA database; the supplied configuration uses in-memory H2 and is not durable." "H2 / in-memory default" {
-                tags "Database,Optional"
-                url "https://github.com/hyperledger-firefly/cordaconnect/tree/6579ca46e0d46c9c330c8b2b95f1dd83f0804640/connector/src/main/resources"
-                properties {
-                    "architecture.id" "firefly.cordaState"
+                    "architecture.id" "tools"
                     "evidence" "Implementation"
                 }
+                !docs docs/static/system
+                !adrs docs/static/decisions
+                cli = container "FireFly CLI" "Creates local stacks and performs development administration." "Go / CLI" {
+                    tags "Optional"
+                    url "https://github.com/hyperledger-firefly/cli/tree/9b868d3326ba4fbadd01c74a36c7e5a92a8c2609/README.md"
+                    properties {
+                        "architecture.id" "tools.cli"
+                        "evidence" "Implementation"
+                    }
+                    commands = component "CLI commands" "Accepts stack creation, start, stop and administration commands." "Go" {
+                        url "https://github.com/hyperledger-firefly/cli/tree/9b868d3326ba4fbadd01c74a36c7e5a92a8c2609/cmd"
+                        properties {
+                            "architecture.id" "tools.cli.commands"
+                            "evidence" "Implementation"
+                        }
+                    }
+                    stacks = component "Stack configuration and manifests" "Assembles member stack configuration and state." "Go" {
+                        url "https://github.com/hyperledger-firefly/cli/tree/9b868d3326ba4fbadd01c74a36c7e5a92a8c2609/internal/stacks"
+                        properties {
+                            "architecture.id" "tools.cli.stacks"
+                            "evidence" "Implementation"
+                        }
+                    }
+                    docker = component "Docker integration" "Invokes Docker Compose to manage local development runtimes." "Go" {
+                        url "https://github.com/hyperledger-firefly/cli/tree/9b868d3326ba4fbadd01c74a36c7e5a92a8c2609/internal/docker"
+                        properties {
+                            "architecture.id" "tools.cli.docker"
+                            "evidence" "Implementation"
+                        }
+                    }
+                    blockchains = component "Blockchain setup adapters" "Configures selected Ethereum, Fabric, Tezos or Cardano backends." "Go" {
+                        url "https://github.com/hyperledger-firefly/cli/tree/9b868d3326ba4fbadd01c74a36c7e5a92a8c2609/internal/blockchain"
+                        properties {
+                            "architecture.id" "tools.cli.blockchains"
+                            "evidence" "Implementation"
+                        }
+                    }
+                    tokens = component "Token setup adapters" "Configures optional ERC token connectors." "Go" {
+                        url "https://github.com/hyperledger-firefly/cli/tree/9b868d3326ba4fbadd01c74a36c7e5a92a8c2609/internal/tokens"
+                        properties {
+                            "architecture.id" "tools.cli.tokens"
+                            "evidence" "Implementation"
+                        }
+                    }
+                    core = component "Core administration client" "Registers identities and configures Core namespaces." "Go" {
+                        url "https://github.com/hyperledger-firefly/cli/tree/9b868d3326ba4fbadd01c74a36c7e5a92a8c2609/internal/core"
+                        properties {
+                            "architecture.id" "tools.cli.core"
+                            "evidence" "Implementation"
+                        }
+                        -> firefly.core "Configures and inspects development members" "HTTP / REST + Admin API" "Dataflow"
+                    }
+                    !element tools.cli.commands {
+                        -> tools.cli.stacks "Requests development stack lifecycle changes" "In-process calls / Go" "Dataflow"
+                    }
+                    !element tools.cli.stacks {
+                        -> tools.cli.docker "Supplies generated runtime manifests" "In-process calls / Go" "Dataflow"
+                        -> tools.cli.blockchains "Selects and configures the blockchain backend" "In-process calls / Go" "Dataflow"
+                        -> tools.cli.tokens "Selects optional token services" "In-process calls / Go" "Dataflow"
+                        -> tools.cli.core "Configures member Core instances" "In-process calls / Go" "Dataflow"
+                    }
+                    -> firefly.core "Registers and inspects development stacks" "HTTP / Admin API" "Dataflow"
+                }
+                sandbox = container "Sandbox server" "Serves Sandbox browser assets and maps UI requests to a selected FireFly API." "Node.js / TypeScript" {
+                    tags "Optional"
+                    url "https://github.com/hyperledger-firefly/sandbox/tree/ef7f240b8acf9c79c8fdf5a8bccb73e9de482069/server/src"
+                    properties {
+                        "architecture.id" "tools.sandbox"
+                        "evidence" "Implementation"
+                    }
+                    backend = component "Sandbox backend" "Maps UI actions into SDK requests." "Node.js / TypeScript" {
+                        url "https://github.com/hyperledger-firefly/sandbox/tree/ef7f240b8acf9c79c8fdf5a8bccb73e9de482069/server/src"
+                        properties {
+                            "architecture.id" "tools.sandbox.backend"
+                            "evidence" "Implementation"
+                        }
+                    }
+                    sdk = component "FireFly Node.js SDK" "Calls the selected API and consumes events." "TypeScript library" {
+                        url "https://github.com/hyperledger-firefly/sdk-nodejs/tree/c4e813bc611ff2c6222ff84adf1cceabfd929172/lib/firefly.ts"
+                        properties {
+                            "architecture.id" "tools.sandbox.sdk"
+                            "evidence" "Implementation"
+                        }
+                        -> firefly.core "Invokes member APIs and consumes events" "HTTPS + WebSocket" "Dataflow"
+                    }
+                    sdkHttp = component "SDK HTTP client" "Embedded SDK transport for member requests and events." "TypeScript" {
+                        url "https://github.com/hyperledger-firefly/sdk-nodejs/tree/c4e813bc611ff2c6222ff84adf1cceabfd929172/lib/http.ts"
+                        properties {
+                            "architecture.id" "tools.sandbox.sdkHttp"
+                            "evidence" "Implementation"
+                        }
+                        -> firefly.core "Sends namespace-scoped API requests" "HTTP REST / JSON" "Dataflow"
+                    }
+                    sdkEvents = component "SDK WebSocket client" "Embedded SDK transport for member requests and events." "TypeScript" {
+                        url "https://github.com/hyperledger-firefly/sdk-nodejs/tree/c4e813bc611ff2c6222ff84adf1cceabfd929172/lib/websocket.ts"
+                        properties {
+                            "architecture.id" "tools.sandbox.sdkEvents"
+                            "evidence" "Implementation"
+                        }
+                        -> firefly.core "Subscribes to events and sends acknowledgements" "WebSocket / JSON" "Dataflow"
+                    }
+                    !element tools.sandbox.backend {
+                        -> tools.sandbox.sdk "Submits SDK requests" "In-process calls / TypeScript" "Dataflow"
+                    }
+                    !element tools.sandbox.sdk {
+                        -> tools.sandbox.sdkHttp "Dispatches SDK transport operations" "In-process calls / TypeScript" "Dataflow"
+                        -> tools.sandbox.sdkEvents "Dispatches SDK transport operations" "In-process calls / TypeScript" "Dataflow"
+                    }
+                    -> firefly.core "Exercises APIs and subscriptions" "HTTPS + WebSocket" "Dataflow"
+                }
+                sandboxUi = container "Sandbox browser application" "Runs the sample interface in the developer's browser and calls the Sandbox server." "React / TypeScript / browser" {
+                    tags "Optional"
+                    url "https://github.com/hyperledger-firefly/sandbox/tree/ef7f240b8acf9c79c8fdf5a8bccb73e9de482069/ui/src"
+                    properties {
+                        "architecture.id" "tools.sandboxUi"
+                        "evidence" "Implementation"
+                    }
+                    app = component "Sandbox screens and server client" "Collects sample actions and requests their execution through the Sandbox server." "React / TypeScript" {
+                        url "https://github.com/hyperledger-firefly/sandbox/tree/ef7f240b8acf9c79c8fdf5a8bccb73e9de482069/ui/src"
+                        properties {
+                            "architecture.id" "tools.sandboxUi.app"
+                            "evidence" "Implementation"
+                        }
+                        -> tools.sandbox "Submits selected sample actions and receives results" "HTTP(S) / JSON" "Dataflow"
+                    }
+                    -> tools.sandbox "Requests browser assets and submits sample actions" "HTTP(S) / JSON + static assets" "Dataflow"
+                    -> tools.sandbox.backend "Submits selected sample actions" "HTTP(S) / JSON" "Dataflow"
+                }
+                perf = container "FireFly Performance CLI" "Generates workloads and reports timings against configured FireFly members." "Go" {
+                    tags "Optional"
+                    url "https://github.com/hyperledger-firefly/perf-cli/tree/3d3ec0242b23b30fea41362eb60f0c190dfedde9/README.md"
+                    properties {
+                        "architecture.id" "tools.perf"
+                        "evidence" "Implementation"
+                    }
+                    commands = component "Workload CLI" "Loads test configuration and starts performance scenarios." "Go" {
+                        url "https://github.com/hyperledger-firefly/perf-cli/tree/3d3ec0242b23b30fea41362eb60f0c190dfedde9/cmd"
+                        properties {
+                            "architecture.id" "tools.perf.commands"
+                            "evidence" "Implementation"
+                        }
+                    }
+                    runner = component "Scenario runner" "Submits message, blob, token and contract workloads." "Go" {
+                        url "https://github.com/hyperledger-firefly/perf-cli/tree/3d3ec0242b23b30fea41362eb60f0c190dfedde9/internal/perf"
+                        properties {
+                            "architecture.id" "tools.perf.runner"
+                            "evidence" "Implementation"
+                        }
+                        -> firefly.core "Submits workloads and consumes completion events" "HTTP REST + WebSocket" "Dataflow"
+                    }
+                    server = component "Control and observation server" "Exposes run control and measurements." "Go" {
+                        url "https://github.com/hyperledger-firefly/perf-cli/tree/3d3ec0242b23b30fea41362eb60f0c190dfedde9/internal/server"
+                        properties {
+                            "architecture.id" "tools.perf.server"
+                            "evidence" "Implementation"
+                        }
+                        -> tools.perf.runner "Controls workload execution" "In-process calls / Go" "Dataflow"
+                    }
+                    report = component "Result reporting" "Builds workload timing and throughput reports." "Go" {
+                        url "https://github.com/hyperledger-firefly/perf-cli/tree/3d3ec0242b23b30fea41362eb60f0c190dfedde9/internal/util"
+                        properties {
+                            "architecture.id" "tools.perf.report"
+                            "evidence" "Implementation"
+                        }
+                    }
+                    !element tools.perf.commands {
+                        -> tools.perf.runner "Starts selected workload scenarios" "In-process calls / Go" "Dataflow"
+                    }
+                    !element tools.perf.runner {
+                        -> tools.perf.report "Supplies measured workload results" "In-process calls / Go" "Dataflow"
+                    }
+                    -> firefly.core "Submits workloads and consumes completion events" "HTTP REST + WebSocket" "Dataflow"
+                }
+                eventAudit = container "FireFly event auditor" "Audits recorded blockchain-event ordering through the Core API." "Go / CLI" {
+                    tags "Optional"
+                    url "https://github.com/hyperledger-firefly/firefly/tree/9d20f3081c9074d5b012427e5572ebc03da8d95d/auditevents"
+                    properties {
+                        "architecture.id" "tools.eventAudit"
+                        "evidence" "Implementation"
+                    }
+                    reader = component "Event API reader" "Pages through recorded blockchain events." "Go" {
+                        url "https://github.com/hyperledger-firefly/firefly/tree/9d20f3081c9074d5b012427e5572ebc03da8d95d/auditevents/main.go"
+                        properties {
+                            "architecture.id" "tools.eventAudit.reader"
+                            "evidence" "Implementation"
+                        }
+                        -> firefly.core "Pages through status and enriched event records" "HTTP REST / JSON" "Dataflow"
+                    }
+                    ordering = component "Ordering auditor" "Checks increasing protocol identifiers and reports inconsistencies." "Go" {
+                        url "https://github.com/hyperledger-firefly/firefly/tree/9d20f3081c9074d5b012427e5572ebc03da8d95d/auditevents/main.go"
+                        properties {
+                            "architecture.id" "tools.eventAudit.ordering"
+                            "evidence" "Implementation"
+                        }
+                        -> developer "Reports ordering failures and checked event counts" "Console output" "Dataflow"
+                    }
+                    !element tools.eventAudit.reader {
+                        -> tools.eventAudit.ordering "Supplies ordered event pages" "In-process calls / Go" "Dataflow"
+                    }
+                    -> firefly.core "Retrieves namespace status and recorded blockchain events" "HTTP REST / JSON" "Dataflow"
+                }
+                config = container "FireFly configuration migrator" "Migrates configuration files between supported FireFly versions." "Go / CLI" {
+                    tags "Optional"
+                    url "https://github.com/hyperledger-firefly/firefly/tree/9d20f3081c9074d5b012427e5572ebc03da8d95d/ffconfig"
+                    properties {
+                        "architecture.id" "tools.config"
+                        "evidence" "Implementation"
+                    }
+                    commands = component "Configuration CLI" "Reads input configuration and requested versions." "Go" {
+                        url "https://github.com/hyperledger-firefly/firefly/tree/9d20f3081c9074d5b012427e5572ebc03da8d95d/ffconfig/main.go"
+                        properties {
+                            "architecture.id" "tools.config.commands"
+                            "evidence" "Implementation"
+                        }
+                    }
+                    migration = component "Configuration migrations" "Transforms configuration to the selected schema version." "Go" {
+                        url "https://github.com/hyperledger-firefly/firefly/tree/9d20f3081c9074d5b012427e5572ebc03da8d95d/ffconfig/migrate"
+                        properties {
+                            "architecture.id" "tools.config.migration"
+                            "evidence" "Implementation"
+                        }
+                        -> developer "Writes migrated configuration for review" "YAML / standard output" "Dataflow"
+                    }
+                    !element tools.config.commands {
+                        -> tools.config.migration "Submits parsed configuration for migration" "In-process calls / Go" "Dataflow"
+                    }
+                }
+                -> firefly "Exercises the selected member API" "HTTPS + WebSocket" "Dataflow"
+                -> developer "Returns audit results and migrated configuration for review" "Local process output" "Dataflow"
             }
-            !element firefly.core {
-                -> firefly.evm "Submits contract calls, pins and listeners" "HTTP REST / JSON" "Dataflow"
-                -> firefly.dx "Submits private messages, blobs and peer configuration" "HTTP REST / JSON + binary" "Dataflow"
-                -> firefly.erc20 "Submits ERC-20 and ERC-721 operations" "HTTP REST / JSON" "Dataflow"
-                -> firefly.erc1155 "Submits ERC-1155 operations" "HTTP REST / JSON" "Dataflow"
-                -> firefly.pg "Reads and writes the private Core database" "PostgreSQL wire / TLS" "Dataflow"
-                -> firefly.ipfs "Adds shared content and retrieves CIDs" "IPFS HTTP RPC / gateway" "Dataflow"
-                -> firefly.secrets "Loads namespace and plugin configuration" "Read-only projected files" "Dataflow"
-                -> firefly.sqlite "Persists Core state when SQLite is selected" "Embedded SQLite / filesystem" "Dataflow"
-                -> firefly.dx.events "Acknowledges consumed transfer notifications" "WebSocket / JSON" "Dataflow"
-                -> firefly.ethconnect "Submits calls and consumes events in the legacy configuration" "HTTP REST + WebSocket" "Dataflow"
-                -> firefly.fabconnect "Submits Fabric requests when configured" "HTTP REST + WebSocket" "Dataflow"
-                -> firefly.tezosconnect "Submits Tezos operations when configured" "HTTP REST + WebSocket" "Dataflow"
-                -> firefly.cardanoconnect "Submits Cardano operations when configured" "HTTP REST + WebSocket" "Dataflow"
-                -> firefly.ethconnect.rest "Submits configured ledger requests" "HTTP REST / JSON" "Dataflow"
-                -> firefly.fabconnect.rest "Submits configured ledger requests" "HTTP REST / JSON" "Dataflow"
-                -> firefly.tezosconnect.api "Submits configured ledger requests" "HTTP REST / JSON" "Dataflow"
-                -> firefly.cardanoconnect.api "Submits configured ledger requests" "HTTP REST / JSON" "Dataflow"
-            }
-            !element firefly.evm {
-                -> firefly.signer "Submits Ethereum calls and unsigned transactions" "HTTP JSON-RPC" "Dataflow"
-                -> firefly.pg "Reads and writes the separate FFTM database" "PostgreSQL wire / TLS" "Dataflow"
-                -> firefly.secrets "Loads connector endpoints and credentials" "Read-only projected files" "Dataflow"
-                -> firefly.erc20.stream "Streams confirmed token logs" "WebSocket / JSON" "Dataflow"
-                -> firefly.erc1155.stream "Streams confirmed token logs" "WebSocket / JSON" "Dataflow"
-                -> firefly.leveldb "Persists transaction state when LevelDB is selected" "Embedded LevelDB / filesystem" "Dataflow"
-            }
-            !element firefly.pg {
-                -> firefly.pgReplica "Streams WAL and awaits one synchronous standby" "PostgreSQL replication / TLS" "Dataflow"
-            }
-            !element firefly.dx {
-                -> firefly.blobs "Reads and writes private blobs and peer records" "Filesystem I/O" "Dataflow"
-                -> firefly.secrets "Loads member mTLS certificate and key" "Read-only projected files" "Dataflow"
-                -> firefly.dx "Transfers private envelopes and blobs to peers; receives ACKs" "HTTPS / mutual TLS" "PrivateFlow"
-            }
-            !element firefly.ipfs {
-                -> firefly.ipfsRepo "Reads and writes Kubo keys, pins and blocks" "Filesystem I/O" "Dataflow"
-                -> firefly.ipfs "Retrieves shared content blocks from peers by CID" "IPFS / libp2p" "SharedFlow"
-            }
-            !element firefly.signer {
-                -> firefly.secrets "Loads member signing keystore files" "Read-only projected files" "Dataflow"
-            }
-            !element firefly.core.blockchain {
-                -> firefly.evm "Submits blockchain operations" "HTTP REST / JSON" "Dataflow"
-            }
-            !element firefly.core.database {
-                -> firefly.pg "Persists Core resources and offsets" "PostgreSQL wire / TLS" "Dataflow"
-            }
-            !element firefly.core.dataexchange {
-                -> firefly.dx "Exchanges private data and notifications" "HTTP + WebSocket" "Dataflow"
-            }
-            !element firefly.core.sharedstorage {
-                -> firefly.ipfs "Publishes and retrieves CIDs" "IPFS HTTP RPC" "Dataflow"
-            }
-            !element firefly.core.tokens {
-                -> firefly.erc20 "Submits ERC-20 and ERC-721 operations" "HTTP REST / JSON" "Dataflow"
-                -> firefly.erc1155 "Submits ERC-1155 operations" "HTTP REST / JSON" "Dataflow"
-            }
-            !element firefly.evm.persistence {
-                -> firefly.pg "Persists FFTM transactions and checkpoints" "PostgreSQL wire / TLS" "Dataflow"
-            }
-            !element firefly.evm.rpc {
-                -> firefly.signer "Forwards transactions and read calls" "HTTP JSON-RPC" "Dataflow"
-            }
-            !element firefly.signer.wallet {
-                -> firefly.secrets "Loads encrypted account keystores" "Read-only projected files" "Dataflow"
-            }
-            !element firefly.dx.blobs {
-                -> firefly.blobs "Stores durable private blobs" "Filesystem I/O" "Dataflow"
-            }
-            !element firefly.dx.peers {
-                -> firefly.blobs "Persists endpoints and peer certificates" "Filesystem I/O" "Dataflow"
-            }
-            !element firefly.dx.p2p {
-                -> firefly.secrets "Loads the member mTLS identity" "Read-only projected files" "Dataflow"
-            }
-            !element firefly.core.ethereum {
-                -> firefly.evm "Submits EVM calls, transactions and listeners" "HTTP REST / JSON" "Dataflow"
-                -> firefly.ethconnect "Submits Ethereum requests in the legacy configuration" "HTTP REST + WebSocket" "Dataflow"
-            }
-            !element firefly.core.postgres {
-                -> firefly.pg "Reads and writes the Core SQL database" "PostgreSQL wire protocol" "Dataflow"
-            }
-            !element firefly.core.ffdx {
-                -> firefly.dx "Transfers messages, blobs and peer configuration" "HTTP REST + WebSocket" "Dataflow"
-            }
-            !element firefly.core.ipfs {
-                -> firefly.ipfs "Publishes and retrieves shared CIDs" "IPFS HTTP RPC" "Dataflow"
-            }
-            !element firefly.core.fftokens {
-                -> firefly.erc20 "Submits ERC-20 and ERC-721 operations" "HTTP REST + WebSocket" "Dataflow"
-                -> firefly.erc1155 "Submits ERC-1155 operations" "HTTP REST + WebSocket" "Dataflow"
-            }
-            !element firefly.core.sqlite {
-                -> firefly.sqlite "Reads and writes embedded database pages" "SQLite API / filesystem" "Dataflow"
-            }
-            !element firefly.evm.postgres {
-                -> firefly.pg "Persists the separate FFTM SQL database" "PostgreSQL wire protocol" "Dataflow"
-            }
-            !element firefly.evm.leveldb {
-                -> firefly.leveldb "Reads and writes local transaction state" "LevelDB API / filesystem" "Dataflow"
-            }
-            !element firefly.ethconnect {
-                -> firefly.ethconnectState "Persists connector state in local files" "LevelDB / filesystem" "Dataflow"
-            }
-            !element firefly.ethconnect.kv {
-                -> firefly.ethconnectState "Reads and writes event and registry records" "LevelDB API / filesystem" "Dataflow"
-            }
-            !element firefly.ethconnect.receipts {
-                -> firefly.ethconnectState "Persists receipts when LevelDB is selected" "LevelDB API / filesystem" "Dataflow"
-            }
-            !element firefly.core.fabricAdapter {
-                -> firefly.fabconnect "Submits chaincode calls and event subscriptions" "HTTP REST + WebSocket" "Dataflow"
-            }
-            !element firefly.fabconnect {
-                -> firefly.fabricState "Persists wallet and event state" "Filesystem / LevelDB" "Dataflow"
-            }
-            !element firefly.fabconnect.client {
-                -> firefly.fabricState "Reads and writes wallet identities" "Filesystem I/O" "Dataflow"
-            }
-            !element firefly.fabconnect.kv {
-                -> firefly.fabricState "Persists event checkpoints" "LevelDB API / filesystem" "Dataflow"
-            }
-            !element firefly.fabconnect.receipts {
-                -> firefly.fabricState "Persists receipts when LevelDB is selected" "LevelDB API / filesystem" "Dataflow"
-            }
-            !element firefly.core.tezosAdapter {
-                -> firefly.tezosconnect "Submits Tezos operations and listeners" "HTTP REST + WebSocket" "Dataflow"
-            }
-            !element firefly.tezosconnect {
-                -> firefly.tezosState "Persists transaction and stream state" "PostgreSQL wire or LevelDB API" "Dataflow"
-            }
-            !element firefly.tezosconnect.persistence {
-                -> firefly.tezosState "Reads and writes managed state" "PostgreSQL wire or LevelDB API" "Dataflow"
-            }
-            !element firefly.core.cardanoAdapter {
-                -> firefly.cardanoconnect "Submits Cardano operations and subscriptions" "HTTP REST + WebSocket" "Dataflow"
-            }
-            !element firefly.cardanoconnect {
-                -> firefly.cardanosigner "Requests transaction witnesses" "HTTP / JSON" "Dataflow"
-                -> firefly.cardanoState "Persists operation and stream state" "SQLite / filesystem" "Dataflow"
-                -> firefly.cardanosigner.api "Requests a CBOR transaction witness set" "HTTP / JSON" "Dataflow"
-            }
-            !element firefly.cardanoconnect.signer {
-                -> firefly.cardanosigner "Requests transaction witnesses" "HTTP / JSON" "Dataflow"
-            }
-            !element firefly.cardanoconnect.persistence {
-                -> firefly.cardanoState "Reads and writes operation and checkpoint records" "SQLite API / filesystem" "Dataflow"
-            }
-            !element firefly.cardanosigner {
-                -> firefly.cardanoKeys "Loads Cardano signing keys" "Filesystem I/O" "Dataflow"
-            }
-            !element firefly.cardanosigner.keys {
-                -> firefly.cardanoKeys "Loads address-indexed signing key files" "Filesystem I/O" "Dataflow"
-            }
-            !element firefly.cordaconnect {
-                -> firefly.cordaState "Persists starter stream definitions" "JPA / embedded H2" "Dataflow"
-            }
-            !element firefly.cordaconnect.persistence {
-                -> firefly.cordaState "Reads and writes subscription definitions" "JPA / embedded H2" "Dataflow"
+            peerMembers = softwareSystem "Other FireFly members" "Peer supernodes exchanging private envelopes and shared content." {
+                tags "Optional"
+                url "https://github.com/hyperledger-firefly/firefly/tree/9d20f3081c9074d5b012427e5572ebc03da8d95d/doc-site/docs/overview/multiparty/multiparty_flow.md"
+                properties {
+                    "architecture.id" "peerMembers"
+                    "evidence" "External integration boundary"
+                }
+                -> firefly "Delivers peer payloads and transfer acknowledgements" "HTTPS / mTLS" "Dataflow"
+                -> firefly.dx "Delivers private envelopes, blobs and transfer results" "HTTPS / mTLS" "Dataflow"
+                -> firefly.dx.p2p "Transfers inbound private envelopes and blobs" "HTTPS / mTLS" "Dataflow"
             }
         }
-        besu = softwareSystem "Private Besu network" "Permissioned Ethereum network with QBFT validators, private RPC and contracts." {
-            tags "Blockchain"
-            url "https://github.com/besu-eth/besu/tree/7e05c2342404d27bd06a992e336c5e0c86a5d8d1"
-            properties {
-                "architecture.id" "besu"
-                "evidence" "Implementation"
-            }
-            !docs docs/static/system
-            !adrs docs/static/decisions
-            node = container "Besu node" "Runs the selected validator or non-validator RPC/discovery role; each instance owns its key and ledger." "Java / Besu / RocksDB" {
+        group "EVM ledger networks" {
+            besu = softwareSystem "Private Besu network" "Permissioned Ethereum network with QBFT validators, private RPC and contracts." {
                 tags "Blockchain"
                 url "https://github.com/besu-eth/besu/tree/7e05c2342404d27bd06a992e336c5e0c86a5d8d1"
                 properties {
-                    "architecture.id" "besu.node"
+                    "architecture.id" "besu"
                     "evidence" "Implementation"
                 }
-                rpc = component "JSON-RPC and subscriptions" "Accepts private-network queries and signed transactions." "Java" {
-                    url "https://github.com/besu-eth/besu/tree/7e05c2342404d27bd06a992e336c5e0c86a5d8d1/ethereum/api"
+                !docs docs/static/system
+                !adrs docs/static/decisions
+                node = container "Besu node" "Runs the selected validator or non-validator RPC/discovery role; each instance owns its key and ledger." "Java / Besu / RocksDB" {
+                    tags "Blockchain"
+                    url "https://github.com/besu-eth/besu/tree/7e05c2342404d27bd06a992e336c5e0c86a5d8d1"
                     properties {
-                        "architecture.id" "besu.node.rpc"
+                        "architecture.id" "besu.node"
                         "evidence" "Implementation"
                     }
-                }
-                permissioning = component "Node and account permissioning" "Applies local peer and account allowlists." "Java" {
-                    url "https://github.com/besu-eth/besu/tree/7e05c2342404d27bd06a992e336c5e0c86a5d8d1/ethereum/permissioning"
-                    properties {
-                        "architecture.id" "besu.node.permissioning"
-                        "evidence" "Implementation"
+                    group "Besu client implementation" {
+                        rpc = component "JSON-RPC and subscriptions" "Accepts private-network queries and signed transactions." "Java" {
+                            url "https://github.com/besu-eth/besu/tree/7e05c2342404d27bd06a992e336c5e0c86a5d8d1/ethereum/api"
+                            properties {
+                                "architecture.id" "besu.node.rpc"
+                                "evidence" "Implementation"
+                            }
+                        }
+                        permissioning = component "Node and account permissioning" "Applies local peer and account allowlists." "Java" {
+                            url "https://github.com/besu-eth/besu/tree/7e05c2342404d27bd06a992e336c5e0c86a5d8d1/ethereum/permissioning"
+                            properties {
+                                "architecture.id" "besu.node.permissioning"
+                                "evidence" "Implementation"
+                            }
+                        }
+                        discovery = component "Peer discovery" "Discovers peers through configured bootnodes." "Java" {
+                            url "https://github.com/besu-eth/besu/tree/7e05c2342404d27bd06a992e336c5e0c86a5d8d1/ethereum/p2p"
+                            properties {
+                                "architecture.id" "besu.node.discovery"
+                                "evidence" "Implementation"
+                            }
+                        }
+                        p2p = component "DevP2P transport" "Exchanges transactions, blocks and consensus messages." "Java" {
+                            url "https://github.com/besu-eth/besu/tree/7e05c2342404d27bd06a992e336c5e0c86a5d8d1/ethereum/p2p"
+                            properties {
+                                "architecture.id" "besu.node.p2p"
+                                "evidence" "Implementation"
+                            }
+                            -> besu.node.permissioning "Checks connecting node admission" "In-process calls / Java" "Dataflow"
+                        }
+                        txpool = component "Transaction pool" "Validates and queues pending transactions." "Java" {
+                            url "https://github.com/besu-eth/besu/tree/7e05c2342404d27bd06a992e336c5e0c86a5d8d1/ethereum/eth"
+                            properties {
+                                "architecture.id" "besu.node.txpool"
+                                "evidence" "Implementation"
+                            }
+                        }
+                        sync = component "Chain synchronization" "Downloads and validates missing blocks and state." "Java" {
+                            url "https://github.com/besu-eth/besu/tree/7e05c2342404d27bd06a992e336c5e0c86a5d8d1/ethereum/eth"
+                            properties {
+                                "architecture.id" "besu.node.sync"
+                                "evidence" "Implementation"
+                            }
+                        }
+                        blockprocessor = component "Block processor" "Validates blocks and applies state transitions." "Java" {
+                            url "https://github.com/besu-eth/besu/tree/7e05c2342404d27bd06a992e336c5e0c86a5d8d1/ethereum/core"
+                            properties {
+                                "architecture.id" "besu.node.blockprocessor"
+                                "evidence" "Implementation"
+                            }
+                        }
+                        qbft = component "QBFT consensus" "Proposes blocks and verifies validator votes. Active only on validator instances." "Java" {
+                            url "https://github.com/besu-eth/besu/tree/7e05c2342404d27bd06a992e336c5e0c86a5d8d1/consensus/qbft"
+                            properties {
+                                "architecture.id" "besu.node.qbft"
+                                "evidence" "Implementation"
+                            }
+                            -> besu.node.blockprocessor "Commits quorum-approved blocks" "In-process calls / Java" "Dataflow"
+                        }
+                        evm = component "EVM execution" "Executes smart-contract bytecode deterministically." "Java" {
+                            url "https://github.com/besu-eth/besu/tree/7e05c2342404d27bd06a992e336c5e0c86a5d8d1/evm"
+                            properties {
+                                "architecture.id" "besu.node.evm"
+                                "evidence" "Implementation"
+                            }
+                        }
+                        worldstate = component "World state and trie" "Tracks account balances, storage and contract state." "Java" {
+                            url "https://github.com/besu-eth/besu/tree/7e05c2342404d27bd06a992e336c5e0c86a5d8d1/ethereum/core/src/main/java/org/hyperledger/besu/ethereum/worldstate"
+                            properties {
+                                "architecture.id" "besu.node.worldstate"
+                                "evidence" "Implementation"
+                            }
+                        }
+                        storage = component "Storage provider" "Persists blockchain data and world-state records." "Java" {
+                            url "https://github.com/besu-eth/besu/tree/7e05c2342404d27bd06a992e336c5e0c86a5d8d1/plugins/rocksdb"
+                            properties {
+                                "architecture.id" "besu.node.storage"
+                                "evidence" "Implementation"
+                            }
+                        }
+                        keys = component "Node key and security module" "Signs node identity and validator consensus messages." "Java" {
+                            url "https://github.com/besu-eth/besu/tree/7e05c2342404d27bd06a992e336c5e0c86a5d8d1/crypto/plugin-api/src/main/java/org/hyperledger/besu/plugin/services/securitymodule"
+                            properties {
+                                "architecture.id" "besu.node.keys"
+                                "evidence" "Implementation"
+                            }
+                        }
+                        metrics = component "Metrics and health" "Exposes node, peer and consensus measurements." "Java" {
+                            url "https://github.com/besu-eth/besu/tree/7e05c2342404d27bd06a992e336c5e0c86a5d8d1/metrics"
+                            properties {
+                                "architecture.id" "besu.node.metrics"
+                                "evidence" "Implementation"
+                            }
+                        }
+                    }
+                    group "Hosted application contracts" {
+                        fireflycontract = component "FireFly multiparty contract" "Executes batch pinning and emits sequencing events." "Solidity / EVM" {
+                            tags "Contract"
+                            url "https://github.com/hyperledger-firefly/firefly/tree/9d20f3081c9074d5b012427e5572ebc03da8d95d/smart_contracts/ethereum/solidity_firefly/contracts/Firefly.sol"
+                            properties {
+                                "architecture.id" "besu.node.fireflycontract"
+                                "evidence" "Deployed contract responsibility (reference mapping into EVM host)"
+                            }
+                            -> besu.node.worldstate "Writes pinning state and log results" "In-process calls / Java" "Dataflow"
+                        }
+                        tokencontracts = component "Token contracts" "Executes ERC-20, ERC-721 and ERC-1155 application contracts; not a Besu implementation module." "Solidity / EVM" {
+                            tags "Contract"
+                            url "https://github.com/hyperledger-firefly/tokens-erc20-erc721/tree/7993b308284a396950587b5206370f7f254073d9/src/abi"
+                            properties {
+                                "architecture.id" "besu.node.tokencontracts"
+                                "evidence" "Deployed contract responsibility (reference mapping into EVM host)"
+                            }
+                            -> besu.node.worldstate "Writes token balances and log results" "In-process calls / Java" "Dataflow"
+                        }
+                        businesscontracts = component "Application contracts" "Executes member-defined business rules; example extension." "Solidity / EVM" {
+                            tags "Contract"
+                            url "https://hyperledger-firefly.github.io/firefly/head/architecture/node_component_architecture/"
+                            properties {
+                                "architecture.id" "besu.node.businesscontracts"
+                                "evidence" "Deployed contract responsibility (reference mapping into EVM host)"
+                            }
+                            -> besu.node.worldstate "Writes application state and log results" "In-process calls / Java" "Dataflow"
+                        }
+                    }
+                    !element besu.node.rpc {
+                        -> besu.node.permissioning "Checks transaction sender admission" "In-process calls / Java" "Dataflow"
+                        -> besu.node.txpool "Submits signed transactions" "In-process calls / Java" "Dataflow"
+                        -> besu.node.worldstate "Queries account and contract state" "In-process calls / Java" "Dataflow"
+                        -> besu.node.blockprocessor "Reads receipts and contract logs" "In-process calls / Java" "Dataflow"
+                    }
+                    !element besu.node.discovery {
+                        -> besu.node.p2p "Provides discovered peer endpoints" "In-process calls / Java" "Dataflow"
+                    }
+                    !element besu.node.p2p {
+                        -> besu.node.txpool "Gossips pending transactions" "In-process calls / Java" "Dataflow"
+                        -> besu.node.sync "Delivers requested blocks and state" "In-process calls / Java" "Dataflow"
+                        -> besu.node.qbft "Delivers consensus protocol messages" "In-process calls / Java" "Dataflow"
+                        -> besu.node.metrics "Records peer connectivity measurements" "In-process calls / Java" "Dataflow"
+                        -> besu.node.keys "Authenticates node transport identity" "In-process calls / Java" "Dataflow"
+                    }
+                    !element besu.node.sync {
+                        -> besu.node.blockprocessor "Submits downloaded blocks for validation" "In-process calls / Java" "Dataflow"
+                    }
+                    !element besu.node.txpool {
+                        -> besu.node.qbft "Supplies transactions for proposed blocks" "In-process calls / Java" "Dataflow"
+                    }
+                    !element besu.node.qbft {
+                        -> besu.node.keys "Signs proposals and consensus votes" "In-process calls / Java" "Dataflow"
+                        -> besu.node.metrics "Records rounds and committed block measurements" "In-process calls / Java" "Dataflow"
+                    }
+                    !element besu.node.blockprocessor {
+                        -> besu.node.evm "Executes transactions and validates results" "In-process calls / Java" "Dataflow"
+                        -> besu.node.storage "Persists blocks, receipts and logs" "In-process calls / Java" "Dataflow"
+                    }
+                    !element besu.node.evm {
+                        -> besu.node.worldstate "Reads and updates contract and account state" "EVM execution" "Dataflow"
+                        -> besu.node.fireflycontract "Executes batch pinning calls" "EVM execution" "Dataflow"
+                        -> besu.node.tokencontracts "Executes standard token operations" "EVM execution" "Dataflow"
+                        -> besu.node.businesscontracts "Executes application business calls" "EVM execution" "Dataflow"
+                    }
+                    !element besu.node.worldstate {
+                        -> besu.node.storage "Persists world-state updates" "In-process calls / Java" "Dataflow"
                     }
                 }
-                discovery = component "Peer discovery" "Discovers peers through configured bootnodes." "Java" {
-                    url "https://github.com/besu-eth/besu/tree/7e05c2342404d27bd06a992e336c5e0c86a5d8d1/ethereum/p2p"
-                    properties {
-                        "architecture.id" "besu.node.discovery"
-                        "evidence" "Implementation"
-                    }
-                }
-                p2p = component "DevP2P transport" "Exchanges transactions, blocks and consensus messages." "Java" {
-                    url "https://github.com/besu-eth/besu/tree/7e05c2342404d27bd06a992e336c5e0c86a5d8d1/ethereum/p2p"
-                    properties {
-                        "architecture.id" "besu.node.p2p"
-                        "evidence" "Implementation"
-                    }
-                    -> besu.node.permissioning "Checks connecting node admission" "In-process calls / Java" "Dataflow"
-                }
-                txpool = component "Transaction pool" "Validates and queues pending transactions." "Java" {
-                    url "https://github.com/besu-eth/besu/tree/7e05c2342404d27bd06a992e336c5e0c86a5d8d1/ethereum/eth"
-                    properties {
-                        "architecture.id" "besu.node.txpool"
-                        "evidence" "Implementation"
-                    }
-                }
-                sync = component "Chain synchronization" "Downloads and validates missing blocks and state." "Java" {
-                    url "https://github.com/besu-eth/besu/tree/7e05c2342404d27bd06a992e336c5e0c86a5d8d1/ethereum/eth"
-                    properties {
-                        "architecture.id" "besu.node.sync"
-                        "evidence" "Implementation"
-                    }
-                }
-                blockprocessor = component "Block processor" "Validates blocks and applies state transitions." "Java" {
-                    url "https://github.com/besu-eth/besu/tree/7e05c2342404d27bd06a992e336c5e0c86a5d8d1/ethereum/core"
-                    properties {
-                        "architecture.id" "besu.node.blockprocessor"
-                        "evidence" "Implementation"
-                    }
-                }
-                qbft = component "QBFT consensus" "Proposes blocks and verifies validator votes. Active only on validator instances." "Java" {
-                    url "https://github.com/besu-eth/besu/tree/7e05c2342404d27bd06a992e336c5e0c86a5d8d1/consensus/qbft"
-                    properties {
-                        "architecture.id" "besu.node.qbft"
-                        "evidence" "Implementation"
-                    }
-                    -> besu.node.blockprocessor "Commits quorum-approved blocks" "In-process calls / Java" "Dataflow"
-                }
-                evm = component "EVM execution" "Executes smart-contract bytecode deterministically." "Java" {
-                    url "https://github.com/besu-eth/besu/tree/7e05c2342404d27bd06a992e336c5e0c86a5d8d1/evm"
-                    properties {
-                        "architecture.id" "besu.node.evm"
-                        "evidence" "Implementation"
-                    }
-                }
-                worldstate = component "World state and trie" "Tracks account balances, storage and contract state." "Java" {
-                    url "https://github.com/besu-eth/besu/tree/7e05c2342404d27bd06a992e336c5e0c86a5d8d1/ethereum/core/src/main/java/org/hyperledger/besu/ethereum/worldstate"
-                    properties {
-                        "architecture.id" "besu.node.worldstate"
-                        "evidence" "Implementation"
-                    }
-                }
-                storage = component "Storage provider" "Persists blockchain data and world-state records." "Java" {
-                    url "https://github.com/besu-eth/besu/tree/7e05c2342404d27bd06a992e336c5e0c86a5d8d1/plugins/rocksdb"
-                    properties {
-                        "architecture.id" "besu.node.storage"
-                        "evidence" "Implementation"
-                    }
-                }
-                keys = component "Node key and security module" "Signs node identity and validator consensus messages." "Java" {
-                    url "https://github.com/besu-eth/besu/tree/7e05c2342404d27bd06a992e336c5e0c86a5d8d1/crypto/plugin-api/src/main/java/org/hyperledger/besu/plugin/services/securitymodule"
-                    properties {
-                        "architecture.id" "besu.node.keys"
-                        "evidence" "Implementation"
-                    }
-                }
-                metrics = component "Metrics and health" "Exposes node, peer and consensus measurements." "Java" {
-                    url "https://github.com/besu-eth/besu/tree/7e05c2342404d27bd06a992e336c5e0c86a5d8d1/metrics"
-                    properties {
-                        "architecture.id" "besu.node.metrics"
-                        "evidence" "Implementation"
-                    }
-                }
-                fireflycontract = component "FireFly multiparty contract" "Executes batch pinning and emits sequencing events." "Solidity / EVM" {
-                    tags "Contract"
-                    url "https://github.com/hyperledger-firefly/firefly/tree/9d20f3081c9074d5b012427e5572ebc03da8d95d/smart_contracts/ethereum/solidity_firefly/contracts/Firefly.sol"
-                    properties {
-                        "architecture.id" "besu.node.fireflycontract"
-                        "evidence" "Deployed contract responsibility (reference mapping into EVM host)"
-                    }
-                    -> besu.node.worldstate "Writes pinning state and log results" "In-process calls / Java" "Dataflow"
-                }
-                tokencontracts = component "Token contracts" "Executes ERC-20, ERC-721 and ERC-1155 application contracts; not a Besu implementation module." "Solidity / EVM" {
-                    tags "Contract"
-                    url "https://github.com/hyperledger-firefly/tokens-erc20-erc721/tree/7993b308284a396950587b5206370f7f254073d9/src/abi"
-                    properties {
-                        "architecture.id" "besu.node.tokencontracts"
-                        "evidence" "Deployed contract responsibility (reference mapping into EVM host)"
-                    }
-                    -> besu.node.worldstate "Writes token balances and log results" "In-process calls / Java" "Dataflow"
-                }
-                businesscontracts = component "Application contracts" "Executes member-defined business rules; example extension." "Solidity / EVM" {
-                    tags "Contract"
-                    url "https://hyperledger-firefly.github.io/firefly/head/architecture/node_component_architecture/"
-                    properties {
-                        "architecture.id" "besu.node.businesscontracts"
-                        "evidence" "Deployed contract responsibility (reference mapping into EVM host)"
-                    }
-                    -> besu.node.worldstate "Writes application state and log results" "In-process calls / Java" "Dataflow"
-                }
-                !element besu.node.rpc {
-                    -> besu.node.permissioning "Checks transaction sender admission" "In-process calls / Java" "Dataflow"
-                    -> besu.node.txpool "Submits signed transactions" "In-process calls / Java" "Dataflow"
-                    -> besu.node.worldstate "Queries account and contract state" "In-process calls / Java" "Dataflow"
-                    -> besu.node.blockprocessor "Reads receipts and contract logs" "In-process calls / Java" "Dataflow"
-                }
-                !element besu.node.discovery {
-                    -> besu.node.p2p "Provides discovered peer endpoints" "In-process calls / Java" "Dataflow"
-                }
-                !element besu.node.p2p {
-                    -> besu.node.txpool "Gossips pending transactions" "In-process calls / Java" "Dataflow"
-                    -> besu.node.sync "Delivers requested blocks and state" "In-process calls / Java" "Dataflow"
-                    -> besu.node.qbft "Delivers consensus protocol messages" "In-process calls / Java" "Dataflow"
-                    -> besu.node.metrics "Records peer connectivity measurements" "In-process calls / Java" "Dataflow"
-                    -> besu.node.keys "Authenticates node transport identity" "In-process calls / Java" "Dataflow"
-                }
-                !element besu.node.sync {
-                    -> besu.node.blockprocessor "Submits downloaded blocks for validation" "In-process calls / Java" "Dataflow"
-                }
-                !element besu.node.txpool {
-                    -> besu.node.qbft "Supplies transactions for proposed blocks" "In-process calls / Java" "Dataflow"
-                }
-                !element besu.node.qbft {
-                    -> besu.node.keys "Signs proposals and consensus votes" "In-process calls / Java" "Dataflow"
-                    -> besu.node.metrics "Records rounds and committed block measurements" "In-process calls / Java" "Dataflow"
-                }
-                !element besu.node.blockprocessor {
-                    -> besu.node.evm "Executes transactions and validates results" "In-process calls / Java" "Dataflow"
-                    -> besu.node.storage "Persists blocks, receipts and logs" "In-process calls / Java" "Dataflow"
-                }
-                !element besu.node.evm {
-                    -> besu.node.worldstate "Reads and updates contract and account state" "EVM execution" "Dataflow"
-                    -> besu.node.fireflycontract "Executes batch pinning calls" "EVM execution" "Dataflow"
-                    -> besu.node.tokencontracts "Executes standard token operations" "EVM execution" "Dataflow"
-                    -> besu.node.businesscontracts "Executes application business calls" "EVM execution" "Dataflow"
-                }
-                !element besu.node.worldstate {
-                    -> besu.node.storage "Persists world-state updates" "In-process calls / Java" "Dataflow"
+                !element besu.node {
+                    -> besu.node "Gossips transactions, blocks and QBFT peer messages" "DevP2P / TCP" "BlockchainFlow"
                 }
             }
-            !element besu.node {
-                -> besu.node "Gossips transactions, blocks and QBFT peer messages" "DevP2P / TCP" "BlockchainFlow"
+            evmNetworks = softwareSystem "Other EVM networks" "Optional public or permissioned EVM-compatible networks; share the Ethereum adapter implementation." {
+                tags "Optional"
+                url "https://github.com/hyperledger-firefly/evmconnect/tree/6e12bb4c050677780cf5dd975a926923868b0cb8/README.md"
+                properties {
+                    "architecture.id" "evmNetworks"
+                    "evidence" "External integration boundary"
+                }
             }
         }
-        apps = softwareSystem "Member applications" "Independently owned applications and event consumers." {
+        apps = softwareSystem "Member application reference" "One example member application boundary; unrelated member applications are not implied to share ownership." {
             url "https://hyperledger-firefly.github.io/firefly/head/architecture/node_component_architecture/"
             properties {
                 "architecture.id" "apps"
@@ -2025,236 +2296,9 @@ workspace "FireFly ecosystem + private Besu + security catalog" "C4 levels 1-3 w
                 -> besu.node "Submits encoded signed transaction for validation and propagation" "Ethereum JSON-RPC / eth_sendRawTransaction" "Dataflow,SecurityCatalog,KeyFlow,ReferenceIntegration"
             }
             -> firefly "Submits member requests and consumes events" "HTTPS + WebSocket" "Dataflow"
+            -> besu "Submits signed transactions through the proposed custom HSM adapter" "Ethereum JSON-RPC / eth_sendRawTransaction" "Dataflow,SecurityCatalog,KeyFlow,ReferenceIntegration"
         }
-        tools = softwareSystem "FireFly developer tools" "Development utilities and optional sample applications." {
-            tags "Optional"
-            url "https://github.com/hyperledger-firefly/firefly/tree/9d20f3081c9074d5b012427e5572ebc03da8d95d/doc-site/docs/overview/key_components/tools.md"
-            properties {
-                "architecture.id" "tools"
-                "evidence" "Implementation"
-            }
-            !docs docs/static/system
-            !adrs docs/static/decisions
-            cli = container "FireFly CLI" "Creates local stacks and performs development administration." "Go / CLI" {
-                tags "Optional"
-                url "https://github.com/hyperledger-firefly/cli/tree/9b868d3326ba4fbadd01c74a36c7e5a92a8c2609/README.md"
-                properties {
-                    "architecture.id" "tools.cli"
-                    "evidence" "Implementation"
-                }
-                commands = component "CLI commands" "Accepts stack creation, start, stop and administration commands." "Go" {
-                    url "https://github.com/hyperledger-firefly/cli/tree/9b868d3326ba4fbadd01c74a36c7e5a92a8c2609/cmd"
-                    properties {
-                        "architecture.id" "tools.cli.commands"
-                        "evidence" "Implementation"
-                    }
-                }
-                stacks = component "Stack configuration and manifests" "Assembles member stack configuration and state." "Go" {
-                    url "https://github.com/hyperledger-firefly/cli/tree/9b868d3326ba4fbadd01c74a36c7e5a92a8c2609/internal/stacks"
-                    properties {
-                        "architecture.id" "tools.cli.stacks"
-                        "evidence" "Implementation"
-                    }
-                }
-                docker = component "Docker integration" "Invokes Docker Compose to manage local development runtimes." "Go" {
-                    url "https://github.com/hyperledger-firefly/cli/tree/9b868d3326ba4fbadd01c74a36c7e5a92a8c2609/internal/docker"
-                    properties {
-                        "architecture.id" "tools.cli.docker"
-                        "evidence" "Implementation"
-                    }
-                }
-                blockchains = component "Blockchain setup adapters" "Configures selected Ethereum, Fabric, Tezos or Cardano backends." "Go" {
-                    url "https://github.com/hyperledger-firefly/cli/tree/9b868d3326ba4fbadd01c74a36c7e5a92a8c2609/internal/blockchain"
-                    properties {
-                        "architecture.id" "tools.cli.blockchains"
-                        "evidence" "Implementation"
-                    }
-                }
-                tokens = component "Token setup adapters" "Configures optional ERC token connectors." "Go" {
-                    url "https://github.com/hyperledger-firefly/cli/tree/9b868d3326ba4fbadd01c74a36c7e5a92a8c2609/internal/tokens"
-                    properties {
-                        "architecture.id" "tools.cli.tokens"
-                        "evidence" "Implementation"
-                    }
-                }
-                core = component "Core administration client" "Registers identities and configures Core namespaces." "Go" {
-                    url "https://github.com/hyperledger-firefly/cli/tree/9b868d3326ba4fbadd01c74a36c7e5a92a8c2609/internal/core"
-                    properties {
-                        "architecture.id" "tools.cli.core"
-                        "evidence" "Implementation"
-                    }
-                    -> firefly.core "Configures and inspects development members" "HTTP / REST + Admin API" "Dataflow"
-                }
-                !element tools.cli.commands {
-                    -> tools.cli.stacks "Requests development stack lifecycle changes" "In-process calls / Go" "Dataflow"
-                }
-                !element tools.cli.stacks {
-                    -> tools.cli.docker "Supplies generated runtime manifests" "In-process calls / Go" "Dataflow"
-                    -> tools.cli.blockchains "Selects and configures the blockchain backend" "In-process calls / Go" "Dataflow"
-                    -> tools.cli.tokens "Selects optional token services" "In-process calls / Go" "Dataflow"
-                    -> tools.cli.core "Configures member Core instances" "In-process calls / Go" "Dataflow"
-                }
-                -> firefly.core "Registers and inspects development stacks" "HTTP / Admin API" "Dataflow"
-            }
-            sandbox = container "FireFly Sandbox" "Provides a sample web app calling a selected member API." "React + Node.js / TypeScript" {
-                tags "Optional"
-                url "https://github.com/hyperledger-firefly/sandbox/tree/ef7f240b8acf9c79c8fdf5a8bccb73e9de482069"
-                properties {
-                    "architecture.id" "tools.sandbox"
-                    "evidence" "Implementation"
-                }
-                frontend = component "Sandbox frontend" "Collects sample messages and token actions." "React / TypeScript" {
-                    url "https://github.com/hyperledger-firefly/sandbox/tree/ef7f240b8acf9c79c8fdf5a8bccb73e9de482069/ui/src"
-                    properties {
-                        "architecture.id" "tools.sandbox.frontend"
-                        "evidence" "Implementation"
-                    }
-                }
-                backend = component "Sandbox backend" "Maps UI actions into SDK requests." "Node.js / TypeScript" {
-                    url "https://github.com/hyperledger-firefly/sandbox/tree/ef7f240b8acf9c79c8fdf5a8bccb73e9de482069/server/src"
-                    properties {
-                        "architecture.id" "tools.sandbox.backend"
-                        "evidence" "Implementation"
-                    }
-                }
-                sdk = component "FireFly Node.js SDK" "Calls the selected API and consumes events." "TypeScript library" {
-                    url "https://github.com/hyperledger-firefly/sdk-nodejs/tree/c4e813bc611ff2c6222ff84adf1cceabfd929172/lib/firefly.ts"
-                    properties {
-                        "architecture.id" "tools.sandbox.sdk"
-                        "evidence" "Implementation"
-                    }
-                    -> firefly.core "Invokes member APIs and consumes events" "HTTPS + WebSocket" "Dataflow"
-                }
-                sdkHttp = component "SDK HTTP client" "Embedded SDK transport for member requests and events." "TypeScript" {
-                    url "https://github.com/hyperledger-firefly/sdk-nodejs/tree/c4e813bc611ff2c6222ff84adf1cceabfd929172/lib/http.ts"
-                    properties {
-                        "architecture.id" "tools.sandbox.sdkHttp"
-                        "evidence" "Implementation"
-                    }
-                    -> firefly.core "Sends namespace-scoped API requests" "HTTP REST / JSON" "Dataflow"
-                }
-                sdkEvents = component "SDK WebSocket client" "Embedded SDK transport for member requests and events." "TypeScript" {
-                    url "https://github.com/hyperledger-firefly/sdk-nodejs/tree/c4e813bc611ff2c6222ff84adf1cceabfd929172/lib/websocket.ts"
-                    properties {
-                        "architecture.id" "tools.sandbox.sdkEvents"
-                        "evidence" "Implementation"
-                    }
-                    -> firefly.core "Subscribes to events and sends acknowledgements" "WebSocket / JSON" "Dataflow"
-                }
-                !element tools.sandbox.frontend {
-                    -> tools.sandbox.backend "Submits selected sample actions" "HTTP / JSON" "Dataflow"
-                }
-                !element tools.sandbox.backend {
-                    -> tools.sandbox.sdk "Submits SDK requests" "In-process calls / TypeScript" "Dataflow"
-                }
-                !element tools.sandbox.sdk {
-                    -> tools.sandbox.sdkHttp "Dispatches SDK transport operations" "In-process calls / TypeScript" "Dataflow"
-                    -> tools.sandbox.sdkEvents "Dispatches SDK transport operations" "In-process calls / TypeScript" "Dataflow"
-                }
-                -> firefly.core "Exercises APIs and subscriptions" "HTTPS + WebSocket" "Dataflow"
-            }
-            perf = container "FireFly Performance CLI" "Generates workloads and reports timings against configured FireFly members." "Go" {
-                tags "Optional"
-                url "https://github.com/hyperledger-firefly/perf-cli/tree/3d3ec0242b23b30fea41362eb60f0c190dfedde9/README.md"
-                properties {
-                    "architecture.id" "tools.perf"
-                    "evidence" "Implementation"
-                }
-                commands = component "Workload CLI" "Loads test configuration and starts performance scenarios." "Go" {
-                    url "https://github.com/hyperledger-firefly/perf-cli/tree/3d3ec0242b23b30fea41362eb60f0c190dfedde9/cmd"
-                    properties {
-                        "architecture.id" "tools.perf.commands"
-                        "evidence" "Implementation"
-                    }
-                }
-                runner = component "Scenario runner" "Submits message, blob, token and contract workloads." "Go" {
-                    url "https://github.com/hyperledger-firefly/perf-cli/tree/3d3ec0242b23b30fea41362eb60f0c190dfedde9/internal/perf"
-                    properties {
-                        "architecture.id" "tools.perf.runner"
-                        "evidence" "Implementation"
-                    }
-                    -> firefly.core "Submits workloads and consumes completion events" "HTTP REST + WebSocket" "Dataflow"
-                }
-                server = component "Control and observation server" "Exposes run control and measurements." "Go" {
-                    url "https://github.com/hyperledger-firefly/perf-cli/tree/3d3ec0242b23b30fea41362eb60f0c190dfedde9/internal/server"
-                    properties {
-                        "architecture.id" "tools.perf.server"
-                        "evidence" "Implementation"
-                    }
-                    -> tools.perf.runner "Controls workload execution" "In-process calls / Go" "Dataflow"
-                }
-                report = component "Result reporting" "Builds workload timing and throughput reports." "Go" {
-                    url "https://github.com/hyperledger-firefly/perf-cli/tree/3d3ec0242b23b30fea41362eb60f0c190dfedde9/internal/util"
-                    properties {
-                        "architecture.id" "tools.perf.report"
-                        "evidence" "Implementation"
-                    }
-                }
-                !element tools.perf.commands {
-                    -> tools.perf.runner "Starts selected workload scenarios" "In-process calls / Go" "Dataflow"
-                }
-                !element tools.perf.runner {
-                    -> tools.perf.report "Supplies measured workload results" "In-process calls / Go" "Dataflow"
-                }
-                -> firefly.core "Submits workloads and consumes completion events" "HTTP REST + WebSocket" "Dataflow"
-            }
-            eventAudit = container "FireFly event auditor" "Audits recorded blockchain-event ordering through the Core API." "Go / CLI" {
-                tags "Optional"
-                url "https://github.com/hyperledger-firefly/firefly/tree/9d20f3081c9074d5b012427e5572ebc03da8d95d/auditevents"
-                properties {
-                    "architecture.id" "tools.eventAudit"
-                    "evidence" "Implementation"
-                }
-                reader = component "Event API reader" "Pages through recorded blockchain events." "Go" {
-                    url "https://github.com/hyperledger-firefly/firefly/tree/9d20f3081c9074d5b012427e5572ebc03da8d95d/auditevents/main.go"
-                    properties {
-                        "architecture.id" "tools.eventAudit.reader"
-                        "evidence" "Implementation"
-                    }
-                    -> firefly.core "Pages through status and enriched event records" "HTTP REST / JSON" "Dataflow"
-                }
-                ordering = component "Ordering auditor" "Checks increasing protocol identifiers and reports inconsistencies." "Go" {
-                    url "https://github.com/hyperledger-firefly/firefly/tree/9d20f3081c9074d5b012427e5572ebc03da8d95d/auditevents/main.go"
-                    properties {
-                        "architecture.id" "tools.eventAudit.ordering"
-                        "evidence" "Implementation"
-                    }
-                    -> developer "Reports ordering failures and checked event counts" "Console output" "Dataflow"
-                }
-                !element tools.eventAudit.reader {
-                    -> tools.eventAudit.ordering "Supplies ordered event pages" "In-process calls / Go" "Dataflow"
-                }
-                -> firefly.core "Retrieves namespace status and recorded blockchain events" "HTTP REST / JSON" "Dataflow"
-            }
-            config = container "FireFly configuration migrator" "Migrates configuration files between supported FireFly versions." "Go / CLI" {
-                tags "Optional"
-                url "https://github.com/hyperledger-firefly/firefly/tree/9d20f3081c9074d5b012427e5572ebc03da8d95d/ffconfig"
-                properties {
-                    "architecture.id" "tools.config"
-                    "evidence" "Implementation"
-                }
-                commands = component "Configuration CLI" "Reads input configuration and requested versions." "Go" {
-                    url "https://github.com/hyperledger-firefly/firefly/tree/9d20f3081c9074d5b012427e5572ebc03da8d95d/ffconfig/main.go"
-                    properties {
-                        "architecture.id" "tools.config.commands"
-                        "evidence" "Implementation"
-                    }
-                }
-                migration = component "Configuration migrations" "Transforms configuration to the selected schema version." "Go" {
-                    url "https://github.com/hyperledger-firefly/firefly/tree/9d20f3081c9074d5b012427e5572ebc03da8d95d/ffconfig/migrate"
-                    properties {
-                        "architecture.id" "tools.config.migration"
-                        "evidence" "Implementation"
-                    }
-                    -> developer "Writes migrated configuration for review" "YAML / standard output" "Dataflow"
-                }
-                !element tools.config.commands {
-                    -> tools.config.migration "Submits parsed configuration for migration" "In-process calls / Go" "Dataflow"
-                }
-            }
-            -> firefly "Exercises the selected member API" "HTTPS + WebSocket" "Dataflow"
-        }
-        ops = softwareSystem "Platform operations" "Reference ingress, database operations and metrics on AKS." {
+        ops = softwareSystem "Platform operations reference" "Reference platform boundary for API routing, database lifecycle and metrics; environment placement is deferred." {
             url "https://hyperledger-firefly.github.io/firefly/head/architecture/node_component_architecture/"
             properties {
                 "architecture.id" "ops"
@@ -2279,8 +2323,8 @@ workspace "FireFly ecosystem + private Besu + security catalog" "C4 levels 1-3 w
                     "architecture.id" "ops.cnpg"
                     "evidence" "Reference choice"
                 }
-                -> firefly.pg "Reconciles primary role and health" "Kubernetes API / operator control" "Operational"
-                -> firefly.pgReplica "Reconciles replication and failover candidates" "Kubernetes API / operator control" "Operational"
+                -> firefly.pg "Reconciles database lifecycle through the hosting PostgreSQL cluster" "Kubernetes API / indirect operator reconciliation" "Operational"
+                -> firefly.fftmDb "Reconciles database lifecycle through the hosting PostgreSQL cluster" "Kubernetes API / indirect operator reconciliation" "Operational"
             }
             prometheus = container "Metrics collector" "Scrapes runtime metrics and evaluates availability alerts." "Prometheus" {
                 tags "Operational"
@@ -2304,28 +2348,59 @@ workspace "FireFly ecosystem + private Besu + security catalog" "C4 levels 1-3 w
             -> firefly "Routes API requests and observes health" "HTTPS + metrics" "Operational"
             -> besu "Observes peer and quorum health" "HTTP / metrics" "Operational"
         }
-        fabric = softwareSystem "Hyperledger Fabric network" "External Fabric peer, ordering, discovery and chaincode services." {
-            tags "Optional"
-            url "https://github.com/hyperledger-firefly/fabconnect/tree/efab8a2b0ff11863bbd9c5eb8a566820f560546b/README.md"
-            properties {
-                "architecture.id" "fabric"
-                "evidence" "External integration boundary"
+        group "Fabric ecosystem" {
+            fabric = softwareSystem "Hyperledger Fabric network" "External Fabric peer, ordering, discovery and chaincode services." {
+                tags "Optional"
+                url "https://github.com/hyperledger-firefly/fabconnect/tree/efab8a2b0ff11863bbd9c5eb8a566820f560546b/README.md"
+                properties {
+                    "architecture.id" "fabric"
+                    "evidence" "External integration boundary"
+                }
+            }
+            fabricCA = softwareSystem "Fabric certificate authority" "Registers and enrolls client identities used by FabConnect." {
+                tags "Optional"
+                url "https://github.com/hyperledger-firefly/fabconnect/tree/efab8a2b0ff11863bbd9c5eb8a566820f560546b/internal/fabric/client/identity.go"
+                properties {
+                    "architecture.id" "fabricCA"
+                    "evidence" "External integration boundary"
+                }
             }
         }
-        tezos = softwareSystem "Tezos network" "External Tezos node RPC and chain-monitoring endpoints." {
-            tags "Optional"
-            url "https://github.com/hyperledger-firefly/tezosconnect/tree/508ec1e8bb8b671c1eb6e9c090a1d219043dbd8b/README.md"
-            properties {
-                "architecture.id" "tezos"
-                "evidence" "External integration boundary"
+        group "Tezos ecosystem" {
+            tezos = softwareSystem "Tezos network" "External Tezos node RPC and chain-monitoring endpoints." {
+                tags "Optional"
+                url "https://github.com/hyperledger-firefly/tezosconnect/tree/508ec1e8bb8b671c1eb6e9c090a1d219043dbd8b/README.md"
+                properties {
+                    "architecture.id" "tezos"
+                    "evidence" "External integration boundary"
+                }
+            }
+            signatory = softwareSystem "Signatory" "Remote Tezos signing service; backend key management is external." {
+                tags "Optional"
+                url "https://github.com/hyperledger-firefly/tezosconnect/tree/508ec1e8bb8b671c1eb6e9c090a1d219043dbd8b/README.md"
+                properties {
+                    "architecture.id" "signatory"
+                    "evidence" "External integration boundary"
+                }
             }
         }
-        cardano = softwareSystem "Cardano network" "External Cardano ledger accessed through Blockfrost or node-to-client protocols." {
-            tags "Optional"
-            url "https://github.com/hyperledger-firefly/cardano/tree/0300bca6b0b99d2a16a81b94f65496934999346e/README.md"
-            properties {
-                "architecture.id" "cardano"
-                "evidence" "External integration boundary"
+        group "Cardano ecosystem" {
+            cardano = softwareSystem "Cardano network" "External Cardano ledger accessed through Blockfrost or node-to-client protocols." {
+                tags "Optional"
+                url "https://github.com/hyperledger-firefly/cardano/tree/0300bca6b0b99d2a16a81b94f65496934999346e/README.md"
+                properties {
+                    "architecture.id" "cardano"
+                    "evidence" "External integration boundary"
+                }
+            }
+            blockfrostService = softwareSystem "Blockfrost API" "Hosted or self-managed Cardano ledger API; alternative to direct node access." {
+                tags "Optional"
+                url "https://github.com/hyperledger-firefly/cardano/tree/0300bca6b0b99d2a16a81b94f65496934999346e/README.md"
+                properties {
+                    "architecture.id" "blockfrostService"
+                    "evidence" "External integration boundary"
+                }
+                -> cardano "Reads the ledger and relays submitted transactions" "Cardano integration / service boundary" "Dataflow"
             }
         }
         corda = softwareSystem "Corda network" "External Corda node with application-specific CorDapps; starter integration requires customization." {
@@ -2336,65 +2411,23 @@ workspace "FireFly ecosystem + private Besu + security catalog" "C4 levels 1-3 w
                 "evidence" "External integration boundary"
             }
         }
-        peerMembers = softwareSystem "Other FireFly members" "Peer supernodes exchanging private envelopes and shared content." {
-            tags "Optional"
-            url "https://github.com/hyperledger-firefly/firefly/tree/9d20f3081c9074d5b012427e5572ebc03da8d95d/doc-site/docs/overview/multiparty/multiparty_flow.md"
-            properties {
-                "architecture.id" "peerMembers"
-                "evidence" "External integration boundary"
+        group "Legacy connector infrastructure" {
+            kafkaBroker = softwareSystem "Apache Kafka" "Optional transaction request/reply broker for legacy connector configurations." {
+                tags "Optional"
+                url "https://github.com/hyperledger-firefly/ethconnect/tree/e8ae0eda16cc61b8ac256cdbf5f09edeb571b8c0/internal/kafka"
+                properties {
+                    "architecture.id" "kafkaBroker"
+                    "evidence" "External integration boundary"
+                }
             }
-            -> firefly "Delivers peer payloads and transfer acknowledgements" "HTTPS / mTLS" "Dataflow"
-            -> firefly.dx "Delivers private envelopes, blobs and transfer results" "HTTPS / mTLS" "Dataflow"
-            -> firefly.dx.p2p "Transfers inbound private envelopes and blobs" "HTTPS / mTLS" "Dataflow"
-        }
-        evmNetworks = softwareSystem "Other EVM networks" "Optional public or permissioned EVM-compatible networks; share the Ethereum adapter implementation." {
-            tags "Optional"
-            url "https://github.com/hyperledger-firefly/evmconnect/tree/6e12bb4c050677780cf5dd975a926923868b0cb8/README.md"
-            properties {
-                "architecture.id" "evmNetworks"
-                "evidence" "External integration boundary"
+            mongo = softwareSystem "MongoDB receipt service" "Optional receipt persistence for legacy Ethereum and Fabric connectors." {
+                tags "Optional"
+                url "https://github.com/hyperledger-firefly/ethconnect/tree/e8ae0eda16cc61b8ac256cdbf5f09edeb571b8c0/internal/receipts/mongoreceipts.go"
+                properties {
+                    "architecture.id" "mongo"
+                    "evidence" "External integration boundary"
+                }
             }
-        }
-        kafkaBroker = softwareSystem "Apache Kafka" "Optional transaction request/reply broker for legacy connector configurations." {
-            tags "Optional"
-            url "https://github.com/hyperledger-firefly/ethconnect/tree/e8ae0eda16cc61b8ac256cdbf5f09edeb571b8c0/internal/kafka"
-            properties {
-                "architecture.id" "kafkaBroker"
-                "evidence" "External integration boundary"
-            }
-        }
-        mongo = softwareSystem "MongoDB receipt service" "Optional receipt persistence for legacy Ethereum and Fabric connectors." {
-            tags "Optional"
-            url "https://github.com/hyperledger-firefly/ethconnect/tree/e8ae0eda16cc61b8ac256cdbf5f09edeb571b8c0/internal/receipts/mongoreceipts.go"
-            properties {
-                "architecture.id" "mongo"
-                "evidence" "External integration boundary"
-            }
-        }
-        fabricCA = softwareSystem "Fabric certificate authority" "Registers and enrolls client identities used by FabConnect." {
-            tags "Optional"
-            url "https://github.com/hyperledger-firefly/fabconnect/tree/efab8a2b0ff11863bbd9c5eb8a566820f560546b/internal/fabric/client/identity.go"
-            properties {
-                "architecture.id" "fabricCA"
-                "evidence" "External integration boundary"
-            }
-        }
-        signatory = softwareSystem "Signatory" "Remote Tezos signing service; backend key management is external." {
-            tags "Optional"
-            url "https://github.com/hyperledger-firefly/tezosconnect/tree/508ec1e8bb8b671c1eb6e9c090a1d219043dbd8b/README.md"
-            properties {
-                "architecture.id" "signatory"
-                "evidence" "External integration boundary"
-            }
-        }
-        blockfrostService = softwareSystem "Blockfrost API" "Hosted or self-managed Cardano ledger API; alternative to direct node access." {
-            tags "Optional"
-            url "https://github.com/hyperledger-firefly/cardano/tree/0300bca6b0b99d2a16a81b94f65496934999346e/README.md"
-            properties {
-                "architecture.id" "blockfrostService"
-                "evidence" "External integration boundary"
-            }
-            -> cardano "Reads the ledger and relays submitted transactions" "Cardano integration / service boundary" "Dataflow"
         }
         dockerEngine = softwareSystem "Developer Docker engine" "Local container engine used by FireFly CLI; no network is provisioned by this architecture task." {
             tags "Optional"
@@ -2420,1025 +2453,1027 @@ workspace "FireFly ecosystem + private Besu + security catalog" "C4 levels 1-3 w
                 "evidence" "Reference choice"
             }
         }
-        azureManagement = softwareSystem "Azure Resource Manager" "External management-plane boundary; applies Azure RBAC to Managed HSM resource administration, not key operations." {
-            tags "SecurityCatalog"
-            url "https://learn.microsoft.com/en-us/azure/key-vault/managed-hsm/access-control"
-            properties {
-                "architecture.id" "azureManagement"
-                "evidence" "External integration boundary"
+        group "Azure cryptographic services" {
+            azureManagement = softwareSystem "Azure Resource Manager" "External management-plane boundary; applies Azure RBAC to Managed HSM resource administration, not key operations." {
+                tags "SecurityCatalog"
+                url "https://learn.microsoft.com/en-us/azure/key-vault/managed-hsm/access-control"
+                properties {
+                    "architecture.id" "azureManagement"
+                    "evidence" "External integration boundary"
+                }
+            }
+            managedHsm = softwareSystem "Azure Managed HSM" "Protects cryptographic keys and performs authorized cryptographic operations; not a general secret or certificate store." {
+                tags "SecurityCatalog"
+                url "https://learn.microsoft.com/en-us/azure/key-vault/managed-hsm/access-control"
+                properties {
+                    "architecture.id" "managedHsm"
+                    "evidence" "Documented product capability"
+                }
+                !docs docs/static/system
+                !adrs docs/static/decisions
+                service = container "Managed HSM data-plane service" "Logical managed-service boundary for key operations and local role assignments; physical HSM topology is excluded." "Azure Managed HSM / HTTPS API" {
+                    tags "SecurityCatalog,LogicalReference"
+                    url "https://learn.microsoft.com/en-us/azure/key-vault/managed-hsm/access-control"
+                    properties {
+                        "architecture.id" "managedHsm.service"
+                        "evidence" "Logical reference abstraction"
+                    }
+                    api = component "Data-plane API" "Logical reference: Accepts authenticated key-management and cryptographic requests." "Managed service responsibility / implementation undisclosed" {
+                        tags "SecurityCatalog,LogicalReference"
+                        url "https://learn.microsoft.com/en-us/azure/key-vault/managed-hsm/access-control"
+                        properties {
+                            "architecture.id" "managedHsm.service.api"
+                            "evidence" "Logical reference abstraction"
+                        }
+                        -> apps.client "Returns signature or wrapped data key; never the HSM private key" "HTTPS / Managed HSM REST response" "Dataflow,SecurityCatalog,KeyFlow,ReferenceIntegration"
+                    }
+                    authentication = component "Entra token validation" "Logical reference: Validates token signature, issuer and resource audience using trusted metadata." "Managed service responsibility / implementation undisclosed" {
+                        tags "SecurityCatalog,LogicalReference"
+                        url "https://learn.microsoft.com/en-us/azure/key-vault/managed-hsm/access-control"
+                        properties {
+                            "architecture.id" "managedHsm.service.authentication"
+                            "evidence" "Logical reference abstraction"
+                        }
+                    }
+                    authorization = component "Local RBAC authorization" "Logical reference: Checks Managed HSM local roles and key scope separately from Azure resource-management RBAC." "Managed service responsibility / implementation undisclosed" {
+                        tags "SecurityCatalog,LogicalReference"
+                        url "https://learn.microsoft.com/en-us/azure/key-vault/managed-hsm/access-control"
+                        properties {
+                            "architecture.id" "managedHsm.service.authorization"
+                            "evidence" "Logical reference abstraction"
+                        }
+                    }
+                    lifecycle = component "Key lifecycle" "Logical reference: Creates and versions keys and manages permitted key operations and role assignments." "Managed service responsibility / implementation undisclosed" {
+                        tags "SecurityCatalog,LogicalReference"
+                        url "https://learn.microsoft.com/en-us/azure/key-vault/managed-hsm/access-control"
+                        properties {
+                            "architecture.id" "managedHsm.service.lifecycle"
+                            "evidence" "Logical reference abstraction"
+                        }
+                        -> managedHsm.service.api "Returns key identifier, public metadata and operation outcome" "In-process logical interface" "Dataflow,SecurityCatalog,KeyFlow"
+                    }
+                    crypto = component "Cryptographic operations" "Logical reference: Performs sign, verify, encrypt, decrypt, wrap and unwrap operations supported by the selected key." "Managed service responsibility / implementation undisclosed" {
+                        tags "SecurityCatalog,LogicalReference"
+                        url "https://learn.microsoft.com/en-us/azure/key-vault/managed-hsm/access-control"
+                        properties {
+                            "architecture.id" "managedHsm.service.crypto"
+                            "evidence" "Logical reference abstraction"
+                        }
+                        -> managedHsm.service.api "Returns signature, ciphertext or wrapped-key result" "In-process logical interface" "Dataflow,SecurityCatalog,KeyFlow"
+                    }
+                    audit = component "Operation auditing" "Logical reference: Records principal, operation, key identifier and outcome without secret key material." "Managed service responsibility / implementation undisclosed" {
+                        tags "SecurityCatalog,LogicalReference"
+                        url "https://learn.microsoft.com/en-us/azure/key-vault/managed-hsm/access-control"
+                        properties {
+                            "architecture.id" "managedHsm.service.audit"
+                            "evidence" "Logical reference abstraction"
+                        }
+                    }
+                    !element managedHsm.service.api {
+                        -> managedHsm.service.authentication "Passes bearer token and requested resource audience" "In-process logical interface" "Dataflow,SecurityCatalog,KeyFlow"
+                        -> managedHsm.service.audit "Records caller, key identifier, operation and outcome" "In-process logical interface" "Dataflow,SecurityCatalog,KeyFlow"
+                    }
+                    !element managedHsm.service.authentication {
+                        -> managedHsm.service.authorization "Passes validated caller identity and requested operation" "In-process logical interface" "Dataflow,SecurityCatalog,KeyFlow"
+                    }
+                    !element managedHsm.service.authorization {
+                        -> managedHsm.service.lifecycle "Authorizes key lifecycle or local role-management command" "In-process logical interface" "Dataflow,SecurityCatalog,KeyFlow"
+                        -> managedHsm.service.crypto "Authorizes cryptographic operation on the selected key version" "In-process logical interface" "Dataflow,SecurityCatalog,KeyFlow"
+                    }
+                    -> apps.client "Returns signature or wrapped data key; never the HSM private key" "HTTPS / Managed HSM REST response" "Dataflow,SecurityCatalog,KeyFlow,ReferenceIntegration"
+                    -> apps.hsmSigner "Returns signature bytes and signing key identifier; never private key material" "HTTPS / Managed HSM Sign API response" "Dataflow,SecurityCatalog,KeyFlow,ReferenceIntegration"
+                    -> apps.hsmSigner "Returns public key parameters for sender and signature verification" "HTTPS / Managed HSM Get Key API response" "Dataflow,SecurityCatalog,KeyFlow,ReferenceIntegration"
+                    -> apps.hsmSigner.hsm "Returns signature bytes and signing key identifier; never private key material" "HTTPS / Managed HSM Sign API response" "Dataflow,SecurityCatalog,KeyFlow,ReferenceIntegration"
+                    -> apps.hsmSigner.hsm "Returns public key parameters for sender and signature verification" "HTTPS / Managed HSM Get Key API response" "Dataflow,SecurityCatalog,KeyFlow,ReferenceIntegration"
+                }
+                keys = container "HSM-protected key storage" "Logical protected store for non-exportable example private keys, key versions and local role data; not a separate database server." "HSM-protected managed storage (logical)" {
+                    tags "SecurityCatalog,LogicalReference,Database"
+                    url "https://learn.microsoft.com/en-us/azure/key-vault/managed-hsm/about-keys-details"
+                    properties {
+                        "architecture.id" "managedHsm.keys"
+                        "evidence" "Logical reference abstraction"
+                    }
+                    -> managedHsm.service.crypto "Returns cryptographic result without private key material" "Protected cryptographic interface (logical)" "Dataflow,SecurityCatalog,KeyFlow"
+                    -> managedHsm.service "Returns cryptographic result without private key material" "Protected cryptographic interface (logical)" "Dataflow,SecurityCatalog,KeyFlow"
+                }
+                !element managedHsm.service {
+                    -> managedHsm.keys "Creates or updates protected keys, versions and local role records" "Protected managed-service storage interface" "Dataflow,SecurityCatalog,KeyFlow"
+                    -> managedHsm.keys "Invokes signing or key-wrapping operation through a protected key handle" "Protected cryptographic interface (logical)" "Dataflow,SecurityCatalog,KeyFlow"
+                }
+                !element managedHsm.service.lifecycle {
+                    -> managedHsm.keys "Creates or updates protected keys, versions and local role records" "Protected managed-service storage interface" "Dataflow,SecurityCatalog,KeyFlow"
+                }
+                !element managedHsm.service.crypto {
+                    -> managedHsm.keys "Invokes cryptographic operation using protected key handle; no private-key export" "Protected cryptographic interface (logical)" "Dataflow,SecurityCatalog,KeyFlow"
+                }
+                -> apps "Returns signature or wrapped key result without private key material" "HTTPS / Managed HSM REST response" "Dataflow,SecurityCatalog,KeyFlow,ReferenceIntegration"
             }
         }
-        keycloak = softwareSystem "Keycloak" "Identity and access management: SSO, federation, brokering and token issuance." {
-            tags "SecurityCatalog"
-            url "https://www.keycloak.org/docs/latest/server_admin/index.html"
-            properties {
-                "architecture.id" "keycloak"
-                "evidence" "Documented product capability"
-            }
-            !docs docs/static/system
-            !adrs docs/static/decisions
-            server = container "Keycloak server" "Hosts login, administration, federation and protocol services; cache is embedded." "Java / Keycloak" {
+        group "Identity and federation" {
+            keycloak = softwareSystem "Keycloak" "Identity and access management: SSO, federation, brokering and token issuance." {
                 tags "SecurityCatalog"
                 url "https://www.keycloak.org/docs/latest/server_admin/index.html"
                 properties {
-                    "architecture.id" "keycloak.server"
+                    "architecture.id" "keycloak"
                     "evidence" "Documented product capability"
                 }
-                endpoints = component "OIDC and SAML endpoints" "Accepts authorization, token and federation requests and returns protocol responses." "Java / Keycloak" {
+                !docs docs/static/system
+                !adrs docs/static/decisions
+                server = container "Keycloak server" "Hosts login, administration, federation and protocol services; cache is embedded." "Java / Keycloak" {
                     tags "SecurityCatalog"
                     url "https://www.keycloak.org/docs/latest/server_admin/index.html"
                     properties {
-                        "architecture.id" "keycloak.server.endpoints"
+                        "architecture.id" "keycloak.server"
                         "evidence" "Documented product capability"
                     }
-                    -> apps.client "Returns signed identity response through the configured browser/client flow" "HTTPS / OIDC or SAML as configured" "Dataflow,SecurityCatalog,IdentityFlow,ReferenceIntegration"
+                    endpoints = component "OIDC and SAML endpoints" "Accepts authorization, token and federation requests and returns protocol responses." "Java / Keycloak" {
+                        tags "SecurityCatalog"
+                        url "https://www.keycloak.org/docs/latest/server_admin/index.html"
+                        properties {
+                            "architecture.id" "keycloak.server.endpoints"
+                            "evidence" "Documented product capability"
+                        }
+                        -> apps.client "Returns signed identity response through the configured browser/client flow" "HTTPS / OIDC or SAML as configured" "Dataflow,SecurityCatalog,IdentityFlow,ReferenceIntegration"
+                    }
+                    authentication = component "Authentication flows" "Evaluates configured authenticators and required authentication steps." "Java / Keycloak" {
+                        tags "SecurityCatalog"
+                        url "https://www.keycloak.org/docs/latest/server_admin/index.html"
+                        properties {
+                            "architecture.id" "keycloak.server.authentication"
+                            "evidence" "Documented product capability"
+                        }
+                    }
+                    broker = component "Identity broker" "Delegates login to an external OIDC or SAML identity provider through the browser." "Java / Keycloak" {
+                        tags "SecurityCatalog"
+                        url "https://www.keycloak.org/docs/latest/server_admin/index.html"
+                        properties {
+                            "architecture.id" "keycloak.server.broker"
+                            "evidence" "Documented product capability"
+                        }
+                        -> keycloak.server.authentication "Returns verified external identity claims" "In-process logical interface" "Dataflow,SecurityCatalog,IdentityFlow"
+                    }
+                    ldap = component "LDAP user federation" "Queries AD user attributes and validates credentials by LDAP bind; never imports AD passwords." "Java / Keycloak" {
+                        tags "SecurityCatalog"
+                        url "https://www.keycloak.org/docs/latest/server_admin/index.html"
+                        properties {
+                            "architecture.id" "keycloak.server.ldap"
+                            "evidence" "Documented product capability"
+                        }
+                        -> keycloak.server.authentication "Returns user attributes and credential validation outcome" "In-process logical interface" "Dataflow,SecurityCatalog,IdentityFlow"
+                    }
+                    tokens = component "Token and claim mapping" "Builds and signs tokens or assertions with mapped roles and attributes." "Java / Keycloak" {
+                        tags "SecurityCatalog"
+                        url "https://www.keycloak.org/docs/latest/server_admin/index.html"
+                        properties {
+                            "architecture.id" "keycloak.server.tokens"
+                            "evidence" "Documented product capability"
+                        }
+                        -> keycloak.server.endpoints "Returns signed tokens or SAML assertions" "In-process logical interface" "Dataflow,SecurityCatalog,IdentityFlow"
+                    }
+                    admin = component "Administration" "Manages realms, clients, users, roles and identity-provider configuration." "Java / Keycloak" {
+                        tags "SecurityCatalog"
+                        url "https://www.keycloak.org/docs/latest/server_admin/index.html"
+                        properties {
+                            "architecture.id" "keycloak.server.admin"
+                            "evidence" "Documented product capability"
+                        }
+                    }
+                    sessions = component "Session and embedded cache management" "Tracks login sessions and cached realm or user data in the server runtime." "Java / Keycloak" {
+                        tags "SecurityCatalog"
+                        url "https://www.keycloak.org/docs/latest/server_admin/index.html"
+                        properties {
+                            "architecture.id" "keycloak.server.sessions"
+                            "evidence" "Documented product capability"
+                        }
+                        -> keycloak.server.tokens "Supplies session identity and client scope" "In-process logical interface" "Dataflow,SecurityCatalog,IdentityFlow"
+                    }
+                    persistence = component "Persistence adapter" "Reads and writes realm, user and persistent session records." "Java / Keycloak" {
+                        tags "SecurityCatalog"
+                        url "https://www.keycloak.org/docs/latest/server_admin/index.html"
+                        properties {
+                            "architecture.id" "keycloak.server.persistence"
+                            "evidence" "Documented product capability"
+                        }
+                    }
+                    !element keycloak.server.endpoints {
+                        -> keycloak.server.authentication "Passes authorization request and authentication context" "In-process logical interface" "Dataflow,SecurityCatalog,IdentityFlow"
+                    }
+                    !element keycloak.server.authentication {
+                        -> keycloak.server.broker "Delegates selected external-provider login" "In-process logical interface" "Dataflow,SecurityCatalog,IdentityFlow"
+                        -> keycloak.server.ldap "Passes directory lookup and credential validation requests" "In-process logical interface" "Dataflow,SecurityCatalog,IdentityFlow"
+                        -> keycloak.server.sessions "Creates or resolves authenticated user session" "In-process logical interface" "Dataflow,SecurityCatalog,IdentityFlow"
+                        -> keycloak.server.persistence "Reads local credentials and realm authentication settings" "In-process logical interface" "Dataflow,SecurityCatalog,IdentityFlow"
+                    }
+                    !element keycloak.server.admin {
+                        -> keycloak.server.persistence "Writes realm, client and federation settings" "In-process logical interface" "Dataflow,SecurityCatalog,IdentityFlow"
+                    }
+                    !element keycloak.server.sessions {
+                        -> keycloak.server.persistence "Reads and writes persistent session records" "In-process logical interface" "Dataflow,SecurityCatalog,IdentityFlow"
+                    }
+                    -> apps.client "Returns authenticated identity tokens or assertions through the selected protocol flow" "HTTPS / OIDC reference client" "Dataflow,SecurityCatalog,IdentityFlow,ReferenceIntegration"
                 }
-                authentication = component "Authentication flows" "Evaluates configured authenticators and required authentication steps." "Java / Keycloak" {
-                    tags "SecurityCatalog"
-                    url "https://www.keycloak.org/docs/latest/server_admin/index.html"
+                database = container "Keycloak database" "Persists realm configuration, users, credentials and persistent session state." "PostgreSQL (reference choice)" {
+                    tags "SecurityCatalog,Database"
+                    url "https://www.keycloak.org/server/db"
                     properties {
-                        "architecture.id" "keycloak.server.authentication"
+                        "architecture.id" "keycloak.database"
                         "evidence" "Documented product capability"
                     }
                 }
-                broker = component "Identity broker" "Delegates login to an external OIDC or SAML identity provider through the browser." "Java / Keycloak" {
-                    tags "SecurityCatalog"
-                    url "https://www.keycloak.org/docs/latest/server_admin/index.html"
-                    properties {
-                        "architecture.id" "keycloak.server.broker"
-                        "evidence" "Documented product capability"
-                    }
-                    -> keycloak.server.authentication "Returns verified external identity claims" "In-process logical interface" "Dataflow,SecurityCatalog,IdentityFlow"
+                !element keycloak.server {
+                    -> keycloak.database "Reads and writes realm, user and session records" "PostgreSQL / TLS" "Dataflow,SecurityCatalog,DirectoryFlow"
                 }
-                ldap = component "LDAP user federation" "Queries AD user attributes and validates credentials by LDAP bind; never imports AD passwords." "Java / Keycloak" {
-                    tags "SecurityCatalog"
-                    url "https://www.keycloak.org/docs/latest/server_admin/index.html"
-                    properties {
-                        "architecture.id" "keycloak.server.ldap"
-                        "evidence" "Documented product capability"
-                    }
-                    -> keycloak.server.authentication "Returns user attributes and credential validation outcome" "In-process logical interface" "Dataflow,SecurityCatalog,IdentityFlow"
+                !element keycloak.server.persistence {
+                    -> keycloak.database "Reads and writes realm, user and session records" "PostgreSQL / TLS" "Dataflow,SecurityCatalog,DirectoryFlow"
                 }
-                tokens = component "Token and claim mapping" "Builds and signs tokens or assertions with mapped roles and attributes." "Java / Keycloak" {
-                    tags "SecurityCatalog"
-                    url "https://www.keycloak.org/docs/latest/server_admin/index.html"
-                    properties {
-                        "architecture.id" "keycloak.server.tokens"
-                        "evidence" "Documented product capability"
-                    }
-                    -> keycloak.server.endpoints "Returns signed tokens or SAML assertions" "In-process logical interface" "Dataflow,SecurityCatalog,IdentityFlow"
-                }
-                admin = component "Administration" "Manages realms, clients, users, roles and identity-provider configuration." "Java / Keycloak" {
-                    tags "SecurityCatalog"
-                    url "https://www.keycloak.org/docs/latest/server_admin/index.html"
-                    properties {
-                        "architecture.id" "keycloak.server.admin"
-                        "evidence" "Documented product capability"
-                    }
-                }
-                sessions = component "Session and embedded cache management" "Tracks login sessions and cached realm or user data in the server runtime." "Java / Keycloak" {
-                    tags "SecurityCatalog"
-                    url "https://www.keycloak.org/docs/latest/server_admin/index.html"
-                    properties {
-                        "architecture.id" "keycloak.server.sessions"
-                        "evidence" "Documented product capability"
-                    }
-                    -> keycloak.server.tokens "Supplies session identity and client scope" "In-process logical interface" "Dataflow,SecurityCatalog,IdentityFlow"
-                }
-                persistence = component "Persistence adapter" "Reads and writes realm, user and persistent session records." "Java / Keycloak" {
-                    tags "SecurityCatalog"
-                    url "https://www.keycloak.org/docs/latest/server_admin/index.html"
-                    properties {
-                        "architecture.id" "keycloak.server.persistence"
-                        "evidence" "Documented product capability"
-                    }
-                }
-                !element keycloak.server.endpoints {
-                    -> keycloak.server.authentication "Passes authorization request and authentication context" "In-process logical interface" "Dataflow,SecurityCatalog,IdentityFlow"
-                }
-                !element keycloak.server.authentication {
-                    -> keycloak.server.broker "Delegates selected external-provider login" "In-process logical interface" "Dataflow,SecurityCatalog,IdentityFlow"
-                    -> keycloak.server.ldap "Passes directory lookup and credential validation requests" "In-process logical interface" "Dataflow,SecurityCatalog,IdentityFlow"
-                    -> keycloak.server.sessions "Creates or resolves authenticated user session" "In-process logical interface" "Dataflow,SecurityCatalog,IdentityFlow"
-                    -> keycloak.server.persistence "Reads local credentials and realm authentication settings" "In-process logical interface" "Dataflow,SecurityCatalog,IdentityFlow"
-                }
-                !element keycloak.server.admin {
-                    -> keycloak.server.persistence "Writes realm, client and federation settings" "In-process logical interface" "Dataflow,SecurityCatalog,IdentityFlow"
-                }
-                !element keycloak.server.sessions {
-                    -> keycloak.server.persistence "Reads and writes persistent session records" "In-process logical interface" "Dataflow,SecurityCatalog,IdentityFlow"
-                }
-                -> apps.client "Returns authenticated identity tokens or assertions through the selected protocol flow" "HTTPS / OIDC reference client" "Dataflow,SecurityCatalog,IdentityFlow,ReferenceIntegration"
+                -> apps "Returns identity tokens or assertions for application access" "HTTPS / configured identity protocol" "Dataflow,SecurityCatalog,IdentityFlow,ReferenceIntegration"
             }
-            database = container "Keycloak database" "Persists realm configuration, users, credentials and persistent session state." "PostgreSQL (reference choice)" {
-                tags "SecurityCatalog,Database"
-                url "https://www.keycloak.org/server/db"
-                properties {
-                    "architecture.id" "keycloak.database"
-                    "evidence" "Documented product capability"
-                }
-            }
-            !element keycloak.server {
-                -> keycloak.database "Reads and writes realm, user and session records" "PostgreSQL / TLS" "Dataflow,SecurityCatalog,DirectoryFlow"
-            }
-            !element keycloak.server.persistence {
-                -> keycloak.database "Reads and writes realm, user and session records" "PostgreSQL / TLS" "Dataflow,SecurityCatalog,DirectoryFlow"
-            }
-            -> apps "Returns identity tokens or assertions for application access" "HTTPS / configured identity protocol" "Dataflow,SecurityCatalog,IdentityFlow,ReferenceIntegration"
-        }
-        managedHsm = softwareSystem "Azure Managed HSM" "Protects cryptographic keys and performs authorized cryptographic operations; not a general secret or certificate store." {
-            tags "SecurityCatalog"
-            url "https://learn.microsoft.com/en-us/azure/key-vault/managed-hsm/access-control"
-            properties {
-                "architecture.id" "managedHsm"
-                "evidence" "Documented product capability"
-            }
-            !docs docs/static/system
-            !adrs docs/static/decisions
-            service = container "Managed HSM data-plane service" "Logical managed-service boundary for key operations and local role assignments; physical HSM topology is excluded." "Azure Managed HSM / HTTPS API" {
-                tags "SecurityCatalog,LogicalReference"
-                url "https://learn.microsoft.com/en-us/azure/key-vault/managed-hsm/access-control"
-                properties {
-                    "architecture.id" "managedHsm.service"
-                    "evidence" "Logical reference abstraction"
-                }
-                api = component "Data-plane API" "Logical reference: Accepts authenticated key-management and cryptographic requests." "Managed service responsibility / implementation undisclosed" {
-                    tags "SecurityCatalog,LogicalReference"
-                    url "https://learn.microsoft.com/en-us/azure/key-vault/managed-hsm/access-control"
-                    properties {
-                        "architecture.id" "managedHsm.service.api"
-                        "evidence" "Logical reference abstraction"
-                    }
-                    -> apps.client "Returns signature or wrapped data key; never the HSM private key" "HTTPS / Managed HSM REST response" "Dataflow,SecurityCatalog,KeyFlow,ReferenceIntegration"
-                }
-                authentication = component "Entra token validation" "Logical reference: Validates token signature, issuer and resource audience using trusted metadata." "Managed service responsibility / implementation undisclosed" {
-                    tags "SecurityCatalog,LogicalReference"
-                    url "https://learn.microsoft.com/en-us/azure/key-vault/managed-hsm/access-control"
-                    properties {
-                        "architecture.id" "managedHsm.service.authentication"
-                        "evidence" "Logical reference abstraction"
-                    }
-                }
-                authorization = component "Local RBAC authorization" "Logical reference: Checks Managed HSM local roles and key scope separately from Azure resource-management RBAC." "Managed service responsibility / implementation undisclosed" {
-                    tags "SecurityCatalog,LogicalReference"
-                    url "https://learn.microsoft.com/en-us/azure/key-vault/managed-hsm/access-control"
-                    properties {
-                        "architecture.id" "managedHsm.service.authorization"
-                        "evidence" "Logical reference abstraction"
-                    }
-                }
-                lifecycle = component "Key lifecycle" "Logical reference: Creates and versions keys and manages permitted key operations and role assignments." "Managed service responsibility / implementation undisclosed" {
-                    tags "SecurityCatalog,LogicalReference"
-                    url "https://learn.microsoft.com/en-us/azure/key-vault/managed-hsm/access-control"
-                    properties {
-                        "architecture.id" "managedHsm.service.lifecycle"
-                        "evidence" "Logical reference abstraction"
-                    }
-                    -> managedHsm.service.api "Returns key identifier, public metadata and operation outcome" "In-process logical interface" "Dataflow,SecurityCatalog,KeyFlow"
-                }
-                crypto = component "Cryptographic operations" "Logical reference: Performs sign, verify, encrypt, decrypt, wrap and unwrap operations supported by the selected key." "Managed service responsibility / implementation undisclosed" {
-                    tags "SecurityCatalog,LogicalReference"
-                    url "https://learn.microsoft.com/en-us/azure/key-vault/managed-hsm/access-control"
-                    properties {
-                        "architecture.id" "managedHsm.service.crypto"
-                        "evidence" "Logical reference abstraction"
-                    }
-                    -> managedHsm.service.api "Returns signature, ciphertext or wrapped-key result" "In-process logical interface" "Dataflow,SecurityCatalog,KeyFlow"
-                }
-                audit = component "Operation auditing" "Logical reference: Records principal, operation, key identifier and outcome without secret key material." "Managed service responsibility / implementation undisclosed" {
-                    tags "SecurityCatalog,LogicalReference"
-                    url "https://learn.microsoft.com/en-us/azure/key-vault/managed-hsm/access-control"
-                    properties {
-                        "architecture.id" "managedHsm.service.audit"
-                        "evidence" "Logical reference abstraction"
-                    }
-                }
-                !element managedHsm.service.api {
-                    -> managedHsm.service.authentication "Passes bearer token and requested resource audience" "In-process logical interface" "Dataflow,SecurityCatalog,KeyFlow"
-                    -> managedHsm.service.audit "Records caller, key identifier, operation and outcome" "In-process logical interface" "Dataflow,SecurityCatalog,KeyFlow"
-                }
-                !element managedHsm.service.authentication {
-                    -> managedHsm.service.authorization "Passes validated caller identity and requested operation" "In-process logical interface" "Dataflow,SecurityCatalog,KeyFlow"
-                }
-                !element managedHsm.service.authorization {
-                    -> managedHsm.service.lifecycle "Authorizes key lifecycle or local role-management command" "In-process logical interface" "Dataflow,SecurityCatalog,KeyFlow"
-                    -> managedHsm.service.crypto "Authorizes cryptographic operation on the selected key version" "In-process logical interface" "Dataflow,SecurityCatalog,KeyFlow"
-                }
-                -> apps.client "Returns signature or wrapped data key; never the HSM private key" "HTTPS / Managed HSM REST response" "Dataflow,SecurityCatalog,KeyFlow,ReferenceIntegration"
-                -> apps.hsmSigner "Returns signature and public key metadata; never private key material" "HTTPS / Managed HSM API response" "Dataflow,SecurityCatalog,KeyFlow,ReferenceIntegration"
-                -> apps.hsmSigner.hsm "Returns signature and public key metadata; never private key material" "HTTPS / Managed HSM API response" "Dataflow,SecurityCatalog,KeyFlow,ReferenceIntegration"
-            }
-            keys = container "HSM-protected key storage" "Logical protected store for non-exportable example private keys, key versions and local role data; not a separate database server." "HSM-protected managed storage (logical)" {
-                tags "SecurityCatalog,LogicalReference,Database"
-                url "https://learn.microsoft.com/en-us/azure/key-vault/managed-hsm/about-keys-details"
-                properties {
-                    "architecture.id" "managedHsm.keys"
-                    "evidence" "Logical reference abstraction"
-                }
-                -> managedHsm.service.crypto "Returns cryptographic result without private key material" "Protected cryptographic interface (logical)" "Dataflow,SecurityCatalog,KeyFlow"
-            }
-            !element managedHsm.service {
-                -> managedHsm.keys "Creates or updates protected keys, versions and local role records" "Protected managed-service storage interface" "Dataflow,SecurityCatalog,KeyFlow"
-            }
-            !element managedHsm.service.lifecycle {
-                -> managedHsm.keys "Creates or updates protected keys, versions and local role records" "Protected managed-service storage interface" "Dataflow,SecurityCatalog,KeyFlow"
-            }
-            !element managedHsm.service.crypto {
-                -> managedHsm.keys "Invokes cryptographic operation using protected key handle; no private-key export" "Protected cryptographic interface (logical)" "Dataflow,SecurityCatalog,KeyFlow"
-            }
-            -> apps "Returns signature or wrapped key result without private key material" "HTTPS / Managed HSM REST response" "Dataflow,SecurityCatalog,KeyFlow,ReferenceIntegration"
-        }
-        cyberarkPam = softwareSystem "CyberArk PAM Self-Hosted" "Controls privileged credentials, password rotation and recorded administrative sessions." {
-            tags "SecurityCatalog"
-            url "https://docs.cyberark.com/pam-self-hosted/latest/en/content/pas%20inst/installationoverview.htm"
-            properties {
-                "architecture.id" "cyberarkPam"
-                "evidence" "Documented product capability"
-            }
-            !docs docs/static/system
-            !adrs docs/static/decisions
-            vault = container "Digital Vault" "Protects privileged credentials, Safe permissions and audit/session records." "CyberArk PAM / proprietary service" {
+            entraId = softwareSystem "Microsoft Entra ID" "Cloud identity, token issuance, directory administration and provisioning; separate from AD DS and AD FS." {
                 tags "SecurityCatalog"
-                url "https://docs.cyberark.com/pam-self-hosted/latest/en/content/pas%20inst/installationoverview.htm"
-                properties {
-                    "architecture.id" "cyberarkPam.vault"
-                    "evidence" "Documented product capability"
-                }
-                access = component "Vault access interface" "Logical reference: Accepts authenticated Safe, credential and record operations." "Vault responsibility / proprietary implementation" {
-                    tags "SecurityCatalog,LogicalReference"
-                    url "https://docs.cyberark.com/pam-self-hosted/latest/en/content/pas%20inst/installationoverview.htm"
-                    properties {
-                        "architecture.id" "cyberarkPam.vault.access"
-                        "evidence" "Logical reference abstraction"
-                    }
-                }
-                policy = component "Safe permissions" "Logical reference: Checks access permissions for credentials and records." "Vault responsibility / proprietary implementation" {
-                    tags "SecurityCatalog,LogicalReference"
-                    url "https://docs.cyberark.com/pam-self-hosted/latest/en/content/pas%20inst/installationoverview.htm"
-                    properties {
-                        "architecture.id" "cyberarkPam.vault.policy"
-                        "evidence" "Logical reference abstraction"
-                    }
-                }
-                storage = component "Protected credential storage" "Logical reference: Owns encrypted credential and Safe records inside the Vault boundary." "Vault responsibility / proprietary implementation" {
-                    tags "SecurityCatalog,LogicalReference"
-                    url "https://docs.cyberark.com/pam-self-hosted/latest/en/content/pas%20inst/installationoverview.htm"
-                    properties {
-                        "architecture.id" "cyberarkPam.vault.storage"
-                        "evidence" "Logical reference abstraction"
-                    }
-                    -> cyberarkPam.vault.access "Returns permitted credential or metadata response" "In-process logical interface" "Dataflow,SecurityCatalog,PrivilegedFlow"
-                }
-                audit = component "Audit and recording storage" "Logical reference: Retains access audit records and uploaded session recordings." "Vault responsibility / proprietary implementation" {
-                    tags "SecurityCatalog,LogicalReference"
-                    url "https://docs.cyberark.com/pam-self-hosted/latest/en/content/pas%20inst/installationoverview.htm"
-                    properties {
-                        "architecture.id" "cyberarkPam.vault.audit"
-                        "evidence" "Logical reference abstraction"
-                    }
-                }
-                !element cyberarkPam.vault.access {
-                    -> cyberarkPam.vault.policy "Passes caller identity and requested Safe operation" "In-process logical interface" "Dataflow,SecurityCatalog,PrivilegedFlow"
-                    -> cyberarkPam.vault.audit "Stores access events or uploaded session recordings" "In-process logical interface" "Dataflow,SecurityCatalog,PrivilegedFlow"
-                }
-                !element cyberarkPam.vault.policy {
-                    -> cyberarkPam.vault.storage "Authorizes credential read or write" "In-process logical interface" "Dataflow,SecurityCatalog,PrivilegedFlow"
-                }
-            }
-            pvwa = container "Password Vault Web Access" "Provides the web interface and APIs for privileged-account access and administration." "CyberArk PAM / proprietary service" {
-                tags "SecurityCatalog"
-                url "https://docs.cyberark.com/pam-self-hosted/latest/en/content/pas%20inst/installationoverview.htm"
-                properties {
-                    "architecture.id" "cyberarkPam.pvwa"
-                    "evidence" "Documented product capability"
-                }
-                portal = component "Web portal and API" "Logical reference: Accepts account access, session-launch and administration requests." "PVWA responsibility / proprietary implementation" {
-                    tags "SecurityCatalog,LogicalReference"
-                    url "https://docs.cyberark.com/pam-self-hosted/latest/en/content/pas%20inst/installationoverview.htm"
-                    properties {
-                        "architecture.id" "cyberarkPam.pvwa.portal"
-                        "evidence" "Logical reference abstraction"
-                    }
-                }
-                approval = component "Access request workflow" "Logical reference: Evaluates configured request and approval requirements." "PVWA responsibility / proprietary implementation" {
-                    tags "SecurityCatalog,LogicalReference"
-                    url "https://docs.cyberark.com/pam-self-hosted/latest/en/content/pas%20inst/installationoverview.htm"
-                    properties {
-                        "architecture.id" "cyberarkPam.pvwa.approval"
-                        "evidence" "Logical reference abstraction"
-                    }
-                }
-                vaultClient = component "Vault client" "Logical reference: Retrieves permitted account metadata or credentials and submits administration changes." "PVWA responsibility / proprietary implementation" {
-                    tags "SecurityCatalog,LogicalReference"
-                    url "https://docs.cyberark.com/pam-self-hosted/latest/en/content/pas%20inst/installationoverview.htm"
-                    properties {
-                        "architecture.id" "cyberarkPam.pvwa.vaultClient"
-                        "evidence" "Logical reference abstraction"
-                    }
-                    -> cyberarkPam.pvwa.portal "Returns authorized account metadata and access outcome" "In-process logical interface" "Dataflow,SecurityCatalog,PrivilegedFlow"
-                    -> cyberarkPam.vault "Submits permitted Safe credential or metadata operations" "CyberArk Vault protocol / encrypted channel" "Dataflow,SecurityCatalog,PrivilegedFlow"
-                }
-                sessions = component "Session launch" "Logical reference: Creates authorized session connection details for the session manager." "PVWA responsibility / proprietary implementation" {
-                    tags "SecurityCatalog,LogicalReference"
-                    url "https://docs.cyberark.com/pam-self-hosted/latest/en/content/pas%20inst/installationoverview.htm"
-                    properties {
-                        "architecture.id" "cyberarkPam.pvwa.sessions"
-                        "evidence" "Logical reference abstraction"
-                    }
-                }
-                !element cyberarkPam.pvwa.portal {
-                    -> cyberarkPam.pvwa.approval "Submits requested account and access justification" "In-process logical interface" "Dataflow,SecurityCatalog,PrivilegedFlow"
-                }
-                !element cyberarkPam.pvwa.approval {
-                    -> cyberarkPam.pvwa.vaultClient "Passes approved credential or metadata request" "In-process logical interface" "Dataflow,SecurityCatalog,PrivilegedFlow"
-                    -> cyberarkPam.pvwa.sessions "Authorizes target session launch" "In-process logical interface" "Dataflow,SecurityCatalog,PrivilegedFlow"
-                }
-                -> cyberarkPam.vault "Submits permitted Safe credential or metadata operations" "CyberArk Vault protocol / encrypted channel" "Dataflow,SecurityCatalog,PrivilegedFlow"
-            }
-            cpm = container "Central Policy Manager" "Verifies, rotates and reconciles managed target-account passwords." "CyberArk PAM / proprietary service" {
-                tags "SecurityCatalog"
-                url "https://docs.cyberark.com/pam-self-hosted/latest/en/content/pas%20inst/installationoverview.htm"
-                properties {
-                    "architecture.id" "cyberarkPam.cpm"
-                    "evidence" "Documented product capability"
-                }
-                scheduler = component "Password management scheduler" "Logical reference: Selects target accounts requiring verification, change or reconciliation." "CPM responsibility / proprietary implementation" {
-                    tags "SecurityCatalog,LogicalReference"
-                    url "https://docs.cyberark.com/pam-self-hosted/latest/en/content/pas%20inst/installationoverview.htm"
-                    properties {
-                        "architecture.id" "cyberarkPam.cpm.scheduler"
-                        "evidence" "Logical reference abstraction"
-                    }
-                }
-                rotation = component "Password rotation orchestration" "Logical reference: Coordinates target password change and Vault credential update." "CPM responsibility / proprietary implementation" {
-                    tags "SecurityCatalog,LogicalReference"
-                    url "https://docs.cyberark.com/pam-self-hosted/latest/en/content/pas%20inst/installationoverview.htm"
-                    properties {
-                        "architecture.id" "cyberarkPam.cpm.rotation"
-                        "evidence" "Logical reference abstraction"
-                    }
-                }
-                target = component "Target platform connector" "Logical reference: Runs the configured target-specific password verification or change operation." "CPM responsibility / proprietary implementation" {
-                    tags "SecurityCatalog,LogicalReference"
-                    url "https://docs.cyberark.com/pam-self-hosted/latest/en/content/pas%20inst/installationoverview.htm"
-                    properties {
-                        "architecture.id" "cyberarkPam.cpm.target"
-                        "evidence" "Logical reference abstraction"
-                    }
-                    -> cyberarkPam.cpm.rotation "Returns target password operation outcome" "In-process logical interface" "Dataflow,SecurityCatalog,PrivilegedFlow"
-                    -> managedTarget "Verifies or changes the privileged target password" "SSH / target-specific password commands" "Dataflow,SecurityCatalog,PrivilegedFlow,ReferenceIntegration"
-                }
-                vaultClient = component "Vault credential client" "Logical reference: Reads current credentials and writes successfully changed credentials." "CPM responsibility / proprietary implementation" {
-                    tags "SecurityCatalog,LogicalReference"
-                    url "https://docs.cyberark.com/pam-self-hosted/latest/en/content/pas%20inst/installationoverview.htm"
-                    properties {
-                        "architecture.id" "cyberarkPam.cpm.vaultClient"
-                        "evidence" "Logical reference abstraction"
-                    }
-                    -> cyberarkPam.cpm.rotation "Returns permitted credential and target details" "In-process logical interface" "Dataflow,SecurityCatalog,PrivilegedFlow"
-                    -> cyberarkPam.vault "Submits permitted Safe credential or metadata operations" "CyberArk Vault protocol / encrypted channel" "Dataflow,SecurityCatalog,PrivilegedFlow"
-                }
-                !element cyberarkPam.cpm.scheduler {
-                    -> cyberarkPam.cpm.rotation "Passes account identifier and password management task" "In-process logical interface" "Dataflow,SecurityCatalog,PrivilegedFlow"
-                }
-                !element cyberarkPam.cpm.rotation {
-                    -> cyberarkPam.cpm.vaultClient "Requests current credential and target account metadata" "In-process logical interface" "Dataflow,SecurityCatalog,PrivilegedFlow"
-                    -> cyberarkPam.cpm.target "Passes password verification or change operation" "In-process logical interface" "Dataflow,SecurityCatalog,PrivilegedFlow"
-                    -> cyberarkPam.cpm.vaultClient "Submits successfully changed credential for storage" "In-process logical interface" "Dataflow,SecurityCatalog,PrivilegedFlow"
-                }
-                -> cyberarkPam.vault "Submits permitted Safe credential or metadata operations" "CyberArk Vault protocol / encrypted channel" "Dataflow,SecurityCatalog,PrivilegedFlow"
-                -> managedTarget "Verifies or changes the privileged target password" "SSH / target-specific password commands" "Dataflow,SecurityCatalog,PrivilegedFlow,ReferenceIntegration"
-            }
-            psm = container "Privileged Session Manager" "Brokers privileged target sessions and records session activity." "CyberArk PAM / proprietary service" {
-                tags "SecurityCatalog"
-                url "https://docs.cyberark.com/pam-self-hosted/latest/en/content/pas%20inst/installationoverview.htm"
-                properties {
-                    "architecture.id" "cyberarkPam.psm"
-                    "evidence" "Documented product capability"
-                }
-                broker = component "Session broker" "Logical reference: Accepts authorized session requests and retrieves target credentials." "PSM responsibility / proprietary implementation" {
-                    tags "SecurityCatalog,LogicalReference"
-                    url "https://docs.cyberark.com/pam-self-hosted/latest/en/content/pas%20inst/installationoverview.htm"
-                    properties {
-                        "architecture.id" "cyberarkPam.psm.broker"
-                        "evidence" "Logical reference abstraction"
-                    }
-                    -> cyberarkPam.vault "Submits permitted Safe credential or metadata operations" "CyberArk Vault protocol / encrypted channel" "Dataflow,SecurityCatalog,PrivilegedFlow"
-                    -> operator "Returns brokered session output and completion status" "PSM-supported session client / encrypted connection" "Dataflow,SecurityCatalog,PrivilegedFlow,ReferenceIntegration"
-                }
-                target = component "Target session connector" "Logical reference: Establishes the example SSH session using the vaulted privileged account." "PSM responsibility / proprietary implementation" {
-                    tags "SecurityCatalog,LogicalReference"
-                    url "https://docs.cyberark.com/pam-self-hosted/latest/en/content/pas%20inst/installationoverview.htm"
-                    properties {
-                        "architecture.id" "cyberarkPam.psm.target"
-                        "evidence" "Logical reference abstraction"
-                    }
-                    -> cyberarkPam.psm.broker "Returns session output and completion status" "In-process logical interface" "Dataflow,SecurityCatalog,PrivilegedFlow"
-                    -> managedTarget "Opens privileged SSH session and relays administrator commands" "SSH" "Dataflow,SecurityCatalog,PrivilegedFlow,ReferenceIntegration"
-                }
-                recorder = component "Session recorder" "Logical reference: Captures session activity and uploads recordings to the Vault." "PSM responsibility / proprietary implementation" {
-                    tags "SecurityCatalog,LogicalReference"
-                    url "https://docs.cyberark.com/pam-self-hosted/latest/en/content/pas%20inst/installationoverview.htm"
-                    properties {
-                        "architecture.id" "cyberarkPam.psm.recorder"
-                        "evidence" "Logical reference abstraction"
-                    }
-                    -> cyberarkPam.vault "Uploads session recordings and audit metadata" "CyberArk Vault protocol / encrypted channel" "Dataflow,SecurityCatalog,PrivilegedFlow"
-                }
-                !element cyberarkPam.psm.broker {
-                    -> cyberarkPam.psm.target "Passes authorized target and privileged credential" "In-process logical interface" "Dataflow,SecurityCatalog,PrivilegedFlow"
-                }
-                !element cyberarkPam.psm.target {
-                    -> cyberarkPam.psm.recorder "Supplies session activity for recording" "In-process logical interface" "Dataflow,SecurityCatalog,PrivilegedFlow"
-                }
-                -> cyberarkPam.vault "Submits permitted Safe credential or metadata operations" "CyberArk Vault protocol / encrypted channel" "Dataflow,SecurityCatalog,PrivilegedFlow"
-                -> cyberarkPam.vault "Uploads session recordings and audit metadata" "CyberArk Vault protocol / encrypted channel" "Dataflow,SecurityCatalog,PrivilegedFlow"
-                -> managedTarget "Opens privileged SSH session and relays administrator commands" "SSH" "Dataflow,SecurityCatalog,PrivilegedFlow,ReferenceIntegration"
-                -> operator "Returns brokered session output and completion status" "PSM-supported session client / encrypted connection" "Dataflow,SecurityCatalog,PrivilegedFlow,ReferenceIntegration"
-            }
-            !element cyberarkPam.vault {
-                -> cyberarkPam.pvwa "Returns authorized credential or account metadata" "CyberArk Vault protocol / encrypted channel" "Dataflow,SecurityCatalog,SecretFlow"
-                -> cyberarkPam.pvwa.vaultClient "Returns authorized credential or account metadata" "CyberArk Vault protocol / encrypted channel" "Dataflow,SecurityCatalog,SecretFlow"
-                -> cyberarkPam.cpm "Returns authorized credential or account metadata" "CyberArk Vault protocol / encrypted channel" "Dataflow,SecurityCatalog,SecretFlow"
-                -> cyberarkPam.cpm.vaultClient "Returns authorized credential or account metadata" "CyberArk Vault protocol / encrypted channel" "Dataflow,SecurityCatalog,SecretFlow"
-                -> cyberarkPam.psm "Returns authorized credential or account metadata" "CyberArk Vault protocol / encrypted channel" "Dataflow,SecurityCatalog,SecretFlow"
-                -> cyberarkPam.psm.broker "Returns authorized credential or account metadata" "CyberArk Vault protocol / encrypted channel" "Dataflow,SecurityCatalog,SecretFlow"
-            }
-            !element cyberarkPam.pvwa {
-                -> cyberarkPam.psm "Supplies authorized session-launch context via the user session client" "Session connection parameters / client-mediated" "Dataflow,SecurityCatalog,PrivilegedFlow"
-            }
-            !element cyberarkPam.pvwa.sessions {
-                -> cyberarkPam.psm "Supplies authorized session-launch context via the user session client" "Session connection parameters / client-mediated" "Dataflow,SecurityCatalog,PrivilegedFlow"
-            }
-            -> managedTarget "Rotates target credentials and brokers recorded privileged sessions" "SSH / target-specific password commands" "Dataflow,SecurityCatalog,PrivilegedFlow,ReferenceIntegration"
-        }
-        conjur = softwareSystem "CyberArk Conjur Enterprise" "Enterprise workload secret access; documented as Secrets Manager Self-Hosted. OSS is not the selected variant." {
-            tags "SecurityCatalog"
-            url "https://docs.cyberark.com/secrets-manager-sh/latest/en/content/resources/_topnav/cc_home.htm"
-            properties {
-                "architecture.id" "conjur"
-                "evidence" "Documented product capability"
-            }
-            !docs docs/static/system
-            !adrs docs/static/decisions
-            service = container "Conjur service" "Logical enterprise runtime for policy, workload authentication and secret APIs; no leader/follower placement is specified." "Conjur Enterprise / HTTPS API" {
-                tags "SecurityCatalog,LogicalReference"
-                url "https://docs.cyberark.com/secrets-manager-sh/latest/en/content/resources/_topnav/cc_home.htm"
-                properties {
-                    "architecture.id" "conjur.service"
-                    "evidence" "Logical reference abstraction"
-                }
-                api = component "Secret and policy API" "Logical reference: Accepts authenticated secret and policy operations." "Conjur responsibility / logical reference" {
-                    tags "SecurityCatalog,LogicalReference"
-                    url "https://docs.cyberark.com/secrets-manager-sh/latest/en/content/resources/_topnav/cc_home.htm"
-                    properties {
-                        "architecture.id" "conjur.service.api"
-                        "evidence" "Logical reference abstraction"
-                    }
-                    -> apps.client "Returns short-lived access token or authorized application secret" "HTTPS / Conjur API response" "Dataflow,SecurityCatalog,SecretFlow,ReferenceIntegration"
-                }
-                authentication = component "Workload authentication" "Logical reference: Validates the configured workload identity proof and issues a short-lived Conjur access token." "Conjur responsibility / logical reference" {
-                    tags "SecurityCatalog,LogicalReference"
-                    url "https://docs.cyberark.com/secrets-manager-sh/latest/en/content/resources/_topnav/cc_home.htm"
-                    properties {
-                        "architecture.id" "conjur.service.authentication"
-                        "evidence" "Logical reference abstraction"
-                    }
-                    -> conjur.service.api "Returns short-lived Conjur access token" "In-process logical interface" "Dataflow,SecurityCatalog,SecretFlow"
-                }
-                policy = component "Policy authorization" "Logical reference: Evaluates workload permissions for the requested secret variable or policy resource." "Conjur responsibility / logical reference" {
-                    tags "SecurityCatalog,LogicalReference"
-                    url "https://docs.cyberark.com/secrets-manager-sh/latest/en/content/resources/_topnav/cc_home.htm"
-                    properties {
-                        "architecture.id" "conjur.service.policy"
-                        "evidence" "Logical reference abstraction"
-                    }
-                }
-                secrets = component "Secret access" "Logical reference: Returns only authorized secret values and accepts permitted updates." "Conjur responsibility / logical reference" {
-                    tags "SecurityCatalog,LogicalReference"
-                    url "https://docs.cyberark.com/secrets-manager-sh/latest/en/content/resources/_topnav/cc_home.htm"
-                    properties {
-                        "architecture.id" "conjur.service.secrets"
-                        "evidence" "Logical reference abstraction"
-                    }
-                    -> conjur.service.api "Returns authorized secret value or update status" "In-process logical interface" "Dataflow,SecurityCatalog,SecretFlow"
-                }
-                audit = component "Access auditing" "Logical reference: Records workload, variable identifier and operation outcome without secret values." "Conjur responsibility / logical reference" {
-                    tags "SecurityCatalog,LogicalReference"
-                    url "https://docs.cyberark.com/secrets-manager-sh/latest/en/content/resources/_topnav/cc_home.htm"
-                    properties {
-                        "architecture.id" "conjur.service.audit"
-                        "evidence" "Logical reference abstraction"
-                    }
-                }
-                !element conjur.service.api {
-                    -> conjur.service.authentication "Submits configured workload authentication proof" "In-process logical interface" "Dataflow,SecurityCatalog,SecretFlow"
-                    -> conjur.service.policy "Passes token identity, variable path and requested operation" "In-process logical interface" "Dataflow,SecurityCatalog,SecretFlow"
-                    -> conjur.service.audit "Records workload, variable identifier and operation outcome" "In-process logical interface" "Dataflow,SecurityCatalog,SecretFlow"
-                }
-                !element conjur.service.policy {
-                    -> conjur.service.secrets "Authorizes secret variable read or update" "In-process logical interface" "Dataflow,SecurityCatalog,SecretFlow"
-                }
-                -> apps.client "Returns short-lived access token or authorized application secret" "HTTPS / Conjur API response" "Dataflow,SecurityCatalog,SecretFlow,ReferenceIntegration"
-            }
-            store = container "Conjur encrypted persistence" "Logical service-owned storage for encrypted secrets, identity and policy state; not an independently provisioned database claim." "Service-owned encrypted persistence (logical)" {
-                tags "SecurityCatalog,LogicalReference,Database"
-                url "https://docs.cyberark.com/secrets-manager-sh/latest/en/content/resources/_topnav/cc_home.htm"
-                properties {
-                    "architecture.id" "conjur.store"
-                    "evidence" "Logical reference abstraction"
-                }
-            }
-            synchronizer = container "Vault Synchronizer" "Reads selected PAM Vault accounts and synchronizes their secret values into Conjur Enterprise." "CyberArk Vault Synchronizer" {
-                tags "SecurityCatalog"
-                url "https://docs.cyberark.com/secrets-manager-sh/latest/en/content/conjur/cv_synchronizer-lp.htm"
-                properties {
-                    "architecture.id" "conjur.synchronizer"
-                    "evidence" "Documented product capability"
-                }
-                reader = component "Vault account reader" "Logical reference: Reads selected Vault accounts and changed credentials." "Synchronizer responsibility / proprietary implementation" {
-                    tags "SecurityCatalog,LogicalReference"
-                    url "https://docs.cyberark.com/secrets-manager-sh/latest/en/content/conjur/cv_synchronizer-lp.htm"
-                    properties {
-                        "architecture.id" "conjur.synchronizer.reader"
-                        "evidence" "Logical reference abstraction"
-                    }
-                    -> cyberarkPam.vault "Reads configured Vault accounts and changed credential versions" "CyberArk Vault protocol / encrypted channel" "Dataflow,SecurityCatalog,SecretFlow"
-                }
-                mapping = component "Account-to-variable mapping" "Logical reference: Maps selected Vault account metadata to Conjur variable identifiers." "Synchronizer responsibility / proprietary implementation" {
-                    tags "SecurityCatalog,LogicalReference"
-                    url "https://docs.cyberark.com/secrets-manager-sh/latest/en/content/conjur/cv_synchronizer-lp.htm"
-                    properties {
-                        "architecture.id" "conjur.synchronizer.mapping"
-                        "evidence" "Logical reference abstraction"
-                    }
-                }
-                writer = component "Conjur update client" "Logical reference: Authenticates to Conjur and writes synchronized secret values." "Synchronizer responsibility / proprietary implementation" {
-                    tags "SecurityCatalog,LogicalReference"
-                    url "https://docs.cyberark.com/secrets-manager-sh/latest/en/content/conjur/cv_synchronizer-lp.htm"
-                    properties {
-                        "architecture.id" "conjur.synchronizer.writer"
-                        "evidence" "Logical reference abstraction"
-                    }
-                    -> conjur.service "Authenticates and writes mapped secret variable values" "HTTPS / Conjur API" "Dataflow,SecurityCatalog,SecretFlow"
-                }
-                !element conjur.synchronizer.reader {
-                    -> conjur.synchronizer.mapping "Supplies selected account identifier, metadata and credential version" "In-process logical interface" "Dataflow,SecurityCatalog,SecretFlow"
-                }
-                !element conjur.synchronizer.mapping {
-                    -> conjur.synchronizer.writer "Supplies mapped variable identifier and updated secret value" "In-process logical interface" "Dataflow,SecurityCatalog,SecretFlow"
-                }
-                -> cyberarkPam.vault "Reads configured Vault accounts and changed credential versions" "CyberArk Vault protocol / encrypted channel" "Dataflow,SecurityCatalog,SecretFlow"
-                -> conjur.service "Authenticates and writes mapped secret variable values" "HTTPS / Conjur API" "Dataflow,SecurityCatalog,SecretFlow"
-            }
-            !element conjur.service {
-                -> conjur.store "Reads or writes encrypted secret records and versions" "Service-owned persistence interface (logical)" "Dataflow,SecurityCatalog,SecretFlow"
-            }
-            !element conjur.service.secrets {
-                -> conjur.store "Reads or writes encrypted secret records and versions" "Service-owned persistence interface (logical)" "Dataflow,SecurityCatalog,SecretFlow"
-            }
-            !element conjur.service.policy {
-                -> conjur.store "Reads workload permissions and variable policy records" "Service-owned persistence interface (logical)" "Dataflow,SecurityCatalog,SecretFlow"
-            }
-            -> apps "Returns short-lived token or authorized application secret" "HTTPS / Conjur API response" "Dataflow,SecurityCatalog,SecretFlow,ReferenceIntegration"
-        }
-        entraId = softwareSystem "Microsoft Entra ID" "Cloud identity, token issuance, directory administration and provisioning; separate from AD DS and AD FS." {
-            tags "SecurityCatalog"
-            url "https://learn.microsoft.com/en-us/entra/architecture/architecture"
-            properties {
-                "architecture.id" "entraId"
-                "evidence" "Documented product capability"
-            }
-            !docs docs/static/system
-            !adrs docs/static/decisions
-            authentication = container "Authentication and token service" "Logical identity-platform service for user and application authentication and token issuance." "Microsoft Entra managed service (logical)" {
-                tags "SecurityCatalog,LogicalReference"
-                url "https://learn.microsoft.com/en-us/entra/identity-platform/v2-protocols-oidc"
-                properties {
-                    "architecture.id" "entraId.authentication"
-                    "evidence" "Logical reference abstraction"
-                }
-                endpoints = component "Identity protocol endpoints" "Logical reference: Accepts OIDC authorization and OAuth token requests." "Identity-platform responsibility / implementation undisclosed" {
-                    tags "SecurityCatalog,LogicalReference"
-                    url "https://learn.microsoft.com/en-us/entra/identity-platform/v2-protocols-oidc"
-                    properties {
-                        "architecture.id" "entraId.authentication.endpoints"
-                        "evidence" "Logical reference abstraction"
-                    }
-                    -> apps.client "Returns signed identity response through the configured browser/client flow" "HTTPS / OIDC or SAML as configured" "Dataflow,SecurityCatalog,IdentityFlow,ReferenceIntegration"
-                }
-                credentials = component "Identity authentication" "Logical reference: Validates configured user or application authentication proof." "Identity-platform responsibility / implementation undisclosed" {
-                    tags "SecurityCatalog,LogicalReference"
-                    url "https://learn.microsoft.com/en-us/entra/identity-platform/v2-protocols-oidc"
-                    properties {
-                        "architecture.id" "entraId.authentication.credentials"
-                        "evidence" "Logical reference abstraction"
-                    }
-                }
-                policy = component "Access-policy evaluation" "Logical reference: Applies applicable sign-in and access requirements for this identity and resource." "Identity-platform responsibility / implementation undisclosed" {
-                    tags "SecurityCatalog,LogicalReference"
-                    url "https://learn.microsoft.com/en-us/entra/identity-platform/v2-protocols-oidc"
-                    properties {
-                        "architecture.id" "entraId.authentication.policy"
-                        "evidence" "Logical reference abstraction"
-                    }
-                }
-                tokens = component "Token issuance" "Logical reference: Issues signed ID and access tokens with audience-specific claims." "Identity-platform responsibility / implementation undisclosed" {
-                    tags "SecurityCatalog,LogicalReference"
-                    url "https://learn.microsoft.com/en-us/entra/identity-platform/v2-protocols-oidc"
-                    properties {
-                        "architecture.id" "entraId.authentication.tokens"
-                        "evidence" "Logical reference abstraction"
-                    }
-                    -> entraId.authentication.endpoints "Returns signed ID or access token response" "In-process logical interface" "Dataflow,SecurityCatalog,IdentityFlow"
-                }
-                !element entraId.authentication.endpoints {
-                    -> entraId.authentication.credentials "Passes authorization or token request with authentication proof" "In-process logical interface" "Dataflow,SecurityCatalog,IdentityFlow"
-                }
-                !element entraId.authentication.credentials {
-                    -> entraId.authentication.policy "Supplies authenticated identity and sign-in context" "In-process logical interface" "Dataflow,SecurityCatalog,IdentityFlow"
-                }
-                !element entraId.authentication.policy {
-                    -> entraId.authentication.tokens "Supplies permitted identity, audience and scopes" "In-process logical interface" "Dataflow,SecurityCatalog,IdentityFlow"
-                }
-                -> apps.client "Returns authenticated identity tokens or assertions through the selected protocol flow" "HTTPS / OIDC reference client" "Dataflow,SecurityCatalog,IdentityFlow,ReferenceIntegration"
-                -> keycloak.server "Returns authorization code through browser redirect" "HTTPS / OIDC redirect" "Dataflow,SecurityCatalog,IdentityFlow,ReferenceIntegration"
-                -> keycloak.server "Returns signed ID token and token endpoint response" "HTTPS / OAuth token response" "Dataflow,SecurityCatalog,IdentityFlow,ReferenceIntegration"
-                -> keycloak.server.broker "Returns authorization code through browser redirect" "HTTPS / OIDC redirect" "Dataflow,SecurityCatalog,IdentityFlow,ReferenceIntegration"
-                -> keycloak.server.broker "Returns signed ID token and token endpoint response" "HTTPS / OAuth token response" "Dataflow,SecurityCatalog,IdentityFlow,ReferenceIntegration"
-                hsmWorkloadTokenResponse = entraId.authentication -> apps.client "Returns HSM-audience workload access token" "HTTPS / OAuth 2.0 token response" "Dataflow,SecurityCatalog,IdentityFlow,ReferenceIntegration"
-                -> apps.hsmSigner "Returns Managed HSM audience access token" "HTTPS / OAuth 2.0 token response" "Dataflow,SecurityCatalog,IdentityFlow,ReferenceIntegration"
-                -> apps.hsmSigner.hsm "Returns Managed HSM audience access token" "HTTPS / OAuth 2.0 token response" "Dataflow,SecurityCatalog,IdentityFlow,ReferenceIntegration"
-            }
-            directory = container "Directory and administration API" "Logical directory and Microsoft Graph-facing boundary for users, groups, applications and policies." "Microsoft Entra managed service (logical)" {
-                tags "SecurityCatalog,LogicalReference"
                 url "https://learn.microsoft.com/en-us/entra/architecture/architecture"
                 properties {
-                    "architecture.id" "entraId.directory"
-                    "evidence" "Logical reference abstraction"
+                    "architecture.id" "entraId"
+                    "evidence" "Documented product capability"
                 }
-                api = component "Directory administration API" "Logical reference: Accepts authorized directory reads and changes through public administrative interfaces." "Directory responsibility / implementation undisclosed" {
+                !docs docs/static/system
+                !adrs docs/static/decisions
+                authentication = container "Authentication and token service" "Logical identity-platform service for user and application authentication and token issuance." "Microsoft Entra managed service (logical)" {
+                    tags "SecurityCatalog,LogicalReference"
+                    url "https://learn.microsoft.com/en-us/entra/identity-platform/v2-protocols-oidc"
+                    properties {
+                        "architecture.id" "entraId.authentication"
+                        "evidence" "Logical reference abstraction"
+                    }
+                    endpoints = component "Identity protocol endpoints" "Logical reference: Accepts OIDC authorization and OAuth token requests." "Identity-platform responsibility / implementation undisclosed" {
+                        tags "SecurityCatalog,LogicalReference"
+                        url "https://learn.microsoft.com/en-us/entra/identity-platform/v2-protocols-oidc"
+                        properties {
+                            "architecture.id" "entraId.authentication.endpoints"
+                            "evidence" "Logical reference abstraction"
+                        }
+                        -> apps.client "Returns signed identity response through the configured browser/client flow" "HTTPS / OIDC or SAML as configured" "Dataflow,SecurityCatalog,IdentityFlow,ReferenceIntegration"
+                    }
+                    credentials = component "Identity authentication" "Logical reference: Validates configured user or application authentication proof." "Identity-platform responsibility / implementation undisclosed" {
+                        tags "SecurityCatalog,LogicalReference"
+                        url "https://learn.microsoft.com/en-us/entra/identity-platform/v2-protocols-oidc"
+                        properties {
+                            "architecture.id" "entraId.authentication.credentials"
+                            "evidence" "Logical reference abstraction"
+                        }
+                    }
+                    policy = component "Access-policy evaluation" "Logical reference: Applies applicable sign-in and access requirements for this identity and resource." "Identity-platform responsibility / implementation undisclosed" {
+                        tags "SecurityCatalog,LogicalReference"
+                        url "https://learn.microsoft.com/en-us/entra/identity-platform/v2-protocols-oidc"
+                        properties {
+                            "architecture.id" "entraId.authentication.policy"
+                            "evidence" "Logical reference abstraction"
+                        }
+                    }
+                    tokens = component "Token issuance" "Logical reference: Issues signed ID and access tokens with audience-specific claims." "Identity-platform responsibility / implementation undisclosed" {
+                        tags "SecurityCatalog,LogicalReference"
+                        url "https://learn.microsoft.com/en-us/entra/identity-platform/v2-protocols-oidc"
+                        properties {
+                            "architecture.id" "entraId.authentication.tokens"
+                            "evidence" "Logical reference abstraction"
+                        }
+                        -> entraId.authentication.endpoints "Returns signed ID or access token response" "In-process logical interface" "Dataflow,SecurityCatalog,IdentityFlow"
+                    }
+                    !element entraId.authentication.endpoints {
+                        -> entraId.authentication.credentials "Passes authorization or token request with authentication proof" "In-process logical interface" "Dataflow,SecurityCatalog,IdentityFlow"
+                    }
+                    !element entraId.authentication.credentials {
+                        -> entraId.authentication.policy "Supplies authenticated identity and sign-in context" "In-process logical interface" "Dataflow,SecurityCatalog,IdentityFlow"
+                    }
+                    !element entraId.authentication.policy {
+                        -> entraId.authentication.tokens "Supplies permitted identity, audience and scopes" "In-process logical interface" "Dataflow,SecurityCatalog,IdentityFlow"
+                    }
+                    -> apps.client "Returns authenticated identity tokens or assertions through the selected protocol flow" "HTTPS / OIDC reference client" "Dataflow,SecurityCatalog,IdentityFlow,ReferenceIntegration"
+                    -> keycloak.server "Returns authorization code through browser redirect" "HTTPS / OIDC redirect" "Dataflow,SecurityCatalog,IdentityFlow,ReferenceIntegration"
+                    -> keycloak.server "Returns signed ID token and token endpoint response" "HTTPS / OAuth token response" "Dataflow,SecurityCatalog,IdentityFlow,ReferenceIntegration"
+                    -> keycloak.server.broker "Returns authorization code through browser redirect" "HTTPS / OIDC redirect" "Dataflow,SecurityCatalog,IdentityFlow,ReferenceIntegration"
+                    -> keycloak.server.broker "Returns signed ID token and token endpoint response" "HTTPS / OAuth token response" "Dataflow,SecurityCatalog,IdentityFlow,ReferenceIntegration"
+                    hsmWorkloadTokenResponse = entraId.authentication -> apps.client "Returns HSM-audience workload access token" "HTTPS / OAuth 2.0 token response" "Dataflow,SecurityCatalog,IdentityFlow,ReferenceIntegration"
+                    -> apps.hsmSigner "Returns Managed HSM audience access token" "HTTPS / OAuth 2.0 token response" "Dataflow,SecurityCatalog,IdentityFlow,ReferenceIntegration"
+                    -> apps.hsmSigner.hsm "Returns Managed HSM audience access token" "HTTPS / OAuth 2.0 token response" "Dataflow,SecurityCatalog,IdentityFlow,ReferenceIntegration"
+                }
+                directory = container "Directory and administration API" "Logical directory and Microsoft Graph-facing boundary for users, groups, applications and policies." "Microsoft Entra managed service (logical)" {
                     tags "SecurityCatalog,LogicalReference"
                     url "https://learn.microsoft.com/en-us/entra/architecture/architecture"
                     properties {
-                        "architecture.id" "entraId.directory.api"
+                        "architecture.id" "entraId.directory"
                         "evidence" "Logical reference abstraction"
                     }
-                }
-                authorization = component "Directory authorization" "Logical reference: Checks caller permissions for the requested directory resource operation." "Directory responsibility / implementation undisclosed" {
-                    tags "SecurityCatalog,LogicalReference"
-                    url "https://learn.microsoft.com/en-us/entra/architecture/architecture"
-                    properties {
-                        "architecture.id" "entraId.directory.authorization"
-                        "evidence" "Logical reference abstraction"
+                    api = component "Directory administration API" "Logical reference: Accepts authorized directory reads and changes through public administrative interfaces." "Directory responsibility / implementation undisclosed" {
+                        tags "SecurityCatalog,LogicalReference"
+                        url "https://learn.microsoft.com/en-us/entra/architecture/architecture"
+                        properties {
+                            "architecture.id" "entraId.directory.api"
+                            "evidence" "Logical reference abstraction"
+                        }
+                    }
+                    authorization = component "Directory authorization" "Logical reference: Checks caller permissions for the requested directory resource operation." "Directory responsibility / implementation undisclosed" {
+                        tags "SecurityCatalog,LogicalReference"
+                        url "https://learn.microsoft.com/en-us/entra/architecture/architecture"
+                        properties {
+                            "architecture.id" "entraId.directory.authorization"
+                            "evidence" "Logical reference abstraction"
+                        }
+                    }
+                    records = component "Directory object access" "Logical reference: Reads and writes identity, group, application and policy records." "Directory responsibility / implementation undisclosed" {
+                        tags "SecurityCatalog,LogicalReference"
+                        url "https://learn.microsoft.com/en-us/entra/architecture/architecture"
+                        properties {
+                            "architecture.id" "entraId.directory.records"
+                            "evidence" "Logical reference abstraction"
+                        }
+                        -> entraId.directory.api "Returns directory objects or update outcome" "In-process logical interface" "Dataflow,SecurityCatalog,DirectoryFlow"
+                    }
+                    !element entraId.directory.api {
+                        -> entraId.directory.authorization "Passes caller, directory resource and operation" "In-process logical interface" "Dataflow,SecurityCatalog,DirectoryFlow"
+                    }
+                    !element entraId.directory.authorization {
+                        -> entraId.directory.records "Authorizes identity or policy record access" "In-process logical interface" "Dataflow,SecurityCatalog,DirectoryFlow"
                     }
                 }
-                records = component "Directory object access" "Logical reference: Reads and writes identity, group, application and policy records." "Directory responsibility / implementation undisclosed" {
-                    tags "SecurityCatalog,LogicalReference"
-                    url "https://learn.microsoft.com/en-us/entra/architecture/architecture"
-                    properties {
-                        "architecture.id" "entraId.directory.records"
-                        "evidence" "Logical reference abstraction"
-                    }
-                    -> entraId.directory.api "Returns directory objects or update outcome" "In-process logical interface" "Dataflow,SecurityCatalog,DirectoryFlow"
-                }
-                !element entraId.directory.api {
-                    -> entraId.directory.authorization "Passes caller, directory resource and operation" "In-process logical interface" "Dataflow,SecurityCatalog,DirectoryFlow"
-                }
-                !element entraId.directory.authorization {
-                    -> entraId.directory.records "Authorizes identity or policy record access" "In-process logical interface" "Dataflow,SecurityCatalog,DirectoryFlow"
-                }
-            }
-            provisioning = container "Cloud Sync provisioning service" "Orchestrates selected AD object synchronization and commits directory changes." "Microsoft Entra managed service (logical)" {
-                tags "SecurityCatalog,LogicalReference"
-                url "https://learn.microsoft.com/en-us/entra/identity/hybrid/cloud-sync/what-is-cloud-sync"
-                properties {
-                    "architecture.id" "entraId.provisioning"
-                    "evidence" "Logical reference abstraction"
-                }
-                scheduler = component "Provisioning orchestration" "Logical reference: Schedules scoped synchronization work and tracks incremental progress." "Cloud Sync logical responsibility" {
-                    tags "SecurityCatalog,LogicalReference"
-                    url "https://learn.microsoft.com/en-us/entra/identity/hybrid/cloud-sync/what-is-cloud-sync"
-                    properties {
-                        "architecture.id" "entraId.provisioning.scheduler"
-                        "evidence" "Logical reference abstraction"
-                    }
-                }
-                mapping = component "Provisioning mapping and processing" "Logical reference: Processes returned attributes according to configured scopes and mappings." "Cloud Sync logical responsibility" {
+                provisioning = container "Cloud Sync provisioning service" "Orchestrates selected AD object synchronization and commits directory changes." "Microsoft Entra managed service (logical)" {
                     tags "SecurityCatalog,LogicalReference"
                     url "https://learn.microsoft.com/en-us/entra/identity/hybrid/cloud-sync/what-is-cloud-sync"
                     properties {
-                        "architecture.id" "entraId.provisioning.mapping"
+                        "architecture.id" "entraId.provisioning"
                         "evidence" "Logical reference abstraction"
                     }
-                }
-                writer = component "Directory update client" "Logical reference: Commits processed object changes to the Entra directory." "Cloud Sync logical responsibility" {
-                    tags "SecurityCatalog,LogicalReference"
-                    url "https://learn.microsoft.com/en-us/entra/identity/hybrid/cloud-sync/what-is-cloud-sync"
-                    properties {
-                        "architecture.id" "entraId.provisioning.writer"
-                        "evidence" "Logical reference abstraction"
+                    scheduler = component "Provisioning orchestration" "Logical reference: Schedules scoped synchronization work and tracks incremental progress." "Cloud Sync logical responsibility" {
+                        tags "SecurityCatalog,LogicalReference"
+                        url "https://learn.microsoft.com/en-us/entra/identity/hybrid/cloud-sync/what-is-cloud-sync"
+                        properties {
+                            "architecture.id" "entraId.provisioning.scheduler"
+                            "evidence" "Logical reference abstraction"
+                        }
+                    }
+                    mapping = component "Provisioning mapping and processing" "Logical reference: Processes returned attributes according to configured scopes and mappings." "Cloud Sync logical responsibility" {
+                        tags "SecurityCatalog,LogicalReference"
+                        url "https://learn.microsoft.com/en-us/entra/identity/hybrid/cloud-sync/what-is-cloud-sync"
+                        properties {
+                            "architecture.id" "entraId.provisioning.mapping"
+                            "evidence" "Logical reference abstraction"
+                        }
+                    }
+                    writer = component "Directory update client" "Logical reference: Commits processed object changes to the Entra directory." "Cloud Sync logical responsibility" {
+                        tags "SecurityCatalog,LogicalReference"
+                        url "https://learn.microsoft.com/en-us/entra/identity/hybrid/cloud-sync/what-is-cloud-sync"
+                        properties {
+                            "architecture.id" "entraId.provisioning.writer"
+                            "evidence" "Logical reference abstraction"
+                        }
+                        -> entraId.directory "Commits scoped user, group and contact changes" "Microsoft internal directory interface (logical)" "Dataflow,SecurityCatalog,DirectoryFlow"
+                    }
+                    !element entraId.provisioning.scheduler {
+                        -> entraId.provisioning.mapping "Submits returned directory object changes and synchronization state" "In-process logical interface" "Dataflow,SecurityCatalog,DirectoryFlow"
+                    }
+                    !element entraId.provisioning.mapping {
+                        -> entraId.provisioning.writer "Supplies filtered and mapped directory object changes" "In-process logical interface" "Dataflow,SecurityCatalog,DirectoryFlow"
                     }
                     -> entraId.directory "Commits scoped user, group and contact changes" "Microsoft internal directory interface (logical)" "Dataflow,SecurityCatalog,DirectoryFlow"
                 }
-                !element entraId.provisioning.scheduler {
-                    -> entraId.provisioning.mapping "Submits returned directory object changes and synchronization state" "In-process logical interface" "Dataflow,SecurityCatalog,DirectoryFlow"
-                }
-                !element entraId.provisioning.mapping {
-                    -> entraId.provisioning.writer "Supplies filtered and mapped directory object changes" "In-process logical interface" "Dataflow,SecurityCatalog,DirectoryFlow"
-                }
-                -> entraId.directory "Commits scoped user, group and contact changes" "Microsoft internal directory interface (logical)" "Dataflow,SecurityCatalog,DirectoryFlow"
-            }
-            agent = container "Cloud Sync provisioning agent" "Customer-managed runtime that queries AD DS through outbound-established communication with the provisioning service." "Microsoft Entra provisioning agent / Windows service" {
-                tags "SecurityCatalog"
-                url "https://learn.microsoft.com/en-us/entra/identity/hybrid/cloud-sync/what-is-cloud-sync"
-                properties {
-                    "architecture.id" "entraId.agent"
-                    "evidence" "Documented product capability"
-                }
-                channel = component "Outbound service channel" "Logical reference: Receives synchronization requests through the agent-established service connection." "Provisioning agent logical responsibility" {
-                    tags "SecurityCatalog,LogicalReference"
+                agent = container "Cloud Sync provisioning agent" "Customer-managed runtime that queries AD DS through outbound-established communication with the provisioning service." "Microsoft Entra provisioning agent / Windows service" {
+                    tags "SecurityCatalog"
                     url "https://learn.microsoft.com/en-us/entra/identity/hybrid/cloud-sync/what-is-cloud-sync"
                     properties {
-                        "architecture.id" "entraId.agent.channel"
-                        "evidence" "Logical reference abstraction"
+                        "architecture.id" "entraId.agent"
+                        "evidence" "Documented product capability"
+                    }
+                    channel = component "Outbound service channel" "Logical reference: Receives synchronization requests through the agent-established service connection." "Provisioning agent logical responsibility" {
+                        tags "SecurityCatalog,LogicalReference"
+                        url "https://learn.microsoft.com/en-us/entra/identity/hybrid/cloud-sync/what-is-cloud-sync"
+                        properties {
+                            "architecture.id" "entraId.agent.channel"
+                            "evidence" "Logical reference abstraction"
+                        }
+                        -> entraId.provisioning "Establishes outbound channel and returns requested directory attributes" "TLS / Cloud Sync service channel via Azure Service Bus" "Dataflow,SecurityCatalog,DirectoryFlow"
+                    }
+                    directory = component "AD query connector" "Logical reference: Queries scoped AD objects and returns requested attributes." "Provisioning agent logical responsibility" {
+                        tags "SecurityCatalog,LogicalReference"
+                        url "https://learn.microsoft.com/en-us/entra/identity/hybrid/cloud-sync/what-is-cloud-sync"
+                        properties {
+                            "architecture.id" "entraId.agent.directory"
+                            "evidence" "Logical reference abstraction"
+                        }
+                    }
+                    response = component "Synchronization response" "Logical reference: Returns directory data and progress information to cloud provisioning." "Provisioning agent logical responsibility" {
+                        tags "SecurityCatalog,LogicalReference"
+                        url "https://learn.microsoft.com/en-us/entra/identity/hybrid/cloud-sync/what-is-cloud-sync"
+                        properties {
+                            "architecture.id" "entraId.agent.response"
+                            "evidence" "Logical reference abstraction"
+                        }
+                        -> entraId.agent.channel "Returns synchronization data for the established service channel" "In-process logical interface" "Dataflow,SecurityCatalog,DirectoryFlow"
+                    }
+                    !element entraId.agent.channel {
+                        -> entraId.agent.directory "Passes requested directory scope and attribute query" "In-process logical interface" "Dataflow,SecurityCatalog,DirectoryFlow"
+                    }
+                    !element entraId.agent.directory {
+                        -> entraId.agent.response "Supplies selected object attributes and query outcome" "In-process logical interface" "Dataflow,SecurityCatalog,DirectoryFlow"
                     }
                     -> entraId.provisioning "Establishes outbound channel and returns requested directory attributes" "TLS / Cloud Sync service channel via Azure Service Bus" "Dataflow,SecurityCatalog,DirectoryFlow"
+                    -> entraId.provisioning.mapping "Returns scoped object attributes and synchronization progress" "TLS / established Cloud Sync channel" "Dataflow,SecurityCatalog,DirectoryFlow"
                 }
-                directory = component "AD query connector" "Logical reference: Queries scoped AD objects and returns requested attributes." "Provisioning agent logical responsibility" {
-                    tags "SecurityCatalog,LogicalReference"
-                    url "https://learn.microsoft.com/en-us/entra/identity/hybrid/cloud-sync/what-is-cloud-sync"
-                    properties {
-                        "architecture.id" "entraId.agent.directory"
-                        "evidence" "Logical reference abstraction"
-                    }
+                !element entraId.authentication {
+                    -> entraId.directory "Reads identity, application and applicable policy records" "Microsoft internal service interface (logical)" "Dataflow,SecurityCatalog,DirectoryFlow"
                 }
-                response = component "Synchronization response" "Logical reference: Returns directory data and progress information to cloud provisioning." "Provisioning agent logical responsibility" {
-                    tags "SecurityCatalog,LogicalReference"
-                    url "https://learn.microsoft.com/en-us/entra/identity/hybrid/cloud-sync/what-is-cloud-sync"
-                    properties {
-                        "architecture.id" "entraId.agent.response"
-                        "evidence" "Logical reference abstraction"
-                    }
-                    -> entraId.agent.channel "Returns synchronization data for the established service channel" "In-process logical interface" "Dataflow,SecurityCatalog,DirectoryFlow"
+                !element entraId.authentication.credentials {
+                    -> entraId.directory "Reads identity, application and applicable policy records" "Microsoft internal service interface (logical)" "Dataflow,SecurityCatalog,DirectoryFlow"
                 }
-                !element entraId.agent.channel {
-                    -> entraId.agent.directory "Passes requested directory scope and attribute query" "In-process logical interface" "Dataflow,SecurityCatalog,DirectoryFlow"
+                !element entraId.authentication.policy {
+                    -> entraId.directory "Reads identity, application and applicable policy records" "Microsoft internal service interface (logical)" "Dataflow,SecurityCatalog,DirectoryFlow"
                 }
-                !element entraId.agent.directory {
-                    -> entraId.agent.response "Supplies selected object attributes and query outcome" "In-process logical interface" "Dataflow,SecurityCatalog,DirectoryFlow"
+                !element entraId.provisioning {
+                    -> entraId.agent "Delivers scoped synchronization requests over the agent-established channel" "SCIM / established Cloud Sync channel" "Dataflow,SecurityCatalog,DirectoryFlow"
+                    -> entraId.agent.channel "Delivers scoped synchronization requests over the agent-established channel" "SCIM / established Cloud Sync channel" "Dataflow,SecurityCatalog,DirectoryFlow"
                 }
-                -> entraId.provisioning "Establishes outbound channel and returns requested directory attributes" "TLS / Cloud Sync service channel via Azure Service Bus" "Dataflow,SecurityCatalog,DirectoryFlow"
-                -> entraId.provisioning.mapping "Returns scoped object attributes and synchronization progress" "TLS / established Cloud Sync channel" "Dataflow,SecurityCatalog,DirectoryFlow"
+                !element entraId.provisioning.scheduler {
+                    -> entraId.agent "Delivers scoped directory synchronization requests" "SCIM / agent-established service channel" "Dataflow,SecurityCatalog,DirectoryFlow"
+                }
+                -> apps "Returns identity tokens or assertions for application access" "HTTPS / configured identity protocol" "Dataflow,SecurityCatalog,IdentityFlow,ReferenceIntegration"
+                -> keycloak "Returns verified identity claims through the configured federation flow" "HTTPS / OIDC" "Dataflow,SecurityCatalog,IdentityFlow,ReferenceIntegration"
             }
-            !element entraId.authentication {
-                -> entraId.directory "Reads identity, application and applicable policy records" "Microsoft internal service interface (logical)" "Dataflow,SecurityCatalog,DirectoryFlow"
-            }
-            !element entraId.authentication.credentials {
-                -> entraId.directory "Reads identity, application and applicable policy records" "Microsoft internal service interface (logical)" "Dataflow,SecurityCatalog,DirectoryFlow"
-            }
-            !element entraId.authentication.policy {
-                -> entraId.directory "Reads identity, application and applicable policy records" "Microsoft internal service interface (logical)" "Dataflow,SecurityCatalog,DirectoryFlow"
-            }
-            !element entraId.provisioning {
-                -> entraId.agent "Delivers scoped synchronization requests over the agent-established channel" "SCIM / established Cloud Sync channel" "Dataflow,SecurityCatalog,DirectoryFlow"
-                -> entraId.agent.channel "Delivers scoped synchronization requests over the agent-established channel" "SCIM / established Cloud Sync channel" "Dataflow,SecurityCatalog,DirectoryFlow"
-            }
-            !element entraId.provisioning.scheduler {
-                -> entraId.agent "Delivers scoped directory synchronization requests" "SCIM / agent-established service channel" "Dataflow,SecurityCatalog,DirectoryFlow"
-            }
-            -> apps "Returns identity tokens or assertions for application access" "HTTPS / configured identity protocol" "Dataflow,SecurityCatalog,IdentityFlow,ReferenceIntegration"
-            -> keycloak "Returns verified identity claims through the configured federation flow" "HTTPS / OIDC" "Dataflow,SecurityCatalog,IdentityFlow,ReferenceIntegration"
-        }
-        adDs = softwareSystem "Microsoft Active Directory Domain Services" "Directory identities, LDAP queries and Kerberos authentication for the enterprise domain." {
-            tags "SecurityCatalog"
-            url "https://learn.microsoft.com/en-us/windows-server/identity/ad-ds/get-started/virtual-dc/active-directory-domain-services-overview"
-            properties {
-                "architecture.id" "adDs"
-                "evidence" "Documented product capability"
-            }
-            !docs docs/static/system
-            !adrs docs/static/decisions
-            directory = container "Domain-controller services" "Logical AD DS runtime; no server instances, sites or replication topology are modeled." "Windows Server / AD DS" {
+            adDs = softwareSystem "Microsoft Active Directory Domain Services" "Directory identities, LDAP queries and Kerberos authentication for the enterprise domain." {
                 tags "SecurityCatalog"
                 url "https://learn.microsoft.com/en-us/windows-server/identity/ad-ds/get-started/virtual-dc/active-directory-domain-services-overview"
                 properties {
-                    "architecture.id" "adDs.directory"
+                    "architecture.id" "adDs"
                     "evidence" "Documented product capability"
                 }
-                ldap = component "LDAP directory interface" "Logical reference: Accepts directory searches and authenticated binds." "AD DS logical responsibility" {
-                    tags "SecurityCatalog,LogicalReference"
+                !docs docs/static/system
+                !adrs docs/static/decisions
+                directory = container "Domain-controller services" "Logical AD DS runtime; no server instances, sites or replication topology are modeled." "Windows Server / AD DS" {
+                    tags "SecurityCatalog"
                     url "https://learn.microsoft.com/en-us/windows-server/identity/ad-ds/get-started/virtual-dc/active-directory-domain-services-overview"
                     properties {
-                        "architecture.id" "adDs.directory.ldap"
-                        "evidence" "Logical reference abstraction"
+                        "architecture.id" "adDs.directory"
+                        "evidence" "Documented product capability"
                     }
-                }
-                kdc = component "Kerberos KDC" "Logical reference: Validates domain authentication and issues Kerberos tickets." "AD DS logical responsibility" {
-                    tags "SecurityCatalog,LogicalReference"
-                    url "https://learn.microsoft.com/en-us/windows-server/identity/ad-ds/get-started/virtual-dc/active-directory-domain-services-overview"
-                    properties {
-                        "architecture.id" "adDs.directory.kdc"
-                        "evidence" "Logical reference abstraction"
+                    ldap = component "LDAP directory interface" "Logical reference: Accepts directory searches and authenticated binds." "AD DS logical responsibility" {
+                        tags "SecurityCatalog,LogicalReference"
+                        url "https://learn.microsoft.com/en-us/windows-server/identity/ad-ds/get-started/virtual-dc/active-directory-domain-services-overview"
+                        properties {
+                            "architecture.id" "adDs.directory.ldap"
+                            "evidence" "Logical reference abstraction"
+                        }
                     }
+                    kdc = component "Kerberos KDC" "Logical reference: Validates domain authentication and issues Kerberos tickets." "AD DS logical responsibility" {
+                        tags "SecurityCatalog,LogicalReference"
+                        url "https://learn.microsoft.com/en-us/windows-server/identity/ad-ds/get-started/virtual-dc/active-directory-domain-services-overview"
+                        properties {
+                            "architecture.id" "adDs.directory.kdc"
+                            "evidence" "Logical reference abstraction"
+                        }
+                        -> business "Returns Kerberos ticket response to the domain client" "Kerberos / domain client" "Dataflow,SecurityCatalog,IdentityFlow,ReferenceIntegration"
+                    }
+                    access = component "Directory access and authorization" "Logical reference: Applies directory permissions and resolves requested account attributes." "AD DS logical responsibility" {
+                        tags "SecurityCatalog,LogicalReference"
+                        url "https://learn.microsoft.com/en-us/windows-server/identity/ad-ds/get-started/virtual-dc/active-directory-domain-services-overview"
+                        properties {
+                            "architecture.id" "adDs.directory.access"
+                            "evidence" "Logical reference abstraction"
+                        }
+                    }
+                    persistence = component "Directory persistence" "Logical reference: Reads and writes directory objects and account records." "AD DS logical responsibility" {
+                        tags "SecurityCatalog,LogicalReference"
+                        url "https://learn.microsoft.com/en-us/windows-server/identity/ad-ds/get-started/virtual-dc/active-directory-domain-services-overview"
+                        properties {
+                            "architecture.id" "adDs.directory.persistence"
+                            "evidence" "Logical reference abstraction"
+                        }
+                    }
+                    replication = component "Directory replication responsibility" "Logical reference: Processes directory change records; controller topology is deliberately omitted." "AD DS logical responsibility" {
+                        tags "SecurityCatalog,LogicalReference"
+                        url "https://learn.microsoft.com/en-us/windows-server/identity/ad-ds/get-started/virtual-dc/active-directory-domain-services-overview"
+                        properties {
+                            "architecture.id" "adDs.directory.replication"
+                            "evidence" "Logical reference abstraction"
+                        }
+                        -> adDs.directory.persistence "Applies replicated directory change records" "In-process logical interface" "Dataflow,SecurityCatalog,DirectoryFlow"
+                    }
+                    policy = component "Group Policy and SYSVOL access" "Logical reference: Supplies domain policy metadata and policy-file references." "AD DS logical responsibility" {
+                        tags "SecurityCatalog,LogicalReference"
+                        url "https://learn.microsoft.com/en-us/windows-server/identity/ad-ds/get-started/virtual-dc/active-directory-domain-services-overview"
+                        properties {
+                            "architecture.id" "adDs.directory.policy"
+                            "evidence" "Logical reference abstraction"
+                        }
+                        -> adDs.directory.access "Reads authorized Group Policy object metadata" "In-process logical interface" "Dataflow,SecurityCatalog,DirectoryFlow"
+                    }
+                    !element adDs.directory.ldap {
+                        -> adDs.directory.access "Passes bind or directory search request" "In-process logical interface" "Dataflow,SecurityCatalog,DirectoryFlow"
+                    }
+                    !element adDs.directory.access {
+                        -> adDs.directory.persistence "Reads permitted account attributes or updates directory objects" "In-process logical interface" "Dataflow,SecurityCatalog,DirectoryFlow"
+                    }
+                    !element adDs.directory.kdc {
+                        -> adDs.directory.persistence "Reads account authentication and ticket-policy records" "In-process logical interface" "Dataflow,SecurityCatalog,DirectoryFlow"
+                    }
+                    -> entraId.agent "Returns scoped directory object attributes and change information" "LDAP / protected domain connection" "Dataflow,SecurityCatalog,DirectoryFlow"
+                    -> entraId.agent.directory "Returns scoped directory object attributes and change information" "LDAP / protected domain connection" "Dataflow,SecurityCatalog,DirectoryFlow"
+                    -> keycloak.server "Returns user attributes and bind result; does not export passwords" "LDAPS" "Dataflow,SecurityCatalog,IdentityFlow,ReferenceIntegration"
+                    -> keycloak.server.ldap "Returns user attributes and bind result; does not export passwords" "LDAPS" "Dataflow,SecurityCatalog,IdentityFlow,ReferenceIntegration"
                     -> business "Returns Kerberos ticket response to the domain client" "Kerberos / domain client" "Dataflow,SecurityCatalog,IdentityFlow,ReferenceIntegration"
                 }
-                access = component "Directory access and authorization" "Logical reference: Applies directory permissions and resolves requested account attributes." "AD DS logical responsibility" {
-                    tags "SecurityCatalog,LogicalReference"
+                database = container "AD directory data store" "Domain-controller-owned directory objects, schema and account records." "NTDS directory database / owned storage" {
+                    tags "SecurityCatalog,Database"
                     url "https://learn.microsoft.com/en-us/windows-server/identity/ad-ds/get-started/virtual-dc/active-directory-domain-services-overview"
                     properties {
-                        "architecture.id" "adDs.directory.access"
-                        "evidence" "Logical reference abstraction"
+                        "architecture.id" "adDs.database"
+                        "evidence" "Documented product capability"
                     }
                 }
-                persistence = component "Directory persistence" "Logical reference: Reads and writes directory objects and account records." "AD DS logical responsibility" {
-                    tags "SecurityCatalog,LogicalReference"
+                sysvol = container "SYSVOL store" "Domain-controller-owned policy templates and scripts; no filesystem deployment is specified." "SYSVOL / owned filesystem" {
+                    tags "SecurityCatalog,Database"
                     url "https://learn.microsoft.com/en-us/windows-server/identity/ad-ds/get-started/virtual-dc/active-directory-domain-services-overview"
                     properties {
-                        "architecture.id" "adDs.directory.persistence"
-                        "evidence" "Logical reference abstraction"
+                        "architecture.id" "adDs.sysvol"
+                        "evidence" "Documented product capability"
                     }
                 }
-                replication = component "Directory replication responsibility" "Logical reference: Processes directory change records; controller topology is deliberately omitted." "AD DS logical responsibility" {
-                    tags "SecurityCatalog,LogicalReference"
-                    url "https://learn.microsoft.com/en-us/windows-server/identity/ad-ds/get-started/virtual-dc/active-directory-domain-services-overview"
-                    properties {
-                        "architecture.id" "adDs.directory.replication"
-                        "evidence" "Logical reference abstraction"
-                    }
-                    -> adDs.directory.persistence "Applies replicated directory change records" "In-process logical interface" "Dataflow,SecurityCatalog,DirectoryFlow"
+                !element adDs.directory {
+                    -> adDs.database "Reads and writes directory objects, account records and change state" "Local directory database interface" "Dataflow,SecurityCatalog,DirectoryFlow"
+                    -> adDs.sysvol "Reads domain policy templates and script references" "Local filesystem access" "Dataflow,SecurityCatalog,DirectoryFlow"
                 }
-                policy = component "Group Policy and SYSVOL access" "Logical reference: Supplies domain policy metadata and policy-file references." "AD DS logical responsibility" {
-                    tags "SecurityCatalog,LogicalReference"
-                    url "https://learn.microsoft.com/en-us/windows-server/identity/ad-ds/get-started/virtual-dc/active-directory-domain-services-overview"
-                    properties {
-                        "architecture.id" "adDs.directory.policy"
-                        "evidence" "Logical reference abstraction"
-                    }
-                    -> adDs.directory.access "Reads authorized Group Policy object metadata" "In-process logical interface" "Dataflow,SecurityCatalog,DirectoryFlow"
+                !element adDs.directory.persistence {
+                    -> adDs.database "Reads and writes directory objects, account records and change state" "Local directory database interface" "Dataflow,SecurityCatalog,DirectoryFlow"
                 }
-                !element adDs.directory.ldap {
-                    -> adDs.directory.access "Passes bind or directory search request" "In-process logical interface" "Dataflow,SecurityCatalog,DirectoryFlow"
+                !element adDs.directory.policy {
+                    -> adDs.sysvol "Reads domain policy templates and script references" "Local filesystem access" "Dataflow,SecurityCatalog,DirectoryFlow"
                 }
-                !element adDs.directory.access {
-                    -> adDs.directory.persistence "Reads permitted account attributes or updates directory objects" "In-process logical interface" "Dataflow,SecurityCatalog,DirectoryFlow"
-                }
-                !element adDs.directory.kdc {
-                    -> adDs.directory.persistence "Reads account authentication and ticket-policy records" "In-process logical interface" "Dataflow,SecurityCatalog,DirectoryFlow"
-                }
-                -> entraId.agent "Returns scoped directory object attributes and change information" "LDAP / protected domain connection" "Dataflow,SecurityCatalog,DirectoryFlow"
-                -> entraId.agent.directory "Returns scoped directory object attributes and change information" "LDAP / protected domain connection" "Dataflow,SecurityCatalog,DirectoryFlow"
-                -> keycloak.server "Returns user attributes and bind result; does not export passwords" "LDAPS" "Dataflow,SecurityCatalog,IdentityFlow,ReferenceIntegration"
-                -> keycloak.server.ldap "Returns user attributes and bind result; does not export passwords" "LDAPS" "Dataflow,SecurityCatalog,IdentityFlow,ReferenceIntegration"
-                -> business "Returns Kerberos ticket response to the domain client" "Kerberos / domain client" "Dataflow,SecurityCatalog,IdentityFlow,ReferenceIntegration"
+                -> keycloak "Returns user attributes and credential validation outcome" "LDAPS" "Dataflow,SecurityCatalog,IdentityFlow,ReferenceIntegration"
+                -> entraId "Returns selected identity attributes for Cloud Sync provisioning" "Protected LDAP / agent-established TLS service channel" "Dataflow,SecurityCatalog,DirectoryFlow"
+                -> business "Returns Kerberos ticket response to the domain client" "Kerberos" "Dataflow,SecurityCatalog,IdentityFlow,ReferenceIntegration"
             }
-            database = container "AD directory data store" "Domain-controller-owned directory objects, schema and account records." "NTDS directory database / owned storage" {
-                tags "SecurityCatalog,Database"
-                url "https://learn.microsoft.com/en-us/windows-server/identity/ad-ds/get-started/virtual-dc/active-directory-domain-services-overview"
-                properties {
-                    "architecture.id" "adDs.database"
-                    "evidence" "Documented product capability"
-                }
-            }
-            sysvol = container "SYSVOL store" "Domain-controller-owned policy templates and scripts; no filesystem deployment is specified." "SYSVOL / owned filesystem" {
-                tags "SecurityCatalog,Database"
-                url "https://learn.microsoft.com/en-us/windows-server/identity/ad-ds/get-started/virtual-dc/active-directory-domain-services-overview"
-                properties {
-                    "architecture.id" "adDs.sysvol"
-                    "evidence" "Documented product capability"
-                }
-            }
-            !element adDs.directory {
-                -> adDs.database "Reads and writes directory objects, account records and change state" "Local directory database interface" "Dataflow,SecurityCatalog,DirectoryFlow"
-                -> adDs.sysvol "Reads domain policy templates and script references" "Local filesystem access" "Dataflow,SecurityCatalog,DirectoryFlow"
-            }
-            !element adDs.directory.persistence {
-                -> adDs.database "Reads and writes directory objects, account records and change state" "Local directory database interface" "Dataflow,SecurityCatalog,DirectoryFlow"
-            }
-            !element adDs.directory.policy {
-                -> adDs.sysvol "Reads domain policy templates and script references" "Local filesystem access" "Dataflow,SecurityCatalog,DirectoryFlow"
-            }
-            -> keycloak "Returns user attributes and credential validation outcome" "LDAPS" "Dataflow,SecurityCatalog,IdentityFlow,ReferenceIntegration"
-            -> entraId "Returns selected identity attributes for Cloud Sync provisioning" "Protected LDAP / agent-established TLS service channel" "Dataflow,SecurityCatalog,DirectoryFlow"
-        }
-        adFs = softwareSystem "Microsoft Active Directory Federation Services" "Federates AD-backed identities and issues claims to relying parties; separate from directory synchronization." {
-            tags "SecurityCatalog"
-            url "https://learn.microsoft.com/en-us/windows-server/identity/ad-fs/ad-fs-overview"
-            properties {
-                "architecture.id" "adFs"
-                "evidence" "Documented product capability"
-            }
-            !docs docs/static/system
-            !adrs docs/static/decisions
-            service = container "AD FS federation service" "Authenticates users and issues claims under configured relying-party trust policy." "Windows Server / AD FS" {
+            adFs = softwareSystem "Microsoft Active Directory Federation Services" "Federates AD-backed identities and issues claims to relying parties; separate from directory synchronization." {
                 tags "SecurityCatalog"
                 url "https://learn.microsoft.com/en-us/windows-server/identity/ad-fs/ad-fs-overview"
                 properties {
-                    "architecture.id" "adFs.service"
+                    "architecture.id" "adFs"
                     "evidence" "Documented product capability"
                 }
-                endpoints = component "Federation protocol endpoints" "Logical reference: Accepts relying-party requests and returns browser-mediated federation responses." "AD FS logical responsibility" {
-                    tags "SecurityCatalog,LogicalReference"
-                    url "https://learn.microsoft.com/en-us/windows-server/identity/ad-fs/technical-reference/the-role-of-the-claims-engine"
+                !docs docs/static/system
+                !adrs docs/static/decisions
+                service = container "AD FS federation service" "Authenticates users and issues claims under configured relying-party trust policy." "Windows Server / AD FS" {
+                    tags "SecurityCatalog"
+                    url "https://learn.microsoft.com/en-us/windows-server/identity/ad-fs/ad-fs-overview"
                     properties {
-                        "architecture.id" "adFs.service.endpoints"
-                        "evidence" "Logical reference abstraction"
+                        "architecture.id" "adFs.service"
+                        "evidence" "Documented product capability"
                     }
-                    -> apps.client "Returns signed identity response through the configured browser/client flow" "HTTPS / OIDC or SAML as configured" "Dataflow,SecurityCatalog,IdentityFlow,ReferenceIntegration"
-                }
-                authentication = component "Authentication adapters" "Logical reference: Validates user authentication through configured domain mechanisms." "AD FS logical responsibility" {
-                    tags "SecurityCatalog,LogicalReference"
-                    url "https://learn.microsoft.com/en-us/windows-server/identity/ad-fs/technical-reference/the-role-of-the-claims-engine"
-                    properties {
-                        "architecture.id" "adFs.service.authentication"
-                        "evidence" "Logical reference abstraction"
+                    endpoints = component "Federation protocol endpoints" "Logical reference: Accepts relying-party requests and returns browser-mediated federation responses." "AD FS logical responsibility" {
+                        tags "SecurityCatalog,LogicalReference"
+                        url "https://learn.microsoft.com/en-us/windows-server/identity/ad-fs/technical-reference/the-role-of-the-claims-engine"
+                        properties {
+                            "architecture.id" "adFs.service.endpoints"
+                            "evidence" "Logical reference abstraction"
+                        }
+                        -> apps.client "Returns signed identity response through the configured browser/client flow" "HTTPS / OIDC or SAML as configured" "Dataflow,SecurityCatalog,IdentityFlow,ReferenceIntegration"
+                    }
+                    authentication = component "Authentication adapters" "Logical reference: Validates user authentication through configured domain mechanisms." "AD FS logical responsibility" {
+                        tags "SecurityCatalog,LogicalReference"
+                        url "https://learn.microsoft.com/en-us/windows-server/identity/ad-fs/technical-reference/the-role-of-the-claims-engine"
+                        properties {
+                            "architecture.id" "adFs.service.authentication"
+                            "evidence" "Logical reference abstraction"
+                        }
+                        -> adDs.directory "Validates domain authentication and resolves account attributes" "Kerberos / protected directory interfaces" "Dataflow,SecurityCatalog,IdentityFlow"
+                    }
+                    claims = component "Claims engine" "Logical reference: Transforms incoming claims and directory attributes using configured claim rules." "AD FS logical responsibility" {
+                        tags "SecurityCatalog,LogicalReference"
+                        url "https://learn.microsoft.com/en-us/windows-server/identity/ad-fs/technical-reference/the-role-of-the-claims-engine"
+                        properties {
+                            "architecture.id" "adFs.service.claims"
+                            "evidence" "Logical reference abstraction"
+                        }
+                    }
+                    tokens = component "Token issuance" "Logical reference: Signs and issues claims tokens for the configured relying party." "AD FS logical responsibility" {
+                        tags "SecurityCatalog,LogicalReference"
+                        url "https://learn.microsoft.com/en-us/windows-server/identity/ad-fs/technical-reference/the-role-of-the-claims-engine"
+                        properties {
+                            "architecture.id" "adFs.service.tokens"
+                            "evidence" "Logical reference abstraction"
+                        }
+                        -> adFs.service.endpoints "Returns signed federation response" "In-process logical interface" "Dataflow,SecurityCatalog,IdentityFlow"
+                    }
+                    configuration = component "Trust and configuration access" "Logical reference: Loads relying-party trusts, claims rules and signing configuration." "AD FS logical responsibility" {
+                        tags "SecurityCatalog,LogicalReference"
+                        url "https://learn.microsoft.com/en-us/windows-server/identity/ad-fs/technical-reference/the-role-of-the-claims-engine"
+                        properties {
+                            "architecture.id" "adFs.service.configuration"
+                            "evidence" "Logical reference abstraction"
+                        }
+                    }
+                    audit = component "Federation auditing" "Logical reference: Records authentication, claims issuance outcome and request context." "AD FS logical responsibility" {
+                        tags "SecurityCatalog,LogicalReference"
+                        url "https://learn.microsoft.com/en-us/windows-server/identity/ad-fs/technical-reference/the-role-of-the-claims-engine"
+                        properties {
+                            "architecture.id" "adFs.service.audit"
+                            "evidence" "Logical reference abstraction"
+                        }
+                    }
+                    !element adFs.service.endpoints {
+                        -> adFs.service.authentication "Passes relying-party authentication request and user context" "In-process logical interface" "Dataflow,SecurityCatalog,IdentityFlow"
+                        -> adFs.service.audit "Records federation request context and issuance outcome" "In-process logical interface" "Dataflow,SecurityCatalog,IdentityFlow"
+                    }
+                    !element adFs.service.authentication {
+                        -> adFs.service.claims "Supplies authenticated identity and requested attributes" "In-process logical interface" "Dataflow,SecurityCatalog,IdentityFlow"
+                    }
+                    !element adFs.service.claims {
+                        -> adFs.service.tokens "Supplies transformed claims and relying-party audience" "In-process logical interface" "Dataflow,SecurityCatalog,IdentityFlow"
+                        -> adFs.service.configuration "Loads applicable claims transformation and issuance rules" "In-process logical interface" "Dataflow,SecurityCatalog,IdentityFlow"
+                    }
+                    !element adFs.service.tokens {
+                        -> adFs.service.configuration "Loads token-signing and relying-party trust settings" "In-process logical interface" "Dataflow,SecurityCatalog,IdentityFlow"
                     }
                     -> adDs.directory "Validates domain authentication and resolves account attributes" "Kerberos / protected directory interfaces" "Dataflow,SecurityCatalog,IdentityFlow"
+                    -> apps.client "Returns authenticated identity tokens or assertions through the selected protocol flow" "HTTPS / SAML 2.0 reference client" "Dataflow,SecurityCatalog,IdentityFlow,ReferenceIntegration"
+                    -> keycloak.server "Returns signed SAML assertion through browser POST" "HTTPS / browser-mediated SAML 2.0" "Dataflow,SecurityCatalog,IdentityFlow,ReferenceIntegration"
+                    -> keycloak.server.broker "Returns signed SAML assertion through browser POST" "HTTPS / browser-mediated SAML 2.0" "Dataflow,SecurityCatalog,IdentityFlow,ReferenceIntegration"
                 }
-                claims = component "Claims engine" "Logical reference: Transforms incoming claims and directory attributes using configured claim rules." "AD FS logical responsibility" {
-                    tags "SecurityCatalog,LogicalReference"
-                    url "https://learn.microsoft.com/en-us/windows-server/identity/ad-fs/technical-reference/the-role-of-the-claims-engine"
+                configuration = container "AD FS configuration store" "Stores trust, claim-rule and federation configuration; WID is the reference store choice." "Windows Internal Database (reference choice)" {
+                    tags "SecurityCatalog,Database"
+                    url "https://learn.microsoft.com/en-us/windows-server/identity/ad-fs/ad-fs-overview"
                     properties {
-                        "architecture.id" "adFs.service.claims"
-                        "evidence" "Logical reference abstraction"
+                        "architecture.id" "adFs.configuration"
+                        "evidence" "Documented product capability"
                     }
                 }
-                tokens = component "Token issuance" "Logical reference: Signs and issues claims tokens for the configured relying party." "AD FS logical responsibility" {
-                    tags "SecurityCatalog,LogicalReference"
-                    url "https://learn.microsoft.com/en-us/windows-server/identity/ad-fs/technical-reference/the-role-of-the-claims-engine"
-                    properties {
-                        "architecture.id" "adFs.service.tokens"
-                        "evidence" "Logical reference abstraction"
-                    }
-                    -> adFs.service.endpoints "Returns signed federation response" "In-process logical interface" "Dataflow,SecurityCatalog,IdentityFlow"
+                !element adFs.service {
+                    -> adFs.configuration "Reads federation trusts, claim rules and signing configuration" "WID / local configuration database interface" "Dataflow,SecurityCatalog,DirectoryFlow"
                 }
-                configuration = component "Trust and configuration access" "Logical reference: Loads relying-party trusts, claims rules and signing configuration." "AD FS logical responsibility" {
-                    tags "SecurityCatalog,LogicalReference"
-                    url "https://learn.microsoft.com/en-us/windows-server/identity/ad-fs/technical-reference/the-role-of-the-claims-engine"
-                    properties {
-                        "architecture.id" "adFs.service.configuration"
-                        "evidence" "Logical reference abstraction"
-                    }
+                !element adFs.service.configuration {
+                    -> adFs.configuration "Reads federation trusts, claim rules and signing configuration" "WID / local configuration database interface" "Dataflow,SecurityCatalog,DirectoryFlow"
                 }
-                audit = component "Federation auditing" "Logical reference: Records authentication, claims issuance outcome and request context." "AD FS logical responsibility" {
-                    tags "SecurityCatalog,LogicalReference"
-                    url "https://learn.microsoft.com/en-us/windows-server/identity/ad-fs/technical-reference/the-role-of-the-claims-engine"
-                    properties {
-                        "architecture.id" "adFs.service.audit"
-                        "evidence" "Logical reference abstraction"
-                    }
-                }
-                !element adFs.service.endpoints {
-                    -> adFs.service.authentication "Passes relying-party authentication request and user context" "In-process logical interface" "Dataflow,SecurityCatalog,IdentityFlow"
-                    -> adFs.service.audit "Records federation request context and issuance outcome" "In-process logical interface" "Dataflow,SecurityCatalog,IdentityFlow"
-                }
-                !element adFs.service.authentication {
-                    -> adFs.service.claims "Supplies authenticated identity and requested attributes" "In-process logical interface" "Dataflow,SecurityCatalog,IdentityFlow"
-                }
-                !element adFs.service.claims {
-                    -> adFs.service.tokens "Supplies transformed claims and relying-party audience" "In-process logical interface" "Dataflow,SecurityCatalog,IdentityFlow"
-                    -> adFs.service.configuration "Loads applicable claims transformation and issuance rules" "In-process logical interface" "Dataflow,SecurityCatalog,IdentityFlow"
-                }
-                !element adFs.service.tokens {
-                    -> adFs.service.configuration "Loads token-signing and relying-party trust settings" "In-process logical interface" "Dataflow,SecurityCatalog,IdentityFlow"
-                }
-                -> adDs.directory "Validates domain authentication and resolves account attributes" "Kerberos / protected directory interfaces" "Dataflow,SecurityCatalog,IdentityFlow"
-                -> apps.client "Returns authenticated identity tokens or assertions through the selected protocol flow" "HTTPS / SAML 2.0 reference client" "Dataflow,SecurityCatalog,IdentityFlow,ReferenceIntegration"
-                -> keycloak.server "Returns signed SAML assertion through browser POST" "HTTPS / browser-mediated SAML 2.0" "Dataflow,SecurityCatalog,IdentityFlow,ReferenceIntegration"
-                -> keycloak.server.broker "Returns signed SAML assertion through browser POST" "HTTPS / browser-mediated SAML 2.0" "Dataflow,SecurityCatalog,IdentityFlow,ReferenceIntegration"
+                -> apps "Returns identity tokens or assertions for application access" "HTTPS / configured identity protocol" "Dataflow,SecurityCatalog,IdentityFlow,ReferenceIntegration"
+                -> keycloak "Returns verified identity claims through the configured federation flow" "HTTPS / SAML 2.0" "Dataflow,SecurityCatalog,IdentityFlow,ReferenceIntegration"
+                -> adDs "Requests domain authentication and account attributes" "Kerberos / protected directory access" "Dataflow,SecurityCatalog,IdentityFlow"
             }
-            configuration = container "AD FS configuration store" "Stores trust, claim-rule and federation configuration; WID is the reference store choice." "Windows Internal Database (reference choice)" {
-                tags "SecurityCatalog,Database"
-                url "https://learn.microsoft.com/en-us/windows-server/identity/ad-fs/ad-fs-overview"
+        }
+        group "Privileged access and secrets" {
+            cyberarkPam = softwareSystem "CyberArk PAM Self-Hosted" "Controls privileged credentials, password rotation and recorded administrative sessions." {
+                tags "SecurityCatalog"
+                url "https://docs.cyberark.com/pam-self-hosted/latest/en/content/pas%20inst/installationoverview.htm"
                 properties {
-                    "architecture.id" "adFs.configuration"
+                    "architecture.id" "cyberarkPam"
                     "evidence" "Documented product capability"
                 }
+                !docs docs/static/system
+                !adrs docs/static/decisions
+                vault = container "Digital Vault" "Protects privileged credentials, Safe permissions and audit/session records." "CyberArk PAM / proprietary service" {
+                    tags "SecurityCatalog"
+                    url "https://docs.cyberark.com/pam-self-hosted/latest/en/content/pas%20inst/installationoverview.htm"
+                    properties {
+                        "architecture.id" "cyberarkPam.vault"
+                        "evidence" "Documented product capability"
+                    }
+                    access = component "Vault access interface" "Logical reference: Accepts authenticated Safe, credential and record operations." "Vault responsibility / proprietary implementation" {
+                        tags "SecurityCatalog,LogicalReference"
+                        url "https://docs.cyberark.com/pam-self-hosted/latest/en/content/pas%20inst/installationoverview.htm"
+                        properties {
+                            "architecture.id" "cyberarkPam.vault.access"
+                            "evidence" "Logical reference abstraction"
+                        }
+                    }
+                    policy = component "Safe permissions" "Logical reference: Checks access permissions for credentials and records." "Vault responsibility / proprietary implementation" {
+                        tags "SecurityCatalog,LogicalReference"
+                        url "https://docs.cyberark.com/pam-self-hosted/latest/en/content/pas%20inst/installationoverview.htm"
+                        properties {
+                            "architecture.id" "cyberarkPam.vault.policy"
+                            "evidence" "Logical reference abstraction"
+                        }
+                    }
+                    storage = component "Protected credential storage" "Logical reference: Owns encrypted credential and Safe records inside the Vault boundary." "Vault responsibility / proprietary implementation" {
+                        tags "SecurityCatalog,LogicalReference"
+                        url "https://docs.cyberark.com/pam-self-hosted/latest/en/content/pas%20inst/installationoverview.htm"
+                        properties {
+                            "architecture.id" "cyberarkPam.vault.storage"
+                            "evidence" "Logical reference abstraction"
+                        }
+                        -> cyberarkPam.vault.access "Returns permitted credential or metadata response" "In-process logical interface" "Dataflow,SecurityCatalog,PrivilegedFlow"
+                    }
+                    audit = component "Audit and recording storage" "Logical reference: Retains access audit records and uploaded session recordings." "Vault responsibility / proprietary implementation" {
+                        tags "SecurityCatalog,LogicalReference"
+                        url "https://docs.cyberark.com/pam-self-hosted/latest/en/content/pas%20inst/installationoverview.htm"
+                        properties {
+                            "architecture.id" "cyberarkPam.vault.audit"
+                            "evidence" "Logical reference abstraction"
+                        }
+                    }
+                    !element cyberarkPam.vault.access {
+                        -> cyberarkPam.vault.policy "Passes caller identity and requested Safe operation" "In-process logical interface" "Dataflow,SecurityCatalog,PrivilegedFlow"
+                        -> cyberarkPam.vault.audit "Stores access events or uploaded session recordings" "In-process logical interface" "Dataflow,SecurityCatalog,PrivilegedFlow"
+                    }
+                    !element cyberarkPam.vault.policy {
+                        -> cyberarkPam.vault.storage "Authorizes credential read or write" "In-process logical interface" "Dataflow,SecurityCatalog,PrivilegedFlow"
+                    }
+                }
+                pvwa = container "Password Vault Web Access" "Provides the web interface and APIs for privileged-account access and administration." "CyberArk PAM / proprietary service" {
+                    tags "SecurityCatalog"
+                    url "https://docs.cyberark.com/pam-self-hosted/latest/en/content/pas%20inst/installationoverview.htm"
+                    properties {
+                        "architecture.id" "cyberarkPam.pvwa"
+                        "evidence" "Documented product capability"
+                    }
+                    portal = component "Web portal and API" "Logical reference: Accepts account access, session-launch and administration requests." "PVWA responsibility / proprietary implementation" {
+                        tags "SecurityCatalog,LogicalReference"
+                        url "https://docs.cyberark.com/pam-self-hosted/latest/en/content/pas%20inst/installationoverview.htm"
+                        properties {
+                            "architecture.id" "cyberarkPam.pvwa.portal"
+                            "evidence" "Logical reference abstraction"
+                        }
+                    }
+                    approval = component "Access request workflow" "Logical reference: Evaluates configured request and approval requirements." "PVWA responsibility / proprietary implementation" {
+                        tags "SecurityCatalog,LogicalReference"
+                        url "https://docs.cyberark.com/pam-self-hosted/latest/en/content/pas%20inst/installationoverview.htm"
+                        properties {
+                            "architecture.id" "cyberarkPam.pvwa.approval"
+                            "evidence" "Logical reference abstraction"
+                        }
+                    }
+                    vaultClient = component "Vault client" "Logical reference: Retrieves permitted account metadata or credentials and submits administration changes." "PVWA responsibility / proprietary implementation" {
+                        tags "SecurityCatalog,LogicalReference"
+                        url "https://docs.cyberark.com/pam-self-hosted/latest/en/content/pas%20inst/installationoverview.htm"
+                        properties {
+                            "architecture.id" "cyberarkPam.pvwa.vaultClient"
+                            "evidence" "Logical reference abstraction"
+                        }
+                        -> cyberarkPam.pvwa.portal "Returns authorized account metadata and access outcome" "In-process logical interface" "Dataflow,SecurityCatalog,PrivilegedFlow"
+                        -> cyberarkPam.vault "Submits permitted Safe credential or metadata operations" "CyberArk Vault protocol / encrypted channel" "Dataflow,SecurityCatalog,PrivilegedFlow"
+                    }
+                    sessions = component "Session launch" "Logical reference: Creates authorized session connection details for the session manager." "PVWA responsibility / proprietary implementation" {
+                        tags "SecurityCatalog,LogicalReference"
+                        url "https://docs.cyberark.com/pam-self-hosted/latest/en/content/pas%20inst/installationoverview.htm"
+                        properties {
+                            "architecture.id" "cyberarkPam.pvwa.sessions"
+                            "evidence" "Logical reference abstraction"
+                        }
+                    }
+                    !element cyberarkPam.pvwa.portal {
+                        -> cyberarkPam.pvwa.approval "Submits requested account and access justification" "In-process logical interface" "Dataflow,SecurityCatalog,PrivilegedFlow"
+                    }
+                    !element cyberarkPam.pvwa.approval {
+                        -> cyberarkPam.pvwa.vaultClient "Passes approved credential or metadata request" "In-process logical interface" "Dataflow,SecurityCatalog,PrivilegedFlow"
+                        -> cyberarkPam.pvwa.sessions "Authorizes target session launch" "In-process logical interface" "Dataflow,SecurityCatalog,PrivilegedFlow"
+                    }
+                    -> cyberarkPam.vault "Submits permitted Safe credential or metadata operations" "CyberArk Vault protocol / encrypted channel" "Dataflow,SecurityCatalog,PrivilegedFlow"
+                }
+                cpm = container "Central Policy Manager" "Verifies, rotates and reconciles managed target-account passwords." "CyberArk PAM / proprietary service" {
+                    tags "SecurityCatalog"
+                    url "https://docs.cyberark.com/pam-self-hosted/latest/en/content/pas%20inst/installationoverview.htm"
+                    properties {
+                        "architecture.id" "cyberarkPam.cpm"
+                        "evidence" "Documented product capability"
+                    }
+                    scheduler = component "Password management scheduler" "Logical reference: Selects target accounts requiring verification, change or reconciliation." "CPM responsibility / proprietary implementation" {
+                        tags "SecurityCatalog,LogicalReference"
+                        url "https://docs.cyberark.com/pam-self-hosted/latest/en/content/pas%20inst/installationoverview.htm"
+                        properties {
+                            "architecture.id" "cyberarkPam.cpm.scheduler"
+                            "evidence" "Logical reference abstraction"
+                        }
+                    }
+                    rotation = component "Password rotation orchestration" "Logical reference: Coordinates target password change and Vault credential update." "CPM responsibility / proprietary implementation" {
+                        tags "SecurityCatalog,LogicalReference"
+                        url "https://docs.cyberark.com/pam-self-hosted/latest/en/content/pas%20inst/installationoverview.htm"
+                        properties {
+                            "architecture.id" "cyberarkPam.cpm.rotation"
+                            "evidence" "Logical reference abstraction"
+                        }
+                    }
+                    target = component "Target platform connector" "Logical reference: Runs the configured target-specific password verification or change operation." "CPM responsibility / proprietary implementation" {
+                        tags "SecurityCatalog,LogicalReference"
+                        url "https://docs.cyberark.com/pam-self-hosted/latest/en/content/pas%20inst/installationoverview.htm"
+                        properties {
+                            "architecture.id" "cyberarkPam.cpm.target"
+                            "evidence" "Logical reference abstraction"
+                        }
+                        -> cyberarkPam.cpm.rotation "Returns target password operation outcome" "In-process logical interface" "Dataflow,SecurityCatalog,PrivilegedFlow"
+                        -> managedTarget "Verifies or changes the privileged target password" "SSH / target-specific password commands" "Dataflow,SecurityCatalog,PrivilegedFlow,ReferenceIntegration"
+                    }
+                    vaultClient = component "Vault credential client" "Logical reference: Reads current credentials and writes successfully changed credentials." "CPM responsibility / proprietary implementation" {
+                        tags "SecurityCatalog,LogicalReference"
+                        url "https://docs.cyberark.com/pam-self-hosted/latest/en/content/pas%20inst/installationoverview.htm"
+                        properties {
+                            "architecture.id" "cyberarkPam.cpm.vaultClient"
+                            "evidence" "Logical reference abstraction"
+                        }
+                        -> cyberarkPam.cpm.rotation "Returns permitted credential and target details" "In-process logical interface" "Dataflow,SecurityCatalog,PrivilegedFlow"
+                        -> cyberarkPam.vault "Submits permitted Safe credential or metadata operations" "CyberArk Vault protocol / encrypted channel" "Dataflow,SecurityCatalog,PrivilegedFlow"
+                    }
+                    !element cyberarkPam.cpm.scheduler {
+                        -> cyberarkPam.cpm.rotation "Passes account identifier and password management task" "In-process logical interface" "Dataflow,SecurityCatalog,PrivilegedFlow"
+                    }
+                    !element cyberarkPam.cpm.rotation {
+                        -> cyberarkPam.cpm.vaultClient "Requests current credential and target account metadata" "In-process logical interface" "Dataflow,SecurityCatalog,PrivilegedFlow"
+                        -> cyberarkPam.cpm.target "Passes password verification or change operation" "In-process logical interface" "Dataflow,SecurityCatalog,PrivilegedFlow"
+                        -> cyberarkPam.cpm.vaultClient "Submits successfully changed credential for storage" "In-process logical interface" "Dataflow,SecurityCatalog,PrivilegedFlow"
+                    }
+                    -> cyberarkPam.vault "Submits permitted Safe credential or metadata operations" "CyberArk Vault protocol / encrypted channel" "Dataflow,SecurityCatalog,PrivilegedFlow"
+                    -> managedTarget "Verifies or changes the privileged target password" "SSH / target-specific password commands" "Dataflow,SecurityCatalog,PrivilegedFlow,ReferenceIntegration"
+                }
+                psm = container "Privileged Session Manager" "Brokers privileged target sessions and records session activity." "CyberArk PAM / proprietary service" {
+                    tags "SecurityCatalog"
+                    url "https://docs.cyberark.com/pam-self-hosted/latest/en/content/pas%20inst/installationoverview.htm"
+                    properties {
+                        "architecture.id" "cyberarkPam.psm"
+                        "evidence" "Documented product capability"
+                    }
+                    broker = component "Session broker" "Logical reference: Accepts authorized session requests and retrieves target credentials." "PSM responsibility / proprietary implementation" {
+                        tags "SecurityCatalog,LogicalReference"
+                        url "https://docs.cyberark.com/pam-self-hosted/latest/en/content/pas%20inst/installationoverview.htm"
+                        properties {
+                            "architecture.id" "cyberarkPam.psm.broker"
+                            "evidence" "Logical reference abstraction"
+                        }
+                        -> cyberarkPam.vault "Submits permitted Safe credential or metadata operations" "CyberArk Vault protocol / encrypted channel" "Dataflow,SecurityCatalog,PrivilegedFlow"
+                        -> operator "Returns brokered session output and completion status" "PSM-supported session client / encrypted connection" "Dataflow,SecurityCatalog,PrivilegedFlow,ReferenceIntegration"
+                    }
+                    target = component "Target session connector" "Logical reference: Establishes the example SSH session using the vaulted privileged account." "PSM responsibility / proprietary implementation" {
+                        tags "SecurityCatalog,LogicalReference"
+                        url "https://docs.cyberark.com/pam-self-hosted/latest/en/content/pas%20inst/installationoverview.htm"
+                        properties {
+                            "architecture.id" "cyberarkPam.psm.target"
+                            "evidence" "Logical reference abstraction"
+                        }
+                        -> cyberarkPam.psm.broker "Returns session output and completion status" "In-process logical interface" "Dataflow,SecurityCatalog,PrivilegedFlow"
+                        -> managedTarget "Opens privileged SSH session and relays administrator commands" "SSH" "Dataflow,SecurityCatalog,PrivilegedFlow,ReferenceIntegration"
+                    }
+                    recorder = component "Session recorder" "Logical reference: Captures session activity and uploads recordings to the Vault." "PSM responsibility / proprietary implementation" {
+                        tags "SecurityCatalog,LogicalReference"
+                        url "https://docs.cyberark.com/pam-self-hosted/latest/en/content/pas%20inst/installationoverview.htm"
+                        properties {
+                            "architecture.id" "cyberarkPam.psm.recorder"
+                            "evidence" "Logical reference abstraction"
+                        }
+                        -> cyberarkPam.vault "Uploads session recordings and audit metadata" "CyberArk Vault protocol / encrypted channel" "Dataflow,SecurityCatalog,PrivilegedFlow"
+                    }
+                    !element cyberarkPam.psm.broker {
+                        -> cyberarkPam.psm.target "Passes authorized target and privileged credential" "In-process logical interface" "Dataflow,SecurityCatalog,PrivilegedFlow"
+                    }
+                    !element cyberarkPam.psm.target {
+                        -> cyberarkPam.psm.recorder "Supplies session activity for recording" "In-process logical interface" "Dataflow,SecurityCatalog,PrivilegedFlow"
+                    }
+                    -> cyberarkPam.vault "Submits permitted Safe credential or metadata operations" "CyberArk Vault protocol / encrypted channel" "Dataflow,SecurityCatalog,PrivilegedFlow"
+                    -> cyberarkPam.vault "Uploads session recordings and audit metadata" "CyberArk Vault protocol / encrypted channel" "Dataflow,SecurityCatalog,PrivilegedFlow"
+                    -> managedTarget "Opens privileged SSH session and relays administrator commands" "SSH" "Dataflow,SecurityCatalog,PrivilegedFlow,ReferenceIntegration"
+                    -> operator "Returns brokered session output and completion status" "PSM-supported session client / encrypted connection" "Dataflow,SecurityCatalog,PrivilegedFlow,ReferenceIntegration"
+                }
+                !element cyberarkPam.vault {
+                    -> cyberarkPam.pvwa "Returns authorized credential or account metadata" "CyberArk Vault protocol / encrypted channel" "Dataflow,SecurityCatalog,SecretFlow"
+                    -> cyberarkPam.pvwa.vaultClient "Returns authorized credential or account metadata" "CyberArk Vault protocol / encrypted channel" "Dataflow,SecurityCatalog,SecretFlow"
+                    -> cyberarkPam.cpm "Returns authorized credential or account metadata" "CyberArk Vault protocol / encrypted channel" "Dataflow,SecurityCatalog,SecretFlow"
+                    -> cyberarkPam.cpm.vaultClient "Returns authorized credential or account metadata" "CyberArk Vault protocol / encrypted channel" "Dataflow,SecurityCatalog,SecretFlow"
+                    -> cyberarkPam.psm "Returns authorized credential or account metadata" "CyberArk Vault protocol / encrypted channel" "Dataflow,SecurityCatalog,SecretFlow"
+                    -> cyberarkPam.psm.broker "Returns authorized credential or account metadata" "CyberArk Vault protocol / encrypted channel" "Dataflow,SecurityCatalog,SecretFlow"
+                }
+                !element cyberarkPam.pvwa {
+                    -> cyberarkPam.psm "Supplies authorized session-launch context via the user session client" "Session connection parameters / client-mediated" "Dataflow,SecurityCatalog,PrivilegedFlow"
+                }
+                !element cyberarkPam.pvwa.sessions {
+                    -> cyberarkPam.psm "Supplies authorized session-launch context via the user session client" "Session connection parameters / client-mediated" "Dataflow,SecurityCatalog,PrivilegedFlow"
+                }
+                -> managedTarget "Rotates target credentials and brokers recorded privileged sessions" "SSH / target-specific password commands" "Dataflow,SecurityCatalog,PrivilegedFlow,ReferenceIntegration"
+                -> operator "Returns brokered session output and completion status" "Encrypted session client" "Dataflow,SecurityCatalog,PrivilegedFlow,ReferenceIntegration"
             }
-            !element adFs.service {
-                -> adFs.configuration "Reads federation trusts, claim rules and signing configuration" "WID / local configuration database interface" "Dataflow,SecurityCatalog,DirectoryFlow"
+            conjur = softwareSystem "CyberArk Conjur Enterprise" "Enterprise workload secret access; documented as Secrets Manager Self-Hosted. OSS is not the selected variant." {
+                tags "SecurityCatalog"
+                url "https://docs.cyberark.com/secrets-manager-sh/latest/en/content/resources/_topnav/cc_home.htm"
+                properties {
+                    "architecture.id" "conjur"
+                    "evidence" "Documented product capability"
+                }
+                !docs docs/static/system
+                !adrs docs/static/decisions
+                service = container "Conjur service" "Logical enterprise runtime for policy, workload authentication and secret APIs; no leader/follower placement is specified." "Conjur Enterprise / HTTPS API" {
+                    tags "SecurityCatalog,LogicalReference"
+                    url "https://docs.cyberark.com/secrets-manager-sh/latest/en/content/resources/_topnav/cc_home.htm"
+                    properties {
+                        "architecture.id" "conjur.service"
+                        "evidence" "Logical reference abstraction"
+                    }
+                    api = component "Secret and policy API" "Logical reference: Accepts authenticated secret and policy operations." "Conjur responsibility / logical reference" {
+                        tags "SecurityCatalog,LogicalReference"
+                        url "https://docs.cyberark.com/secrets-manager-sh/latest/en/content/resources/_topnav/cc_home.htm"
+                        properties {
+                            "architecture.id" "conjur.service.api"
+                            "evidence" "Logical reference abstraction"
+                        }
+                        -> apps.client "Returns short-lived access token or authorized application secret" "HTTPS / Conjur API response" "Dataflow,SecurityCatalog,SecretFlow,ReferenceIntegration"
+                    }
+                    authentication = component "Workload authentication" "Logical reference: Validates the configured workload identity proof and issues a short-lived Conjur access token." "Conjur responsibility / logical reference" {
+                        tags "SecurityCatalog,LogicalReference"
+                        url "https://docs.cyberark.com/secrets-manager-sh/latest/en/content/resources/_topnav/cc_home.htm"
+                        properties {
+                            "architecture.id" "conjur.service.authentication"
+                            "evidence" "Logical reference abstraction"
+                        }
+                        -> conjur.service.api "Returns short-lived Conjur access token" "In-process logical interface" "Dataflow,SecurityCatalog,SecretFlow"
+                    }
+                    policy = component "Policy authorization" "Logical reference: Evaluates workload permissions for the requested secret variable or policy resource." "Conjur responsibility / logical reference" {
+                        tags "SecurityCatalog,LogicalReference"
+                        url "https://docs.cyberark.com/secrets-manager-sh/latest/en/content/resources/_topnav/cc_home.htm"
+                        properties {
+                            "architecture.id" "conjur.service.policy"
+                            "evidence" "Logical reference abstraction"
+                        }
+                    }
+                    secrets = component "Secret access" "Logical reference: Returns only authorized secret values and accepts permitted updates." "Conjur responsibility / logical reference" {
+                        tags "SecurityCatalog,LogicalReference"
+                        url "https://docs.cyberark.com/secrets-manager-sh/latest/en/content/resources/_topnav/cc_home.htm"
+                        properties {
+                            "architecture.id" "conjur.service.secrets"
+                            "evidence" "Logical reference abstraction"
+                        }
+                        -> conjur.service.api "Returns authorized secret value or update status" "In-process logical interface" "Dataflow,SecurityCatalog,SecretFlow"
+                    }
+                    audit = component "Access auditing" "Logical reference: Records workload, variable identifier and operation outcome without secret values." "Conjur responsibility / logical reference" {
+                        tags "SecurityCatalog,LogicalReference"
+                        url "https://docs.cyberark.com/secrets-manager-sh/latest/en/content/resources/_topnav/cc_home.htm"
+                        properties {
+                            "architecture.id" "conjur.service.audit"
+                            "evidence" "Logical reference abstraction"
+                        }
+                    }
+                    !element conjur.service.api {
+                        -> conjur.service.authentication "Submits configured workload authentication proof" "In-process logical interface" "Dataflow,SecurityCatalog,SecretFlow"
+                        -> conjur.service.policy "Passes token identity, variable path and requested operation" "In-process logical interface" "Dataflow,SecurityCatalog,SecretFlow"
+                        -> conjur.service.audit "Records workload, variable identifier and operation outcome" "In-process logical interface" "Dataflow,SecurityCatalog,SecretFlow"
+                    }
+                    !element conjur.service.policy {
+                        -> conjur.service.secrets "Authorizes secret variable read or update" "In-process logical interface" "Dataflow,SecurityCatalog,SecretFlow"
+                    }
+                    -> apps.client "Returns short-lived access token or authorized application secret" "HTTPS / Conjur API response" "Dataflow,SecurityCatalog,SecretFlow,ReferenceIntegration"
+                }
+                store = container "Conjur encrypted persistence" "Logical service-owned storage for encrypted secrets, identity and policy state; not an independently provisioned database claim." "Service-owned encrypted persistence (logical)" {
+                    tags "SecurityCatalog,LogicalReference,Database"
+                    url "https://docs.cyberark.com/secrets-manager-sh/latest/en/content/resources/_topnav/cc_home.htm"
+                    properties {
+                        "architecture.id" "conjur.store"
+                        "evidence" "Logical reference abstraction"
+                    }
+                }
+                synchronizer = container "Vault Synchronizer" "Reads selected PAM Vault accounts and synchronizes their secret values into Conjur Enterprise." "CyberArk Vault Synchronizer" {
+                    tags "SecurityCatalog"
+                    url "https://docs.cyberark.com/secrets-manager-sh/latest/en/content/conjur/cv_synchronizer-lp.htm"
+                    properties {
+                        "architecture.id" "conjur.synchronizer"
+                        "evidence" "Documented product capability"
+                    }
+                    reader = component "Vault account reader" "Logical reference: Reads selected Vault accounts and changed credentials." "Synchronizer responsibility / proprietary implementation" {
+                        tags "SecurityCatalog,LogicalReference"
+                        url "https://docs.cyberark.com/secrets-manager-sh/latest/en/content/conjur/cv_synchronizer-lp.htm"
+                        properties {
+                            "architecture.id" "conjur.synchronizer.reader"
+                            "evidence" "Logical reference abstraction"
+                        }
+                        -> cyberarkPam.vault "Reads configured Vault accounts and changed credential versions" "CyberArk Vault protocol / encrypted channel" "Dataflow,SecurityCatalog,SecretFlow"
+                    }
+                    mapping = component "Account-to-variable mapping" "Logical reference: Maps selected Vault account metadata to Conjur variable identifiers." "Synchronizer responsibility / proprietary implementation" {
+                        tags "SecurityCatalog,LogicalReference"
+                        url "https://docs.cyberark.com/secrets-manager-sh/latest/en/content/conjur/cv_synchronizer-lp.htm"
+                        properties {
+                            "architecture.id" "conjur.synchronizer.mapping"
+                            "evidence" "Logical reference abstraction"
+                        }
+                    }
+                    writer = component "Conjur update client" "Logical reference: Authenticates to Conjur and writes synchronized secret values." "Synchronizer responsibility / proprietary implementation" {
+                        tags "SecurityCatalog,LogicalReference"
+                        url "https://docs.cyberark.com/secrets-manager-sh/latest/en/content/conjur/cv_synchronizer-lp.htm"
+                        properties {
+                            "architecture.id" "conjur.synchronizer.writer"
+                            "evidence" "Logical reference abstraction"
+                        }
+                        -> conjur.service "Authenticates and writes mapped secret variable values" "HTTPS / Conjur API" "Dataflow,SecurityCatalog,SecretFlow"
+                    }
+                    !element conjur.synchronizer.reader {
+                        -> conjur.synchronizer.mapping "Supplies selected account identifier, metadata and credential version" "In-process logical interface" "Dataflow,SecurityCatalog,SecretFlow"
+                    }
+                    !element conjur.synchronizer.mapping {
+                        -> conjur.synchronizer.writer "Supplies mapped variable identifier and updated secret value" "In-process logical interface" "Dataflow,SecurityCatalog,SecretFlow"
+                    }
+                    -> cyberarkPam.vault "Reads configured Vault accounts and changed credential versions" "CyberArk Vault protocol / encrypted channel" "Dataflow,SecurityCatalog,SecretFlow"
+                    -> conjur.service "Authenticates and writes mapped secret variable values" "HTTPS / Conjur API" "Dataflow,SecurityCatalog,SecretFlow"
+                }
+                !element conjur.service {
+                    -> conjur.store "Reads or writes encrypted secret records and versions" "Service-owned persistence interface (logical)" "Dataflow,SecurityCatalog,SecretFlow"
+                }
+                !element conjur.service.secrets {
+                    -> conjur.store "Reads or writes encrypted secret records and versions" "Service-owned persistence interface (logical)" "Dataflow,SecurityCatalog,SecretFlow"
+                }
+                !element conjur.service.policy {
+                    -> conjur.store "Reads workload permissions and variable policy records" "Service-owned persistence interface (logical)" "Dataflow,SecurityCatalog,SecretFlow"
+                }
+                -> cyberarkPam "Requests selected Vault accounts and changed credentials through Vault Synchronizer" "CyberArk Vault protocol / encrypted channel" "Dataflow,SecurityCatalog,SecretFlow"
+                -> apps "Returns short-lived token or authorized application secret" "HTTPS / Conjur API response" "Dataflow,SecurityCatalog,SecretFlow,ReferenceIntegration"
             }
-            !element adFs.service.configuration {
-                -> adFs.configuration "Reads federation trusts, claim rules and signing configuration" "WID / local configuration database interface" "Dataflow,SecurityCatalog,DirectoryFlow"
-            }
-            -> apps "Returns identity tokens or assertions for application access" "HTTPS / configured identity protocol" "Dataflow,SecurityCatalog,IdentityFlow,ReferenceIntegration"
-            -> keycloak "Returns verified identity claims through the configured federation flow" "HTTPS / SAML 2.0" "Dataflow,SecurityCatalog,IdentityFlow,ReferenceIntegration"
-            -> adDs "Requests domain authentication and account attributes" "Kerberos / protected directory access" "Dataflow,SecurityCatalog,IdentityFlow"
-        }
-        !element firefly {
-            -> besu "Submits transactions and consumes finalized events" "Ethereum JSON-RPC + events" "Dataflow"
-            -> peerMembers "Exchanges private payloads and shared content references" "HTTPS / mTLS + IPFS" "Dataflow"
-            -> evmNetworks "Submits ledger operations and consumes events when configured" "Ethereum JSON-RPC" "Dataflow"
-            -> fabric "Submits ledger operations and consumes events when configured" "Fabric connector API" "Dataflow"
-            -> tezos "Submits ledger operations and consumes events when configured" "Tezos connector API" "Dataflow"
-            -> cardano "Submits ledger operations and consumes events when configured" "Cardano connector API" "Dataflow"
-            -> signatory "Requests Tezos operation signatures in the optional configuration" "HTTP / Signatory API" "Dataflow"
-            -> blockfrostService "Queries Cardano data and submits transactions in Blockfrost mode" "HTTPS / Blockfrost API" "Dataflow"
-            -> fabricCA "Registers and enrolls signing identities through FabConnect" "Fabric CA / HTTPS" "Dataflow"
-            -> kafkaBroker "Exchanges legacy connector transaction requests and replies" "Kafka protocol" "Dataflow"
-            -> mongo "Persists legacy connector receipts when configured" "MongoDB wire protocol" "Dataflow"
         }
         !element operator {
+            -> firefly.explorer "Inspects member messages, operations and network state" "Browser interaction" "Dataflow"
+            -> firefly.explorer.app "Selects member resources to inspect" "Browser interaction" "Dataflow"
             -> firefly "Inspects and administers member state" "HTTPS / Explorer + Admin API" "Operational"
             -> ops "Monitors availability and coordinates recovery" "HTTPS" "Operational"
             -> ops.grafana "Reviews quorum and recovery measurements" "HTTPS" "Operational"
@@ -3447,6 +3482,21 @@ workspace "FireFly ecosystem + private Besu + security catalog" "C4 levels 1-3 w
             -> cyberarkPam.psm "Connects authorized session client and submits administrative input" "PSM-supported session client / encrypted connection" "Dataflow,SecurityCatalog,PrivilegedFlow,ReferenceIntegration"
             -> cyberarkPam.psm.broker "Connects authorized session client and submits administrative input" "PSM-supported session client / encrypted connection" "Dataflow,SecurityCatalog,PrivilegedFlow,ReferenceIntegration"
             -> cyberarkPam "Requests approved privileged access and submits session commands" "HTTPS / PAM portal and encrypted session client" "Dataflow,SecurityCatalog,PrivilegedFlow,ReferenceIntegration"
+        }
+        !element firefly {
+            -> besu "Submits transactions and consumes finalized events" "Ethereum JSON-RPC + events" "Dataflow"
+            -> peerMembers "Exchanges private payloads and shared content references" "HTTPS / mTLS + IPFS" "Dataflow"
+            -> evmNetworks "Submits ledger operations and consumes events when configured" "Ethereum JSON-RPC" "Dataflow"
+            -> fabric "Submits ledger operations and consumes events when configured" "Fabric connector API" "Dataflow"
+            -> tezos "Submits ledger operations and consumes events when configured" "Tezos connector API" "Dataflow"
+            -> cardano "Submits ledger operations and consumes events when configured" "Cardano connector API" "Dataflow"
+            -> apps "Delivers subscribed business events and transaction outcomes" "WebSocket / webhook / HTTPS" "Dataflow"
+            -> corda "Invokes custom CorDapps and consumes vault updates through the optional starter" "Corda RPC" "Dataflow"
+            -> signatory "Requests Tezos operation signatures in the optional configuration" "HTTP / Signatory API" "Dataflow"
+            -> blockfrostService "Queries Cardano data and submits transactions in Blockfrost mode" "HTTPS / Blockfrost API" "Dataflow"
+            -> fabricCA "Registers and enrolls signing identities through FabConnect" "Fabric CA / HTTPS" "Dataflow"
+            -> kafkaBroker "Exchanges legacy connector transaction requests and replies" "Kafka protocol" "Dataflow"
+            -> mongo "Persists legacy connector receipts when configured" "MongoDB wire protocol" "Dataflow"
         }
         !element firefly.signer {
             -> besu.node "Submits signed transactions and queries RPC nodes" "HTTP JSON-RPC" "Dataflow"
@@ -3476,7 +3526,8 @@ workspace "FireFly ecosystem + private Besu + security catalog" "C4 levels 1-3 w
         !element developer {
             -> tools "Develops and tests integrations" "CLI + HTTPS" "Dataflow"
             -> tools.cli "Creates local test stacks" "Local process invocation" "Dataflow"
-            -> tools.sandbox "Exercises sample workflows" "HTTPS" "Dataflow"
+            -> tools.sandboxUi "Exercises sample messages and token workflows" "Browser interaction" "Dataflow"
+            -> tools.sandboxUi.app "Selects sample messages and token actions" "Browser interaction" "Dataflow"
             -> corda "Customizes the CorDapp and Core binding required by the starter" "Development toolchain" "Dataflow"
             -> firefly.cordaconnect "Exercises the starter after application-specific customization" "HTTP REST + WebSocket" "Dataflow"
             -> tools.perf "Runs configured performance workloads" "Local process invocation" "Dataflow"
@@ -3486,6 +3537,7 @@ workspace "FireFly ecosystem + private Besu + security catalog" "C4 levels 1-3 w
             -> tools.cli.commands "Invokes development stack commands" "Local process invocation" "Dataflow"
             -> tools.perf.commands "Invokes configured workload scenarios" "Local process invocation" "Dataflow"
             -> firefly.cordaconnect.api "Exercises customized starter operations" "HTTP REST / JSON" "Dataflow"
+            -> firefly "Exercises customized Corda starter operations" "HTTP REST / JSON" "Dataflow"
         }
         !element firefly.core.websockets {
             -> apps.client "Delivers subscribed event batches" "WebSocket / JSON" "Dataflow"
@@ -3579,6 +3631,7 @@ workspace "FireFly ecosystem + private Besu + security catalog" "C4 levels 1-3 w
             -> cyberarkPam.cpm.target "Returns password verification or change outcome" "SSH / target command response" "Dataflow,SecurityCatalog,PrivilegedFlow,ReferenceIntegration"
             -> cyberarkPam.psm "Returns command output and session state" "SSH" "Dataflow,SecurityCatalog,PrivilegedFlow,ReferenceIntegration"
             -> cyberarkPam.psm.target "Returns command output and session state" "SSH" "Dataflow,SecurityCatalog,PrivilegedFlow,ReferenceIntegration"
+            -> cyberarkPam "Returns password-operation outcomes and privileged session output" "SSH / target command response" "Dataflow,SecurityCatalog,PrivilegedFlow,ReferenceIntegration"
         }
         !element cyberarkPam.vault {
             -> conjur.synchronizer "Returns selected account metadata and credentials" "CyberArk Vault protocol / encrypted channel" "Dataflow,SecurityCatalog,SecretFlow"
@@ -3630,10 +3683,12 @@ workspace "FireFly ecosystem + private Besu + security catalog" "C4 levels 1-3 w
         !element apps.hsmSigner {
             -> entraId.authentication "Authenticates application identity and requests Managed HSM access token" "HTTPS / OAuth 2.0 client credentials" "Dataflow,SecurityCatalog,IdentityFlow,ReferenceIntegration"
             -> managedHsm.service "Submits Ethereum digest for secp256k1 signing; compatibility must be verified" "HTTPS / Managed HSM Sign API (proposed)" "Dataflow,SecurityCatalog,KeyFlow,ReferenceIntegration"
+            -> managedHsm.service "Requests public key metadata for the selected key version" "HTTPS / Managed HSM Get Key API" "Dataflow,SecurityCatalog,KeyFlow,ReferenceIntegration"
         }
         !element apps.hsmSigner.hsm {
             -> entraId.authentication "Authenticates application identity and requests Managed HSM access token" "HTTPS / OAuth 2.0 client credentials" "Dataflow,SecurityCatalog,IdentityFlow,ReferenceIntegration"
             -> managedHsm.service "Submits Ethereum digest for secp256k1 signing; compatibility must be verified" "HTTPS / Managed HSM Sign API (proposed)" "Dataflow,SecurityCatalog,KeyFlow,ReferenceIntegration"
+            -> managedHsm.service "Requests public key metadata for the selected key version" "HTTPS / Managed HSM Get Key API" "Dataflow,SecurityCatalog,KeyFlow,ReferenceIntegration"
         }
         !element besu.node {
             -> apps.hsmSigner "Returns transaction hash or JSON-RPC rejection" "Ethereum JSON-RPC response" "Dataflow,SecurityCatalog,KeyFlow,ReferenceIntegration"
@@ -3684,6 +3739,9 @@ workspace "FireFly ecosystem + private Besu + security catalog" "C4 levels 1-3 w
         !element cyberarkPam {
             -> conjur "Supplies selected Vault credentials through Vault Synchronizer" "CyberArk Vault protocol + HTTPS / Conjur API" "Dataflow,SecurityCatalog,SecretFlow"
         }
+        !element besu {
+            -> apps "Returns transaction hash or rejection to the proposed custom HSM adapter" "Ethereum JSON-RPC response" "Dataflow,SecurityCatalog,KeyFlow,ReferenceIntegration"
+        }
         !element managedHsm {
             -> entraId "Retrieves issuer metadata and public signing keys for caller token verification" "HTTPS / OpenID metadata and JWKS" "Dataflow,SecurityCatalog,IdentityFlow"
         }
@@ -3708,6 +3766,10 @@ workspace "FireFly ecosystem + private Besu + security catalog" "C4 levels 1-3 w
             include ops->besu
             include firefly->peerMembers
             include peerMembers->firefly
+            include firefly->apps
+            include developer->firefly
+            include firefly->developer
+            include tools->developer
             autoLayout lr 360 200
         }
         systemContext firefly "02-context-firefly" "System Context - Hyperledger FireFly" {
@@ -3723,6 +3785,7 @@ workspace "FireFly ecosystem + private Besu + security catalog" "C4 levels 1-3 w
             include ops->besu
             include firefly->peerMembers
             include peerMembers->firefly
+            include firefly->apps
             autoLayout lr 360 200
         }
         systemContext besu "03-context-besu" "System Context - private Besu network" {
@@ -3746,6 +3809,10 @@ workspace "FireFly ecosystem + private Besu + security catalog" "C4 levels 1-3 w
             include firefly->cardano
             include developer->corda
             include blockfrostService->cardano
+            include developer->firefly
+            include firefly->developer
+            include firefly->corda
+            include tools->developer
             include firefly->signatory
             include firefly->blockfrostService
             include firefly->fabricCA
@@ -3756,8 +3823,10 @@ workspace "FireFly ecosystem + private Besu + security catalog" "C4 levels 1-3 w
         }
         container firefly "10-firefly-runtime" "Container - FireFly orchestration and connectors" {
             title "Container - FireFly orchestration and connectors"
-            include firefly.core firefly.evm firefly.signer firefly.dx firefly.erc20 firefly.erc1155 firefly.ipfs firefly.pg apps.client besu.node peerMembers
+            include firefly.core firefly.explorer firefly.evm firefly.signer firefly.dx firefly.erc20 firefly.erc1155 firefly.ipfs firefly.pg firefly.fftmDb operator apps.client besu.node peerMembers
             exclude *->*
+            include operator->firefly.explorer
+            include firefly.explorer->firefly.core
             include firefly.core->firefly.evm
             include firefly.evm->firefly.core
             include firefly.core->firefly.dx
@@ -3770,7 +3839,7 @@ workspace "FireFly ecosystem + private Besu + security catalog" "C4 levels 1-3 w
             include firefly.erc1155->firefly.evm
             include firefly.evm->firefly.signer
             include firefly.core->firefly.pg
-            include firefly.evm->firefly.pg
+            include firefly.evm->firefly.fftmDb
             include firefly.core->firefly.ipfs
             include besu.node->besu.node
             include firefly.signer->besu.node
@@ -3785,7 +3854,7 @@ workspace "FireFly ecosystem + private Besu + security catalog" "C4 levels 1-3 w
         }
         container firefly "11-firefly-state" "Container - FireFly private state and shared storage" {
             title "Container - FireFly private state and shared storage"
-            include firefly.core firefly.evm firefly.signer firefly.dx firefly.ipfs firefly.pg firefly.pgReplica firefly.blobs firefly.ipfsRepo firefly.secrets peerMembers
+            include firefly.core firefly.evm firefly.signer firefly.dx firefly.ipfs firefly.pg firefly.fftmDb firefly.blobs firefly.ipfsRepo firefly.secrets peerMembers
             exclude *->*
             include firefly.core->firefly.evm
             include firefly.evm->firefly.core
@@ -3793,8 +3862,7 @@ workspace "FireFly ecosystem + private Besu + security catalog" "C4 levels 1-3 w
             include firefly.dx->firefly.core
             include firefly.evm->firefly.signer
             include firefly.core->firefly.pg
-            include firefly.evm->firefly.pg
-            include firefly.pg->firefly.pgReplica
+            include firefly.evm->firefly.fftmDb
             include firefly.core->firefly.ipfs
             include firefly.dx->firefly.blobs
             include firefly.ipfs->firefly.ipfsRepo
@@ -3809,11 +3877,10 @@ workspace "FireFly ecosystem + private Besu + security catalog" "C4 levels 1-3 w
             include firefly.ipfs->peerMembers
             autoLayout lr 360 200
         }
-        component firefly.core "20-firefly-core-api" "Component - FireFly Core: API, tenancy and Explorer" {
-            title "Component - FireFly Core: API, tenancy and Explorer"
-            include firefly.core.explorer firefly.core.api firefly.core.auth firefly.core.namespaces firefly.core.orchestrator firefly.core.syncasync firefly.core.spievents firefly.core.eventplugin apps.client firefly.core.config firefly.core.basicAuth
+        component firefly.core "20-firefly-core-api" "Component - FireFly Core: API and tenancy" {
+            title "Component - FireFly Core: API and tenancy"
+            include firefly.core.api firefly.core.auth firefly.core.namespaces firefly.core.orchestrator firefly.core.syncasync firefly.core.spievents firefly.core.eventplugin apps.client firefly.explorer firefly.core.config firefly.core.basicAuth
             exclude *->*
-            include firefly.core.explorer->firefly.core.api
             include firefly.core.api->firefly.core.auth
             include firefly.core.api->firefly.core.namespaces
             include firefly.core.namespaces->firefly.core.orchestrator
@@ -3821,6 +3888,7 @@ workspace "FireFly ecosystem + private Besu + security catalog" "C4 levels 1-3 w
             include firefly.core.orchestrator->firefly.core.syncasync
             include firefly.core.namespaces->firefly.core.spievents
             include firefly.core.spievents->firefly.core.eventplugin
+            include firefly.explorer->firefly.core.api
             include apps.client->firefly.core.api
             include firefly.core.eventplugin->apps.client
             include firefly.core.namespaces->firefly.core.config
@@ -3843,8 +3911,9 @@ workspace "FireFly ecosystem + private Besu + security catalog" "C4 levels 1-3 w
         }
         component firefly.core "20-firefly-core-messaging" "Component - FireFly Core: Payloads and outbound messaging" {
             title "Component - FireFly Core: Payloads and outbound messaging"
-            include firefly.core.orchestrator firefly.core.data firefly.core.schema firefly.core.batch firefly.core.batchprocessor firefly.core.broadcast firefly.core.private firefly.core.dataexchange firefly.core.sharedstorage firefly.core.multiparty firefly.dx firefly.ipfs
+            include firefly.core.orchestrator firefly.core.data firefly.core.schema firefly.core.batch firefly.core.batchprocessor firefly.core.broadcast firefly.core.private firefly.core.dataexchange firefly.core.sharedstorage firefly.core.multiparty firefly.dx firefly.ipfs firefly.core.identity
             exclude *->*
+            include firefly.core.orchestrator->firefly.core.identity
             include firefly.core.orchestrator->firefly.core.multiparty
             include firefly.core.orchestrator->firefly.core.data
             include firefly.core.data->firefly.core.schema
@@ -3857,6 +3926,7 @@ workspace "FireFly ecosystem + private Besu + security catalog" "C4 levels 1-3 w
             include firefly.core.broadcast->firefly.core.multiparty
             include firefly.core.private->firefly.core.dataexchange
             include firefly.core.private->firefly.core.multiparty
+            include firefly.core.private->firefly.core.identity
             include firefly.core.dataexchange->firefly.dx
             include firefly.core.sharedstorage->firefly.ipfs
             include firefly.dx->firefly.dx
@@ -3925,7 +3995,7 @@ workspace "FireFly ecosystem + private Besu + security catalog" "C4 levels 1-3 w
         }
         component firefly.evm "30-firefly-evm-transactions" "Component - FireFly EVMConnect: Transaction submission" {
             title "Component - FireFly EVMConnect: Transaction submission"
-            include firefly.evm.api firefly.evm.manager firefly.evm.handler firefly.evm.nonce firefly.evm.abi firefly.evm.rpc firefly.evm.persistence firefly.pg firefly.signer
+            include firefly.evm.api firefly.evm.manager firefly.evm.handler firefly.evm.nonce firefly.evm.abi firefly.evm.rpc firefly.evm.persistence firefly.fftmDb firefly.signer firefly.evm.receipts
             exclude *->*
             include firefly.evm.api->firefly.evm.manager
             include firefly.evm.manager->firefly.evm.handler
@@ -3933,14 +4003,16 @@ workspace "FireFly ecosystem + private Besu + security catalog" "C4 levels 1-3 w
             include firefly.evm.nonce->firefly.evm.persistence
             include firefly.evm.handler->firefly.evm.abi
             include firefly.evm.abi->firefly.evm.rpc
+            include firefly.evm.handler->firefly.evm.receipts
+            include firefly.evm.receipts->firefly.evm.rpc
             include firefly.evm.manager->firefly.evm.persistence
-            include firefly.evm.persistence->firefly.pg
+            include firefly.evm.persistence->firefly.fftmDb
             include firefly.evm.rpc->firefly.signer
             autoLayout lr 360 200
         }
         component firefly.evm "30-firefly-evm-events" "Component - FireFly EVMConnect: Block tracking and events" {
             title "Component - FireFly EVMConnect: Block tracking and events"
-            include firefly.evm.manager firefly.evm.blocks firefly.evm.receipts firefly.evm.rpc firefly.evm.confirmations firefly.evm.streams firefly.evm.delivery firefly.evm.persistence firefly.pg firefly.signer firefly.core firefly.evm.blocklistener firefly.evm.metrics
+            include firefly.evm.manager firefly.evm.blocks firefly.evm.receipts firefly.evm.rpc firefly.evm.confirmations firefly.evm.streams firefly.evm.delivery firefly.evm.persistence firefly.fftmDb firefly.signer firefly.core firefly.evm.blocklistener firefly.evm.metrics
             exclude *->*
             include firefly.evm.receipts->firefly.evm.rpc
             include firefly.evm.rpc->firefly.evm.blocks
@@ -3952,9 +4024,8 @@ workspace "FireFly ecosystem + private Besu + security catalog" "C4 levels 1-3 w
             include firefly.evm.delivery->firefly.evm.streams
             include firefly.evm.streams->firefly.evm.persistence
             include firefly.evm.manager->firefly.evm.persistence
-            include firefly.core->firefly.pg
             include firefly.evm.delivery->firefly.core
-            include firefly.evm.persistence->firefly.pg
+            include firefly.evm.persistence->firefly.fftmDb
             include firefly.evm.rpc->firefly.signer
             include firefly.evm.blocks->firefly.evm.blocklistener
             include firefly.evm.blocklistener->firefly.evm.confirmations
@@ -4106,12 +4177,13 @@ workspace "FireFly ecosystem + private Besu + security catalog" "C4 levels 1-3 w
         }
         container tools "61-tools" "Container - developer tooling" {
             title "Container - developer tooling"
-            include tools.cli tools.sandbox developer firefly.core tools.perf tools.eventAudit tools.config dockerEngine
+            include tools.cli tools.sandbox tools.sandboxUi developer firefly.core tools.perf tools.eventAudit tools.config dockerEngine
             exclude *->*
+            include tools.sandboxUi->tools.sandbox
             include tools.sandbox->firefly.core
             include tools.cli->firefly.core
             include developer->tools.cli
-            include developer->tools.sandbox
+            include developer->tools.sandboxUi
             include tools.cli->dockerEngine
             include developer->tools.perf
             include tools.perf->firefly.core
@@ -4120,11 +4192,11 @@ workspace "FireFly ecosystem + private Besu + security catalog" "C4 levels 1-3 w
             include developer->tools.config
             autoLayout lr 360 200
         }
-        component tools.sandbox "62-sandbox" "Component - Sandbox sample application" {
-            title "Component - Sandbox sample application"
-            include tools.sandbox.frontend tools.sandbox.backend tools.sandbox.sdk firefly.core tools.sandbox.sdkHttp tools.sandbox.sdkEvents
+        component tools.sandbox "62-sandbox" "Component - Sandbox server" {
+            title "Component - Sandbox server"
+            include tools.sandbox.backend tools.sandbox.sdk tools.sandboxUi firefly.core tools.sandbox.sdkHttp tools.sandbox.sdkEvents
             exclude *->*
-            include tools.sandbox.frontend->tools.sandbox.backend
+            include tools.sandboxUi->tools.sandbox.backend
             include tools.sandbox.backend->tools.sandbox.sdk
             include tools.sandbox.sdk->firefly.core
             include tools.sandbox.sdk->tools.sandbox.sdkHttp
@@ -4133,16 +4205,37 @@ workspace "FireFly ecosystem + private Besu + security catalog" "C4 levels 1-3 w
             include tools.sandbox.sdkEvents->firefly.core
             autoLayout lr 360 200
         }
+        component tools.sandboxUi "68-sandbox-browser" "Component - Sandbox browser application" {
+            title "Component - Sandbox browser application"
+            include tools.sandboxUi.app developer tools.sandbox
+            exclude *->*
+            include tools.sandboxUi.app->tools.sandbox
+            include developer->tools.sandboxUi.app
+            autoLayout lr 360 200
+        }
+        component firefly.explorer "24-explorer-browser" "Component - FireFly Explorer browser application" {
+            title "Component - FireFly Explorer browser application"
+            include firefly.explorer.app operator firefly.core
+            exclude *->*
+            include operator->firefly.explorer.app
+            include firefly.explorer.app->firefly.core
+            autoLayout lr 360 200
+        }
         container ops "63-operations" "Container - platform operations" {
             title "Container - platform operations"
-            include ops.gateway ops.cnpg ops.prometheus ops.grafana operator firefly.core firefly.pg besu.node
+            include ops.gateway ops.cnpg ops.prometheus ops.grafana operator firefly.core firefly.dx firefly.pg firefly.fftmDb besu.node
             exclude *->*
+            include firefly.core->firefly.dx
+            include firefly.dx->firefly.core
             include firefly.core->firefly.pg
             include besu.node->besu.node
+            include firefly.dx->firefly.dx
             include operator->ops.grafana
             include ops.grafana->ops.prometheus
             include ops.gateway->firefly.core
+            include ops.gateway->firefly.dx
             include ops.cnpg->firefly.pg
+            include ops.cnpg->firefly.fftmDb
             include ops.prometheus->firefly.core
             include ops.prometheus->besu.node
             autoLayout lr 360 200
@@ -4165,8 +4258,14 @@ workspace "FireFly ecosystem + private Besu + security catalog" "C4 levels 1-3 w
         }
         component firefly.core "22-core-storage-adapters" "Component - Core storage and exchange adapters" {
             title "Component - Core storage and exchange adapters"
-            include firefly.core.database firefly.core.postgres firefly.core.sqlite firefly.core.sql firefly.core.dataexchange firefly.core.ffdx firefly.core.sharedstorage firefly.core.ipfs firefly.pg firefly.sqlite firefly.dx firefly.ipfs
+            include firefly.core.data firefly.core.broadcast firefly.core.database firefly.core.postgres firefly.core.sqlite firefly.core.sql firefly.core.dataexchange firefly.core.ffdx firefly.core.sharedstorage firefly.core.ipfs firefly.core.private firefly.core.batchprocessor firefly.pg firefly.sqlite firefly.dx firefly.ipfs
             exclude *->*
+            include firefly.core.data->firefly.core.database
+            include firefly.core.batchprocessor->firefly.core.data
+            include firefly.core.batchprocessor->firefly.core.broadcast
+            include firefly.core.batchprocessor->firefly.core.private
+            include firefly.core.broadcast->firefly.core.sharedstorage
+            include firefly.core.private->firefly.core.dataexchange
             include firefly.core.database->firefly.pg
             include firefly.core.dataexchange->firefly.dx
             include firefly.core.sharedstorage->firefly.ipfs
@@ -4206,22 +4305,31 @@ workspace "FireFly ecosystem + private Besu + security catalog" "C4 levels 1-3 w
         }
         component firefly.evm "31-evm-persistence-delivery" "Component - EVMConnect persistence and delivery options" {
             title "Component - EVMConnect persistence and delivery options"
-            include firefly.evm.manager firefly.evm.persistence firefly.evm.postgres firefly.evm.leveldb firefly.evm.streams firefly.evm.delivery firefly.evm.webhook firefly.evm.metrics firefly.pg firefly.leveldb apps.client
+            include firefly.evm.manager firefly.evm.persistence firefly.evm.postgres firefly.evm.leveldb firefly.evm.streams firefly.evm.delivery firefly.evm.webhook firefly.evm.metrics firefly.fftmDb firefly.leveldb apps.client
             exclude *->*
             include firefly.evm.manager->firefly.evm.streams
             include firefly.evm.streams->firefly.evm.delivery
             include firefly.evm.delivery->firefly.evm.streams
             include firefly.evm.streams->firefly.evm.persistence
             include firefly.evm.manager->firefly.evm.persistence
-            include firefly.evm.persistence->firefly.pg
+            include firefly.evm.persistence->firefly.fftmDb
             include firefly.evm.persistence->firefly.evm.postgres
             include firefly.evm.persistence->firefly.evm.leveldb
             include firefly.evm.streams->firefly.evm.webhook
             include firefly.evm.manager->firefly.evm.metrics
             include firefly.evm.streams->firefly.evm.metrics
-            include firefly.evm.postgres->firefly.pg
+            include firefly.evm.postgres->firefly.fftmDb
             include firefly.evm.leveldb->firefly.leveldb
             include firefly.evm.webhook->apps.client
+            autoLayout lr 360 200
+        }
+        container firefly "77-other-evm-network" "Container - Optional external EVM network" {
+            title "Container - Optional external EVM network"
+            include firefly.core firefly.evm evmNetworks
+            exclude *->*
+            include firefly.core->firefly.evm
+            include firefly.evm->firefly.core
+            include firefly.evm->evmNetworks
             autoLayout lr 360 200
         }
         container firefly "12-embedded-storage-options" "Container - Optional embedded Core and EVM persistence" {
@@ -4550,7 +4658,11 @@ workspace "FireFly ecosystem + private Besu + security catalog" "C4 levels 1-3 w
             include business->adDs
             include operator->cyberarkPam
             include cyberarkPam->managedTarget
+            include managedTarget->cyberarkPam
+            include cyberarkPam->operator
+            include adDs->business
             include cyberarkPam->conjur
+            include conjur->cyberarkPam
             include apps->conjur
             include conjur->apps
             include apps->managedHsm
@@ -4589,6 +4701,7 @@ workspace "FireFly ecosystem + private Besu + security catalog" "C4 levels 1-3 w
             include entraId->adDs
             include adDs->entraId
             include business->adDs
+            include adDs->business
             autoLayout lr 360 200
         }
         container keycloak "100-security-keycloak-containers" "Container - Keycloak logical reference" {
@@ -4641,6 +4754,7 @@ workspace "FireFly ecosystem + private Besu + security catalog" "C4 levels 1-3 w
             include managedHsm.service managedHsm.keys securityAdmin apps.client entraId.authentication azureManagement
             exclude *->*
             include managedHsm.service->managedHsm.keys
+            include managedHsm.keys->managedHsm.service
             include apps.client->entraId.authentication
             include entraId.authentication->apps.client
             include apps.client->managedHsm.service
@@ -4659,7 +4773,10 @@ workspace "FireFly ecosystem + private Besu + security catalog" "C4 levels 1-3 w
             include securityAdmin->conjur
             include operator->cyberarkPam
             include cyberarkPam->managedTarget
+            include managedTarget->cyberarkPam
+            include cyberarkPam->operator
             include cyberarkPam->conjur
+            include conjur->cyberarkPam
             autoLayout lr 360 200
         }
         container cyberarkPam "100-security-cyberarkPam-containers" "Container - CyberArk PAM Self-Hosted logical reference" {
@@ -4692,6 +4809,7 @@ workspace "FireFly ecosystem + private Besu + security catalog" "C4 levels 1-3 w
             include securityAdmin->cyberarkPam
             include securityAdmin->conjur
             include cyberarkPam->conjur
+            include conjur->cyberarkPam
             include apps->conjur
             include conjur->apps
             autoLayout lr 360 200
@@ -4731,6 +4849,7 @@ workspace "FireFly ecosystem + private Besu + security catalog" "C4 levels 1-3 w
             include entraId->adDs
             include adDs->entraId
             include business->adDs
+            include adDs->business
             include apps->managedHsm
             include managedHsm->apps
             include managedHsm->entraId
@@ -4778,6 +4897,7 @@ workspace "FireFly ecosystem + private Besu + security catalog" "C4 levels 1-3 w
             include entraId->adDs
             include adDs->entraId
             include business->adDs
+            include adDs->business
             autoLayout lr 360 200
         }
         container adDs "100-security-adDs-containers" "Container - Microsoft Active Directory Domain Services logical reference" {
@@ -4824,6 +4944,7 @@ workspace "FireFly ecosystem + private Besu + security catalog" "C4 levels 1-3 w
             include adFs->adDs
             include adDs->adFs
             include business->adDs
+            include adDs->business
             autoLayout lr 360 200
         }
         container adFs "100-security-adFs-containers" "Container - Microsoft Active Directory Federation Services logical reference" {
@@ -5190,6 +5311,7 @@ workspace "FireFly ecosystem + private Besu + security catalog" "C4 levels 1-3 w
             include apps.client entraId.authentication managedHsm.service managedHsm.keys
             exclude *->*
             include managedHsm.service->managedHsm.keys
+            include managedHsm.keys->managedHsm.service
             include hsmWorkloadTokenRequest
             include hsmWorkloadTokenResponse
             include apps.client->managedHsm.service
@@ -5210,6 +5332,41 @@ workspace "FireFly ecosystem + private Besu + security catalog" "C4 levels 1-3 w
             include managedHsm.service->apps.hsmSigner
             include apps.hsmSigner->besu.node
             include besu.node->apps.hsmSigner
+            autoLayout lr 360 200
+        }
+        systemContext apps "05-context-applications" "System Context - Member application reference" {
+            title "System Context - Member application reference"
+            include apps business firefly besu
+            exclude *->*
+            include firefly->besu
+            include apps->firefly
+            include business->apps
+            include firefly->apps
+            include apps->besu
+            include besu->apps
+            autoLayout lr 360 200
+        }
+        systemContext tools "06-context-tools" "System Context - FireFly developer tools" {
+            title "System Context - FireFly developer tools"
+            include tools developer firefly dockerEngine
+            exclude *->*
+            include developer->tools
+            include tools->firefly
+            include developer->firefly
+            include firefly->developer
+            include tools->developer
+            include tools->dockerEngine
+            autoLayout lr 360 200
+        }
+        systemContext ops "07-context-operations" "System Context - Platform operations reference" {
+            title "System Context - Platform operations reference"
+            include ops operator firefly besu
+            exclude *->*
+            include firefly->besu
+            include operator->firefly
+            include operator->ops
+            include ops->firefly
+            include ops->besu
             autoLayout lr 360 200
         }
         styles {
@@ -5235,6 +5392,12 @@ workspace "FireFly ecosystem + private Besu + security catalog" "C4 levels 1-3 w
             }
             element "Component" {
                 background #EEF5FA
+            }
+            element "Group" {
+                color #42566A
+                stroke #8295A7
+                border Dashed
+                fontSize 26
             }
             element "Database" {
                 shape Cylinder

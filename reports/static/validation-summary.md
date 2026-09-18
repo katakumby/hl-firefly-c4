@@ -1,6 +1,6 @@
 # Static C4 validation report
 
-Recorded: 2026-09-18T22:39:14.229307+00:00
+Recorded: 2026-09-18T23:02:18.201579+00:00
 
 **Result: PASS**
 
@@ -24,8 +24,8 @@ Inspected input: `workspace.dsl`, the sole canonical workspace. Legacy deploymen
 
 ## Parsed-model checks
 
-- 89 static views, 331 logical elements, 243 components, 673 relationships.
-- 1884 assertions; 0 failures.
+- 95 static views, 333 logical elements, 243 components, 696 relationships.
+- 2147 assertions; 0 failures.
 - Every view has visible, labeled, directed static dataflows and no disconnected boxes.
 - Every component appears in its owning container's component views.
 - Parsed element selections and arrow endpoints exactly match the authored model.
@@ -38,7 +38,7 @@ Only `workspace.scope` is informational. All other inspection severities retain 
 
 - This workspace has no defined scope. It is recommended that the workspace scope is set to "Landscape" or "SoftwareSystem".
 - This workspace describes the internal details of 12 software systems. It is recommended that a workspace contains the model, views, and documentation for a single software system only.
-- System context views exist for 9 software systems. It is recommended that a workspace includes system context views for a single software system only.
+- System context views exist for 12 software systems. It is recommended that a workspace includes system context views for a single software system only.
 - Container views exist for 12 software systems. It is recommended that a workspace includes container views for a single software system only.
 
 ## Evidence and deferred work

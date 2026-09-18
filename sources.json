@@ -15243,6 +15243,26 @@
       "retrieved_at": "2026-09-18T22:15:54.002044+00:00",
       "capture_method": "Direct HTTP document snapshot",
       "classification": "Official product documentation; logical decomposition is inferred"
+    },
+    "security-hsm-sign": {
+      "url": "https://learn.microsoft.com/en-us/rest/api/keyvault/keys/sign/sign?view=rest-keyvault-keys-2025-07-01",
+      "resolved_url": "https://learn.microsoft.com/en-us/rest/api/keyvault/keys/sign/sign?view=rest-keyvault-keys-2025-07-01",
+      "sha256": "3510e12cb6ccdf0e05aca318b7577f938643f478e0e2a064bcaec2360ea00d05",
+      "bytes": 47456,
+      "cache": ".cache/sources-security/security-hsm-sign.html",
+      "retrieved_at": "2026-09-18T22:59:58.942304+00:00",
+      "capture_method": "Direct HTTP document snapshot",
+      "classification": "Official product documentation; logical decomposition is inferred"
+    },
+    "security-hsm-get-key": {
+      "url": "https://learn.microsoft.com/en-us/rest/api/keyvault/keys/get-key/get-key?view=rest-keyvault-keys-2025-07-01",
+      "resolved_url": "https://learn.microsoft.com/en-us/rest/api/keyvault/keys/get-key/get-key?view=rest-keyvault-keys-2025-07-01",
+      "sha256": "098122d6cb284875098e36ebcf24cc54d082bb4cfbe1672e94d4b11003d57277",
+      "bytes": 58569,
+      "cache": ".cache/sources-security/security-hsm-get-key.html",
+      "retrieved_at": "2026-09-18T22:59:59.331093+00:00",
+      "capture_method": "Direct HTTP document snapshot",
+      "classification": "Official product documentation; logical decomposition is inferred"
     }
   },
   "static_retrieved_at": "2026-09-18T21:02:48.224172+00:00",
@@ -15283,5 +15303,5 @@
       "evidence": "https://raw.githubusercontent.com/hyperledger-firefly/sandbox/ef7f240b8acf9c79c8fdf5a8bccb73e9de482069/server/package-lock.json"
     }
   ],
-  "security_retrieved_at": "2026-09-18T22:15:54.002044+00:00"
+  "security_retrieved_at": "2026-09-18T22:59:59.331093+00:00"
 }

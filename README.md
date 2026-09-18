@@ -12,6 +12,7 @@ Proprietary security internals are explicitly logical reference abstractions.
 - [Model catalog](model-catalog.json): the generated logical model and exact view selections.
 - [Deployment archive](archive/README.md): historical deployment-only data and DSL fragments, outside the active workspace.
 - [Validation report](reports/static/validation-summary.md): fresh Docker results, accepted advisories, coverage and deferred checks.
+- [Final architecture review](docs/static/workspace/05-final-review.md): corrected boundaries, duplicate assessment, grouping decisions and review limits.
 - [Official source inventory](reports/static/source-inventory.md), [source coverage](reports/static/source-coverage.csv), [relationship evidence](reports/static/relationship-evidence.csv), and [element/view coverage](coverage.csv).
 - [Logical architecture](docs/static/workspace/01-logical-architecture.md), [dataflows](docs/static/workspace/02-static-dataflows.md), and [decisions](docs/static/decisions).
 - [Security catalog and view navigation](docs/static/workspace/03-security-catalog.md), [security example dataflows](docs/static/workspace/04-security-dataflows.md), and [security source coverage](reports/static/security-source-coverage.csv).
@@ -22,6 +23,11 @@ Conjur Enterprise, Microsoft Entra ID, AD DS and AD FS. Start at
 Examples are independent reference choices, not a mandatory combined stack.
 The HSM transaction-signing adapter is a proposed custom integration, not
 built-in FireFly Signer support. No runtime products are installed or configured.
+
+Related systems have named navigation groups while retaining independent C4
+boundaries. Explorer and Sandbox browser applications are separate from their
+servers. Core and FFTM own separate logical PostgreSQL databases; deployment
+replicas are not additional logical containers. Existing view keys are retained.
 
 ## Validate static C4 only
 

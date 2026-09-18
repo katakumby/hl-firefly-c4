@@ -69,7 +69,7 @@ Retrieved: 2026-09-18T21:02:48.224172+00:00
 
 Proprietary component decompositions are logical reference abstractions, not a verified internal code inventory. Proposed application integrations are labeled separately. Conjur Enterprise (Secrets Manager Self-Hosted) is the selected edition.
 
-Retrieved: 2026-09-18T22:15:54.002044+00:00
+Retrieved: 2026-09-18T22:59:59.331093+00:00
 
 | Documentation | Capture method | SHA-256 |
 |---|---|---|
@@ -87,6 +87,8 @@ Retrieved: 2026-09-18T22:15:54.002044+00:00
 | [security-adfs](https://learn.microsoft.com/en-us/windows-server/identity/ad-fs/ad-fs-overview) | Direct HTTP document snapshot | `0d5bfd1b8af15e99a015f12fe854e2d7b3d4ef58f1abd5aeeee9738fedf79c15` |
 | [security-adfs-claims](https://learn.microsoft.com/en-us/windows-server/identity/ad-fs/technical-reference/the-role-of-the-claims-engine) | Direct HTTP document snapshot | `e2f35654d993488046a922b60f00b979cdc34d76bbcc312d9e112960e21c84f6` |
 | [security-ethereum-transactions](https://ethereum.org/en/developers/docs/transactions/) | Direct HTTP document snapshot | `fa51f2287f87125387e1add01d028ed8d077d646625367e0ee317655c477b4ac` |
+| [security-hsm-sign](https://learn.microsoft.com/en-us/rest/api/keyvault/keys/sign/sign?view=rest-keyvault-keys-2025-07-01) | Direct HTTP document snapshot | `3510e12cb6ccdf0e05aca318b7577f938643f478e0e2a064bcaec2360ea00d05` |
+| [security-hsm-get-key](https://learn.microsoft.com/en-us/rest/api/keyvault/keys/get-key/get-key?view=rest-keyvault-keys-2025-07-01) | Direct HTTP document snapshot | `098122d6cb284875098e36ebcf24cc54d082bb4cfbe1672e94d4b11003d57277` |
 
 CyberArk entries use web-reader text excerpts because direct HTTP downloads returned 404. Fingerprints describe those excerpts; they are not full HTML snapshots.
 

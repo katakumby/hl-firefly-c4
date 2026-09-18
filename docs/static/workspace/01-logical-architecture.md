@@ -10,13 +10,17 @@ claim from the earlier reports is renewed by this validation.
 Start with 01-landscape and 02-context-firefly, then 10-firefly-runtime for the
 Besu configuration. Core responsibilities are split across 20–23 component
 views; EVMConnect, Signer, Data Exchange and token connectors use 30–40 views.
-Besu details use 50–51. Tools use 61–67. Optional blockchain configurations use
-70–76. Security reference products and examples use `100-security-` keys; start
+Besu details use 50–51. Tools use 61–68. Optional blockchain configurations use
+70–77. Application, tooling and operations contexts use 05–07. Explorer browser
+detail uses 24. Security reference products and examples use `100-security-` keys; start
 with `100-security-landscape`. View titles state their C4 level and selected
 configuration. The security catalog guide provides product navigation.
 
-Core hosts its Explorer UI and statically compiled plugin adapters. Independent
-connectors are containers. FFTM is embedded in EVMConnect and TezosConnect, with
+Core serves Explorer assets, but Explorer executes in a separate browser
+container. The Sandbox browser and Node.js server are also separate containers.
+Core hosts statically compiled plugin adapters. Independent connectors are
+containers. Core and FFTM use separate logical PostgreSQL databases; primary and
+standby server instances belong to deployment modeling. FFTM is embedded in EVMConnect and TezosConnect, with
 each connector's own dependency version recorded in sources.json. SDKs, shared
 HTTP libraries, ABI/cryptographic utilities and factories are embedded
 responsibilities, not additional services. SQLite and LevelDB boxes represent
@@ -41,6 +45,10 @@ stores. Dashed grey boxes/relationships denote optional integrations. Gold
 identifies blockchain/contract responsibilities; purple and green distinguish
 private and shared data. Arrow labels and protocol metadata carry the meaning
 independently of color. Every view contains directed static relationships.
+Named group outlines organize related systems at the same C4 level; they do not
+assert common ownership, tenancy, trust, deployment or required co-installation.
+Besu's hosted contract responsibilities have a separate group from native client
+implementation components. See the [final review](05-final-review.md).
 Security arrow categories distinguish identity, directory, secret, key,
 privileged-session and administration data. Dashed reference-integration arrows
 identify proposed application examples; dashed logical-reference boxes identify

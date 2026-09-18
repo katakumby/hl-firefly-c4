@@ -106,7 +106,7 @@ GROUPS={
  'sdk':[('lib','Embedded SDK interfaces, validation and logging','tools.sandbox.sdk'),('examples','SDK examples','tools.sandbox.sdk'),('scripts','SDK build tooling','tools.sandbox.sdk')],
  'dx':[('src/app.ts','Runtime initialization','firefly.dx.api'),('src/index.ts','Process entrypoint','firefly.dx.api'),('src/custom.d.ts','Type declarations','firefly.dx.api')],
  'sandbox':[],
- 'ui':[('scripts','UI build tooling','firefly.core.explorer')],
+ 'ui':[('scripts','UI build tooling','firefly.explorer.app')],
  'erc20':[], 'erc1155':[],
 }
 for key in ('erc20','erc1155'):

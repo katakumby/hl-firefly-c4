@@ -42,22 +42,28 @@ add("operator","person","Consortium operator","Operates member namespaces, recov
 add("business","person","Business user","Submits consortium business actions through a member application.",repo="reference")
 add("firefly","softwareSystem","Hyperledger FireFly","Reusable supernode architecture; each consortium member deploys an isolated instance.")
 data=[
-("core","FireFly Core","Exposes member APIs and bundled Explorer; orchestrates multiparty operations.","Go + React","firefly","internal/orchestrator",""),
+("core","FireFly Core","Exposes member APIs, serves Explorer assets and orchestrates multiparty operations.","Go","firefly","internal/orchestrator",""),
 ("evm","EVMConnect + FFTM","Submits Ethereum transactions and streams confirmed events; one nonce writer.","Go","evmconnect","cmd/evmconnect.go",""),
 ("signer","FireFly Signer","Signs member transactions and proxies Ethereum RPC calls.","Go","signer","internal/rpcserver",""),
 ("dx","HTTPS Data Exchange","Exchanges private envelopes and blobs with authenticated members.","TypeScript / Node.js","dx","src","Private"),
 ("erc20","ERC-20 / ERC-721 connector","Maps fungible and non-fungible token APIs to EVM contracts.","TypeScript / NestJS","erc20","src",""),
 ("erc1155","ERC-1155 connector","Maps multi-token operations and events to FireFly.","TypeScript / NestJS","erc1155","src",""),
 ("ipfs","IPFS Kubo","Publishes and retrieves consortium-shared content.","Go / Kubo","ipfs","","Shared"),
-("pg","PostgreSQL primary","Stores Core and FFTM in separate databases with separate credentials.","PostgreSQL / CloudNativePG","cnpg","","Database,Private"),
-("pgReplica","PostgreSQL standby","Replicates this member's primary; eligible for fenced promotion.","PostgreSQL / CloudNativePG","cnpg","","Database,Private"),
+("pg","Core PostgreSQL database","Stores Core resources and offsets in its own logical database; server placement and replication are outside this model.","PostgreSQL","firefly","internal/database/postgres","Database,Private"),
+("fftmDb","FFTM PostgreSQL database","Stores EVMConnect transaction state, nonces and checkpoints in a separate logical database with separate credentials.","PostgreSQL","fftm","internal/persistence/postgres","Database,Private"),
 ("blobs","Private blob and peer store","Stores private blobs and mutable peer metadata.","Filesystem / Premium SSD ZRS","dx","src/handlers/blobs.ts","Database,Private"),
 ("ipfsRepo","IPFS repository","Stores this member's Kubo identity, pins and content blocks.","Filesystem / Premium SSD ZRS","ipfs","","Database,Shared"),
 ("secrets","Member keys and configuration","Holds signing keystores, mTLS keys and configuration.","Kubernetes Secrets","signer","pkg/fswallet","Database,Private"),
 ]
 for id,name,desc,tech,repo,path,tags in data: add(f"firefly.{id}","container",name,desc,tech,repo,path,tags)
 comps("firefly.core",CORE,"firefly","Go");flows("firefly.core",CORE_FLOWS,"In-process calls / Go")
-E["firefly.core.explorer"]["technology"]="React / TypeScript"
+add("firefly.explorer","container","FireFly Explorer","Browser application served by Core; queries member state through the Core API.","React / TypeScript / browser","ui","src")
+comps("firefly.explorer",[("app","Explorer screens and API client","Displays member resources and queries Core through browser HTTP requests.","src")],"ui","React / TypeScript")
+rel("operator","firefly.explorer","Inspects member messages, operations and network state","Browser interaction")
+rel("operator","firefly.explorer.app","Selects member resources to inspect","Browser interaction")
+rel("firefly.explorer","firefly.core","Requests Explorer assets and queries member resources","HTTP(S) / REST + static assets")
+rel("firefly.explorer","firefly.core.api","Queries messages, operations and network state","HTTP(S) / REST / JSON")
+rel("firefly.explorer.app","firefly.core","Requests member resources and renders returned state","HTTP(S) / REST / JSON")
 comps("firefly.evm",EVM,"evmconnect","Go");flows("firefly.evm",EVM_FLOWS,"In-process calls / Go")
 comps("firefly.signer",[r for r in SIGNER if r[0]!="typeddata"],"signer","Go")
 flows("firefly.signer",[r for r in SIGNER_FLOWS if r[0]!="typeddata"],"In-process calls / Go")
@@ -77,8 +83,7 @@ for src,dst,label,tech in [
 ("erc1155","evm","Submits contract calls and consumes event streams","HTTP REST + WebSocket"),
 ("evm","signer","Submits Ethereum calls and unsigned transactions","HTTP JSON-RPC"),
 ("core","pg","Reads and writes the private Core database","PostgreSQL wire / TLS"),
-("evm","pg","Reads and writes the separate FFTM database","PostgreSQL wire / TLS"),
-("pg","pgReplica","Streams WAL and awaits one synchronous standby","PostgreSQL replication / TLS"),
+("evm","fftmDb","Reads and writes the separate FFTM database","PostgreSQL wire / TLS"),
 ("core","ipfs","Adds shared content and retrieves CIDs","IPFS HTTP RPC / gateway"),
 ("dx","blobs","Reads and writes private blobs and peer records","Filesystem I/O"),
 ("ipfs","ipfsRepo","Reads and writes Kubo keys, pins and blocks","Filesystem I/O"),
@@ -93,7 +98,7 @@ for src,dst,label,tech in [
 ("core.sharedstorage","ipfs","Publishes and retrieves CIDs","IPFS HTTP RPC"),
 ("core.tokens","erc20","Submits ERC-20 and ERC-721 operations","HTTP REST / JSON"),
 ("core.tokens","erc1155","Submits ERC-1155 operations","HTTP REST / JSON"),
-("evm.persistence","pg","Persists FFTM transactions and checkpoints","PostgreSQL wire / TLS"),
+("evm.persistence","fftmDb","Persists FFTM transactions and checkpoints","PostgreSQL wire / TLS"),
 ("evm.rpc","signer","Forwards transactions and read calls","HTTP JSON-RPC"),
 ("signer.wallet","secrets","Loads encrypted account keystores","Read-only projected files"),
 ("dx.blobs","blobs","Stores durable private blobs","Filesystem I/O"),
@@ -129,7 +134,7 @@ rel("firefly.dx","firefly.dx","Transfers private envelopes and blobs to peers; r
 rel("firefly.ipfs","firefly.ipfs","Retrieves shared content blocks from peers by CID","IPFS / libp2p","SharedFlow")
 
 
-add("apps","softwareSystem","Member applications","Independently owned applications and event consumers.",repo="reference")
+add("apps","softwareSystem","Member application reference","One example member application boundary; unrelated member applications are not implied to share ownership.",repo="reference")
 add("apps.client","container","Member business application","Submits requests and consumes acknowledged FireFly events.","Example application / REST client","reference")
 rel("business","apps.client","Submits business actions","HTTPS")
 rel("apps.client","firefly.core","Submits member-scoped commands and queries","HTTPS / REST")
@@ -140,22 +145,26 @@ rel("apps","firefly","Submits member requests and consumes events","HTTPS + WebS
 rel("business","apps","Submits consortium business actions","HTTPS")
 add("tools","softwareSystem","FireFly developer tools","Development utilities and optional sample applications.",repo="firefly",path="doc-site/docs/overview/key_components/tools.md",tags="Optional")
 add("tools.cli","container","FireFly CLI","Creates local stacks and performs development administration.","Go / CLI","firefly","doc-site/docs/overview/key_components/tools.md",tags="Optional")
-add("tools.sandbox","container","FireFly Sandbox","Provides a sample web app calling a selected member API.","React + Node.js / TypeScript","sandbox",tags="Optional")
+add("tools.sandbox","container","Sandbox server","Serves Sandbox browser assets and maps UI requests to a selected FireFly API.","Node.js / TypeScript","sandbox",path="server/src",tags="Optional")
+add("tools.sandboxUi","container","Sandbox browser application","Runs the sample interface in the developer's browser and calls the Sandbox server.","React / TypeScript / browser","sandbox",path="ui/src",tags="Optional")
+comps("tools.sandboxUi",[("app","Sandbox screens and server client","Collects sample actions and requests their execution through the Sandbox server.","ui/src")],"sandbox","React / TypeScript")
 for id,name,desc,tech in [
-("frontend","Sandbox frontend","Collects sample messages and token actions.","React / TypeScript"),
 ("backend","Sandbox backend","Maps UI actions into SDK requests.","Node.js / TypeScript"),
 ("sdk","FireFly Node.js SDK","Calls the selected API and consumes events.","TypeScript library")]:
     add("tools.sandbox."+id,"component",name,desc,tech,"sandbox")
-rel("tools.sandbox.frontend","tools.sandbox.backend","Submits selected sample actions","HTTP / JSON")
+rel("tools.sandboxUi","tools.sandbox","Requests browser assets and submits sample actions","HTTP(S) / JSON + static assets")
+rel("tools.sandboxUi","tools.sandbox.backend","Submits selected sample actions","HTTP(S) / JSON")
+rel("tools.sandboxUi.app","tools.sandbox","Submits selected sample actions and receives results","HTTP(S) / JSON")
 rel("tools.sandbox.backend","tools.sandbox.sdk","Submits SDK requests","In-process calls / TypeScript")
 rel("tools.sandbox.sdk","firefly.core","Invokes member APIs and consumes events","HTTPS + WebSocket")
 rel("tools.sandbox","firefly.core","Exercises APIs and subscriptions","HTTPS + WebSocket")
 rel("tools.cli","firefly.core","Registers and inspects development stacks","HTTP / Admin API")
 rel("developer","tools","Develops and tests integrations","CLI + HTTPS")
 rel("developer","tools.cli","Creates local test stacks","Local process invocation")
-rel("developer","tools.sandbox","Exercises sample workflows","HTTPS")
+rel("developer","tools.sandboxUi","Exercises sample messages and token workflows","Browser interaction")
+rel("developer","tools.sandboxUi.app","Selects sample messages and token actions","Browser interaction")
 rel("tools","firefly","Exercises the selected member API","HTTPS + WebSocket")
-add("ops","softwareSystem","Platform operations","Reference ingress, database operations and metrics on AKS.",repo="reference",classification="Reference choice")
+add("ops","softwareSystem","Platform operations reference","Reference platform boundary for API routing, database lifecycle and metrics; environment placement is deferred.",repo="reference",classification="Reference choice")
 for id,name,desc,tech,repo in [
 ("gateway","Gateway / ingress","Routes API traffic; preserves peer mTLS with TLS passthrough.","Envoy Gateway / Kubernetes","reference"),
 ("cnpg","PostgreSQL operator","Reconciles database roles, endpoints and fenced failover.","CloudNativePG","cnpg"),
@@ -168,8 +177,8 @@ rel("ops.grafana","ops.prometheus","Queries operational time series","HTTP / Pro
 rel("ops","firefly","Routes API requests and observes health","HTTPS + metrics","Operational")
 rel("ops.gateway","firefly.core","Routes authenticated API requests","HTTPS / REST + WebSocket","Operational")
 rel("ops.gateway","firefly.dx","Passes peer TLS sessions without terminating mTLS","TCP / TLS passthrough","PrivateFlow")
-rel("ops.cnpg","firefly.pg","Reconciles primary role and health","Kubernetes API / operator control","Operational")
-rel("ops.cnpg","firefly.pgReplica","Reconciles replication and failover candidates","Kubernetes API / operator control","Operational")
+rel("ops.cnpg","firefly.pg","Reconciles database lifecycle through the hosting PostgreSQL cluster","Kubernetes API / indirect operator reconciliation","Operational")
+rel("ops.cnpg","firefly.fftmDb","Reconciles database lifecycle through the hosting PostgreSQL cluster","Kubernetes API / indirect operator reconciliation","Operational")
 rel("ops.prometheus","firefly.core","Scrapes member runtime measurements","HTTP / Prometheus metrics","Operational")
 rel("ops.prometheus","besu.node","Scrapes peer, block and consensus measurements","HTTP / Prometheus metrics","Operational")
 rel("ops","besu","Observes peer and quorum health","HTTP / metrics","Operational")
@@ -188,18 +197,19 @@ view("systemContext","firefly","02-context-firefly","System Context - Hyperledge
 view("systemContext","besu","03-context-besu","System Context - private Besu network",["firefly","besu","ops"])
 view("systemLandscape","","04-alternatives","System Landscape - alternative blockchain integrations",["firefly"]+[x[0] for x in alternatives])
 view("container","firefly","10-firefly-runtime","Container - FireFly orchestration and connectors",
-    ["firefly."+x for x in ("core","evm","signer","dx","erc20","erc1155","ipfs","pg")]+["apps.client","besu.node"])
+    ["firefly."+x for x in ("core","explorer","evm","signer","dx","erc20","erc1155","ipfs","pg","fftmDb")]+["operator","apps.client","besu.node"])
 view("container","firefly","11-firefly-state","Container - FireFly private state and shared storage",
-    ["firefly."+x for x in ("core","evm","signer","dx","ipfs","pg","pgReplica","blobs","ipfsRepo","secrets")])
+    ["firefly."+x for x in ("core","evm","signer","dx","ipfs","pg","fftmDb","blobs","ipfsRepo","secrets")])
 for key,title,ids in CORE_VIEWS:
     suffix=["apps.client"] if key in ("api","events") else []
+    if key=="api":suffix += ["firefly.explorer"]
     if key=="contracts":suffix += ["firefly.evm","firefly.erc20","firefly.erc1155"]
     if key=="messaging":suffix += ["firefly.dx","firefly.ipfs"]
     if key=="persistence":suffix += ["firefly.pg","firefly.ipfs"]
     view("component","firefly.core",f"20-firefly-core-{key}",f"Component - FireFly Core: {title}",["firefly.core."+x for x in ids.split()]+suffix)
 for key,title,ids in EVM_VIEWS:
     view("component","firefly.evm",f"30-firefly-evm-{key}",f"Component - FireFly EVMConnect: {title}",
-        ["firefly.evm."+x for x in ids.split()]+["firefly.pg","firefly.signer"]+(["firefly.core"] if key=="events" else []))
+        ["firefly.evm."+x for x in ids.split()]+["firefly.fftmDb","firefly.signer"]+(["firefly.core"] if key=="events" else []))
 for container,title,externals in [
     ("signer","transaction signing",["firefly.secrets","besu.node"]),
     ("dx","private data exchange",["firefly.blobs","firefly.secrets"]),
@@ -212,13 +222,23 @@ for key,title,ids in BESU_VIEWS:
     view("component","besu.node",f"51-besu-{key}",f"Component - Besu node: {title}",selected)
 view("container","apps","60-applications","Container - member business applications",kids("apps")+["business","firefly.core"])
 view("container","tools","61-tools","Container - developer tooling",kids("tools")+["developer","firefly.core"])
-view("component","tools.sandbox","62-sandbox","Component - Sandbox sample application",kids("tools.sandbox")+["firefly.core"])
-view("container","ops","63-operations","Container - platform operations",kids("ops")+["operator","firefly.core","firefly.pg","besu.node"])
+view("component","tools.sandbox","62-sandbox","Component - Sandbox server",kids("tools.sandbox")+["tools.sandboxUi","firefly.core"])
+view("component","tools.sandboxUi","68-sandbox-browser","Component - Sandbox browser application",kids("tools.sandboxUi")+["developer","tools.sandbox"])
+view("component","firefly.explorer","24-explorer-browser","Component - FireFly Explorer browser application",kids("firefly.explorer")+["operator","firefly.core"])
+view("container","ops","63-operations","Container - platform operations",kids("ops")+["operator","firefly.core","firefly.dx","firefly.pg","firefly.fftmDb","besu.node"])
 
 from ecosystem_model import extend_model
 extend_model(E, R, V, add, rel, view, comps, flows, kids, source)
 from security_model import extend_security_model
 extend_security_model(E, R, V, add, rel, view, kids, source)
+from model_groups import apply_groups
+apply_groups(E)
+view('systemContext','apps','05-context-applications','System Context - Member application reference',
+     ['apps','business','firefly','besu'])
+view('systemContext','tools','06-context-tools','System Context - FireFly developer tools',
+     ['tools','developer','firefly','dockerEngine'])
+view('systemContext','ops','07-context-operations','System Context - Platform operations reference',
+     ['ops','operator','firefly','besu'])
 
 
 def q(s):return json.dumps(str(s),ensure_ascii=False)
@@ -256,11 +276,24 @@ def emit_element(id,level):
     props({"architecture.id":id,"evidence":e["classification"]},level+1)
     if kind=="softwareSystem" and kids(id):
         w("!docs docs/static/system",level+1);w("!adrs docs/static/decisions",level+1)
-    for child in kids(id):emit_element(child,level+1)
+    emit_children(kids(id),level+1)
     emit_pending(id,R,level+1)
     emit_outgoing(id,R,level+1)
     w("}",level)
     defined.add(id)
+def emit_children(identifiers,level):
+    emitted_groups=set()
+    for identifier in identifiers:
+        group=E[identifier].get('group')
+        if not group:
+            emit_element(identifier,level)
+        elif group not in emitted_groups:
+            emitted_groups.add(group)
+            w('group '+q(group)+' {',level)
+            for member in identifiers:
+                if E[member].get('group')==group:emit_element(member,level+1)
+            w('}',level)
+
 def emit_workspace():
     global lines, defined, emitted_relationships
     lines=[]; defined=set(); emitted_relationships=set()
@@ -269,8 +302,7 @@ def emit_workspace():
     w("!identifiers hierarchical",1);w("!impliedRelationships false",1)
     props({"structurizr.inspection.workspace.scope":"info"},1)
     w("!docs docs/static/workspace",1);w("!adrs docs/static/decisions",1);w("model {",1)
-    for id,e in E.items():
-        if e["parent"] is None:emit_element(id,2)
+    emit_children([id for id,e in E.items() if e['parent'] is None],2)
     emit_pending("",R,2)
     assert len(emitted_relationships)==len(R),"Every authored relationship must be emitted exactly once"
     w("}",1);w("views {",1)
@@ -291,6 +323,7 @@ def emit_workspace():
     ("Software System",{"background":"#176B87","color":"#FFFFFF"}),
     ("Container",{"background":"#DCECF7"}),
     ("Component",{"background":"#EEF5FA"}),
+    ("Group",{"color":"#42566A","stroke":"#8295A7","border":"Dashed","fontSize":"26"}),
     ("Database",{"shape":"Cylinder","background":"#E8E4F5"}),
     ("Private",{"stroke":"#8C4966"}),("Shared",{"stroke":"#237A69"}),
     ("Blockchain",{"background":"#EFE4C8","stroke":"#9B782E","color":"#122C43"}),

@@ -5,7 +5,6 @@ def rows(text):
     return [tuple(x.strip() for x in line.split("|")) for line in text.strip().splitlines() if line.strip()]
 CORE = rows("""
 api|REST API and routing|Accepts namespace-scoped commands and queries.|internal/apiserver
-explorer|Explorer UI|Serves the bundled React operator interface.|Dockerfile
 auth|API authentication|Applies configured namespace authorization; Basic Auth reference plugin.|doc-site/docs/overview/key_components/security.md
 namespaces|Namespace manager|Initializes isolated orchestrators and configured plugins.|internal/namespace
 orchestrator|Orchestrator|Coordinates API operations and subsystem lifecycles.|internal/orchestrator
@@ -41,7 +40,6 @@ identityplugin|Identity plugin|Resolves external identity claims through the con
 eventplugin|Event transport plugins|Provides WebSocket, webhook and system-event delivery.|internal/events
 """)
 CORE_FLOWS = rows("""
-explorer|api|Queries messages, operations and network state
 api|auth|Passes request credentials for authorization
 api|namespaces|Resolves the requested namespace
 namespaces|orchestrator|Initializes namespace resources and plugins
@@ -98,7 +96,7 @@ orchestrator|metrics|Records API and subsystem measurements
 operations|metrics|Records operation outcomes
 """)
 CORE_VIEWS = [
-("api","API, tenancy and Explorer","explorer api auth namespaces orchestrator syncasync spievents eventplugin"),
+("api","API and tenancy","api auth namespaces orchestrator syncasync spievents eventplugin"),
 ("identity","Identity and multiparty coordination","orchestrator identity identityplugin networkmap definitions broadcast multiparty blockchain"),
 ("messaging","Payloads and outbound messaging","orchestrator data schema batch batchprocessor broadcast private dataexchange sharedstorage multiparty"),
 ("contracts","Contracts, tokens and operations","orchestrator contracts assets tokens blockchain operations txhelper txwriter database"),
@@ -116,7 +114,7 @@ blocks|Block listener|Tracks chain heads and block/filter updates.|evmconnect|pk
 receipts|Receipt tracking|Polls receipt status for submitted transactions.|fftm|pkg/fftm
 confirmations|Confirmation manager|Confirms receipts and events against the observed chain.|fftm|internal/confirmations
 streams|Event streams|Orders and batches confirmed listener events.|fftm|internal/events
-delivery|WebSocket and webhook delivery|Delivers batches and accepts consumer acknowledgements.|fftm|internal/ws
+delivery|WebSocket batch delivery|Delivers WebSocket batches and accepts consumer acknowledgements.|fftm|internal/ws
 persistence|Persistence adapter|Stores transactions, nonces, streams and checkpoints.|fftm|internal/persistence
 """)
 EVM_FLOWS = rows("""

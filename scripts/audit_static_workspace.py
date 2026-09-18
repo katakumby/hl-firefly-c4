@@ -4,6 +4,7 @@ import hashlib
 import json
 import re
 from audit_security_catalog import audit_security_catalog
+from audit_logical_boundaries import audit_logical_boundaries
 
 ROOT=Path(__file__).resolve().parents[1]
 REPORT=ROOT/'reports/static'
@@ -26,6 +27,9 @@ def audit(parsed_path, write_report=True, verbose=True):
     check(None not in byarch,'Every parsed element retains its architecture identifier')
     check(len(byarch)==len(elements),'Parsed architecture identifiers are unique')
     check(set(byarch)=={e['id'] for e in catalog['elements']},'Every authored logical element survives parsing')
+    authored_elements={e['id']:e for e in catalog['elements']}
+    check(all(e.get('group')==authored_elements[arch(id)].get('group') for id,e in elements.items()),
+          'Parsed groups exactly match authored navigation groups')
     check(not w['model'].get('deploymentNodes'),'Static input contains no deployment nodes')
     check(not any(w['views'].get(k) for k in ('deploymentViews','dynamicViews','imageViews','customViews','filteredViews')),'Only static C4 view types are present')
     for id,e in elements.items():
@@ -56,17 +60,22 @@ def audit(parsed_path, write_report=True, verbose=True):
         if kind in ('systemLandscapeViews','systemContextViews'):
             system_visible.update(ids)
             check(all(types[id] in ('person','softwareSystem') for id in ids),f'{key}: correct level-1 abstraction')
+        if kind=='systemContextViews':
+            check(arch(v['softwareSystemId'])==authored[key]['scope'],f'{key}: parsed system-context scope matches catalog')
         if kind=='containerViews':
             container_visible.update(ids)
             check(all(types[id]!='component' for id in ids),f'{key}: correct level-2 abstraction')
+            check(arch(v['softwareSystemId'])==authored[key]['scope'],f'{key}: parsed container scope matches catalog')
         if kind=='componentViews':
             component_visible.update(id for id in ids if types[id]=='component')
             check(all(types[id]!='component' or parents[id]==v['containerId'] for id in ids),f'{key}: components belong to the scoped container')
+            check(arch(v['containerId'])==authored[key]['scope'],f'{key}: parsed component scope matches catalog')
     check(set(elements)<=visible,'Every logical element appears in a view')
     check({id for id,t in types.items() if t in ('person','softwareSystem')}<=system_visible,'Every system and actor appears at C4 level 1')
     check({id for id,t in types.items() if t=='container'}<=container_visible,'Every container appears at C4 level 2')
     check({id for id,t in types.items() if t=='component'}<=component_visible,'Every component appears in a component view')
     checks.extend(audit_security_catalog(catalog, json.loads((ROOT/'sources.json').read_text(encoding='utf-8'))))
+    checks.extend(audit_logical_boundaries(catalog))
     # Compare immutable historical material, not an active second workspace.
     baseline=ROOT/'.cache/static-preservation.json'
     hashes=json.loads(baseline.read_text(encoding='utf-8'))

@@ -65,7 +65,7 @@ def audit_security_catalog(catalog, sources):
     check(all('ReferenceIntegration' in r['tags'] for r in relationships
               if r['source'].startswith('apps.hsmSigner') or r['destination'].startswith('apps.hsmSigner')),
           'all custom signing adapter relationships are marked proposed')
-    check(all(r['destination']=='managedHsm.service.crypto' for r in relationships if r['source']=='managedHsm.keys'),
+    check(all(r['destination'] in ('managedHsm.service', 'managedHsm.service.crypto') for r in relationships if r['source']=='managedHsm.keys'),
           'protected key storage has no external key-material egress')
     hsm_egress = [r for r in relationships if r['source'].startswith('managedHsm') and not r['destination'].startswith('managedHsm')]
     def exports_private_key(r):

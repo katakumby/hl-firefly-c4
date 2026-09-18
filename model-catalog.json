@@ -54,14 +54,15 @@
       "tags": "",
       "sources": [
         "https://github.com/hyperledger-firefly/firefly/tree/9d20f3081c9074d5b012427e5572ebc03da8d95d"
-      ]
+      ],
+      "group": "FireFly ecosystem"
     },
     {
       "id": "firefly.core",
       "kind": "container",
       "name": "FireFly Core",
-      "description": "Exposes member APIs and bundled Explorer; orchestrates multiparty operations.",
-      "technology": "Go + React",
+      "description": "Exposes member APIs, serves Explorer assets and orchestrates multiparty operations.",
+      "technology": "Go",
       "parent": "firefly",
       "source": "https://github.com/hyperledger-firefly/firefly/tree/9d20f3081c9074d5b012427e5572ebc03da8d95d/internal/orchestrator",
       "classification": "Implementation",
@@ -157,29 +158,29 @@
     {
       "id": "firefly.pg",
       "kind": "container",
-      "name": "PostgreSQL primary",
-      "description": "Stores Core and FFTM in separate databases with separate credentials.",
-      "technology": "PostgreSQL / CloudNativePG",
+      "name": "Core PostgreSQL database",
+      "description": "Stores Core resources and offsets in its own logical database; server placement and replication are outside this model.",
+      "technology": "PostgreSQL",
       "parent": "firefly",
-      "source": "https://cloudnative-pg.io/docs/1.28/replication/",
+      "source": "https://github.com/hyperledger-firefly/firefly/tree/9d20f3081c9074d5b012427e5572ebc03da8d95d/internal/database/postgres",
       "classification": "Implementation",
       "tags": "Database,Private",
       "sources": [
-        "https://cloudnative-pg.io/docs/1.28/replication/"
+        "https://github.com/hyperledger-firefly/firefly/tree/9d20f3081c9074d5b012427e5572ebc03da8d95d/internal/database/postgres"
       ]
     },
     {
-      "id": "firefly.pgReplica",
+      "id": "firefly.fftmDb",
       "kind": "container",
-      "name": "PostgreSQL standby",
-      "description": "Replicates this member's primary; eligible for fenced promotion.",
-      "technology": "PostgreSQL / CloudNativePG",
+      "name": "FFTM PostgreSQL database",
+      "description": "Stores EVMConnect transaction state, nonces and checkpoints in a separate logical database with separate credentials.",
+      "technology": "PostgreSQL",
       "parent": "firefly",
-      "source": "https://cloudnative-pg.io/docs/1.28/replication/",
+      "source": "https://github.com/hyperledger-firefly/transaction-manager/tree/5915cbc4e0e30dea25068b770dadbcc8bdfa9321/internal/persistence/postgres",
       "classification": "Implementation",
       "tags": "Database,Private",
       "sources": [
-        "https://cloudnative-pg.io/docs/1.28/replication/"
+        "https://github.com/hyperledger-firefly/transaction-manager/tree/5915cbc4e0e30dea25068b770dadbcc8bdfa9321/internal/persistence/postgres"
       ]
     },
     {
@@ -187,7 +188,7 @@
       "kind": "container",
       "name": "Private blob and peer store",
       "description": "Stores private binary payloads and peer metadata; storage-class placement is deferred.",
-      "technology": "Filesystem / Premium SSD ZRS",
+      "technology": "Filesystem",
       "parent": "firefly",
       "source": "https://github.com/hyperledger-firefly/dataexchange-https/tree/b6a212d531da1ff1c24e762e7156e2593c73d052/src/handlers/blobs.ts",
       "classification": "Implementation",
@@ -201,7 +202,7 @@
       "kind": "container",
       "name": "IPFS repository",
       "description": "Stores Kubo identity, pins and content blocks; storage-class placement is deferred.",
-      "technology": "Filesystem / Premium SSD ZRS",
+      "technology": "Filesystem",
       "parent": "firefly",
       "source": "https://docs.ipfs.tech/concepts/how-ipfs-works/",
       "classification": "Implementation",
@@ -215,7 +216,7 @@
       "kind": "container",
       "name": "Member keys and configuration",
       "description": "Stores signing keystores, mTLS material and configuration; Kubernetes projection belongs to the deferred deployment reference.",
-      "technology": "Kubernetes Secrets",
+      "technology": "Configuration and key files",
       "parent": "firefly",
       "source": "https://github.com/hyperledger-firefly/signer/tree/cfafd71fb4d2c3061a946f6466269877c3f04d9d/pkg/fswallet",
       "classification": "Implementation",
@@ -236,20 +237,6 @@
       "tags": "",
       "sources": [
         "https://github.com/hyperledger-firefly/firefly/tree/9d20f3081c9074d5b012427e5572ebc03da8d95d/internal/apiserver"
-      ]
-    },
-    {
-      "id": "firefly.core.explorer",
-      "kind": "component",
-      "name": "Explorer UI",
-      "description": "Serves the bundled React operator interface.",
-      "technology": "React / TypeScript",
-      "parent": "firefly.core",
-      "source": "https://github.com/hyperledger-firefly/ui/tree/658bae40220f124e0e20182cc48b231473e754c5/src",
-      "classification": "Implementation",
-      "tags": "",
-      "sources": [
-        "https://github.com/hyperledger-firefly/ui/tree/658bae40220f124e0e20182cc48b231473e754c5/src"
       ]
     },
     {
@@ -715,6 +702,34 @@
       ]
     },
     {
+      "id": "firefly.explorer",
+      "kind": "container",
+      "name": "FireFly Explorer",
+      "description": "Browser application served by Core; queries member state through the Core API.",
+      "technology": "React / TypeScript / browser",
+      "parent": "firefly",
+      "source": "https://github.com/hyperledger-firefly/ui/tree/658bae40220f124e0e20182cc48b231473e754c5/src",
+      "classification": "Implementation",
+      "tags": "",
+      "sources": [
+        "https://github.com/hyperledger-firefly/ui/tree/658bae40220f124e0e20182cc48b231473e754c5/src"
+      ]
+    },
+    {
+      "id": "firefly.explorer.app",
+      "kind": "component",
+      "name": "Explorer screens and API client",
+      "description": "Displays member resources and queries Core through browser HTTP requests.",
+      "technology": "React / TypeScript",
+      "parent": "firefly.explorer",
+      "source": "https://github.com/hyperledger-firefly/ui/tree/658bae40220f124e0e20182cc48b231473e754c5/src",
+      "classification": "Implementation",
+      "tags": "",
+      "sources": [
+        "https://github.com/hyperledger-firefly/ui/tree/658bae40220f124e0e20182cc48b231473e754c5/src"
+      ]
+    },
+    {
       "id": "firefly.evm.api",
       "kind": "component",
       "name": "Connector REST API",
@@ -857,8 +872,8 @@
     {
       "id": "firefly.evm.delivery",
       "kind": "component",
-      "name": "WebSocket and webhook delivery",
-      "description": "Delivers batches and accepts consumer acknowledgements.",
+      "name": "WebSocket batch delivery",
+      "description": "Delivers WebSocket batches and accepts consumer acknowledgements.",
       "technology": "Go",
       "parent": "firefly.evm",
       "source": "https://github.com/hyperledger-firefly/transaction-manager/tree/5915cbc4e0e30dea25068b770dadbcc8bdfa9321/internal/ws",
@@ -1244,7 +1259,8 @@
       "tags": "Blockchain",
       "sources": [
         "https://github.com/besu-eth/besu/tree/7e05c2342404d27bd06a992e336c5e0c86a5d8d1"
-      ]
+      ],
+      "group": "EVM ledger networks"
     },
     {
       "id": "besu.node",
@@ -1272,7 +1288,8 @@
       "tags": "",
       "sources": [
         "https://github.com/besu-eth/besu/tree/7e05c2342404d27bd06a992e336c5e0c86a5d8d1/ethereum/api"
-      ]
+      ],
+      "group": "Besu client implementation"
     },
     {
       "id": "besu.node.permissioning",
@@ -1286,7 +1303,8 @@
       "tags": "",
       "sources": [
         "https://github.com/besu-eth/besu/tree/7e05c2342404d27bd06a992e336c5e0c86a5d8d1/ethereum/permissioning"
-      ]
+      ],
+      "group": "Besu client implementation"
     },
     {
       "id": "besu.node.discovery",
@@ -1300,7 +1318,8 @@
       "tags": "",
       "sources": [
         "https://github.com/besu-eth/besu/tree/7e05c2342404d27bd06a992e336c5e0c86a5d8d1/ethereum/p2p"
-      ]
+      ],
+      "group": "Besu client implementation"
     },
     {
       "id": "besu.node.p2p",
@@ -1314,7 +1333,8 @@
       "tags": "",
       "sources": [
         "https://github.com/besu-eth/besu/tree/7e05c2342404d27bd06a992e336c5e0c86a5d8d1/ethereum/p2p"
-      ]
+      ],
+      "group": "Besu client implementation"
     },
     {
       "id": "besu.node.txpool",
@@ -1328,7 +1348,8 @@
       "tags": "",
       "sources": [
         "https://github.com/besu-eth/besu/tree/7e05c2342404d27bd06a992e336c5e0c86a5d8d1/ethereum/eth"
-      ]
+      ],
+      "group": "Besu client implementation"
     },
     {
       "id": "besu.node.sync",
@@ -1342,7 +1363,8 @@
       "tags": "",
       "sources": [
         "https://github.com/besu-eth/besu/tree/7e05c2342404d27bd06a992e336c5e0c86a5d8d1/ethereum/eth"
-      ]
+      ],
+      "group": "Besu client implementation"
     },
     {
       "id": "besu.node.blockprocessor",
@@ -1356,7 +1378,8 @@
       "tags": "",
       "sources": [
         "https://github.com/besu-eth/besu/tree/7e05c2342404d27bd06a992e336c5e0c86a5d8d1/ethereum/core"
-      ]
+      ],
+      "group": "Besu client implementation"
     },
     {
       "id": "besu.node.qbft",
@@ -1372,7 +1395,8 @@
         "https://github.com/besu-eth/besu/tree/7e05c2342404d27bd06a992e336c5e0c86a5d8d1/consensus/qbft",
         "https://github.com/besu-eth/besu/tree/7e05c2342404d27bd06a992e336c5e0c86a5d8d1/consensus/qbft-core",
         "https://github.com/besu-eth/besu/tree/7e05c2342404d27bd06a992e336c5e0c86a5d8d1/consensus/common"
-      ]
+      ],
+      "group": "Besu client implementation"
     },
     {
       "id": "besu.node.evm",
@@ -1386,7 +1410,8 @@
       "tags": "",
       "sources": [
         "https://github.com/besu-eth/besu/tree/7e05c2342404d27bd06a992e336c5e0c86a5d8d1/evm"
-      ]
+      ],
+      "group": "Besu client implementation"
     },
     {
       "id": "besu.node.worldstate",
@@ -1400,7 +1425,8 @@
       "tags": "",
       "sources": [
         "https://github.com/besu-eth/besu/tree/7e05c2342404d27bd06a992e336c5e0c86a5d8d1/ethereum/core/src/main/java/org/hyperledger/besu/ethereum/worldstate"
-      ]
+      ],
+      "group": "Besu client implementation"
     },
     {
       "id": "besu.node.storage",
@@ -1414,7 +1440,8 @@
       "tags": "",
       "sources": [
         "https://github.com/besu-eth/besu/tree/7e05c2342404d27bd06a992e336c5e0c86a5d8d1/plugins/rocksdb"
-      ]
+      ],
+      "group": "Besu client implementation"
     },
     {
       "id": "besu.node.keys",
@@ -1428,7 +1455,8 @@
       "tags": "",
       "sources": [
         "https://github.com/besu-eth/besu/tree/7e05c2342404d27bd06a992e336c5e0c86a5d8d1/crypto/plugin-api/src/main/java/org/hyperledger/besu/plugin/services/securitymodule"
-      ]
+      ],
+      "group": "Besu client implementation"
     },
     {
       "id": "besu.node.metrics",
@@ -1442,7 +1470,8 @@
       "tags": "",
       "sources": [
         "https://github.com/besu-eth/besu/tree/7e05c2342404d27bd06a992e336c5e0c86a5d8d1/metrics"
-      ]
+      ],
+      "group": "Besu client implementation"
     },
     {
       "id": "besu.node.fireflycontract",
@@ -1456,7 +1485,8 @@
       "tags": "Contract",
       "sources": [
         "https://github.com/hyperledger-firefly/firefly/tree/9d20f3081c9074d5b012427e5572ebc03da8d95d/smart_contracts/ethereum/solidity_firefly/contracts/Firefly.sol"
-      ]
+      ],
+      "group": "Hosted application contracts"
     },
     {
       "id": "besu.node.tokencontracts",
@@ -1471,7 +1501,8 @@
       "sources": [
         "https://github.com/hyperledger-firefly/tokens-erc20-erc721/tree/7993b308284a396950587b5206370f7f254073d9/src/abi",
         "https://github.com/hyperledger-firefly/tokens-erc1155/tree/0355a0eb11fd12e311829a41bcbfea6148e52469/src/abi"
-      ]
+      ],
+      "group": "Hosted application contracts"
     },
     {
       "id": "besu.node.businesscontracts",
@@ -1485,13 +1516,14 @@
       "tags": "Contract",
       "sources": [
         "https://hyperledger-firefly.github.io/firefly/head/architecture/node_component_architecture/"
-      ]
+      ],
+      "group": "Hosted application contracts"
     },
     {
       "id": "apps",
       "kind": "softwareSystem",
-      "name": "Member applications",
-      "description": "Independently owned applications and event consumers.",
+      "name": "Member application reference",
+      "description": "One example member application boundary; unrelated member applications are not implied to share ownership.",
       "technology": "",
       "parent": null,
       "source": "https://hyperledger-firefly.github.io/firefly/head/architecture/node_component_architecture/",
@@ -1527,7 +1559,8 @@
       "tags": "Optional",
       "sources": [
         "https://github.com/hyperledger-firefly/firefly/tree/9d20f3081c9074d5b012427e5572ebc03da8d95d/doc-site/docs/overview/key_components/tools.md"
-      ]
+      ],
+      "group": "FireFly ecosystem"
     },
     {
       "id": "tools.cli",
@@ -1546,24 +1579,38 @@
     {
       "id": "tools.sandbox",
       "kind": "container",
-      "name": "FireFly Sandbox",
-      "description": "Provides a sample web app calling a selected member API.",
-      "technology": "React + Node.js / TypeScript",
+      "name": "Sandbox server",
+      "description": "Serves Sandbox browser assets and maps UI requests to a selected FireFly API.",
+      "technology": "Node.js / TypeScript",
       "parent": "tools",
-      "source": "https://github.com/hyperledger-firefly/sandbox/tree/ef7f240b8acf9c79c8fdf5a8bccb73e9de482069",
+      "source": "https://github.com/hyperledger-firefly/sandbox/tree/ef7f240b8acf9c79c8fdf5a8bccb73e9de482069/server/src",
       "classification": "Implementation",
       "tags": "Optional",
       "sources": [
-        "https://github.com/hyperledger-firefly/sandbox/tree/ef7f240b8acf9c79c8fdf5a8bccb73e9de482069"
+        "https://github.com/hyperledger-firefly/sandbox/tree/ef7f240b8acf9c79c8fdf5a8bccb73e9de482069/server/src"
       ]
     },
     {
-      "id": "tools.sandbox.frontend",
+      "id": "tools.sandboxUi",
+      "kind": "container",
+      "name": "Sandbox browser application",
+      "description": "Runs the sample interface in the developer's browser and calls the Sandbox server.",
+      "technology": "React / TypeScript / browser",
+      "parent": "tools",
+      "source": "https://github.com/hyperledger-firefly/sandbox/tree/ef7f240b8acf9c79c8fdf5a8bccb73e9de482069/ui/src",
+      "classification": "Implementation",
+      "tags": "Optional",
+      "sources": [
+        "https://github.com/hyperledger-firefly/sandbox/tree/ef7f240b8acf9c79c8fdf5a8bccb73e9de482069/ui/src"
+      ]
+    },
+    {
+      "id": "tools.sandboxUi.app",
       "kind": "component",
-      "name": "Sandbox frontend",
-      "description": "Collects sample messages and token actions.",
+      "name": "Sandbox screens and server client",
+      "description": "Collects sample actions and requests their execution through the Sandbox server.",
       "technology": "React / TypeScript",
-      "parent": "tools.sandbox",
+      "parent": "tools.sandboxUi",
       "source": "https://github.com/hyperledger-firefly/sandbox/tree/ef7f240b8acf9c79c8fdf5a8bccb73e9de482069/ui/src",
       "classification": "Implementation",
       "tags": "",
@@ -1602,8 +1649,8 @@
     {
       "id": "ops",
       "kind": "softwareSystem",
-      "name": "Platform operations",
-      "description": "Reference ingress, database operations and metrics on AKS.",
+      "name": "Platform operations reference",
+      "description": "Reference platform boundary for API routing, database lifecycle and metrics; environment placement is deferred.",
       "technology": "",
       "parent": null,
       "source": "https://hyperledger-firefly.github.io/firefly/head/architecture/node_component_architecture/",
@@ -1681,7 +1728,8 @@
       "tags": "Optional",
       "sources": [
         "https://github.com/hyperledger-firefly/fabconnect/tree/efab8a2b0ff11863bbd9c5eb8a566820f560546b/README.md"
-      ]
+      ],
+      "group": "Fabric ecosystem"
     },
     {
       "id": "tezos",
@@ -1695,7 +1743,8 @@
       "tags": "Optional",
       "sources": [
         "https://github.com/hyperledger-firefly/tezosconnect/tree/508ec1e8bb8b671c1eb6e9c090a1d219043dbd8b/README.md"
-      ]
+      ],
+      "group": "Tezos ecosystem"
     },
     {
       "id": "cardano",
@@ -1709,7 +1758,8 @@
       "tags": "Optional",
       "sources": [
         "https://github.com/hyperledger-firefly/cardano/tree/0300bca6b0b99d2a16a81b94f65496934999346e/README.md"
-      ]
+      ],
+      "group": "Cardano ecosystem"
     },
     {
       "id": "corda",
@@ -2045,7 +2095,8 @@
       "tags": "Optional",
       "sources": [
         "https://github.com/hyperledger-firefly/firefly/tree/9d20f3081c9074d5b012427e5572ebc03da8d95d/doc-site/docs/overview/multiparty/multiparty_flow.md"
-      ]
+      ],
+      "group": "FireFly ecosystem"
     },
     {
       "id": "evmNetworks",
@@ -2059,7 +2110,8 @@
       "tags": "Optional",
       "sources": [
         "https://github.com/hyperledger-firefly/evmconnect/tree/6e12bb4c050677780cf5dd975a926923868b0cb8/README.md"
-      ]
+      ],
+      "group": "EVM ledger networks"
     },
     {
       "id": "firefly.ethconnect",
@@ -2269,7 +2321,8 @@
       "tags": "Optional",
       "sources": [
         "https://github.com/hyperledger-firefly/ethconnect/tree/e8ae0eda16cc61b8ac256cdbf5f09edeb571b8c0/internal/kafka"
-      ]
+      ],
+      "group": "Legacy connector infrastructure"
     },
     {
       "id": "mongo",
@@ -2283,7 +2336,8 @@
       "tags": "Optional",
       "sources": [
         "https://github.com/hyperledger-firefly/ethconnect/tree/e8ae0eda16cc61b8ac256cdbf5f09edeb571b8c0/internal/receipts/mongoreceipts.go"
-      ]
+      ],
+      "group": "Legacy connector infrastructure"
     },
     {
       "id": "firefly.fabconnect",
@@ -2465,7 +2519,8 @@
       "tags": "Optional",
       "sources": [
         "https://github.com/hyperledger-firefly/fabconnect/tree/efab8a2b0ff11863bbd9c5eb8a566820f560546b/internal/fabric/client/identity.go"
-      ]
+      ],
+      "group": "Fabric ecosystem"
     },
     {
       "id": "firefly.tezosconnect",
@@ -2605,7 +2660,8 @@
       "tags": "Optional",
       "sources": [
         "https://github.com/hyperledger-firefly/tezosconnect/tree/508ec1e8bb8b671c1eb6e9c090a1d219043dbd8b/README.md"
-      ]
+      ],
+      "group": "Tezos ecosystem"
     },
     {
       "id": "firefly.tezosState",
@@ -2899,7 +2955,8 @@
       "tags": "Optional",
       "sources": [
         "https://github.com/hyperledger-firefly/cardano/tree/0300bca6b0b99d2a16a81b94f65496934999346e/README.md"
-      ]
+      ],
+      "group": "Cardano ecosystem"
     },
     {
       "id": "firefly.cordaconnect",
@@ -3319,7 +3376,8 @@
       "tags": "SecurityCatalog",
       "sources": [
         "https://learn.microsoft.com/en-us/azure/key-vault/managed-hsm/access-control"
-      ]
+      ],
+      "group": "Azure cryptographic services"
     },
     {
       "id": "keycloak",
@@ -3333,7 +3391,8 @@
       "tags": "SecurityCatalog",
       "sources": [
         "https://www.keycloak.org/docs/latest/server_admin/index.html"
-      ]
+      ],
+      "group": "Identity and federation"
     },
     {
       "id": "keycloak.server",
@@ -3487,7 +3546,8 @@
       "tags": "SecurityCatalog",
       "sources": [
         "https://learn.microsoft.com/en-us/azure/key-vault/managed-hsm/access-control"
-      ]
+      ],
+      "group": "Azure cryptographic services"
     },
     {
       "id": "managedHsm.service",
@@ -3613,7 +3673,8 @@
       "tags": "SecurityCatalog",
       "sources": [
         "https://docs.cyberark.com/pam-self-hosted/latest/en/content/pas%20inst/installationoverview.htm"
-      ]
+      ],
+      "group": "Privileged access and secrets"
     },
     {
       "id": "cyberarkPam.vault",
@@ -3893,7 +3954,8 @@
       "tags": "SecurityCatalog",
       "sources": [
         "https://docs.cyberark.com/secrets-manager-sh/latest/en/content/resources/_topnav/cc_home.htm"
-      ]
+      ],
+      "group": "Privileged access and secrets"
     },
     {
       "id": "conjur.service",
@@ -4061,7 +4123,8 @@
       "tags": "SecurityCatalog",
       "sources": [
         "https://learn.microsoft.com/en-us/entra/architecture/architecture"
-      ]
+      ],
+      "group": "Identity and federation"
     },
     {
       "id": "entraId.authentication",
@@ -4313,7 +4376,8 @@
       "tags": "SecurityCatalog",
       "sources": [
         "https://learn.microsoft.com/en-us/windows-server/identity/ad-ds/get-started/virtual-dc/active-directory-domain-services-overview"
-      ]
+      ],
+      "group": "Identity and federation"
     },
     {
       "id": "adDs.directory",
@@ -4453,7 +4517,8 @@
       "tags": "SecurityCatalog",
       "sources": [
         "https://learn.microsoft.com/en-us/windows-server/identity/ad-fs/ad-fs-overview"
-      ]
+      ],
+      "group": "Identity and federation"
     },
     {
       "id": "adFs.service",
@@ -4644,19 +4709,6 @@
   ],
   "relationships": [
     {
-      "id": "firefly.core.explorer->firefly.core.api:Queries messages, operations and network state",
-      "source": "firefly.core.explorer",
-      "destination": "firefly.core.api",
-      "description": "Queries messages, operations and network state",
-      "technology": "In-process calls / Go",
-      "tags": "Dataflow",
-      "evidence": [
-        "https://github.com/hyperledger-firefly/ui/tree/658bae40220f124e0e20182cc48b231473e754c5/src",
-        "https://github.com/hyperledger-firefly/firefly/tree/9d20f3081c9074d5b012427e5572ebc03da8d95d/internal/apiserver"
-      ],
-      "classification": "Architecture flow inferred from documented responsibilities"
-    },
-    {
       "id": "firefly.core.api->firefly.core.auth:Passes request credentials for authorization",
       "source": "firefly.core.api",
       "destination": "firefly.core.auth",
@@ -4735,7 +4787,7 @@
       "classification": "Architecture flow inferred from documented responsibilities"
     },
     {
-      "id": "firefly.core.identity->firefly.core.identityplugin:Resolves configured identity claims",
+      "id": "firefly.core.identity->firefly.core.identityplugin:Initializes the configured onchain placeholder",
       "source": "firefly.core.identity",
       "destination": "firefly.core.identityplugin",
       "description": "Initializes the configured onchain placeholder",
@@ -5353,6 +5405,71 @@
       "evidence": [
         "https://github.com/hyperledger-firefly/firefly/tree/9d20f3081c9074d5b012427e5572ebc03da8d95d/internal/operations",
         "https://github.com/hyperledger-firefly/firefly/tree/9d20f3081c9074d5b012427e5572ebc03da8d95d/internal/metrics"
+      ],
+      "classification": "Architecture flow inferred from documented responsibilities"
+    },
+    {
+      "id": "operator->firefly.explorer:Inspects member messages, operations and network state",
+      "source": "operator",
+      "destination": "firefly.explorer",
+      "description": "Inspects member messages, operations and network state",
+      "technology": "Browser interaction",
+      "tags": "Dataflow",
+      "evidence": [
+        "https://hyperledger-firefly.github.io/firefly/head/architecture/node_component_architecture/",
+        "https://github.com/hyperledger-firefly/ui/tree/658bae40220f124e0e20182cc48b231473e754c5/src"
+      ],
+      "classification": "Architecture flow inferred from documented responsibilities"
+    },
+    {
+      "id": "operator->firefly.explorer.app:Selects member resources to inspect",
+      "source": "operator",
+      "destination": "firefly.explorer.app",
+      "description": "Selects member resources to inspect",
+      "technology": "Browser interaction",
+      "tags": "Dataflow",
+      "evidence": [
+        "https://hyperledger-firefly.github.io/firefly/head/architecture/node_component_architecture/",
+        "https://github.com/hyperledger-firefly/ui/tree/658bae40220f124e0e20182cc48b231473e754c5/src"
+      ],
+      "classification": "Architecture flow inferred from documented responsibilities"
+    },
+    {
+      "id": "firefly.explorer->firefly.core:Requests Explorer assets and queries member resources",
+      "source": "firefly.explorer",
+      "destination": "firefly.core",
+      "description": "Requests Explorer assets and queries member resources",
+      "technology": "HTTP(S) / REST + static assets",
+      "tags": "Dataflow",
+      "evidence": [
+        "https://github.com/hyperledger-firefly/ui/tree/658bae40220f124e0e20182cc48b231473e754c5/src",
+        "https://github.com/hyperledger-firefly/firefly/tree/9d20f3081c9074d5b012427e5572ebc03da8d95d/internal/orchestrator"
+      ],
+      "classification": "Architecture flow inferred from documented responsibilities"
+    },
+    {
+      "id": "firefly.explorer->firefly.core.api:Queries messages, operations and network state",
+      "source": "firefly.explorer",
+      "destination": "firefly.core.api",
+      "description": "Queries messages, operations and network state",
+      "technology": "HTTP(S) / REST / JSON",
+      "tags": "Dataflow",
+      "evidence": [
+        "https://github.com/hyperledger-firefly/ui/tree/658bae40220f124e0e20182cc48b231473e754c5/src",
+        "https://github.com/hyperledger-firefly/firefly/tree/9d20f3081c9074d5b012427e5572ebc03da8d95d/internal/apiserver"
+      ],
+      "classification": "Architecture flow inferred from documented responsibilities"
+    },
+    {
+      "id": "firefly.explorer.app->firefly.core:Requests member resources and renders returned state",
+      "source": "firefly.explorer.app",
+      "destination": "firefly.core",
+      "description": "Requests member resources and renders returned state",
+      "technology": "HTTP(S) / REST / JSON",
+      "tags": "Dataflow",
+      "evidence": [
+        "https://github.com/hyperledger-firefly/ui/tree/658bae40220f124e0e20182cc48b231473e754c5/src",
+        "https://github.com/hyperledger-firefly/firefly/tree/9d20f3081c9074d5b012427e5572ebc03da8d95d/internal/orchestrator"
       ],
       "classification": "Architecture flow inferred from documented responsibilities"
     },
@@ -6157,32 +6274,20 @@
       "tags": "Dataflow",
       "evidence": [
         "https://github.com/hyperledger-firefly/firefly/tree/9d20f3081c9074d5b012427e5572ebc03da8d95d/internal/orchestrator",
-        "https://cloudnative-pg.io/docs/1.28/replication/"
+        "https://github.com/hyperledger-firefly/firefly/tree/9d20f3081c9074d5b012427e5572ebc03da8d95d/internal/database/postgres"
       ],
       "classification": "Architecture flow inferred from documented responsibilities"
     },
     {
-      "id": "firefly.evm->firefly.pg:Reads and writes the separate FFTM database",
+      "id": "firefly.evm->firefly.fftmDb:Reads and writes the separate FFTM database",
       "source": "firefly.evm",
-      "destination": "firefly.pg",
+      "destination": "firefly.fftmDb",
       "description": "Reads and writes the separate FFTM database",
       "technology": "PostgreSQL wire / TLS",
       "tags": "Dataflow",
       "evidence": [
         "https://github.com/hyperledger-firefly/evmconnect/tree/6e12bb4c050677780cf5dd975a926923868b0cb8/cmd/evmconnect.go",
-        "https://cloudnative-pg.io/docs/1.28/replication/"
-      ],
-      "classification": "Architecture flow inferred from documented responsibilities"
-    },
-    {
-      "id": "firefly.pg->firefly.pgReplica:Streams WAL and awaits one synchronous standby",
-      "source": "firefly.pg",
-      "destination": "firefly.pgReplica",
-      "description": "Streams WAL and awaits one synchronous standby",
-      "technology": "PostgreSQL replication / TLS",
-      "tags": "Dataflow",
-      "evidence": [
-        "https://cloudnative-pg.io/docs/1.28/replication/"
+        "https://github.com/hyperledger-firefly/transaction-manager/tree/5915cbc4e0e30dea25068b770dadbcc8bdfa9321/internal/persistence/postgres"
       ],
       "classification": "Architecture flow inferred from documented responsibilities"
     },
@@ -6311,7 +6416,7 @@
       "tags": "Dataflow",
       "evidence": [
         "https://github.com/hyperledger-firefly/firefly/tree/9d20f3081c9074d5b012427e5572ebc03da8d95d/internal/database",
-        "https://cloudnative-pg.io/docs/1.28/replication/"
+        "https://github.com/hyperledger-firefly/firefly/tree/9d20f3081c9074d5b012427e5572ebc03da8d95d/internal/database/postgres"
       ],
       "classification": "Architecture flow inferred from documented responsibilities"
     },
@@ -6368,15 +6473,15 @@
       "classification": "Architecture flow inferred from documented responsibilities"
     },
     {
-      "id": "firefly.evm.persistence->firefly.pg:Persists FFTM transactions and checkpoints",
+      "id": "firefly.evm.persistence->firefly.fftmDb:Persists FFTM transactions and checkpoints",
       "source": "firefly.evm.persistence",
-      "destination": "firefly.pg",
+      "destination": "firefly.fftmDb",
       "description": "Persists FFTM transactions and checkpoints",
       "technology": "PostgreSQL wire / TLS",
       "tags": "Dataflow",
       "evidence": [
         "https://github.com/hyperledger-firefly/transaction-manager/tree/5915cbc4e0e30dea25068b770dadbcc8bdfa9321/internal/persistence",
-        "https://cloudnative-pg.io/docs/1.28/replication/"
+        "https://github.com/hyperledger-firefly/transaction-manager/tree/5915cbc4e0e30dea25068b770dadbcc8bdfa9321/internal/persistence/postgres"
       ],
       "classification": "Architecture flow inferred from documented responsibilities"
     },
@@ -7036,11 +7141,37 @@
       "classification": "Architecture flow inferred from documented responsibilities"
     },
     {
-      "id": "tools.sandbox.frontend->tools.sandbox.backend:Submits selected sample actions",
-      "source": "tools.sandbox.frontend",
+      "id": "tools.sandboxUi->tools.sandbox:Requests browser assets and submits sample actions",
+      "source": "tools.sandboxUi",
+      "destination": "tools.sandbox",
+      "description": "Requests browser assets and submits sample actions",
+      "technology": "HTTP(S) / JSON + static assets",
+      "tags": "Dataflow",
+      "evidence": [
+        "https://github.com/hyperledger-firefly/sandbox/tree/ef7f240b8acf9c79c8fdf5a8bccb73e9de482069/ui/src",
+        "https://github.com/hyperledger-firefly/sandbox/tree/ef7f240b8acf9c79c8fdf5a8bccb73e9de482069/server/src"
+      ],
+      "classification": "Architecture flow inferred from documented responsibilities"
+    },
+    {
+      "id": "tools.sandboxUi->tools.sandbox.backend:Submits selected sample actions",
+      "source": "tools.sandboxUi",
       "destination": "tools.sandbox.backend",
       "description": "Submits selected sample actions",
-      "technology": "HTTP / JSON",
+      "technology": "HTTP(S) / JSON",
+      "tags": "Dataflow",
+      "evidence": [
+        "https://github.com/hyperledger-firefly/sandbox/tree/ef7f240b8acf9c79c8fdf5a8bccb73e9de482069/ui/src",
+        "https://github.com/hyperledger-firefly/sandbox/tree/ef7f240b8acf9c79c8fdf5a8bccb73e9de482069/server/src"
+      ],
+      "classification": "Architecture flow inferred from documented responsibilities"
+    },
+    {
+      "id": "tools.sandboxUi.app->tools.sandbox:Submits selected sample actions and receives results",
+      "source": "tools.sandboxUi.app",
+      "destination": "tools.sandbox",
+      "description": "Submits selected sample actions and receives results",
+      "technology": "HTTP(S) / JSON",
       "tags": "Dataflow",
       "evidence": [
         "https://github.com/hyperledger-firefly/sandbox/tree/ef7f240b8acf9c79c8fdf5a8bccb73e9de482069/ui/src",
@@ -7082,7 +7213,7 @@
       "technology": "HTTPS + WebSocket",
       "tags": "Dataflow",
       "evidence": [
-        "https://github.com/hyperledger-firefly/sandbox/tree/ef7f240b8acf9c79c8fdf5a8bccb73e9de482069",
+        "https://github.com/hyperledger-firefly/sandbox/tree/ef7f240b8acf9c79c8fdf5a8bccb73e9de482069/server/src",
         "https://github.com/hyperledger-firefly/firefly/tree/9d20f3081c9074d5b012427e5572ebc03da8d95d/internal/orchestrator"
       ],
       "classification": "Architecture flow inferred from documented responsibilities"
@@ -7127,15 +7258,28 @@
       "classification": "Architecture flow inferred from documented responsibilities"
     },
     {
-      "id": "developer->tools.sandbox:Exercises sample workflows",
+      "id": "developer->tools.sandboxUi:Exercises sample messages and token workflows",
       "source": "developer",
-      "destination": "tools.sandbox",
-      "description": "Exercises sample workflows",
-      "technology": "HTTPS",
+      "destination": "tools.sandboxUi",
+      "description": "Exercises sample messages and token workflows",
+      "technology": "Browser interaction",
       "tags": "Dataflow",
       "evidence": [
         "https://hyperledger-firefly.github.io/firefly/head/architecture/node_component_architecture/",
-        "https://github.com/hyperledger-firefly/sandbox/tree/ef7f240b8acf9c79c8fdf5a8bccb73e9de482069"
+        "https://github.com/hyperledger-firefly/sandbox/tree/ef7f240b8acf9c79c8fdf5a8bccb73e9de482069/ui/src"
+      ],
+      "classification": "Architecture flow inferred from documented responsibilities"
+    },
+    {
+      "id": "developer->tools.sandboxUi.app:Selects sample messages and token actions",
+      "source": "developer",
+      "destination": "tools.sandboxUi.app",
+      "description": "Selects sample messages and token actions",
+      "technology": "Browser interaction",
+      "tags": "Dataflow",
+      "evidence": [
+        "https://hyperledger-firefly.github.io/firefly/head/architecture/node_component_architecture/",
+        "https://github.com/hyperledger-firefly/sandbox/tree/ef7f240b8acf9c79c8fdf5a8bccb73e9de482069/ui/src"
       ],
       "classification": "Architecture flow inferred from documented responsibilities"
     },
@@ -7228,26 +7372,28 @@
       "classification": "Architecture flow inferred from documented responsibilities"
     },
     {
-      "id": "ops.cnpg->firefly.pg:Reconciles primary role and health",
+      "id": "ops.cnpg->firefly.pg:Reconciles database lifecycle through the hosting PostgreSQL cluster",
       "source": "ops.cnpg",
       "destination": "firefly.pg",
-      "description": "Reconciles primary role and health",
-      "technology": "Kubernetes API / operator control",
+      "description": "Reconciles database lifecycle through the hosting PostgreSQL cluster",
+      "technology": "Kubernetes API / indirect operator reconciliation",
       "tags": "Operational",
       "evidence": [
-        "https://cloudnative-pg.io/docs/1.28/replication/"
+        "https://cloudnative-pg.io/docs/1.28/replication/",
+        "https://github.com/hyperledger-firefly/firefly/tree/9d20f3081c9074d5b012427e5572ebc03da8d95d/internal/database/postgres"
       ],
       "classification": "Architecture flow inferred from documented responsibilities"
     },
     {
-      "id": "ops.cnpg->firefly.pgReplica:Reconciles replication and failover candidates",
+      "id": "ops.cnpg->firefly.fftmDb:Reconciles database lifecycle through the hosting PostgreSQL cluster",
       "source": "ops.cnpg",
-      "destination": "firefly.pgReplica",
-      "description": "Reconciles replication and failover candidates",
-      "technology": "Kubernetes API / operator control",
+      "destination": "firefly.fftmDb",
+      "description": "Reconciles database lifecycle through the hosting PostgreSQL cluster",
+      "technology": "Kubernetes API / indirect operator reconciliation",
       "tags": "Operational",
       "evidence": [
-        "https://cloudnative-pg.io/docs/1.28/replication/"
+        "https://cloudnative-pg.io/docs/1.28/replication/",
+        "https://github.com/hyperledger-firefly/transaction-manager/tree/5915cbc4e0e30dea25068b770dadbcc8bdfa9321/internal/persistence/postgres"
       ],
       "classification": "Architecture flow inferred from documented responsibilities"
     },
@@ -7532,8 +7678,7 @@
       "technology": "PostgreSQL wire protocol",
       "tags": "Dataflow",
       "evidence": [
-        "https://github.com/hyperledger-firefly/firefly/tree/9d20f3081c9074d5b012427e5572ebc03da8d95d/internal/database/postgres",
-        "https://cloudnative-pg.io/docs/1.28/replication/"
+        "https://github.com/hyperledger-firefly/firefly/tree/9d20f3081c9074d5b012427e5572ebc03da8d95d/internal/database/postgres"
       ],
       "classification": "Architecture flow inferred from documented responsibilities"
     },
@@ -7757,15 +7902,14 @@
       "classification": "Architecture flow inferred from documented responsibilities"
     },
     {
-      "id": "firefly.evm.postgres->firefly.pg:Persists the separate FFTM SQL database",
+      "id": "firefly.evm.postgres->firefly.fftmDb:Persists the separate FFTM SQL database",
       "source": "firefly.evm.postgres",
-      "destination": "firefly.pg",
+      "destination": "firefly.fftmDb",
       "description": "Persists the separate FFTM SQL database",
       "technology": "PostgreSQL wire protocol",
       "tags": "Dataflow",
       "evidence": [
-        "https://github.com/hyperledger-firefly/transaction-manager/tree/5915cbc4e0e30dea25068b770dadbcc8bdfa9321/internal/persistence/postgres",
-        "https://cloudnative-pg.io/docs/1.28/replication/"
+        "https://github.com/hyperledger-firefly/transaction-manager/tree/5915cbc4e0e30dea25068b770dadbcc8bdfa9321/internal/persistence/postgres"
       ],
       "classification": "Architecture flow inferred from documented responsibilities"
     },
@@ -9945,6 +10089,71 @@
       "classification": "Architecture flow inferred from documented responsibilities"
     },
     {
+      "id": "firefly->apps:Delivers subscribed business events and transaction outcomes",
+      "source": "firefly",
+      "destination": "apps",
+      "description": "Delivers subscribed business events and transaction outcomes",
+      "technology": "WebSocket / webhook / HTTPS",
+      "tags": "Dataflow",
+      "evidence": [
+        "https://github.com/hyperledger-firefly/firefly/tree/9d20f3081c9074d5b012427e5572ebc03da8d95d",
+        "https://hyperledger-firefly.github.io/firefly/head/architecture/node_component_architecture/"
+      ],
+      "classification": "Architecture flow inferred from documented responsibilities"
+    },
+    {
+      "id": "developer->firefly:Exercises customized Corda starter operations",
+      "source": "developer",
+      "destination": "firefly",
+      "description": "Exercises customized Corda starter operations",
+      "technology": "HTTP REST / JSON",
+      "tags": "Dataflow",
+      "evidence": [
+        "https://hyperledger-firefly.github.io/firefly/head/architecture/node_component_architecture/",
+        "https://github.com/hyperledger-firefly/firefly/tree/9d20f3081c9074d5b012427e5572ebc03da8d95d"
+      ],
+      "classification": "Architecture flow inferred from documented responsibilities"
+    },
+    {
+      "id": "firefly->developer:Returns customized starter event batches",
+      "source": "firefly",
+      "destination": "developer",
+      "description": "Returns customized starter event batches",
+      "technology": "WebSocket / JSON",
+      "tags": "Dataflow",
+      "evidence": [
+        "https://github.com/hyperledger-firefly/firefly/tree/9d20f3081c9074d5b012427e5572ebc03da8d95d",
+        "https://hyperledger-firefly.github.io/firefly/head/architecture/node_component_architecture/"
+      ],
+      "classification": "Architecture flow inferred from documented responsibilities"
+    },
+    {
+      "id": "firefly->corda:Invokes custom CorDapps and consumes vault updates through the optional starter",
+      "source": "firefly",
+      "destination": "corda",
+      "description": "Invokes custom CorDapps and consumes vault updates through the optional starter",
+      "technology": "Corda RPC",
+      "tags": "Dataflow",
+      "evidence": [
+        "https://github.com/hyperledger-firefly/firefly/tree/9d20f3081c9074d5b012427e5572ebc03da8d95d",
+        "https://github.com/hyperledger-firefly/cordaconnect/tree/6579ca46e0d46c9c330c8b2b95f1dd83f0804640/README.md"
+      ],
+      "classification": "Architecture flow inferred from documented responsibilities"
+    },
+    {
+      "id": "tools->developer:Returns audit results and migrated configuration for review",
+      "source": "tools",
+      "destination": "developer",
+      "description": "Returns audit results and migrated configuration for review",
+      "technology": "Local process output",
+      "tags": "Dataflow",
+      "evidence": [
+        "https://github.com/hyperledger-firefly/firefly/tree/9d20f3081c9074d5b012427e5572ebc03da8d95d/doc-site/docs/overview/key_components/tools.md",
+        "https://hyperledger-firefly.github.io/firefly/head/architecture/node_component_architecture/"
+      ],
+      "classification": "Architecture flow inferred from documented responsibilities"
+    },
+    {
       "id": "firefly->signatory:Requests Tezos operation signatures in the optional configuration",
       "source": "firefly",
       "destination": "signatory",
@@ -10333,6 +10542,32 @@
       "id": "managedHsm.keys->managedHsm.service.crypto:Returns cryptographic result without private key material",
       "source": "managedHsm.keys",
       "destination": "managedHsm.service.crypto",
+      "description": "Returns cryptographic result without private key material",
+      "technology": "Protected cryptographic interface (logical)",
+      "tags": "Dataflow,SecurityCatalog,KeyFlow",
+      "evidence": [
+        "https://learn.microsoft.com/en-us/azure/key-vault/managed-hsm/about-keys-details",
+        "https://learn.microsoft.com/en-us/azure/key-vault/managed-hsm/access-control"
+      ],
+      "classification": "Architecture dataflow inferred from documented product capabilities"
+    },
+    {
+      "id": "managedHsm.service->managedHsm.keys:Invokes signing or key-wrapping operation through a protected key handle",
+      "source": "managedHsm.service",
+      "destination": "managedHsm.keys",
+      "description": "Invokes signing or key-wrapping operation through a protected key handle",
+      "technology": "Protected cryptographic interface (logical)",
+      "tags": "Dataflow,SecurityCatalog,KeyFlow",
+      "evidence": [
+        "https://learn.microsoft.com/en-us/azure/key-vault/managed-hsm/access-control",
+        "https://learn.microsoft.com/en-us/azure/key-vault/managed-hsm/about-keys-details"
+      ],
+      "classification": "Architecture dataflow inferred from documented product capabilities"
+    },
+    {
+      "id": "managedHsm.keys->managedHsm.service:Returns cryptographic result without private key material",
+      "source": "managedHsm.keys",
+      "destination": "managedHsm.service",
       "description": "Returns cryptographic result without private key material",
       "technology": "Protected cryptographic interface (logical)",
       "tags": "Dataflow,SecurityCatalog,KeyFlow",
@@ -12463,15 +12698,44 @@
       "classification": "Proposed reference integration; not built-in FireFly functionality"
     },
     {
-      "id": "managedHsm.service->apps.hsmSigner:Returns signature and public key metadata; never private key material",
+      "id": "managedHsm.service->apps.hsmSigner:Returns signature bytes and signing key identifier; never private key material",
       "source": "managedHsm.service",
       "destination": "apps.hsmSigner",
-      "description": "Returns signature and public key metadata; never private key material",
-      "technology": "HTTPS / Managed HSM API response",
+      "description": "Returns signature bytes and signing key identifier; never private key material",
+      "technology": "HTTPS / Managed HSM Sign API response",
       "tags": "Dataflow,SecurityCatalog,KeyFlow,ReferenceIntegration",
       "evidence": [
         "https://learn.microsoft.com/en-us/azure/key-vault/managed-hsm/access-control",
-        "https://learn.microsoft.com/en-us/azure/key-vault/managed-hsm/about-keys-details"
+        "https://learn.microsoft.com/en-us/azure/key-vault/managed-hsm/about-keys-details",
+        "https://learn.microsoft.com/en-us/rest/api/keyvault/keys/sign/sign?view=rest-keyvault-keys-2025-07-01"
+      ],
+      "classification": "Proposed reference integration; not built-in FireFly functionality"
+    },
+    {
+      "id": "apps.hsmSigner->managedHsm.service:Requests public key metadata for the selected key version",
+      "source": "apps.hsmSigner",
+      "destination": "managedHsm.service",
+      "description": "Requests public key metadata for the selected key version",
+      "technology": "HTTPS / Managed HSM Get Key API",
+      "tags": "Dataflow,SecurityCatalog,KeyFlow,ReferenceIntegration",
+      "evidence": [
+        "https://learn.microsoft.com/en-us/azure/key-vault/managed-hsm/about-keys-details",
+        "https://learn.microsoft.com/en-us/azure/key-vault/managed-hsm/access-control",
+        "https://learn.microsoft.com/en-us/rest/api/keyvault/keys/get-key/get-key?view=rest-keyvault-keys-2025-07-01"
+      ],
+      "classification": "Proposed reference integration; not built-in FireFly functionality"
+    },
+    {
+      "id": "managedHsm.service->apps.hsmSigner:Returns public key parameters for sender and signature verification",
+      "source": "managedHsm.service",
+      "destination": "apps.hsmSigner",
+      "description": "Returns public key parameters for sender and signature verification",
+      "technology": "HTTPS / Managed HSM Get Key API response",
+      "tags": "Dataflow,SecurityCatalog,KeyFlow,ReferenceIntegration",
+      "evidence": [
+        "https://learn.microsoft.com/en-us/azure/key-vault/managed-hsm/access-control",
+        "https://learn.microsoft.com/en-us/azure/key-vault/managed-hsm/about-keys-details",
+        "https://learn.microsoft.com/en-us/rest/api/keyvault/keys/get-key/get-key?view=rest-keyvault-keys-2025-07-01"
       ],
       "classification": "Proposed reference integration; not built-in FireFly functionality"
     },
@@ -12516,15 +12780,44 @@
       "classification": "Proposed reference integration; not built-in FireFly functionality"
     },
     {
-      "id": "managedHsm.service->apps.hsmSigner.hsm:Returns signature and public key metadata; never private key material",
+      "id": "managedHsm.service->apps.hsmSigner.hsm:Returns signature bytes and signing key identifier; never private key material",
       "source": "managedHsm.service",
       "destination": "apps.hsmSigner.hsm",
-      "description": "Returns signature and public key metadata; never private key material",
-      "technology": "HTTPS / Managed HSM API response",
+      "description": "Returns signature bytes and signing key identifier; never private key material",
+      "technology": "HTTPS / Managed HSM Sign API response",
       "tags": "Dataflow,SecurityCatalog,KeyFlow,ReferenceIntegration",
       "evidence": [
         "https://learn.microsoft.com/en-us/azure/key-vault/managed-hsm/access-control",
-        "https://ethereum.org/en/developers/docs/transactions/"
+        "https://ethereum.org/en/developers/docs/transactions/",
+        "https://learn.microsoft.com/en-us/rest/api/keyvault/keys/sign/sign?view=rest-keyvault-keys-2025-07-01"
+      ],
+      "classification": "Proposed reference integration; not built-in FireFly functionality"
+    },
+    {
+      "id": "apps.hsmSigner.hsm->managedHsm.service:Requests public key metadata for the selected key version",
+      "source": "apps.hsmSigner.hsm",
+      "destination": "managedHsm.service",
+      "description": "Requests public key metadata for the selected key version",
+      "technology": "HTTPS / Managed HSM Get Key API",
+      "tags": "Dataflow,SecurityCatalog,KeyFlow,ReferenceIntegration",
+      "evidence": [
+        "https://ethereum.org/en/developers/docs/transactions/",
+        "https://learn.microsoft.com/en-us/azure/key-vault/managed-hsm/access-control",
+        "https://learn.microsoft.com/en-us/rest/api/keyvault/keys/get-key/get-key?view=rest-keyvault-keys-2025-07-01"
+      ],
+      "classification": "Proposed reference integration; not built-in FireFly functionality"
+    },
+    {
+      "id": "managedHsm.service->apps.hsmSigner.hsm:Returns public key parameters for sender and signature verification",
+      "source": "managedHsm.service",
+      "destination": "apps.hsmSigner.hsm",
+      "description": "Returns public key parameters for sender and signature verification",
+      "technology": "HTTPS / Managed HSM Get Key API response",
+      "tags": "Dataflow,SecurityCatalog,KeyFlow,ReferenceIntegration",
+      "evidence": [
+        "https://learn.microsoft.com/en-us/azure/key-vault/managed-hsm/access-control",
+        "https://ethereum.org/en/developers/docs/transactions/",
+        "https://learn.microsoft.com/en-us/rest/api/keyvault/keys/get-key/get-key?view=rest-keyvault-keys-2025-07-01"
       ],
       "classification": "Proposed reference integration; not built-in FireFly functionality"
     },
@@ -12956,6 +13249,44 @@
       "classification": "Proposed reference integration; not built-in FireFly functionality"
     },
     {
+      "id": "managedTarget->cyberarkPam:Returns password-operation outcomes and privileged session output",
+      "source": "managedTarget",
+      "destination": "cyberarkPam",
+      "description": "Returns password-operation outcomes and privileged session output",
+      "technology": "SSH / target command response",
+      "tags": "Dataflow,SecurityCatalog,PrivilegedFlow,ReferenceIntegration",
+      "evidence": [
+        "https://docs.cyberark.com/pam-self-hosted/latest/en/content/pas%20inst/installationoverview.htm"
+      ],
+      "classification": "Proposed reference integration; not built-in FireFly functionality"
+    },
+    {
+      "id": "cyberarkPam->operator:Returns brokered session output and completion status",
+      "source": "cyberarkPam",
+      "destination": "operator",
+      "description": "Returns brokered session output and completion status",
+      "technology": "Encrypted session client",
+      "tags": "Dataflow,SecurityCatalog,PrivilegedFlow,ReferenceIntegration",
+      "evidence": [
+        "https://docs.cyberark.com/pam-self-hosted/latest/en/content/pas%20inst/installationoverview.htm",
+        "https://hyperledger-firefly.github.io/firefly/head/architecture/node_component_architecture/"
+      ],
+      "classification": "Proposed reference integration; not built-in FireFly functionality"
+    },
+    {
+      "id": "adDs->business:Returns Kerberos ticket response to the domain client",
+      "source": "adDs",
+      "destination": "business",
+      "description": "Returns Kerberos ticket response to the domain client",
+      "technology": "Kerberos",
+      "tags": "Dataflow,SecurityCatalog,IdentityFlow,ReferenceIntegration",
+      "evidence": [
+        "https://learn.microsoft.com/en-us/windows-server/identity/ad-ds/get-started/virtual-dc/active-directory-domain-services-overview",
+        "https://hyperledger-firefly.github.io/firefly/head/architecture/node_component_architecture/"
+      ],
+      "classification": "Proposed reference integration; not built-in FireFly functionality"
+    },
+    {
       "id": "cyberarkPam->conjur:Supplies selected Vault credentials through Vault Synchronizer",
       "source": "cyberarkPam",
       "destination": "conjur",
@@ -12968,6 +13299,46 @@
         "https://docs.cyberark.com/secrets-manager-sh/latest/en/content/conjur/cv_synchronizer-lp.htm"
       ],
       "classification": "Architecture dataflow inferred from documented product capabilities"
+    },
+    {
+      "id": "conjur->cyberarkPam:Requests selected Vault accounts and changed credentials through Vault Synchronizer",
+      "source": "conjur",
+      "destination": "cyberarkPam",
+      "description": "Requests selected Vault accounts and changed credentials through Vault Synchronizer",
+      "technology": "CyberArk Vault protocol / encrypted channel",
+      "tags": "Dataflow,SecurityCatalog,SecretFlow",
+      "evidence": [
+        "https://docs.cyberark.com/secrets-manager-sh/latest/en/content/resources/_topnav/cc_home.htm",
+        "https://docs.cyberark.com/pam-self-hosted/latest/en/content/pas%20inst/installationoverview.htm",
+        "https://docs.cyberark.com/secrets-manager-sh/latest/en/content/conjur/cv_synchronizer-lp.htm"
+      ],
+      "classification": "Architecture dataflow inferred from documented product capabilities"
+    },
+    {
+      "id": "apps->besu:Submits signed transactions through the proposed custom HSM adapter",
+      "source": "apps",
+      "destination": "besu",
+      "description": "Submits signed transactions through the proposed custom HSM adapter",
+      "technology": "Ethereum JSON-RPC / eth_sendRawTransaction",
+      "tags": "Dataflow,SecurityCatalog,KeyFlow,ReferenceIntegration",
+      "evidence": [
+        "https://hyperledger-firefly.github.io/firefly/head/architecture/node_component_architecture/",
+        "https://github.com/besu-eth/besu/tree/7e05c2342404d27bd06a992e336c5e0c86a5d8d1"
+      ],
+      "classification": "Proposed reference integration; not built-in FireFly functionality"
+    },
+    {
+      "id": "besu->apps:Returns transaction hash or rejection to the proposed custom HSM adapter",
+      "source": "besu",
+      "destination": "apps",
+      "description": "Returns transaction hash or rejection to the proposed custom HSM adapter",
+      "technology": "Ethereum JSON-RPC response",
+      "tags": "Dataflow,SecurityCatalog,KeyFlow,ReferenceIntegration",
+      "evidence": [
+        "https://github.com/besu-eth/besu/tree/7e05c2342404d27bd06a992e336c5e0c86a5d8d1",
+        "https://hyperledger-firefly.github.io/firefly/head/architecture/node_component_architecture/"
+      ],
+      "classification": "Proposed reference integration; not built-in FireFly functionality"
     },
     {
       "id": "apps->conjur:Authenticates workload and requests permitted application secrets",
@@ -13280,7 +13651,11 @@
         "ops->firefly:Routes API requests and observes health",
         "ops->besu:Observes peer and quorum health",
         "firefly->peerMembers:Exchanges private payloads and shared content references",
-        "peerMembers->firefly:Delivers peer payloads and transfer acknowledgements"
+        "peerMembers->firefly:Delivers peer payloads and transfer acknowledgements",
+        "firefly->apps:Delivers subscribed business events and transaction outcomes",
+        "developer->firefly:Exercises customized Corda starter operations",
+        "firefly->developer:Returns customized starter event batches",
+        "tools->developer:Returns audit results and migrated configuration for review"
       ],
       "direction": "lr"
     },
@@ -13307,7 +13682,8 @@
         "ops->firefly:Routes API requests and observes health",
         "ops->besu:Observes peer and quorum health",
         "firefly->peerMembers:Exchanges private payloads and shared content references",
-        "peerMembers->firefly:Delivers peer payloads and transfer acknowledgements"
+        "peerMembers->firefly:Delivers peer payloads and transfer acknowledgements",
+        "firefly->apps:Delivers subscribed business events and transaction outcomes"
       ],
       "direction": "lr"
     },
@@ -13358,6 +13734,10 @@
         "firefly->cardano:Submits ledger operations and consumes events when configured",
         "developer->corda:Customizes the CorDapp and Core binding required by the starter",
         "blockfrostService->cardano:Reads the ledger and relays submitted transactions",
+        "developer->firefly:Exercises customized Corda starter operations",
+        "firefly->developer:Returns customized starter event batches",
+        "firefly->corda:Invokes custom CorDapps and consumes vault updates through the optional starter",
+        "tools->developer:Returns audit results and migrated configuration for review",
         "firefly->signatory:Requests Tezos operation signatures in the optional configuration",
         "firefly->blockfrostService:Queries Cardano data and submits transactions in Blockfrost mode",
         "firefly->fabricCA:Registers and enrolls signing identities through FabConnect",
@@ -13374,6 +13754,7 @@
       "title": "Container - FireFly orchestration and connectors",
       "elements": [
         "firefly.core",
+        "firefly.explorer",
         "firefly.evm",
         "firefly.signer",
         "firefly.dx",
@@ -13381,11 +13762,15 @@
         "firefly.erc1155",
         "firefly.ipfs",
         "firefly.pg",
+        "firefly.fftmDb",
+        "operator",
         "apps.client",
         "besu.node",
         "peerMembers"
       ],
       "relationships": [
+        "operator->firefly.explorer:Inspects member messages, operations and network state",
+        "firefly.explorer->firefly.core:Requests Explorer assets and queries member resources",
         "firefly.core->firefly.evm:Submits contract calls, pins and listeners",
         "firefly.evm->firefly.core:Streams confirmed events and transaction results",
         "firefly.core->firefly.dx:Submits private messages, blobs and peer configuration",
@@ -13398,7 +13783,7 @@
         "firefly.erc1155->firefly.evm:Submits contract calls and consumes event streams",
         "firefly.evm->firefly.signer:Submits Ethereum calls and unsigned transactions",
         "firefly.core->firefly.pg:Reads and writes the private Core database",
-        "firefly.evm->firefly.pg:Reads and writes the separate FFTM database",
+        "firefly.evm->firefly.fftmDb:Reads and writes the separate FFTM database",
         "firefly.core->firefly.ipfs:Adds shared content and retrieves CIDs",
         "besu.node->besu.node:Gossips transactions, blocks and QBFT peer messages",
         "firefly.signer->besu.node:Submits signed transactions and queries RPC nodes",
@@ -13424,7 +13809,7 @@
         "firefly.dx",
         "firefly.ipfs",
         "firefly.pg",
-        "firefly.pgReplica",
+        "firefly.fftmDb",
         "firefly.blobs",
         "firefly.ipfsRepo",
         "firefly.secrets",
@@ -13437,8 +13822,7 @@
         "firefly.dx->firefly.core:Delivers transfer notifications and awaits ACKs",
         "firefly.evm->firefly.signer:Submits Ethereum calls and unsigned transactions",
         "firefly.core->firefly.pg:Reads and writes the private Core database",
-        "firefly.evm->firefly.pg:Reads and writes the separate FFTM database",
-        "firefly.pg->firefly.pgReplica:Streams WAL and awaits one synchronous standby",
+        "firefly.evm->firefly.fftmDb:Reads and writes the separate FFTM database",
         "firefly.core->firefly.ipfs:Adds shared content and retrieves CIDs",
         "firefly.dx->firefly.blobs:Reads and writes private blobs and peer records",
         "firefly.ipfs->firefly.ipfsRepo:Reads and writes Kubo keys, pins and blocks",
@@ -13458,9 +13842,8 @@
       "kind": "component",
       "scope": "firefly.core",
       "key": "20-firefly-core-api",
-      "title": "Component - FireFly Core: API, tenancy and Explorer",
+      "title": "Component - FireFly Core: API and tenancy",
       "elements": [
-        "firefly.core.explorer",
         "firefly.core.api",
         "firefly.core.auth",
         "firefly.core.namespaces",
@@ -13469,11 +13852,11 @@
         "firefly.core.spievents",
         "firefly.core.eventplugin",
         "apps.client",
+        "firefly.explorer",
         "firefly.core.config",
         "firefly.core.basicAuth"
       ],
       "relationships": [
-        "firefly.core.explorer->firefly.core.api:Queries messages, operations and network state",
         "firefly.core.api->firefly.core.auth:Passes request credentials for authorization",
         "firefly.core.api->firefly.core.namespaces:Resolves the requested namespace",
         "firefly.core.namespaces->firefly.core.orchestrator:Initializes namespace resources and plugins",
@@ -13481,6 +13864,7 @@
         "firefly.core.orchestrator->firefly.core.syncasync:Waits for asynchronous request completion",
         "firefly.core.namespaces->firefly.core.spievents:Publishes namespace lifecycle changes",
         "firefly.core.spievents->firefly.core.eventplugin:Publishes system notifications",
+        "firefly.explorer->firefly.core.api:Queries messages, operations and network state",
         "apps.client->firefly.core.api:Submits API commands and queries",
         "firefly.core.eventplugin->apps.client:Delivers events through configured transports",
         "firefly.core.namespaces->firefly.core.config:Loads namespace configuration and plugin selections",
@@ -13505,7 +13889,7 @@
       ],
       "relationships": [
         "firefly.core.orchestrator->firefly.core.identity:Resolves signing identities",
-        "firefly.core.identity->firefly.core.identityplugin:Resolves configured identity claims",
+        "firefly.core.identity->firefly.core.identityplugin:Initializes the configured onchain placeholder",
         "firefly.core.identity->firefly.core.networkmap:Looks up members and node endpoints",
         "firefly.core.networkmap->firefly.core.definitions:Registers shared member definitions",
         "firefly.core.definitions->firefly.core.broadcast:Publishes network definitions",
@@ -13532,9 +13916,11 @@
         "firefly.core.sharedstorage",
         "firefly.core.multiparty",
         "firefly.dx",
-        "firefly.ipfs"
+        "firefly.ipfs",
+        "firefly.core.identity"
       ],
       "relationships": [
+        "firefly.core.orchestrator->firefly.core.identity:Resolves signing identities",
         "firefly.core.orchestrator->firefly.core.multiparty:Submits consortium network actions",
         "firefly.core.orchestrator->firefly.core.data:Submits payloads and datatype definitions",
         "firefly.core.data->firefly.core.schema:Validates structured payloads",
@@ -13547,6 +13933,7 @@
         "firefly.core.broadcast->firefly.core.multiparty:Pins batch hashes on the ledger",
         "firefly.core.private->firefly.core.dataexchange:Sends private payloads to recipient nodes",
         "firefly.core.private->firefly.core.multiparty:Pins private batch hashes when requested",
+        "firefly.core.private->firefly.core.identity:Resolves group recipients and endpoints",
         "firefly.core.dataexchange->firefly.dx:Exchanges private data and notifications",
         "firefly.core.sharedstorage->firefly.ipfs:Publishes and retrieves CIDs",
         "firefly.dx->firefly.dx:Transfers private envelopes and blobs to peers; receives ACKs",
@@ -13677,8 +14064,9 @@
         "firefly.evm.abi",
         "firefly.evm.rpc",
         "firefly.evm.persistence",
-        "firefly.pg",
-        "firefly.signer"
+        "firefly.fftmDb",
+        "firefly.signer",
+        "firefly.evm.receipts"
       ],
       "relationships": [
         "firefly.evm.api->firefly.evm.manager:Submits transaction and stream requests",
@@ -13687,8 +14075,10 @@
         "firefly.evm.nonce->firefly.evm.persistence:Persists sender transaction ordering",
         "firefly.evm.handler->firefly.evm.abi:Prepares calls and encoded transactions",
         "firefly.evm.abi->firefly.evm.rpc:Issues Ethereum JSON-RPC requests",
+        "firefly.evm.handler->firefly.evm.receipts:Tracks submitted transaction receipts",
+        "firefly.evm.receipts->firefly.evm.rpc:Queries transaction receipt status",
         "firefly.evm.manager->firefly.evm.persistence:Persists transaction lifecycle state",
-        "firefly.evm.persistence->firefly.pg:Persists FFTM transactions and checkpoints",
+        "firefly.evm.persistence->firefly.fftmDb:Persists FFTM transactions and checkpoints",
         "firefly.evm.rpc->firefly.signer:Forwards transactions and read calls"
       ],
       "direction": "lr"
@@ -13707,7 +14097,7 @@
         "firefly.evm.streams",
         "firefly.evm.delivery",
         "firefly.evm.persistence",
-        "firefly.pg",
+        "firefly.fftmDb",
         "firefly.signer",
         "firefly.core",
         "firefly.evm.blocklistener",
@@ -13724,9 +14114,8 @@
         "firefly.evm.delivery->firefly.evm.streams:Acknowledges consumed batches",
         "firefly.evm.streams->firefly.evm.persistence:Persists acknowledged checkpoints",
         "firefly.evm.manager->firefly.evm.persistence:Persists transaction lifecycle state",
-        "firefly.core->firefly.pg:Reads and writes the private Core database",
         "firefly.evm.delivery->firefly.core:Delivers confirmed event batches",
-        "firefly.evm.persistence->firefly.pg:Persists FFTM transactions and checkpoints",
+        "firefly.evm.persistence->firefly.fftmDb:Persists FFTM transactions and checkpoints",
         "firefly.evm.rpc->firefly.signer:Forwards transactions and read calls",
         "firefly.evm.blocks->firefly.evm.blocklistener:Supplies blockchain head notifications",
         "firefly.evm.blocklistener->firefly.evm.confirmations:Updates tracked canonical block history",
@@ -13992,6 +14381,7 @@
       "elements": [
         "tools.cli",
         "tools.sandbox",
+        "tools.sandboxUi",
         "developer",
         "firefly.core",
         "tools.perf",
@@ -14000,10 +14390,11 @@
         "dockerEngine"
       ],
       "relationships": [
+        "tools.sandboxUi->tools.sandbox:Requests browser assets and submits sample actions",
         "tools.sandbox->firefly.core:Exercises APIs and subscriptions",
         "tools.cli->firefly.core:Registers and inspects development stacks",
         "developer->tools.cli:Creates local test stacks",
-        "developer->tools.sandbox:Exercises sample workflows",
+        "developer->tools.sandboxUi:Exercises sample messages and token workflows",
         "tools.cli->dockerEngine:Manages local development stack services",
         "developer->tools.perf:Runs configured performance workloads",
         "tools.perf->firefly.core:Submits workloads and consumes completion events",
@@ -14017,23 +14408,55 @@
       "kind": "component",
       "scope": "tools.sandbox",
       "key": "62-sandbox",
-      "title": "Component - Sandbox sample application",
+      "title": "Component - Sandbox server",
       "elements": [
-        "tools.sandbox.frontend",
         "tools.sandbox.backend",
         "tools.sandbox.sdk",
+        "tools.sandboxUi",
         "firefly.core",
         "tools.sandbox.sdkHttp",
         "tools.sandbox.sdkEvents"
       ],
       "relationships": [
-        "tools.sandbox.frontend->tools.sandbox.backend:Submits selected sample actions",
+        "tools.sandboxUi->tools.sandbox.backend:Submits selected sample actions",
         "tools.sandbox.backend->tools.sandbox.sdk:Submits SDK requests",
         "tools.sandbox.sdk->firefly.core:Invokes member APIs and consumes events",
         "tools.sandbox.sdk->tools.sandbox.sdkHttp:Dispatches SDK transport operations",
         "tools.sandbox.sdk->tools.sandbox.sdkEvents:Dispatches SDK transport operations",
         "tools.sandbox.sdkHttp->firefly.core:Sends namespace-scoped API requests",
         "tools.sandbox.sdkEvents->firefly.core:Subscribes to events and sends acknowledgements"
+      ],
+      "direction": "lr"
+    },
+    {
+      "kind": "component",
+      "scope": "tools.sandboxUi",
+      "key": "68-sandbox-browser",
+      "title": "Component - Sandbox browser application",
+      "elements": [
+        "tools.sandboxUi.app",
+        "developer",
+        "tools.sandbox"
+      ],
+      "relationships": [
+        "tools.sandboxUi.app->tools.sandbox:Submits selected sample actions and receives results",
+        "developer->tools.sandboxUi.app:Selects sample messages and token actions"
+      ],
+      "direction": "lr"
+    },
+    {
+      "kind": "component",
+      "scope": "firefly.explorer",
+      "key": "24-explorer-browser",
+      "title": "Component - FireFly Explorer browser application",
+      "elements": [
+        "firefly.explorer.app",
+        "operator",
+        "firefly.core"
+      ],
+      "relationships": [
+        "operator->firefly.explorer.app:Selects member resources to inspect",
+        "firefly.explorer.app->firefly.core:Requests member resources and renders returned state"
       ],
       "direction": "lr"
     },
@@ -14049,16 +14472,23 @@
         "ops.grafana",
         "operator",
         "firefly.core",
+        "firefly.dx",
         "firefly.pg",
+        "firefly.fftmDb",
         "besu.node"
       ],
       "relationships": [
+        "firefly.core->firefly.dx:Submits private messages, blobs and peer configuration",
+        "firefly.dx->firefly.core:Delivers transfer notifications and awaits ACKs",
         "firefly.core->firefly.pg:Reads and writes the private Core database",
         "besu.node->besu.node:Gossips transactions, blocks and QBFT peer messages",
+        "firefly.dx->firefly.dx:Transfers private envelopes and blobs to peers; receives ACKs",
         "operator->ops.grafana:Reviews quorum and recovery measurements",
         "ops.grafana->ops.prometheus:Queries operational time series",
         "ops.gateway->firefly.core:Routes authenticated API requests",
-        "ops.cnpg->firefly.pg:Reconciles primary role and health",
+        "ops.gateway->firefly.dx:Passes peer TLS sessions without terminating mTLS",
+        "ops.cnpg->firefly.pg:Reconciles database lifecycle through the hosting PostgreSQL cluster",
+        "ops.cnpg->firefly.fftmDb:Reconciles database lifecycle through the hosting PostgreSQL cluster",
         "ops.prometheus->firefly.core:Scrapes member runtime measurements",
         "ops.prometheus->besu.node:Scrapes peer, block and consensus measurements"
       ],
@@ -14101,6 +14531,8 @@
       "key": "22-core-storage-adapters",
       "title": "Component - Core storage and exchange adapters",
       "elements": [
+        "firefly.core.data",
+        "firefly.core.broadcast",
         "firefly.core.database",
         "firefly.core.postgres",
         "firefly.core.sqlite",
@@ -14109,12 +14541,20 @@
         "firefly.core.ffdx",
         "firefly.core.sharedstorage",
         "firefly.core.ipfs",
+        "firefly.core.private",
+        "firefly.core.batchprocessor",
         "firefly.pg",
         "firefly.sqlite",
         "firefly.dx",
         "firefly.ipfs"
       ],
       "relationships": [
+        "firefly.core.data->firefly.core.database:Persists payload metadata and hashes",
+        "firefly.core.batchprocessor->firefly.core.data:Loads payloads for batch assembly",
+        "firefly.core.batchprocessor->firefly.core.broadcast:Dispatches broadcast batches",
+        "firefly.core.batchprocessor->firefly.core.private:Dispatches recipient-scoped batches",
+        "firefly.core.broadcast->firefly.core.sharedstorage:Uploads broadcast payloads",
+        "firefly.core.private->firefly.core.dataexchange:Sends private payloads to recipient nodes",
         "firefly.core.database->firefly.pg:Persists Core resources and offsets",
         "firefly.core.dataexchange->firefly.dx:Exchanges private data and notifications",
         "firefly.core.sharedstorage->firefly.ipfs:Publishes and retrieves CIDs",
@@ -14182,7 +14622,7 @@
         "firefly.evm.delivery",
         "firefly.evm.webhook",
         "firefly.evm.metrics",
-        "firefly.pg",
+        "firefly.fftmDb",
         "firefly.leveldb",
         "apps.client"
       ],
@@ -14192,15 +14632,32 @@
         "firefly.evm.delivery->firefly.evm.streams:Acknowledges consumed batches",
         "firefly.evm.streams->firefly.evm.persistence:Persists acknowledged checkpoints",
         "firefly.evm.manager->firefly.evm.persistence:Persists transaction lifecycle state",
-        "firefly.evm.persistence->firefly.pg:Persists FFTM transactions and checkpoints",
+        "firefly.evm.persistence->firefly.fftmDb:Persists FFTM transactions and checkpoints",
         "firefly.evm.persistence->firefly.evm.postgres:Writes state through the selected PostgreSQL backend",
         "firefly.evm.persistence->firefly.evm.leveldb:Writes state through the selected LevelDB backend",
         "firefly.evm.streams->firefly.evm.webhook:Dispatches batches when webhook delivery is selected",
         "firefly.evm.manager->firefly.evm.metrics:Records transaction processing measurements",
         "firefly.evm.streams->firefly.evm.metrics:Records event-processing measurements",
-        "firefly.evm.postgres->firefly.pg:Persists the separate FFTM SQL database",
+        "firefly.evm.postgres->firefly.fftmDb:Persists the separate FFTM SQL database",
         "firefly.evm.leveldb->firefly.leveldb:Reads and writes local transaction state",
         "firefly.evm.webhook->apps.client:Posts configured blockchain event batches"
+      ],
+      "direction": "lr"
+    },
+    {
+      "kind": "container",
+      "scope": "firefly",
+      "key": "77-other-evm-network",
+      "title": "Container - Optional external EVM network",
+      "elements": [
+        "firefly.core",
+        "firefly.evm",
+        "evmNetworks"
+      ],
+      "relationships": [
+        "firefly.core->firefly.evm:Submits contract calls, pins and listeners",
+        "firefly.evm->firefly.core:Streams confirmed events and transaction results",
+        "firefly.evm->evmNetworks:Submits transactions and polls an alternative EVM network"
       ],
       "direction": "lr"
     },
@@ -14807,7 +15264,11 @@
         "business->adDs:Requests domain sign-in and service tickets through the domain client",
         "operator->cyberarkPam:Requests approved privileged access and submits session commands",
         "cyberarkPam->managedTarget:Rotates target credentials and brokers recorded privileged sessions",
+        "managedTarget->cyberarkPam:Returns password-operation outcomes and privileged session output",
+        "cyberarkPam->operator:Returns brokered session output and completion status",
+        "adDs->business:Returns Kerberos ticket response to the domain client",
         "cyberarkPam->conjur:Supplies selected Vault credentials through Vault Synchronizer",
+        "conjur->cyberarkPam:Requests selected Vault accounts and changed credentials through Vault Synchronizer",
         "apps->conjur:Authenticates workload and requests permitted application secrets",
         "conjur->apps:Returns short-lived token or authorized application secret",
         "apps->managedHsm:Submits authorized signing or key-wrapping request",
@@ -14857,7 +15318,8 @@
         "adDs->adFs:Returns domain authentication result and account attributes",
         "entraId->adDs:Queries selected directory objects through the Cloud Sync provisioning agent",
         "adDs->entraId:Returns selected identity attributes for Cloud Sync provisioning",
-        "business->adDs:Requests domain sign-in and service tickets through the domain client"
+        "business->adDs:Requests domain sign-in and service tickets through the domain client",
+        "adDs->business:Returns Kerberos ticket response to the domain client"
       ],
       "direction": "lr"
     },
@@ -14948,6 +15410,8 @@
       ],
       "relationships": [
         "managedHsm.service->managedHsm.keys:Creates or updates protected keys, versions and local role records",
+        "managedHsm.service->managedHsm.keys:Invokes signing or key-wrapping operation through a protected key handle",
+        "managedHsm.keys->managedHsm.service:Returns cryptographic result without private key material",
         "apps.client->entraId.authentication:Submits authorization request via browser and configured protocol client",
         "entraId.authentication->apps.client:Returns authenticated identity tokens or assertions through the selected protocol flow",
         "apps.client->managedHsm.service:Submits bearer token, key identifier and digest or key-wrapping input",
@@ -14978,7 +15442,10 @@
         "securityAdmin->conjur:Configures CyberArk Conjur Enterprise access policy and reviews administrative outcomes",
         "operator->cyberarkPam:Requests approved privileged access and submits session commands",
         "cyberarkPam->managedTarget:Rotates target credentials and brokers recorded privileged sessions",
-        "cyberarkPam->conjur:Supplies selected Vault credentials through Vault Synchronizer"
+        "managedTarget->cyberarkPam:Returns password-operation outcomes and privileged session output",
+        "cyberarkPam->operator:Returns brokered session output and completion status",
+        "cyberarkPam->conjur:Supplies selected Vault credentials through Vault Synchronizer",
+        "conjur->cyberarkPam:Requests selected Vault accounts and changed credentials through Vault Synchronizer"
       ],
       "direction": "lr"
     },
@@ -15034,6 +15501,7 @@
         "securityAdmin->cyberarkPam:Configures CyberArk PAM Self-Hosted access policy and reviews administrative outcomes",
         "securityAdmin->conjur:Configures CyberArk Conjur Enterprise access policy and reviews administrative outcomes",
         "cyberarkPam->conjur:Supplies selected Vault credentials through Vault Synchronizer",
+        "conjur->cyberarkPam:Requests selected Vault accounts and changed credentials through Vault Synchronizer",
         "apps->conjur:Authenticates workload and requests permitted application secrets",
         "conjur->apps:Returns short-lived token or authorized application secret"
       ],
@@ -15096,6 +15564,7 @@
         "entraId->adDs:Queries selected directory objects through the Cloud Sync provisioning agent",
         "adDs->entraId:Returns selected identity attributes for Cloud Sync provisioning",
         "business->adDs:Requests domain sign-in and service tickets through the domain client",
+        "adDs->business:Returns Kerberos ticket response to the domain client",
         "apps->managedHsm:Submits authorized signing or key-wrapping request",
         "managedHsm->apps:Returns signature or wrapped key result without private key material",
         "managedHsm->entraId:Retrieves issuer metadata and public signing keys for caller token verification"
@@ -15168,7 +15637,8 @@
         "adDs->adFs:Returns domain authentication result and account attributes",
         "entraId->adDs:Queries selected directory objects through the Cloud Sync provisioning agent",
         "adDs->entraId:Returns selected identity attributes for Cloud Sync provisioning",
-        "business->adDs:Requests domain sign-in and service tickets through the domain client"
+        "business->adDs:Requests domain sign-in and service tickets through the domain client",
+        "adDs->business:Returns Kerberos ticket response to the domain client"
       ],
       "direction": "lr"
     },
@@ -15238,7 +15708,8 @@
         "adFs->keycloak:Returns verified identity claims through the configured federation flow",
         "adFs->adDs:Requests domain authentication and account attributes",
         "adDs->adFs:Returns domain authentication result and account attributes",
-        "business->adDs:Requests domain sign-in and service tickets through the domain client"
+        "business->adDs:Requests domain sign-in and service tickets through the domain client",
+        "adDs->business:Returns Kerberos ticket response to the domain client"
       ],
       "direction": "lr"
     },
@@ -15712,7 +16183,9 @@
         "apps.hsmSigner.hsm->entraId.authentication:Authenticates application identity and requests Managed HSM access token",
         "entraId.authentication->apps.hsmSigner.hsm:Returns Managed HSM audience access token",
         "apps.hsmSigner.hsm->managedHsm.service:Submits Ethereum digest for secp256k1 signing; compatibility must be verified",
-        "managedHsm.service->apps.hsmSigner.hsm:Returns signature and public key metadata; never private key material",
+        "managedHsm.service->apps.hsmSigner.hsm:Returns signature bytes and signing key identifier; never private key material",
+        "apps.hsmSigner.hsm->managedHsm.service:Requests public key metadata for the selected key version",
+        "managedHsm.service->apps.hsmSigner.hsm:Returns public key parameters for sender and signature verification",
         "apps.hsmSigner.rpc->besu.node:Submits encoded signed transaction for validation and propagation",
         "besu.node->apps.hsmSigner.rpc:Returns transaction hash or JSON-RPC rejection"
       ],
@@ -15879,6 +16352,8 @@
       ],
       "relationships": [
         "managedHsm.service->managedHsm.keys:Creates or updates protected keys, versions and local role records",
+        "managedHsm.service->managedHsm.keys:Invokes signing or key-wrapping operation through a protected key handle",
+        "managedHsm.keys->managedHsm.service:Returns cryptographic result without private key material",
         "apps.client->managedHsm.service:Submits bearer token, key identifier and digest or key-wrapping input",
         "managedHsm.service->apps.client:Returns signature or wrapped data key; never the HSM private key",
         "apps.client->entraId.authentication:Authenticates workload identity and requests HSM-audience access token",
@@ -15906,9 +16381,73 @@
         "apps.hsmSigner->entraId.authentication:Authenticates application identity and requests Managed HSM access token",
         "entraId.authentication->apps.hsmSigner:Returns Managed HSM audience access token",
         "apps.hsmSigner->managedHsm.service:Submits Ethereum digest for secp256k1 signing; compatibility must be verified",
-        "managedHsm.service->apps.hsmSigner:Returns signature and public key metadata; never private key material",
+        "managedHsm.service->apps.hsmSigner:Returns signature bytes and signing key identifier; never private key material",
+        "apps.hsmSigner->managedHsm.service:Requests public key metadata for the selected key version",
+        "managedHsm.service->apps.hsmSigner:Returns public key parameters for sender and signature verification",
         "apps.hsmSigner->besu.node:Submits encoded signed transaction for validation and propagation",
         "besu.node->apps.hsmSigner:Returns transaction hash or JSON-RPC rejection"
+      ],
+      "direction": "lr"
+    },
+    {
+      "kind": "systemContext",
+      "scope": "apps",
+      "key": "05-context-applications",
+      "title": "System Context - Member application reference",
+      "elements": [
+        "apps",
+        "business",
+        "firefly",
+        "besu"
+      ],
+      "relationships": [
+        "firefly->besu:Submits transactions and consumes finalized events",
+        "apps->firefly:Submits member requests and consumes events",
+        "business->apps:Submits consortium business actions",
+        "firefly->apps:Delivers subscribed business events and transaction outcomes",
+        "apps->besu:Submits signed transactions through the proposed custom HSM adapter",
+        "besu->apps:Returns transaction hash or rejection to the proposed custom HSM adapter"
+      ],
+      "direction": "lr"
+    },
+    {
+      "kind": "systemContext",
+      "scope": "tools",
+      "key": "06-context-tools",
+      "title": "System Context - FireFly developer tools",
+      "elements": [
+        "tools",
+        "developer",
+        "firefly",
+        "dockerEngine"
+      ],
+      "relationships": [
+        "developer->tools:Develops and tests integrations",
+        "tools->firefly:Exercises the selected member API",
+        "developer->firefly:Exercises customized Corda starter operations",
+        "firefly->developer:Returns customized starter event batches",
+        "tools->developer:Returns audit results and migrated configuration for review",
+        "tools->dockerEngine:Creates and manages local development stack services"
+      ],
+      "direction": "lr"
+    },
+    {
+      "kind": "systemContext",
+      "scope": "ops",
+      "key": "07-context-operations",
+      "title": "System Context - Platform operations reference",
+      "elements": [
+        "ops",
+        "operator",
+        "firefly",
+        "besu"
+      ],
+      "relationships": [
+        "firefly->besu:Submits transactions and consumes finalized events",
+        "operator->firefly:Inspects and administers member state",
+        "operator->ops:Monitors availability and coordinates recovery",
+        "ops->firefly:Routes API requests and observes health",
+        "ops->besu:Observes peer and quorum health"
       ],
       "direction": "lr"
     }

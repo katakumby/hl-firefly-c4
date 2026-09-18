@@ -1,6 +1,6 @@
 {
-  "started_at": "2026-09-18T22:39:01.286540+00:00",
-  "completed_at": "2026-09-18T22:39:14.229307+00:00",
+  "started_at": "2026-09-18T23:02:04.784011+00:00",
+  "completed_at": "2026-09-18T23:02:18.201579+00:00",
   "passed": true,
   "image": "structurizr/structurizr:2026.06.28-noble",
   "commands": [
@@ -100,7 +100,7 @@
         "-format",
         "json",
         "-output",
-        ".cache/static-validation/fe09f707fa7a43469560dac830cf1d87"
+        ".cache/static-validation/bc304be95d904562ad6f19cb54821f93"
       ],
       "exit_code": 0,
       "report": "parse-json.txt"
@@ -152,7 +152,7 @@
       {
         "severity": "INFO",
         "type": "workspace.scope",
-        "message": "System context views exist for 9 software systems. It is recommended that a workspace includes system context views for a single software system only."
+        "message": "System context views exist for 12 software systems. It is recommended that a workspace includes system context views for a single software system only."
       },
       {
         "severity": "INFO",
@@ -163,8 +163,8 @@
     "unexpected": []
   },
   "failure": null,
-  "parsed_workspace": ".cache\\static-validation\\fe09f707fa7a43469560dac830cf1d87\\workspace.json",
-  "workspace_sha256": "c02997e7715e5788f20fd34e0faa1e41ffb0653306a7f37fefd37fb959d59519",
+  "parsed_workspace": ".cache\\static-validation\\bc304be95d904562ad6f19cb54821f93\\workspace.json",
+  "workspace_sha256": "2309aa95d0217808d313b79939a0aedef1416893eec3886d06517e1475a34b60",
   "deployment_validation": "NOT RUN",
   "diagram_exports": "NOT RUN"
 }

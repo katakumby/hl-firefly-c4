@@ -35,6 +35,7 @@ def extend_model(E, R, V, add, rel, view, comps, flows, kids, source):
     for r in R:
         if r['source']=='firefly.core.identity' and r['destination']=='firefly.core.identityplugin':
             r['description']='Initializes the configured onchain placeholder'
+            r['id']=r['source']+'->'+r['destination']+':'+r['description']
     E['firefly.core.blockchain']['description'] = 'Defines blockchain operations and dispatches to the configured chain adapter.'
     E['firefly.core.database']['description'] = 'Defines transactional persistence and dispatches to the selected SQL adapter.'
     E['firefly.core.eventplugin']['name'] = 'Event transport interface'
@@ -42,6 +43,9 @@ def extend_model(E, R, V, add, rel, view, comps, flows, kids, source):
     E['firefly.secrets']['description'] = 'Stores signing keystores, mTLS material and configuration; Kubernetes projection belongs to the deferred deployment reference.'
     E['firefly.blobs']['description'] = 'Stores private binary payloads and peer metadata; storage-class placement is deferred.'
     E['firefly.ipfsRepo']['description'] = 'Stores Kubo identity, pins and content blocks; storage-class placement is deferred.'
+    E['firefly.blobs']['technology'] = 'Filesystem'
+    E['firefly.ipfsRepo']['technology'] = 'Filesystem'
+    E['firefly.secrets']['technology'] = 'Configuration and key files'
     replace_source('firefly.core.auth', 'common', 'pkg/auth')
     adapters = rows('''
 config|Configuration and plugin initialization|Loads namespace settings and initializes plugin factories.|firefly|internal/coreconfig
@@ -118,7 +122,7 @@ manager|metrics|Records transaction processing measurements
 streams|metrics|Records event-processing measurements
 '''):
         link('firefly.evm.'+a,'firefly.evm.'+b,label)
-    link('firefly.evm.postgres','firefly.pg','Persists the separate FFTM SQL database','PostgreSQL wire protocol')
+    link('firefly.evm.postgres','firefly.fftmDb','Persists the separate FFTM SQL database','PostgreSQL wire protocol')
     link('firefly.evm.leveldb','firefly.leveldb','Reads and writes local transaction state','LevelDB API / filesystem')
     link('firefly.evm.webhook','apps.client','Posts configured blockchain event batches','HTTP POST / JSON')
 
@@ -373,12 +377,10 @@ events|persistence|Persists stream and subscription definitions
     link('firefly.cordaconnect.persistence','firefly.cordaState','Reads and writes subscription definitions','JPA / embedded H2')
     link('firefly.cordaconnect.websockets','developer','Delivers starter event batches to an integration developer','WebSocket / JSON')
 
-    # CLI is an executable; SDK and bundled Explorer remain embedded components.
+    # CLI is an executable; the Node.js SDK remains inside the Sandbox server.
     replace_source('tools.cli','cli','README.md')
     replace_source('tools.sandbox.sdk','sdk','lib/firefly.ts')
-    replace_source('tools.sandbox.frontend','sandbox','ui/src')
     replace_source('tools.sandbox.backend','sandbox','server/src')
-    replace_source('firefly.core.explorer','ui','src')
     comps('tools.cli',rows('''
 commands|CLI commands|Accepts stack creation, start, stop and administration commands.|cmd
 stacks|Stack configuration and manifests|Assembles member stack configuration and state.|internal/stacks
@@ -454,6 +456,11 @@ runner|report|Supplies measured workload results
     # Explicit system-level counterparts preserve ecosystem context when
     # component/container endpoints are hidden in C4 level 1.
     for a,b,label,tech in [
+        ('firefly','apps','Delivers subscribed business events and transaction outcomes','WebSocket / webhook / HTTPS'),
+        ('developer','firefly','Exercises customized Corda starter operations','HTTP REST / JSON'),
+        ('firefly','developer','Returns customized starter event batches','WebSocket / JSON'),
+        ('firefly','corda','Invokes custom CorDapps and consumes vault updates through the optional starter','Corda RPC'),
+        ('tools','developer','Returns audit results and migrated configuration for review','Local process output'),
         ('firefly','signatory','Requests Tezos operation signatures in the optional configuration','HTTP / Signatory API'),
         ('firefly','blockfrostService','Queries Cardano data and submits transactions in Blockfrost mode','HTTPS / Blockfrost API'),
         ('firefly','fabricCA','Registers and enrolls signing identities through FabConnect','Fabric CA / HTTPS'),
@@ -475,6 +482,8 @@ runner|report|Supplies measured workload results
     extend('10-firefly-runtime',['peerMembers'])
     extend('11-firefly-state',['peerMembers'])
     extend('20-firefly-core-api',['firefly.core.config','firefly.core.basicAuth'])
+    extend('20-firefly-core-messaging',['firefly.core.identity'])
+    extend('30-firefly-evm-transactions',['firefly.evm.receipts'])
     extend('40-firefly-dx',['peerMembers','firefly.core'])
     extend('61-tools',['tools.perf','tools.eventAudit','tools.config','dockerEngine'])
     extend('62-sandbox',['tools.sandbox.sdkHttp','tools.sandbox.sdkEvents'])
@@ -483,7 +492,7 @@ runner|report|Supplies measured workload results
          ['firefly.core.'+x for x in ('blockchain','ethereum','fabricAdapter','tezosAdapter','cardanoAdapter')]+
          ['firefly.'+x for x in ('evm','ethconnect','fabconnect','tezosconnect','cardanoconnect')])
     view('component','firefly.core','22-core-storage-adapters','Component - Core storage and exchange adapters',
-         ['firefly.core.'+x for x in ('database','postgres','sqlite','sql','dataexchange','ffdx','sharedstorage','ipfs')]+
+         ['firefly.core.'+x for x in ('data','broadcast','database','postgres','sqlite','sql','dataexchange','ffdx','sharedstorage','ipfs','private','batchprocessor')]+
          ['firefly.'+x for x in ('pg','sqlite','dx','ipfs')])
     view('component','firefly.core','23-core-event-token-adapters','Component - Core token and event adapters',
          ['firefly.core.'+x for x in ('tokens','fftokens','eventplugin','websockets','webhooks','systemEvents','aggregator')]+
@@ -491,7 +500,9 @@ runner|report|Supplies measured workload results
     extend('30-firefly-evm-events',['firefly.evm.blocklistener','firefly.evm.metrics'])
     view('component','firefly.evm','31-evm-persistence-delivery','Component - EVMConnect persistence and delivery options',
          ['firefly.evm.'+x for x in ('manager','persistence','postgres','leveldb','streams','delivery','webhook','metrics')]+
-         ['firefly.pg','firefly.leveldb','apps.client'])
+         ['firefly.fftmDb','firefly.leveldb','apps.client'])
+    view('container','firefly','77-other-evm-network','Container - Optional external EVM network',
+         ['firefly.core','firefly.evm','evmNetworks'])
     view('container','firefly','12-embedded-storage-options','Container - Optional embedded Core and EVM persistence',
          ['firefly.core','firefly.sqlite','firefly.evm','firefly.leveldb'])
     configurations=[

@@ -118,6 +118,8 @@ api|audit|Records caller, key identifier, operation and outcome
         flow(caller, 'managedHsm.keys', 'Creates or updates protected keys, versions and local role records', 'Protected managed-service storage interface', 'KeyFlow')
     flow('managedHsm.service.crypto', 'managedHsm.keys', 'Invokes cryptographic operation using protected key handle; no private-key export', 'Protected cryptographic interface (logical)', 'KeyFlow')
     flow('managedHsm.keys', 'managedHsm.service.crypto', 'Returns cryptographic result without private key material', 'Protected cryptographic interface (logical)', 'KeyFlow')
+    flow('managedHsm.service', 'managedHsm.keys', 'Invokes signing or key-wrapping operation through a protected key handle', 'Protected cryptographic interface (logical)', 'KeyFlow')
+    flow('managedHsm.keys', 'managedHsm.service', 'Returns cryptographic result without private key material', 'Protected cryptographic interface (logical)', 'KeyFlow')
 
     system('cyberarkPam', 'CyberArk PAM Self-Hosted', 'Controls privileged credentials, password rotation and recorded administrative sessions.', 'security-pam')
     for ident, name, desc in (
@@ -405,7 +407,9 @@ rpc|transactions|Returns submitted transaction hash or RPC error
         flow(caller, 'entraId.authentication', 'Authenticates application identity and requests Managed HSM access token', 'HTTPS / OAuth 2.0 client credentials', 'IdentityFlow', True)
         flow('entraId.authentication', caller, 'Returns Managed HSM audience access token', 'HTTPS / OAuth 2.0 token response', 'IdentityFlow', True)
         flow(caller, 'managedHsm.service', 'Submits Ethereum digest for secp256k1 signing; compatibility must be verified', 'HTTPS / Managed HSM Sign API (proposed)', 'KeyFlow', True, ('security-hsm-keys', 'security-ethereum-transactions'))
-        flow('managedHsm.service', caller, 'Returns signature and public key metadata; never private key material', 'HTTPS / Managed HSM API response', 'KeyFlow', True)
+        flow('managedHsm.service', caller, 'Returns signature bytes and signing key identifier; never private key material', 'HTTPS / Managed HSM Sign API response', 'KeyFlow', True, ('security-hsm-sign',))
+        flow(caller, 'managedHsm.service', 'Requests public key metadata for the selected key version', 'HTTPS / Managed HSM Get Key API', 'KeyFlow', True, ('security-hsm-get-key',))
+        flow('managedHsm.service', caller, 'Returns public key parameters for sender and signature verification', 'HTTPS / Managed HSM Get Key API response', 'KeyFlow', True, ('security-hsm-get-key',))
     for caller in ('apps.hsmSigner', 'apps.hsmSigner.rpc'):
         flow(caller, 'besu.node', 'Submits encoded signed transaction for validation and propagation', 'Ethereum JSON-RPC / eth_sendRawTransaction', 'KeyFlow', True)
         flow('besu.node', caller, 'Returns transaction hash or JSON-RPC rejection', 'Ethereum JSON-RPC response', 'KeyFlow', True)
@@ -431,7 +435,13 @@ rpc|transactions|Returns submitted transaction hash or RPC error
     flow('business', 'adDs', 'Requests domain sign-in and service tickets through the domain client', 'Kerberos', example=True)
     flow('operator', 'cyberarkPam', 'Requests approved privileged access and submits session commands', 'HTTPS / PAM portal and encrypted session client', 'PrivilegedFlow', True)
     flow('cyberarkPam', 'managedTarget', 'Rotates target credentials and brokers recorded privileged sessions', 'SSH / target-specific password commands', 'PrivilegedFlow', True)
+    flow('managedTarget', 'cyberarkPam', 'Returns password-operation outcomes and privileged session output', 'SSH / target command response', 'PrivilegedFlow', True)
+    flow('cyberarkPam', 'operator', 'Returns brokered session output and completion status', 'Encrypted session client', 'PrivilegedFlow', True)
+    flow('adDs', 'business', 'Returns Kerberos ticket response to the domain client', 'Kerberos', example=True)
     flow('cyberarkPam', 'conjur', 'Supplies selected Vault credentials through Vault Synchronizer', 'CyberArk Vault protocol + HTTPS / Conjur API', 'SecretFlow', evidence=('security-conjur-sync',))
+    flow('conjur', 'cyberarkPam', 'Requests selected Vault accounts and changed credentials through Vault Synchronizer', 'CyberArk Vault protocol / encrypted channel', 'SecretFlow', evidence=('security-conjur-sync',))
+    flow('apps', 'besu', 'Submits signed transactions through the proposed custom HSM adapter', 'Ethereum JSON-RPC / eth_sendRawTransaction', 'KeyFlow', True)
+    flow('besu', 'apps', 'Returns transaction hash or rejection to the proposed custom HSM adapter', 'Ethereum JSON-RPC response', 'KeyFlow', True)
     flow('apps', 'conjur', 'Authenticates workload and requests permitted application secrets', 'HTTPS / Conjur API', 'SecretFlow', True)
     flow('conjur', 'apps', 'Returns short-lived token or authorized application secret', 'HTTPS / Conjur API response', 'SecretFlow', True)
     flow('apps', 'managedHsm', 'Submits authorized signing or key-wrapping request', 'HTTPS / Managed HSM REST API', 'KeyFlow', True)

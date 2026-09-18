@@ -5,6 +5,7 @@ import hashlib
 import json
 import urllib.request
 import urllib.error
+import argparse
 
 ROOT = Path(__file__).resolve().parents[1]
 PAGES = {
@@ -12,6 +13,8 @@ PAGES = {
     'security-keycloak-db': 'https://www.keycloak.org/server/db',
     'security-hsm': 'https://learn.microsoft.com/en-us/azure/key-vault/managed-hsm/access-control',
     'security-hsm-keys': 'https://learn.microsoft.com/en-us/azure/key-vault/managed-hsm/about-keys-details',
+    'security-hsm-sign': 'https://learn.microsoft.com/en-us/rest/api/keyvault/keys/sign/sign?view=rest-keyvault-keys-2025-07-01',
+    'security-hsm-get-key': 'https://learn.microsoft.com/en-us/rest/api/keyvault/keys/get-key/get-key?view=rest-keyvault-keys-2025-07-01',
     'security-pam': 'https://docs.cyberark.com/pam-self-hosted/latest/en/content/pas%20inst/installationoverview.htm',
     'security-conjur': 'https://docs.cyberark.com/secrets-manager-sh/latest/en/content/resources/_topnav/cc_home.htm',
     'security-conjur-sync': 'https://docs.cyberark.com/secrets-manager-sh/latest/en/content/conjur/cv_synchronizer-lp.htm',
@@ -26,11 +29,16 @@ PAGES = {
 
 
 def main():
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument('--only', nargs='+', choices=sorted(PAGES), help='Refresh only the named source records.')
+    selected = set(parser.parse_args().only or PAGES)
     cache = ROOT / '.cache/sources-security'
     cache.mkdir(parents=True, exist_ok=True)
     inventory = json.loads((ROOT / 'sources.json').read_text(encoding='utf-8'))
     captured = {}
     for key, url in PAGES.items():
+        if key not in selected:
+            continue
         request = urllib.request.Request(url, headers={'User-Agent': 'C4-Security-Catalog/1.0'})
         method = 'Direct HTTP document snapshot'
         suffix = '.html'

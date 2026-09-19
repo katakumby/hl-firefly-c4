@@ -1,4 +1,5 @@
 .cache/
+build/
 __pycache__/
 *.pyc
 .structurizr/

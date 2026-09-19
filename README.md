@@ -1,108 +1,156 @@
-# FireFly ecosystem, private Besu and security catalog C4 workspace
+# Modular platform architecture workspace
 
-The current review corrects and validates **C4 levels 1–3** across the documented
-open-source FireFly ecosystem, using private Besu as the worked example. Every
-view includes directional, labeled static dataflows. Component detail covers
-FireFly and Besu, plus a documentation-backed security product reference catalog.
-Proprietary security internals are explicitly logical reference abstractions.
+Solutions Architects and Technical Leads collaborate here on a shared reference
+model and separate initiative proposals. **Edit the DSL directly.** Validation
+and preview derive outputs without rewriting the model.
 
-## Current deliverables
+## Start here
 
-- [Workspace](workspace.dsl): the sole canonical DSL entrypoint, containing static C4 levels 1–3 with no deployment definitions or views.
-- [Smart-contract use cases](docs/use-cases/firefly-besu/README.md): seven FireFly–Besu use cases with paired system/container Mermaid sequence diagrams.
-- [Model catalog](model-catalog.json): the generated logical model and exact view selections.
-- [Deployment archive](archive/README.md): historical deployment-only data and DSL fragments, outside the active workspace.
-- [Validation report](reports/static/validation-summary.md): fresh Docker results, accepted advisories, coverage and deferred checks.
-- [Final architecture review](docs/static/workspace/05-final-review.md): corrected boundaries, duplicate assessment, grouping decisions and review limits.
-- [Official source inventory](reports/static/source-inventory.md), [source coverage](reports/static/source-coverage.csv), [relationship evidence](reports/static/relationship-evidence.csv), and [element/view coverage](coverage.csv).
-- [Logical architecture](docs/static/workspace/01-logical-architecture.md), [dataflows](docs/static/workspace/02-static-dataflows.md), and [decisions](docs/static/decisions).
-- [Security catalog and view navigation](docs/static/workspace/03-security-catalog.md), [security example dataflows](docs/static/workspace/04-security-dataflows.md), and [security source coverage](reports/static/security-source-coverage.csv).
+- [Shared reference workspace](architecture/workspace.dsl): all 95 migrated C4 reference views.
+- [Ignition](architecture/initiatives/ignition/README.md): the proposed **DApp Platform** system
+  boundary, with no internal architecture or integrations yet.
+- [Shared model](architecture/model.dsl): reusable actors, external systems,
+  relationships and styles, without authored diagrams.
+- [Architecture documentation](architecture/documentation/workspace/01-logical-architecture.md)
+  and [FireFly/Besu use cases](architecture/use-cases/firefly-besu/README.md).
+- [Architecture decisions](architecture/decisions/adr),
+  [workspace decisions](architecture/decisions/workspace), and
+  [reference evidence](architecture/references/README.md).
 
-The security catalog adds Keycloak, Azure Managed HSM, CyberArk PAM Self-Hosted,
-Conjur Enterprise, Microsoft Entra ID, AD DS and AD FS. Start at
-`100-security-landscape`; all 38 added views use the `100-security-` prefix.
-Examples are independent reference choices, not a mandatory combined stack.
-The HSM transaction-signing adapter is a proposed custom integration, not
-built-in FireFly Signer support. No runtime products are installed or configured.
+## Layout and ownership
 
-Related systems have named navigation groups while retaining independent C4
-boundaries. Explorer and Sandbox browser applications are separate from their
-servers. Core and FFTM own separate logical PostgreSQL databases; deployment
-replicas are not additional logical containers. Existing view keys are retained.
+| Location | Purpose |
+|---|---|
+| `architecture/workspace.dsl` | Reference entrypoint, alongside the extendable `model.dsl` |
+| `architecture/compose.yaml` | Pinned reference viewer, parser and diagram exporter |
+| `architecture/model/external-systems/` | Reference systems, each with a folder and container fragments |
+| `architecture/model/modules/` | Reviewed platform systems; initially no definitions |
+| `architecture/model/relationships/` | Relationships grouped by system, plus cross-system integrations |
+| `architecture/views/` | Selectable reference views and shared styles |
+| `architecture/documentation/` | Explanations and system boundaries |
+| `architecture/use-cases/` | Shared simple flows and detailed sequences |
+| `architecture/initiatives/<epic-id>/` | Goals, ownership, proposed model, focused views and use cases |
+| `architecture/references/` | Evidence and clearly marked historical material |
+| `architecture/scripts/` | Validation, preview and deliberate evidence refresh |
+| `build/architecture/` | Generated artifacts; ignored by Git |
 
-## Validate static C4 only
+Existing application and operations examples remain reference choices, not
+adopted platform modules. Security examples are independent options, not a
+mandatory combined stack.
 
-Requires Docker Desktop with Linux containers, Python 3.10+ and PowerShell:
+## Validate and preview
 
-```powershell
-./scripts/validate.ps1
-```
-
-This generates `workspace.dsl` and one model catalog, inventories source
-coverage, runs Docker `validate` and `inspect` on `workspace.dsl`, and
-audits a fresh parsed workspace in `.cache`. It uses the pinned official image
-`structurizr/structurizr:2026.06.28-noble`. It does not run deployment validation,
-deployment layouts, rendered-diagram checks, galleries or diagram exports.
-The former `-StaticOnly` and `-SkipRender` switches remain accepted for existing
-callers; validation now always uses the static workflow.
-
-Standalone inspection:
+Requires Python 3.10+, PowerShell and Docker Desktop running Linux containers.
+The tooling retains `structurizr/structurizr:2026.06.28-noble`.
 
 ```powershell
-docker compose run --rm --no-deps cli validate -workspace workspace.dsl
-docker compose run --rm --no-deps cli inspect -workspace workspace.dsl
-docker compose run --rm --no-deps cli inspect -workspace workspace.dsl -severity error,warning
+# Shared reference workspace and every initiative/variant
+./architecture/scripts/validate.ps1
+
+# Selected workspace
+./architecture/scripts/validate.ps1 -Workspace architecture/initiatives/ignition/workspace.dsl
+
+# Fresh parsed preview (default workspace: architecture/workspace.dsl)
+./architecture/scripts/preview.ps1 -Port 8080
+
+# Selected initiative preview
+./architecture/scripts/preview.ps1 -Workspace architecture/initiatives/ignition/workspace.dsl -Port 8080
 ```
 
-The full inspection retains informational `workspace.scope` advisories because
-this requested ecosystem model contains details of multiple systems. Its exit
-code records displayed findings (Compose can collapse a positive code to 1).
-The error/warning gate must return zero. Other categories are not suppressed.
+Preview serves the selected JSON at `http://localhost:8080`. Rerun after
+editing DSL and refresh the browser. Each port has a managed preview container;
+the command replaces only the container it owns for that port. An unrelated
+port conflict is an error. Stop it with
+`docker stop dlt-architecture-preview-8080` (use the selected port).
 
-## Sources and maintenance
+Outputs are under `build/architecture/reference/` or
+`build/architecture/initiatives/<epic-id>/workspace/`, with reports in `reports/`.
+The `build/` directory stays at the repository root. Existing outputs outside
+`build/architecture/` are retained; new architecture runs write only to this subtree.
+Variants follow their own entrypoint path. Generate reports before opening
+their links. Legacy `-StaticOnly` and `-SkipRender` switches remain accepted;
+validation always checks static C4 models.
 
-Edit the model generators and component definitions in `scripts`; regenerate
-with static validation. Do not hand-edit generated DSL or catalogs. Sources
-include the official FireFly head documentation, official FireFly repositories,
-Besu documentation and Structurizr documentation. Commit SHAs, retrieval times,
-content fingerprints and selected embedded dependency versions are recorded in
-`sources.json`.
+Validation performs no evidence refresh or deployment provisioning. Full
+coverage and domain/security checks run against the reference workspace. Focused
+initiative views need not display every inherited element. Unexpected parser,
+inspection, link and semantic failures return nonzero. Only the initial
+ignition boundary is exempt from requiring connected, labeled dataflows.
 
-Security definitions live in `scripts/security_model.py`. Refresh only their
-evidence with `python -B scripts/capture_security_sources.py`; this preserves
-all unrelated source entries. CyberArk direct downloads currently return 404,
-so their recorded evidence is explicitly a web-reader text excerpt. A deliberate
-refresh requires fresh text snapshots in `.cache/sources-security-web/` when
-direct access is still unavailable. Normal generation/validation uses recorded
-metadata and does not fetch documentation. Security documentation coverage is
-reported separately from the existing FireFly source-code inventory.
-
-Ordinary DSL relationships are anonymous and views select them by source and
-destination. Only the two HSM workload-token arrows have descriptive names,
-`hsmWorkloadTokenRequest` and `hsmWorkloadTokenResponse`, because their example
-must exclude browser-login arrows between the same endpoints. The generator
-does not emit hash-derived relationship variables.
-
-To deliberately refresh the evidence, run `python scripts/capture_static_sources.py`
-and then `python scripts/capture_component_sources.py`. These fetch official
-source snapshots; normal validation uses the recorded inventory without network
-source refreshes. Source changes can require model updates.
-
-After validation, run fault-injection checks with:
+Run fault-injection and pinned-parser tests after validation:
 
 ```powershell
-python -B -m unittest discover -s scripts -p test_static_validation.py
+$env:C4_DOCKER_TESTS = '1'
+python -B -m unittest discover -s architecture/scripts -p test_workspace_validation.py -v
 ```
 
-## Deferred work
+The one-time migration check is `python -B architecture/scripts/verify_migration.py`.
+It compares against the historical catalog and is separate from ongoing validation.
 
-Deployment diagrams, AKS placement, validator counts, quorum sizing, recovery
-and availability are **not validated in this pass**. Existing exports are kept
-byte-for-byte unchanged and describe the earlier model. The Compose viewer
-still serves those historical exports; it is not a preview of this new static
-workspace. Rendering and visual-layout QA are deferred.
+### Docker Compose
 
-Earlier reports outside `reports/static` and the unused deployment/layout/export
-helpers are historical. The validation entrypoint invokes only the current
-static pipeline. No FireFly/Besu network or cloud resources are
-provisioned by this task.
+[Compose](architecture/compose.yaml) lives beside the reference workspace. Run
+these commands from the repository root after validation has produced fresh JSON:
+
+```powershell
+# Validate the reference DSL with the pinned parser
+docker compose -f architecture/compose.yaml run --rm cli
+
+# Serve the parsed reference workspace on localhost:8080
+docker compose -f architecture/compose.yaml up -d structurizr
+
+# Export reference diagrams to build/architecture/reference/svg/
+docker compose -f architecture/compose.yaml run --rm export
+```
+
+From `architecture/`, omit `-f architecture/compose.yaml`. Compose resolves bind
+paths relative to its file: the parser/exporter mount the repository parent
+read-only and write only through `../build/architecture/`; the viewer mounts
+`../build/architecture/reference/`. Container workspace arguments remain relative
+to the repository, such as `architecture/workspace.dsl`.
+The Compose viewer and scripted preview both default to port 8080; run one there
+at a time. Use `docker compose -f architecture/compose.yaml down` to stop Compose.
+
+## Contributing an initiative
+
+1. Create `architecture/initiatives/<epic-id>/` with a README recording goal, status, architect,
+   technical lead/team, and epic link. Use `TBD` for unknown values.
+2. Copy ignition's workspace pattern, extending `../../model.dsl`.
+   Before including your local model, apply `model.element.noview` informational
+   policy to inherited elements using `!elements element.tag==Element`, as in
+   ignition. Include local `model.dsl` and `views.dsl`; keep proposals local.
+3. Prefix view keys with `<epic-id>-`. Give elements stable, meaningful
+   `architecture.id` values; do not duplicate shared systems.
+4. Use explicit ordered includes: actors and systems first, relationships
+   afterward. Label arrows with their action and protocol. Use descriptive
+   relationship identifiers for partial selections between the same endpoints.
+5. Add use cases when behavior is agreed. Validate your workspace and validate
+   all workspaces for shared model, style or tooling changes.
+
+Keep `architecture.id` and `evidence` on elements. Reference elements and
+relationships retain `architecture.sources` as a JSON array of evidence URLs;
+the element `url` is its primary source. Proposals use
+`evidence "Proposed architecture"` and `architecture.status "proposed"`.
+Containers/components require technology metadata.
+
+Shared changes are reviewed by affected architects and technical leads.
+Record actual owners in initiative READMEs; CODEOWNERS enforcement is deferred
+until team identities are available. Significant architecture decisions go in
+`architecture/decisions/adr`; authoring/tooling decisions go in
+`architecture/decisions/workspace`. Routine notes belong in READMEs.
+
+## Variants and promotion
+
+Create `variants/interim/workspace.dsl` or `variants/target/workspace.dsl`
+only when designs differ. Each extends `../../workspace.dsl` and includes
+variant-local fragments. Use view keys such as `<epic-id>-interim-...`.
+Extension inherits parent models and views; variants are additive. Select the
+desired elements in each view instead of deleting inherited definitions.
+
+After review, **move** accepted definitions into shared modules/relationships,
+preserving identifiers. Remove initiative-local definitions in the same change,
+add explicit shared includes, and validate every entrypoint. Promote reusable
+use cases with the model. Shared files must not depend on initiative folders.
+
+See [decision 7](architecture/decisions/workspace/0007-modular-workspaces.md)
+for policy and [legacy material](architecture/references/legacy/README.md) for history.

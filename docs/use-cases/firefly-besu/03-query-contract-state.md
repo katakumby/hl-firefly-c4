@@ -88,6 +88,7 @@ box rgb(235,245,255) Member application reference
 - The configured RPC route passes through FireFly Signer even for reads. Signer proxies `eth_call`; it does not sign it.
 - A query does not create a managed blockchain transaction, charge transaction gas, or commit contract changes. EVM execution still has resource limits.
 - RPC unavailability, a mismatched ABI/address, or a reverted simulation returns an error rather than a valid result.
+- For an asynchronous application, use this query for initial state and reconciliation. Maintain subsequent state from `Changed` events in [use case 5](05-subscribe-contract-events.md) when their payload is sufficient; do not query continuously for changes.
 - The value reflects the state available to the queried node. Wait for the preceding write's successful execution before assuming a query will reflect it. Core metadata storage is omitted from the diagram because this flow focuses on ledger reads.
 
 ## Official sources

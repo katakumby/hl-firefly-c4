@@ -1,2 +1,0 @@
- Container firefly-architecture-cli-run-69f945031539 Creating 
- Container firefly-architecture-cli-run-69f945031539 Created 

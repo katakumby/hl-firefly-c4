@@ -6,7 +6,7 @@ Deploy the compiled `SimpleStorage` contract using a member's FireFly signing id
 
 **Prerequisites:** A running namespace uses EVMConnect and FireFly Signer; the signing account is permitted and has sufficient funds if gas is charged. Establish the [durable operation subscription](README.md#asynchronous-application-pattern) before submitting. Compile the official tutorial's Solidity example beforehand; FireFly receives bytecode and ABI, not Solidity source.
 
-**Outcome:** A successful deployment operation exposes the address as `output.contractLocation.address`. Save that address for API registration.
+**Outcome:** On normal completion, a successful deployment operation exposes the address as `output.contractLocation.address`. Save that address for API registration.
 
 ## API and example
 

@@ -1,1 +1,0 @@
-Generated workspace.dsl: 333 logical elements, 696 relationships, 95 static views.

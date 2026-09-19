@@ -77,7 +77,7 @@ sequenceDiagram
     opt Completion missing or outcome uncertain
         App->>FF: Read operation with fetchstatus true [HTTPS REST / JSON]
         FF-->>App: Recorded status and connector detail [HTTPS REST / JSON]
-        Note over FF: Reconcile stale Core status if connector is terminal
+        Note over FF: Reconcile recorded status if connector is terminal
     end
     opt Completion event available
         FF-->>App: Invocation succeeded or failed event [WebSocket / JSON over TLS]

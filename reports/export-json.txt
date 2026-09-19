@@ -1,6 +1,0 @@
- Container firefly-architecture-cli-run-fafffce452ea Creating 
- Container firefly-architecture-cli-run-fafffce452ea Created 
-21:20:31.024 [main] INFO com.structurizr.command.ExportCommand -- Exporting workspace from workspace.dsl
-21:20:32.005 [main] INFO com.structurizr.command.ExportCommand -- Exporting with JsonWorkspaceExporter
-21:20:32.413 [main] INFO com.structurizr.command.ExportCommand -- Writing /usr/local/structurizr/exports/workspace.json
-21:20:32.447 [main] INFO com.structurizr.command.ExportCommand -- Finished

@@ -8,6 +8,7 @@ import hashlib
 import json
 import os
 from pathlib import Path
+import shutil
 import subprocess
 import sys
 import tempfile
@@ -72,6 +73,22 @@ def run_java(arguments, log, timeout=240):
     if result.returncode:
         raise RuntimeError(log[-1][-4000:])
     return result
+
+
+def clean_build():
+    """Clear generated architecture output while holding the checkout writer lock."""
+    expected = ROOT.resolve() / 'build' / 'architecture'
+    if BUILD.resolve() != expected:
+        raise ValueError('Refusing to clean outside build/architecture')
+    for path in BUILD.iterdir():
+        # Keep the locked inode and optional user-authored Compose settings.
+        if path.name in ('.tools.lock', 'local.env'):
+            continue
+        if path.is_symlink() or not path.is_dir():
+            path.unlink()
+        else:
+            shutil.rmtree(path)
+    print('Cleaned build/architecture/ (preserved local.env and command lock)', flush=True)
 
 
 def validate(paths=None):
@@ -191,6 +208,8 @@ def main():
         if name == 'export':
             command.add_argument('--format', choices=('svg', 'png'), default='svg')
             command.add_argument('--view', help='Export only this view key (default: all views)')
+            command.add_argument('--clean', action='store_true',
+                                 help='Clear build/architecture before export, preserving local.env')
     args = parser.parse_args()
     try:
         if not Path('/usr/local/structurizr.war').is_file():
@@ -199,6 +218,8 @@ def main():
             if args.command == 'validate':
                 return 0 if all(r['passed'] for r in validate([args.workspace] if args.workspace else None).values()) else 1
             path = workspace_path(args.workspace)
+            if args.clean:
+                clean_build()
             export(path, args.format, args.view)
         return 0
     except (ValueError, OSError, RuntimeError, subprocess.SubprocessError) as exc:

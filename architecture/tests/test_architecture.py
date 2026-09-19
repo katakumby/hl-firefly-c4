@@ -139,6 +139,43 @@ class NativeWorkflow(unittest.TestCase):
 
 
 class FailureHandling(unittest.TestCase):
+    def test_clean_build_preserves_settings_lock_sources_and_other_builds(self):
+        with checkout() as architecture:
+            paths.REFERENCE.write_text('Authored DSL')
+            other = cli.ROOT / 'build/evidence/snapshot'
+            other.parent.mkdir(parents=True)
+            other.write_text('Evidence')
+            with cli.command_lock():
+                lock_inode = (cli.BUILD / '.tools.lock').stat().st_ino
+                (cli.BUILD / 'local.env').write_text('LOCAL_SETTING=8082')
+                stale = cli.BUILD / 'old-run/nested/diagram.svg'
+                stale.parent.mkdir(parents=True)
+                stale.write_text('Obsolete diagram')
+                (cli.BUILD / 'old-report.json').write_text('{}')
+                cli.clean_build()
+                self.assertEqual({'.tools.lock', 'local.env'}, {p.name for p in cli.BUILD.iterdir()})
+                self.assertEqual(lock_inode, (cli.BUILD / '.tools.lock').stat().st_ino)
+                self.assertEqual('LOCAL_SETTING=8082', (cli.BUILD / 'local.env').read_text())
+            self.assertEqual('Authored DSL', paths.REFERENCE.read_text())
+            self.assertEqual('Evidence', other.read_text())
+
+    def test_clean_build_rejects_an_unexpected_root(self):
+        with checkout() as architecture:
+            paths.REFERENCE.write_text('Authored DSL')
+            with patch.object(cli, 'BUILD', architecture):
+                with self.assertRaisesRegex(ValueError, 'Refusing to clean'):
+                    cli.clean_build()
+            self.assertEqual('Authored DSL', paths.REFERENCE.read_text())
+
+    def test_clean_build_does_not_follow_symlinks(self):
+        with checkout() as architecture:
+            paths.REFERENCE.write_text('Authored DSL')
+            with cli.command_lock():
+                (cli.BUILD / 'linked-directory').symlink_to(architecture, target_is_directory=True)
+                (cli.BUILD / 'linked-file').symlink_to(paths.REFERENCE)
+                cli.clean_build()
+            self.assertEqual('Authored DSL', paths.REFERENCE.read_text())
+
     def test_native_viewer_outputs_do_not_change_source_fingerprint(self):
         with tempfile.TemporaryDirectory(dir=BUILD) as temporary:
             root = Path(temporary)

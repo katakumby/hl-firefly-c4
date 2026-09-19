@@ -96,6 +96,24 @@ docker compose -f architecture/compose.yaml run --rm --build tools export --form
 docker compose -f architecture/compose.yaml run --rm --build tools export --workspace architecture/initiatives/ignition/workspace.dsl --view ignition-dapp-platform-context --format svg
 ```
 
+For a clean rebuild, add `--clean` to the first export command. This removes
+existing generated files under `build/architecture/`, including old exports
+and historical build folders, before validating and exporting. It preserves
+`local.env` and the command lock. Authored sources, reference history and
+evidence caches outside this directory are unaffected.
+
+To rebuild both workspaces, clean once and then export the initiative:
+
+```text
+docker compose -f architecture/compose.yaml run --rm --build tools export --clean --format svg
+docker compose -f architecture/compose.yaml run --rm tools export --workspace architecture/initiatives/ignition/workspace.dsl --format svg
+```
+
+Without `--clean`, each successful export replaces its selected diagram set,
+including removal of obsolete images. Use `--clean` only on the first command
+when exporting multiple workspaces or formats; it clears all architecture build
+outputs, and a subsequent failure cannot restore those explicitly cleared files.
+
 ### View architecture directly from DSL
 
 Start **both workspaces** from the repository root:
@@ -157,7 +175,7 @@ The native viewer reads DSL independently of validation results.
 Exports replace their selection only after successful rendering; removed views
 do not leave old images behind. Tools run sequentially with one writer per checkout.
 There is no run-history retention service. Older outputs outside these paths
-are historical and are not used or cleaned. Everything generated remains under
+are historical and are not used; `export --clean` removes them. Everything generated remains under
 ignored `build/architecture/` for the Python tools. Native Structurizr local mode
 requires its mounted data directory to be writable and creates `workspace.json`
 and `.structurizr/` cache/log files beside the selected DSL. These native files

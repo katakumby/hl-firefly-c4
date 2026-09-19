@@ -85,8 +85,12 @@ Use one validation/export output directory per workspace and a single writer
 lock per checkout. Keep the latest validation report and last successful JSON.
 Export validates fresh sources first, renders into a fresh directory and only
 then replaces its previous result. Failed validation does not overwrite
-successful exports. Do not retain or clean a custom run history.
-Earlier prepared-viewer output directories remain historical and are not read.
+successful exports. Do not retain a custom run history.
+The explicit `export --clean` option clears generated `build/architecture/`
+contents before validation/export, preserving `local.env` and the writer lock.
+Use it once at the start of a multi-workspace rebuild. Explicitly cleared outputs
+cannot be restored after a failed rebuild. Earlier prepared-viewer output
+directories are not read and are removed by this cleanup option.
 
 ## Consequences
 

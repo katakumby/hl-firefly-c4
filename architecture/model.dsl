@@ -53,6 +53,8 @@ workspace "Shared architecture model" "Reusable external reference systems; acce
             !include model/external-systems/cyberarkPam/system.dsl
             !include model/external-systems/conjur/system.dsl
         }
+        !include model/external-systems/unleash/system.dsl
+        !include model/relationships/unleash.dsl
         !include model/relationships/firefly.dsl
         !include model/relationships/integrations.dsl
         !include model/relationships/besu.dsl

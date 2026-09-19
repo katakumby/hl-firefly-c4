@@ -6,7 +6,9 @@ and preview derive outputs without rewriting the model.
 
 ## Start here
 
-- [Shared reference workspace](architecture/workspace.dsl): all 95 migrated C4 reference views.
+- [Shared reference workspace](architecture/workspace.dsl): shared C4 reference views.
+- [Unleash reference](architecture/documentation/system/unleash/01-boundary-and-components.md):
+  OSS server and optional OSS Edge, with containers, components and all internal data flows.
 - [Ignition](architecture/initiatives/ignition/README.md): the proposed **DApp Platform** system
   boundary, with no internal architecture or integrations yet.
 - [Shared model](architecture/model.dsl): reusable actors, external systems,
@@ -38,6 +40,12 @@ and preview derive outputs without rewriting the model.
 Existing application and operations examples remain reference choices, not
 adopted platform modules. Security examples are independent options, not a
 mandatory combined stack.
+
+Unleash is an independent, reusable product reference with no selected consumer
+integrations. Its eight `110-unleash-` views cover Unleash 8.2.0 and OSS Edge
+20.5.0. The [flow catalog](architecture/documentation/system/unleash/02-interfaces-and-flows.md)
+documents every named relationship; [behavior and evidence](architecture/documentation/system/unleash/03-behavior-and-evidence.md)
+explain optional storage, offline mode, recovery and edition boundaries.
 
 ## Docker-only workflow
 
@@ -243,6 +251,8 @@ and both decision directories. Attach `!docs` or `!adrs` to a software system
 only when it has documentation or decisions specifically about that system;
 do not attach the shared directories to every system or create placeholder
 documents to satisfy inspection checks.
+Store system-specific documentation under
+`architecture/documentation/system/<system-id>/`.
 
 ## Variants and promotion
 

@@ -4,6 +4,12 @@
 documentation URLs, retrieval timestamps and fingerprints. Authored DSL
 retains evidence classifications and source URLs.
 
+The [Unleash reference](../documentation/system/unleash/03-behavior-and-evidence.md)
+pins Unleash 8.2.0 and OSS Edge 20.5.0 to immutable commits. Its component map
+links implementation modules, and every internal relationship carries source
+metadata and a corresponding flow-catalog entry. Edition/lifecycle documentation
+is recorded separately from the source revision.
+
 Evidence is maintained deliberately by architects during reference updates.
 Check the original product documentation, edit the relevant metadata and DSL
 together, and explain the change in review. Evidence fields and source currency

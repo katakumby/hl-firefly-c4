@@ -15,6 +15,14 @@ service/storage boundaries are logical abstractions, not physical service or
 hardware placement claims. Cloud Sync's agent is customer-managed but belongs
 to the logical Entra integration boundary. AD FS does not own AD DS identities.
 
+Unleash is a separate OSS product reference with no consumer integrations.
+Its browser UI and server are distinct runtimes; PostgreSQL owns durable state.
+Optional OSS Edge holds embedded caches and evaluation logic, with file, Redis
+or S3 recovery storage shown as alternatives. Offline bootstrap files have a
+separate role from recovery snapshots. No application SDKs, Enterprise-only
+streaming, external notification recipients or deployment topology are selected.
+See the [Unleash boundary and component map](../system/unleash/01-boundary-and-components.md).
+
 The optional `apps.hsmSigner` container is a proposed application-owned custom
 adapter. The existing FireFly filesystem wallet, API authentication and Besu
 node-key responsibilities are unchanged. Entra tokens do not themselves grant

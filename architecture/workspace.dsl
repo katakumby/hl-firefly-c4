@@ -1,6 +1,6 @@
 workspace extends model.dsl {
     name "Shared reference architecture"
-    description "FireFly ecosystem, private Besu and security references; C4 levels 1-3."
+    description "FireFly ecosystem, private Besu, security and Unleash references; C4 levels 1-3."
     !docs documentation/workspace
     !adrs decisions/adr
     !adrs decisions/workspace
@@ -100,5 +100,13 @@ workspace extends model.dsl {
         !include views/05-context-applications.dsl
         !include views/06-context-tools.dsl
         !include views/07-context-operations.dsl
+        !include views/110-unleash-containers.dsl
+        !include views/110-unleash-storage-alternatives.dsl
+        !include views/110-unleash-ui-components.dsl
+        !include views/110-unleash-server-administration.dsl
+        !include views/110-unleash-server-configuration-delivery.dsl
+        !include views/110-unleash-server-supporting-services.dsl
+        !include views/110-unleash-edge-request-processing.dsl
+        !include views/110-unleash-edge-synchronization-recovery.dsl
     }
 }

@@ -1,4 +1,4 @@
-# FireFly ecosystem and security catalog: C4 levels 1–3
+# Shared product references: C4 levels 1–3
 
 This workspace describes the documented open-source FireFly ecosystem and a
 private Besu example. The reference entrypoint is **architecture/workspace.dsl**;
@@ -16,6 +16,11 @@ Besu details use 50–51. Tools use 61–68. Optional blockchain configurations 
 detail uses 24. Security reference products and examples use `100-security-` keys; start
 with `100-security-landscape`. View titles state their C4 level and selected
 configuration. The security catalog guide provides product navigation.
+
+The independent [Unleash reference](../system/unleash/01-boundary-and-components.md)
+uses eight `110-unleash-` views for its browser UI, server, PostgreSQL and
+optional OSS Edge. Its [flow catalog](../system/unleash/02-interfaces-and-flows.md)
+documents internal exchanges without selecting any consumer integration.
 
 Core serves Explorer assets, but Explorer executes in a separate browser
 container. The Sandbox browser and Node.js server are also separate containers.

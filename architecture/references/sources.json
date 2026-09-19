@@ -1,6 +1,311 @@
 {
   "retrieved_at": "2026-09-15T19:50:48.159188+00:00",
   "repositories": {
+    "unleash": {
+      "repository": "Unleash/unleash",
+      "commit": "66d4a45c1d24c4bc8a08d8c75d205bd61dc3aed0",
+      "requested_ref": "v8.2.0",
+      "url": "https://github.com/Unleash/unleash/tree/66d4a45c1d24c4bc8a08d8c75d205bd61dc3aed0",
+      "retrieved_at": "2026-09-19T22:37:14.5605569Z",
+      "classification": "Pinned implementation; C4 grouping and dataflows are architectural interpretations",
+      "paths": [
+        "docker-compose.yml",
+        "frontend/index.js",
+        "frontend/src",
+        "frontend/src/ApplicationRoot.tsx",
+        "frontend/src/component/App.tsx",
+        "frontend/src/component/admin",
+        "frontend/src/component/application",
+        "frontend/src/component/context",
+        "frontend/src/component/environments",
+        "frontend/src/component/events",
+        "frontend/src/component/feature",
+        "frontend/src/component/insights",
+        "frontend/src/component/integrations",
+        "frontend/src/component/personalDashboard",
+        "frontend/src/component/playground",
+        "frontend/src/component/project",
+        "frontend/src/component/providers",
+        "frontend/src/component/segments",
+        "frontend/src/component/strategies",
+        "frontend/src/component/user",
+        "frontend/src/contexts",
+        "frontend/src/hooks/api",
+        "frontend/src/hooks/useClearSWRCache.ts",
+        "frontend/src/openapi",
+        "src/lib/addons",
+        "src/lib/app.ts",
+        "src/lib/create-config.ts",
+        "src/lib/db",
+        "src/lib/features/apitokencache",
+        "src/lib/features/apitokensv2",
+        "src/lib/features/client-feature-toggles",
+        "src/lib/features/client-feature-toggles/client-feature-toggle.controller.ts",
+        "src/lib/features/constraints",
+        "src/lib/features/context",
+        "src/lib/features/dependent-features",
+        "src/lib/features/events",
+        "src/lib/features/events/event-store.ts",
+        "src/lib/features/export-import-toggles",
+        "src/lib/features/feature-lifecycle",
+        "src/lib/features/feature-toggle",
+        "src/lib/features/feature-toggle/configuration-revision-service.ts",
+        "src/lib/features/feature-toggle/feature-toggle-store.ts",
+        "src/lib/features/frontend-api/frontend-api-controller.ts",
+        "src/lib/features/frontend-api/frontend-api-repository.ts",
+        "src/lib/features/frontend-api/frontend-api-service.ts",
+        "src/lib/features/frontend-api/global-frontend-api-cache.ts",
+        "src/lib/features/integration-events",
+        "src/lib/features/maintenance",
+        "src/lib/features/metrics/client-metrics",
+        "src/lib/features/metrics/instance",
+        "src/lib/features/metrics/last-seen",
+        "src/lib/features/metrics/unknown-flags",
+        "src/lib/features/pat",
+        "src/lib/features/personal-dashboard",
+        "src/lib/features/playground/playground-service.ts",
+        "src/lib/features/project",
+        "src/lib/features/project-environments",
+        "src/lib/features/project-insights",
+        "src/lib/features/scheduler",
+        "src/lib/features/segment",
+        "src/lib/features/settings",
+        "src/lib/metrics.ts",
+        "src/lib/middleware/api-token-middleware.ts",
+        "src/lib/middleware/oss-authentication.ts",
+        "src/lib/middleware/rbac-middleware.ts",
+        "src/lib/middleware/session-db.ts",
+        "src/lib/openapi",
+        "src/lib/routes/admin-api",
+        "src/lib/routes/backstage.ts",
+        "src/lib/routes/client-api",
+        "src/lib/routes/edge-api/index.ts",
+        "src/lib/routes/health-check.ts",
+        "src/lib/routes/ready-check.ts",
+        "src/lib/server-impl.ts",
+        "src/lib/services/access-service.ts",
+        "src/lib/services/account-service.ts",
+        "src/lib/services/addon-service.ts",
+        "src/lib/services/api-token-service.ts",
+        "src/lib/services/edge-service.ts",
+        "src/lib/services/email-service.ts",
+        "src/lib/services/event-announcer-service.ts",
+        "src/lib/services/project-health-service.ts",
+        "src/lib/services/strategy-service.ts",
+        "src/lib/services/tag-service.ts",
+        "src/lib/services/user-service.ts",
+        "src/migrations"
+      ],
+      "inspected_files": [
+        {
+          "path": "src/lib/app.ts",
+          "sha256": "3840f73b5d2983aa2bbbab9daa670e58b9aa87c518c6a702e113cfc43f4b7246",
+          "bytes": 8262
+        },
+        {
+          "path": "src/lib/server-impl.ts",
+          "sha256": "af72fc312c4f9ed3bc3bff71688c8e4e2148d3571a5fa674ffca08320739e743",
+          "bytes": 23047
+        },
+        {
+          "path": "src/lib/db/index.ts",
+          "sha256": "5819553719fb37ac2536c95e34b4c22e63089bf8da605c2b46d48cac614df5f5",
+          "bytes": 10984
+        },
+        {
+          "path": "src/lib/features/client-feature-toggles/client-feature-toggle-service.ts",
+          "sha256": "3e4898520c9653eb9a448ee329ed50606ba12d3509d4fdf3dac42a2c45f2bdaf",
+          "bytes": 2580
+        },
+        {
+          "path": "src/lib/features/events/event-store.ts",
+          "sha256": "aaf5ae8e3a5a6f49e34e9219e79a4210172ffd3ea9d044abbdd848834d99eea3",
+          "bytes": 27148
+        },
+        {
+          "path": "src/lib/features/feature-toggle/configuration-revision-service.ts",
+          "sha256": "1b2194a6f5265706a955c3abbc0a346ea90bbf11faf75478488ffd298455d01d",
+          "bytes": 4739
+        },
+        {
+          "path": "src/lib/features/frontend-api/frontend-api-repository.ts",
+          "sha256": "b88aec8a57c91c1f46ca7a3916e9198422c89992d8fcdc64aa350f2a21699b82",
+          "bytes": 1810
+        },
+        {
+          "path": "src/lib/features/frontend-api/frontend-api-service.ts",
+          "sha256": "30c0b8a5555774dfa00dcae7ebc9c7a662bf59c12a64a2d8d6dc2ebd2396f95d",
+          "bytes": 9061
+        },
+        {
+          "path": "src/lib/features/frontend-api/global-frontend-api-cache.ts",
+          "sha256": "b7da697e7273f3d906554c6af0b280df206a2c6d87f092c2a576cae46aa0eebf",
+          "bytes": 6033
+        },
+        {
+          "path": "src/lib/features/metrics/client-metrics/metrics-service-v2.ts",
+          "sha256": "9d8593cab56c4c2f401bd4ca25e80817ef1ab2c006e4cd49b28c8a0020993af6",
+          "bytes": 16672
+        },
+        {
+          "path": "src/lib/features/playground/playground-service.ts",
+          "sha256": "6675bf116d03a30ec4dee8350bd7b31f50f16f7012ca8453a061123ab8c365db",
+          "bytes": 10661
+        },
+        {
+          "path": "src/lib/features/scheduler/schedule-services.ts",
+          "sha256": "be164f48e1563581bfe128ce8770612ee38c8ca735fd23abeccb42f95fc4af1c",
+          "bytes": 7315
+        },
+        {
+          "path": "src/lib/features/scheduler/scheduler-service.ts",
+          "sha256": "61cbf0ba8e26f3bf7797c4ef7078727eacd48452e73c70c374f66e2ac35ae564",
+          "bytes": 3833
+        },
+        {
+          "path": "src/lib/routes/ready-check.ts",
+          "sha256": "9b8138f428ab6b806a59f6067c0c33abd92e4ee06bffef282d93f2c9eef8abaa",
+          "bytes": 4418
+        },
+        {
+          "path": "src/lib/routes/admin-api/index.ts",
+          "sha256": "ef8f058e9536721de580095e51792ba848bdd6b8d78b77562104470ad61009d3",
+          "bytes": 7278
+        },
+        {
+          "path": "src/lib/routes/edge-api/index.ts",
+          "sha256": "902da8324501284c4d0cef8a19c6b75296fcf785ac9bf1cfa4f2af7e8ee048b4",
+          "bytes": 4756
+        },
+        {
+          "path": "src/lib/services/addon-service.ts",
+          "sha256": "704057514ba22455a3ab66920d97b3c6e525e120896b7ff9041c9079c6213e03",
+          "bytes": 14176
+        },
+        {
+          "path": "src/lib/services/edge-service.ts",
+          "sha256": "11a908b670b41e7b0ddab2a0b983d056f6c19e6a79fdf88a841c38b6b4e1c121",
+          "bytes": 9374
+        },
+        {
+          "path": "src/lib/services/event-announcer-service.ts",
+          "sha256": "c5fbd10de4d83f0480f120ef962985233256071b600a1cb3437c3d1e4256e7d1",
+          "bytes": 1055
+        },
+        {
+          "path": "src/lib/services/index.ts",
+          "sha256": "9333b8ea4cc01e99d074107f415eb3f82b883d1d9353198e0743a9b926157db9",
+          "bytes": 28728
+        },
+        {
+          "path": "src/lib/services/user-service.ts",
+          "sha256": "2d5bde014808c61d5c4399c00aaca3a4da81b1e3d8045e0db2abf6cba1a0df5e",
+          "bytes": 24463
+        }
+      ]
+    },
+    "unleash-edge": {
+      "repository": "Unleash/unleash-edge",
+      "commit": "c947878de70214235c79eeb5ebe5f35b77ecc075",
+      "requested_ref": "unleash-edge-v20.5.0",
+      "url": "https://github.com/Unleash/unleash-edge/tree/c947878de70214235c79eeb5ebe5f35b77ecc075",
+      "retrieved_at": "2026-09-19T22:37:14.5605569Z",
+      "classification": "Pinned implementation; C4 grouping and dataflows are architectural interpretations",
+      "paths": [
+        "crates/oss/unleash-edge-appstate/src/edge_token_extractor.rs",
+        "crates/oss/unleash-edge-auth/src/token_validator.rs",
+        "crates/oss/unleash-edge-backstage/src/lib.rs",
+        "crates/oss/unleash-edge-client-api/src/lib.rs",
+        "crates/oss/unleash-edge-client-api/src/metrics.rs",
+        "crates/oss/unleash-edge-client-api/src/register.rs",
+        "crates/oss/unleash-edge-edge-api/src/lib.rs",
+        "crates/oss/unleash-edge-feature-cache/src/lib.rs",
+        "crates/oss/unleash-edge-feature-filters/src/lib.rs",
+        "crates/oss/unleash-edge-feature-refresh/src/lib.rs",
+        "crates/oss/unleash-edge-frontend-api/src/frontend.rs",
+        "crates/oss/unleash-edge-frontend-api/src/lib.rs",
+        "crates/oss/unleash-edge-http-client/src/lib.rs",
+        "crates/oss/unleash-edge-metrics/src/lib.rs",
+        "crates/oss/unleash-edge-metrics/src/send_unleash_metrics.rs",
+        "crates/oss/unleash-edge-offline/src/hotload.rs",
+        "crates/oss/unleash-edge-persistence/src/file.rs",
+        "crates/oss/unleash-edge-persistence/src/lib.rs",
+        "crates/oss/unleash-edge-persistence/src/redis.rs",
+        "crates/oss/unleash-edge-persistence/src/s3.rs",
+        "crates/oss/unleash-edge-request-logger/src/lib.rs",
+        "crates/oss/unleash-edge-types/src/lib.rs",
+        "crates/oss/unleash-edge/src/edge_builder.rs",
+        "crates/oss/unleash-edge/src/lib.rs",
+        "crates/oss/unleash-edge/src/offline_builder.rs"
+      ],
+      "inspected_files": [
+        {
+          "path": "crates/oss/unleash-edge/src/edge_builder.rs",
+          "sha256": "70f5fd0d307be697b89d658dbc1959533667bae5f58dbf5dcb0250fbebe5c598",
+          "bytes": 41403
+        },
+        {
+          "path": "crates/oss/unleash-edge/src/lib.rs",
+          "sha256": "f5291c165af736921149108829e71eb04ee397d236e953077126fb1745016eb9",
+          "bytes": 12213
+        },
+        {
+          "path": "crates/oss/unleash-edge/src/offline_builder.rs",
+          "sha256": "b81288870676774e22b591239d039da750d2f893e28bb7cca8fb60075c4ffad6",
+          "bytes": 5701
+        },
+        {
+          "path": "crates/oss/unleash-edge/src/ready_checker.rs",
+          "sha256": "851a1aa6c0e9cc484dbe8d321549d5728cc11418e15b47c4d4bde70956c80b8a",
+          "bytes": 6034
+        },
+        {
+          "path": "crates/oss/unleash-edge-auth/src/token_validator.rs",
+          "sha256": "5750536418a62b8ad64c0b4932296ebccc82717e7a90987fd75c6353c68f3a48",
+          "bytes": 11512
+        },
+        {
+          "path": "crates/oss/unleash-edge-backstage/src/lib.rs",
+          "sha256": "c7721a5fe26ce87e2a912889a6e32fc31dd48c349259c8ba3443547eeb836825",
+          "bytes": 7703
+        },
+        {
+          "path": "crates/oss/unleash-edge-edge-api/src/lib.rs",
+          "sha256": "2e229753e72da77e92b31a32393bec88e4298733c7285350d50f5c651d4f3396",
+          "bytes": 2372
+        },
+        {
+          "path": "crates/oss/unleash-edge-feature-refresh/src/lib.rs",
+          "sha256": "5be5e8adc680d5349ac260524f8804ce6229e73a572e0a1be10ecce926bcb8da",
+          "bytes": 58834
+        },
+        {
+          "path": "crates/oss/unleash-edge-frontend-api/src/frontend.rs",
+          "sha256": "cce35562ae76e3f858c58d4839e405c556be71839539b7b09321d8c2e962f05a",
+          "bytes": 45586
+        },
+        {
+          "path": "crates/oss/unleash-edge-http-client/src/lib.rs",
+          "sha256": "03e45a47044f16b49b474f43e3bac1636e3a6ac97219a2eaed3627cc0d8eeac0",
+          "bytes": 31097
+        },
+        {
+          "path": "crates/oss/unleash-edge-metrics/src/send_unleash_metrics.rs",
+          "sha256": "b9d0a630b2b6d1ed28a8bfcec87fabd8c90d5596fee22b7e6ab89acfb57d6cf7",
+          "bytes": 11477
+        },
+        {
+          "path": "crates/oss/unleash-edge-offline/src/hotload.rs",
+          "sha256": "8b1a3f0b744a82440f5bde70c69ba92506bf55b67fa440d46659b4e4e6efae86",
+          "bytes": 7600
+        },
+        {
+          "path": "crates/oss/unleash-edge-persistence/src/lib.rs",
+          "sha256": "5ced94f10a74b4a3dcd72c479371ad1289c223de79f9abe72c2107314e6deeb1",
+          "bytes": 6483
+        }
+      ]
+    },
     "firefly": {
       "repository": "hyperledger-firefly/firefly",
       "commit": "9d20f3081c9074d5b012427e5572ebc03da8d95d",
@@ -15001,6 +15306,15 @@
     }
   },
   "pages": {
+    "unleash-availability": {
+      "url": "https://docs.getunleash.io/support/availability",
+      "resolved_url": "https://docs.getunleash.io/support/availability",
+      "sha256": "146fe33b4cc61d0e26e6047e975fcecd7d78ba40d1a6152fb0905f1b4e86788c",
+      "bytes": 513173,
+      "retrieved_at": "2026-09-19T22:39:13.3325123Z",
+      "capture_method": "Direct HTTP document snapshot",
+      "classification": "Official edition and OSS Edge lifecycle documentation"
+    },
     "qbft": {
       "url": "https://docs.besu-eth.org/private-networks/how-to/configure/consensus/qbft",
       "sha256": "07348c34ae31445755c4cca0eed5be98e4f975778d094e74ab74481ae1809a8c",

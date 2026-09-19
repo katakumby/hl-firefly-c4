@@ -155,4 +155,12 @@ styles {
         routing Orthogonal
         dashed true
     }
+    // Preserve the shared palette; give the richer Unleash labels adequate space.
+    element "UnleashCatalog" {
+        width 480
+        height 300
+    }
+    relationship "UnleashCatalog" {
+        routing Curved
+    }
 }

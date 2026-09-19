@@ -153,10 +153,10 @@ box rgb(235,245,255) Member application reference - A
     and Invocation and member A completion
         CoreA->>EVMA: Invoke with batch-pin data [HTTP REST / JSON]
         EVMA->>SignerA: eth_sendTransaction [Ethereum JSON-RPC / HTTP]
+        Note over SignerA,Besu: Signer signs before submission, Besu executes contracts after inclusion
         SignerA->>Besu: eth_sendRawTransaction [Ethereum JSON-RPC / HTTP]
         Besu-->>SignerA: Transaction hash [Ethereum JSON-RPC / HTTP]
         SignerA-->>EVMA: Transaction hash [Ethereum JSON-RPC / HTTP]
-        Note over SignerA,Besu: Signer signs, Besu executes CustomPin and multiparty contract
         EVMA->>SignerA: Poll receipt, logs and blocks [Ethereum JSON-RPC / HTTP]
         SignerA->>Besu: Forward tracking RPCs [Ethereum JSON-RPC / HTTP]
         Besu-->>SignerA: Receipt, logs and blocks [Ethereum JSON-RPC / HTTP]

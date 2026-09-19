@@ -154,9 +154,9 @@ For a diagram change, parse and render all affected Mermaid blocks, inspect the 
 
 ### Validation completed 2026-09-19
 
-All 14 Mermaid blocks were parsed and rendered with Mermaid 11.12.0 in headless Chromium 127, then visually reviewed as seven diagram pairs. Structural checks verified technology labels on every arrow, canonical C4 identifiers and owning groups, valid JSON examples, and working local links. Rendered text remained within each SVG view box after layout corrections.
+All 14 Mermaid blocks were parsed and rendered with Mermaid 11.12.0 in headless Chromium 127, then visually reviewed as seven diagram pairs. Structural checks verified technology labels on all 215 arrows, canonical C4 identifiers and owning groups, valid JSON examples, and working local links. Rendered text remained within each SVG view box after layout corrections.
 
-Twelve concrete namespace API paths were checked against the pinned official Swagger specification; generated contract API paths were checked against the official tutorial. Revision-pinned FireFly links were matched to the local official-source snapshot. These are documentation and diagram checks, not execution tests against a FireFly/Besu deployment. The generated model, evidence inventory, and historical exports were unchanged.
+Twelve concrete namespace API paths were checked against the pinned official Swagger specification; generated contract API paths were checked against the official tutorial. All 21 distinct revision-pinned FireFly source links were matched to the local official-source snapshot. Completion-event filters, subscription-scoped acknowledgements, confirmation gates, result fields, and recovery behavior were cross-checked against that baseline. These are documentation and diagram checks, not execution tests against a FireFly/Besu deployment. The generated model, evidence inventory, and historical exports were unchanged.
 
 Validation details and SVG/PNG previews are local temporary artifacts under `.cache/use-case-validation/`; Markdown remains the deliverable.
 

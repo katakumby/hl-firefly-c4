@@ -5,8 +5,6 @@ firefly = softwareSystem "Hyperledger FireFly" "Reusable supernode architecture;
         "evidence" "Implementation"
         "architecture.sources" "[\"https://github.com/hyperledger-firefly/firefly/tree/9d20f3081c9074d5b012427e5572ebc03da8d95d\"]"
     }
-    !docs ../../../documentation/system
-    !adrs ../../../decisions/adr
     !include core.dsl
     !include evm.dsl
     !include signer.dsl

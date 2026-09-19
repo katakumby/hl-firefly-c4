@@ -6,8 +6,6 @@ entraId = softwareSystem "Microsoft Entra ID" "Cloud identity, token issuance, d
         "evidence" "Documented product capability"
         "architecture.sources" "[\"https://learn.microsoft.com/en-us/entra/architecture/architecture\"]"
     }
-    !docs ../../../documentation/system
-    !adrs ../../../decisions/adr
     !include authentication.dsl
     !include directory.dsl
     !include provisioning.dsl

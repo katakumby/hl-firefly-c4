@@ -6,8 +6,6 @@ keycloak = softwareSystem "Keycloak" "Identity and access management: SSO, feder
         "evidence" "Documented product capability"
         "architecture.sources" "[\"https://www.keycloak.org/docs/latest/server_admin/index.html\"]"
     }
-    !docs ../../../documentation/system
-    !adrs ../../../decisions/adr
     !include server.dsl
     !include database.dsl
 }

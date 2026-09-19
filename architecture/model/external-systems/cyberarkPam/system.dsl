@@ -6,8 +6,6 @@ cyberarkPam = softwareSystem "CyberArk PAM Self-Hosted" "Controls privileged cre
         "evidence" "Documented product capability"
         "architecture.sources" "[\"https://docs.cyberark.com/pam-self-hosted/latest/en/content/pas%20inst/installationoverview.htm\"]"
     }
-    !docs ../../../documentation/system
-    !adrs ../../../decisions/adr
     !include vault.dsl
     !include pvwa.dsl
     !include cpm.dsl

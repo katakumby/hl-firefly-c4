@@ -5,8 +5,6 @@ ops = softwareSystem "Platform operations reference" "Reference platform boundar
         "evidence" "Reference choice"
         "architecture.sources" "[\"https://hyperledger-firefly.github.io/firefly/head/architecture/node_component_architecture/\"]"
     }
-    !docs ../../../documentation/system
-    !adrs ../../../decisions/adr
     !include gateway.dsl
     !include cnpg.dsl
     !include prometheus.dsl

@@ -6,8 +6,6 @@ adFs = softwareSystem "Microsoft Active Directory Federation Services" "Federate
         "evidence" "Documented product capability"
         "architecture.sources" "[\"https://learn.microsoft.com/en-us/windows-server/identity/ad-fs/ad-fs-overview\"]"
     }
-    !docs ../../../documentation/system
-    !adrs ../../../decisions/adr
     !include service.dsl
     !include configuration.dsl
 }

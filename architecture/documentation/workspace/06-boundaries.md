@@ -1,4 +1,4 @@
-# Logical system boundary and evidence
+# Logical system boundaries and evidence
 
 The element's description, technology, source URL and evidence classification
 define its boundary. Components represent cohesive responsibilities inside their
@@ -29,11 +29,13 @@ boundaries. Groups organize related products without merging those boundaries.
 
 All diagram relationships are directed and describe exchanged information or
 in-process requests. Optional configurations have dedicated views. Sources are
-pinned in architecture/references/sources.json; the source inventory and coverage reports identify the
-owning components and any grouped library/support responsibilities.
+pinned in [the source inventory](../../references/sources.json). Historical
+coverage reports remain under [legacy references](../../references/legacy/README.md);
+the current workflow uses native Structurizr validation and inspection.
 
-The reference `architecture/workspace.dsl` validates this catalog; initiatives validate
-their focused views separately while inheriting the same model. Deployment
-definitions are archived outside the workspace, and existing historical exports
-are unvalidated by this pass. The architecture
-decisions explain the selected boundaries and inspection policy.
+The [reference workspace](../../workspace.dsl) presents this catalog; initiatives
+select their own views while inheriting the same model. Each workspace is
+validated separately. Deployment definitions and historical exports are archived
+outside the active workspace. The [architecture decisions](../../decisions/adr)
+explain the selected boundaries, and [workspace decisions](../../decisions/workspace)
+record authoring and tooling choices.

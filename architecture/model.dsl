@@ -3,6 +3,9 @@ workspace "Shared architecture model" "Reusable external reference systems; acce
     !impliedRelationships false
     properties {
         "structurizr.inspection.workspace.scope" "info"
+        // Add system-specific documentation and decisions when meaningful content exists.
+        "structurizr.inspection.model.softwaresystem.documentation" "info"
+        "structurizr.inspection.model.softwaresystem.decisions" "info"
     }
     model {
         !include model/people.dsl

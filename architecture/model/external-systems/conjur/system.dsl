@@ -6,8 +6,6 @@ conjur = softwareSystem "CyberArk Conjur Enterprise" "Enterprise workload secret
         "evidence" "Documented product capability"
         "architecture.sources" "[\"https://docs.cyberark.com/secrets-manager-sh/latest/en/content/resources/_topnav/cc_home.htm\"]"
     }
-    !docs ../../../documentation/system
-    !adrs ../../../decisions/adr
     !include service.dsl
     !include store.dsl
     !include synchronizer.dsl

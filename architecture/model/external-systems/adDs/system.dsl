@@ -6,8 +6,6 @@ adDs = softwareSystem "Microsoft Active Directory Domain Services" "Directory id
         "evidence" "Documented product capability"
         "architecture.sources" "[\"https://learn.microsoft.com/en-us/windows-server/identity/ad-ds/get-started/virtual-dc/active-directory-domain-services-overview\"]"
     }
-    !docs ../../../documentation/system
-    !adrs ../../../decisions/adr
     !include directory.dsl
     !include database.dsl
     !include sysvol.dsl

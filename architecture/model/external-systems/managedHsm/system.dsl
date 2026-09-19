@@ -6,8 +6,6 @@ managedHsm = softwareSystem "Azure Managed HSM" "Protects cryptographic keys and
         "evidence" "Documented product capability"
         "architecture.sources" "[\"https://learn.microsoft.com/en-us/azure/key-vault/managed-hsm/access-control\"]"
     }
-    !docs ../../../documentation/system
-    !adrs ../../../decisions/adr
     !include service.dsl
     !include keys.dsl
 }

@@ -68,7 +68,9 @@ fail the command. Teams control inspection severity using Structurizr's
 [`structurizr.inspection.*` properties](https://docs.structurizr.com/workspaces/inspections);
 findings configured as `info` or `ignore` do not block validation. Existing DSL
 settings for shared-reference coverage, workspace scope and the initial DApp
-boundary remain in place, with no Python exceptions or allowlist.
+boundary remain in place, with no Python exceptions or allowlist. Missing
+software-system documentation and ADRs are informational (`info`) findings,
+configured in the shared model and inherited by initiatives.
 
 Naming, evidence, ownership, diagram and dependency conventions below are
 guidance for authors and reviewers. Custom enforcement can be introduced
@@ -233,6 +235,14 @@ Record actual owners in initiative READMEs; CODEOWNERS enforcement is deferred
 until team identities are available. Significant architecture decisions go in
 `architecture/decisions/adr`; authoring/tooling decisions go in
 `architecture/decisions/workspace`. Routine notes belong in READMEs.
+
+Attach shared documentation and ADRs once at workspace level. The reference
+workspace imports `architecture/documentation/workspace/` (including the
+[shared boundary explanation](architecture/documentation/workspace/06-boundaries.md))
+and both decision directories. Attach `!docs` or `!adrs` to a software system
+only when it has documentation or decisions specifically about that system;
+do not attach the shared directories to every system or create placeholder
+documents to satisfy inspection checks.
 
 ## Variants and promotion
 

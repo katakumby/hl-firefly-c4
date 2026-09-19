@@ -5,8 +5,6 @@ apps = softwareSystem "Member application reference" "One example member applica
         "evidence" "Reference choice"
         "architecture.sources" "[\"https://hyperledger-firefly.github.io/firefly/head/architecture/node_component_architecture/\"]"
     }
-    !docs ../../../documentation/system
-    !adrs ../../../decisions/adr
     !include client.dsl
     !include hsmSigner.dsl
 }

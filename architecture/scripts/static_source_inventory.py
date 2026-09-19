@@ -11,7 +11,6 @@ import json
 import re
 
 ROOT=Path(__file__).resolve().parents[2]
-REPORT=ROOT/'build/architecture/reference/reports'
 
 # Explicit non-component groups: public types, entrypoints, helpers, test and
 # demonstration artifacts. Runtime modules use component source-path mappings.
@@ -125,11 +124,15 @@ def matches(path,prefix):
  return path==prefix or path.startswith(prefix+'/') or path==prefix+'.rs'
 
 def main(catalog_path=None, report_directory=None):
- global REPORT
- if report_directory is not None: REPORT=Path(report_directory)
+ from artifact_store import successful_run
+ from workspace_paths import REFERENCE, output_directory
+ import uuid
+ directory = Path(catalog_path).parent if catalog_path else successful_run(REFERENCE)
+ # Standalone audits must not rewrite a previously published validation run.
+ REPORT=Path(report_directory) if report_directory else output_directory(REFERENCE)/'audits'/uuid.uuid4().hex
  REPORT.mkdir(parents=True,exist_ok=True)
  s=json.loads((ROOT/'architecture/references/sources.json').read_text(encoding='utf-8'))
- m=json.loads(Path(catalog_path or ROOT/'build/architecture/reference/model-catalog.json').read_text(encoding='utf-8'))
+ m=json.loads(Path(catalog_path or directory/'model-catalog.json').read_text(encoding='utf-8'))
  components=[e for e in m['elements'] if e['kind']=='component']
  element_ids={e['id'] for e in m['elements']}
  mappings={}

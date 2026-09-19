@@ -1,27 +1,30 @@
 name: dlt-architecture
 services:
   structurizr:
-    image: structurizr/structurizr:2026.06.28-noble
+    image: structurizr/structurizr:${STRUCTURIZR_VERSION:?Use architecture/scripts/compose.ps1}-noble
     command: ["local"]
     ports:
-      - "127.0.0.1:8080:8080"
+      - "127.0.0.1:${STRUCTURIZR_PORT:-8080}:8080"
     volumes:
-      - ../build/architecture/reference:/usr/local/structurizr
+      - ${STRUCTURIZR_PREVIEW_DIR:?Use the Compose wrapper}:/usr/local/structurizr
+    labels:
+      com.dlt-architecture.root: ${ARCHITECTURE_ROOT}
+      com.dlt-architecture.run: ${STRUCTURIZR_RUN}
     environment:
       STRUCTURIZR_EDITABLE: "false"
       STRUCTURIZR_AUTOSAVEINTERVAL: "0"
       STRUCTURIZR_WORKSPACE_MAXSIZE: "10MB"
   cli:
-    image: structurizr/structurizr:2026.06.28-noble
+    image: structurizr/structurizr:${STRUCTURIZR_VERSION}-noble
     profiles: ["tools"]
-    command: ["validate", "-workspace", "architecture/workspace.dsl"]
+    command: ["validate", "-workspace", "${STRUCTURIZR_DSL}"]
     volumes:
       - ../:/usr/local/structurizr:ro
       - ../build/architecture:/usr/local/structurizr/build/architecture
   export:
-    image: structurizr/structurizr:2026.06.28-playwright
+    image: structurizr/structurizr:${STRUCTURIZR_VERSION}-playwright
     profiles: ["tools"]
-    command: ["export", "-workspace", "build/architecture/reference/workspace.json", "-format", "svg", "-output", "build/architecture/reference/svg"]
+    command: ["export", "-workspace", "${STRUCTURIZR_JSON}", "-format", "svg", "-output", "${STRUCTURIZR_EXPORT_DIR}"]
     volumes:
       - ../:/usr/local/structurizr:ro
       - ../build/architecture:/usr/local/structurizr/build/architecture

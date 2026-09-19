@@ -1,142 +1,231 @@
-"""Validate authored DSL entrypoints; write derived artifacts under build/architecture/."""
+"""Parse authored DSL once, audit fresh JSON, and publish isolated completed runs."""
 import argparse
-from datetime import datetime, timezone
+from concurrent.futures import ThreadPoolExecutor
+from contextlib import ExitStack
 import hashlib
 import json
 from pathlib import Path
-import re
 import subprocess
 import sys
-import uuid
+import tempfile
 from architecture_validation import audit, check_local_links
+from artifact_store import atomic_json, file_lock, new_run, publish, timestamp, active_preview_runs, retain_runs
 from check_inspect import assess
 from static_source_inventory import main as source_inventory
 from workspace_catalog import write_catalog
-from workspace_paths import ROOT, REFERENCE, BUILD, IMAGE, SOURCES, discover_workspaces, output_directory, workspace_path
+from workspace_dependencies import dependencies, parent_workspace, workspace_profile, derive_provenance, identity_conflicts
+from workspace_paths import ROOT, REFERENCE, SHARED, BUILD, IMAGE, SOURCES, discover_workspaces, output_directory, workspace_path
 
 
 def source_snapshot():
-    result=subprocess.run(['git','ls-files','-co','--exclude-standard','-z'],cwd=ROOT,
-                          check=True,stdout=subprocess.PIPE)
-    return {name:hashlib.sha256((ROOT/name).read_bytes()).hexdigest()
-            for name in set(result.stdout.decode('utf-8').split('\0')) if name and (ROOT/name).is_file()}
-
-
-def dependencies(path, active=None, seen=None):
-    """Check local include/extension/document paths, including cycles, before Docker."""
-    active=set() if active is None else active; seen=set() if seen is None else seen
-    path=Path(path).resolve(); path.relative_to(ROOT)
-    if path in active: raise ValueError(f'Cyclic DSL dependency: {path}')
-    if path in seen: return seen
-    active.add(path); seen.add(path)
-    text=path.read_text(encoding='utf-8')
-    pattern=r'^\s*(?:workspace\s+extends|(!include|!docs|!adrs))\s+("[^"]+"|\S+)'
-    for match in re.finditer(pattern,text,re.M):
-        token=match[2].strip('"')
-        if '://' in token: raise ValueError(f'Use same-checkout dependencies, not URLs: {path}: {token}')
-        child=(path.parent/token).resolve(); child.relative_to(ROOT)
-        if not child.exists(): raise ValueError(f'Missing DSL/document dependency: {path}: {token}')
-        if match[1] in ('!docs','!adrs'): continue
-        if child.is_dir(): raise ValueError(f'Use explicit ordered file includes: {path}: {token}')
-        dependencies(child,active,seen)
-    active.remove(path)
-    return seen
+    result = subprocess.run(['git', 'ls-files', '-co', '--exclude-standard', '-z'], cwd=ROOT,
+                            check=True, stdout=subprocess.PIPE)
+    return {name: hashlib.sha256((ROOT / name).read_bytes()).hexdigest()
+            for name in set(result.stdout.decode('utf-8').split('\0')) if name and (ROOT / name).is_file()}
 
 
 def docker_command():
     BUILD.mkdir(parents=True, exist_ok=True)
-    return ['docker','run','--rm','--mount',f'type=bind,source={ROOT},target=/usr/local/structurizr,readonly',
-            '--mount',f'type=bind,source={BUILD},target=/usr/local/structurizr/build/architecture',IMAGE]
+    return ['docker', 'run', '--rm', '--mount', f'type=bind,source={ROOT},target=/usr/local/structurizr,readonly',
+            '--mount', f'type=bind,source={BUILD},target=/usr/local/structurizr/build/architecture', IMAGE]
 
 
 def require_docker():
-    result=subprocess.run(['docker','version','--format','{{.Server.Version}}'],capture_output=True,text=True)
-    if result.returncode: raise RuntimeError('Docker is unavailable. Start Docker Desktop with Linux containers and retry.\n'+result.stderr)
+    result = subprocess.run(['docker', 'version', '--format', '{{.Server.Version}}'], capture_output=True, text=True)
+    if result.returncode:
+        raise RuntimeError('Docker is unavailable. Start Docker Desktop with Linux containers and retry.\n' + result.stderr)
+
+
+def run_command(directory, manifest, name, arguments, required=True):
+    result = subprocess.run(arguments, cwd=ROOT, stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
+                            text=True, encoding='utf-8', errors='replace', timeout=180)
+    (directory / 'reports' / (name + '.txt')).write_text(result.stdout, encoding='utf-8')
+    manifest['commands'].append({'name': name, 'exit_code': result.returncode, 'command': arguments})
+    if required and result.returncode:
+        raise RuntimeError(f'{name} failed: {result.stdout[-2000:]}')
+    return result
+
+
+def parse_workspace(path, directory, manifest):
+    deps = dependencies(path)
+    manifest['dependencies'] = [p.relative_to(ROOT).as_posix() for p in sorted(deps)]
+    run_command(directory, manifest, 'parse', docker_command() + ['export', '-workspace',
+                path.relative_to(ROOT).as_posix(), '-format', 'json', '-output', directory.relative_to(ROOT).as_posix()])
+    files = list(directory.glob('*.json'))
+    if len(files) != 1:
+        raise ValueError(f'Expected one freshly parsed workspace; found {files}')
+    destination = directory / 'workspace.json'
+    if files[0] != destination:
+        files[0].replace(destination)
+    return json.loads(destination.read_text(encoding='utf-8-sig'))
+
+
+def complete_report(directory, manifest):
+    lines = ['# Architecture validation', '', f'**Result: {"PASS" if manifest["passed"] else "FAIL"}**', '',
+             f'Workspace: `{manifest["workspace"]}`', f'Run: `{directory.name}`',
+             f'Completed: {manifest["completed_at"]}', f'Image: `{IMAGE}`',
+             f'Source fingerprint: `{manifest["source_sha256"]}`', '',
+             f'Counts: {manifest.get("counts", {})}', '',
+             '[Run manifest](run.json) | [Parsed workspace](../workspace.json)', '',
+             'This report belongs only to this run. Resolve current results through the workspace status.json.']
+    for name in ('architecture-audit.json', 'inspect.txt', 'source-audit.json'):
+        if (directory / 'reports' / name).exists():
+            lines.append(f'- [{name}]({name})')
+    if manifest['failure']:
+        lines += ['', '## Failure', '', manifest['failure']]
+    (directory / 'reports/validation-summary.md').write_text('\n'.join(lines) + '\n', encoding='utf-8')
+
+
+def validate_workspaces(paths=None, jobs=2):
+    """Ancestors parse first; siblings can run in parallel. Selected runs own locks until publication."""
+    if jobs < 1:
+        raise ValueError('Jobs must be positive')
+    selected = [workspace_path(p) for p in (paths if paths is not None else discover_workspaces())]
+    before = source_snapshot()
+    fingerprint = hashlib.sha256(json.dumps(before, sort_keys=True).encode()).hexdigest()
+    require_docker()
+    BUILD.mkdir(parents=True, exist_ok=True)
+    sources = json.loads(SOURCES.read_text(encoding='utf-8'))
+    # Repository checks run once. Missing ignored evidence caches are informational.
+    from evidence_store import verify_inventory
+    evidence = verify_inventory(sources, ROOT)
+    link_errors = check_local_links()
+    shared_errors = link_errors + evidence['errors']
+    parents, setup_errors = {}, {}
+    def ancestry(path, active=None):
+        active = set() if active is None else active
+        if path in active:
+            raise ValueError(f'Cyclic workspace extension: {path}')
+        if path in parents:
+            return
+        dependencies(path)
+        workspace_profile(path)
+        parent = parent_workspace(path)
+        if path == SHARED and parent is not None:
+            raise ValueError('The shared model must not extend an initiative')
+        if path == REFERENCE and parent != SHARED:
+            raise ValueError('The reference workspace must extend the shared model')
+        if parent:
+            ancestry(parent, active | {path})
+        parents[path] = parent
+    for path in selected:
+        try:
+            ancestry(path)
+        except (ValueError, OSError) as exc:
+            setup_errors[path] = str(exc)
+    with ExitStack() as locks, tempfile.TemporaryDirectory(dir=BUILD, prefix='validation-session-') as temporary:
+        for path in sorted(selected):
+            locks.enter_context(file_lock(output_directory(path) / '.publication.lock'))
+        runs = {path: new_run(output_directory(path)) for path in selected}
+        manifests = {path: {'workspace': path.relative_to(ROOT).as_posix(), 'image': IMAGE,
+                            'started_at': timestamp(), 'source_sha256': fingerprint,
+                            'passed': False, 'commands': [], 'failure': setup_errors.get(path)} for path in selected}
+        parsed, provenances, failures = {}, {}, dict(setup_errors)
+        pending = set(parents) - failures.keys()
+        def parse_one(path):
+            directory = runs.get(path)
+            manifest = manifests.get(path)
+            if directory is None:
+                directory = Path(temporary) / hashlib.sha256(str(path).encode()).hexdigest()[:16]
+                (directory / 'reports').mkdir(parents=True)
+                manifest = {'commands': []}
+            try:
+                parent = parents[path]
+                if parent in failures:
+                    raise ValueError(f'Ancestor failed: {parent}: {failures[parent]}')
+                raw = parse_workspace(path, directory, manifest)
+                provenance = derive_provenance(raw, path, provenances.get(parent))
+                return path, raw, provenance, None
+            except (ValueError, KeyError, RuntimeError, OSError, subprocess.SubprocessError) as exc:
+                return path, None, None, str(exc)
+        with ThreadPoolExecutor(max_workers=jobs) as pool:
+            while pending:
+                wave = sorted(p for p in pending if parents[p] not in pending)
+                if not wave:
+                    raise ValueError('Unresolvable workspace ancestry')
+                for path, raw, provenance, error in pool.map(parse_one, wave):
+                    if error:
+                        failures[path] = error
+                    else:
+                        parsed[path], provenances[path] = raw, provenance
+                    pending.remove(path)
+            conflicts = identity_conflicts(provenances)
+            shared_ids = set(provenances.get(SHARED, {}).get('origins', {}))
+            def inspect_one(path):
+                manifest, directory = manifests[path], runs[path]
+                try:
+                    errors = shared_errors + conflicts.get(path, [])
+                    if path in failures:
+                        errors.append(failures[path])
+                    if errors:
+                        raise ValueError('; '.join(errors[:15]))
+                    parent = parents[path]
+                    context = workspace_profile(path) | {'shared_ids': shared_ids,
+                        'inherited_views': provenances.get(parent, {}).get('views', set())}
+                    # DApp is permitted only when its original definition is the ignition entrypoint.
+                    ignition = ROOT / 'architecture/initiatives/ignition/workspace.dsl'
+                    context['placeholder'] &= provenances[path]['origins'].get('dapp_platform') == str(ignition)
+                    catalog = write_catalog(parsed[path], directory)
+                    result = audit(parsed[path], catalog, sources, path == REFERENCE, context)
+                    atomic_json(directory / 'reports/architecture-audit.json', result)
+                    atomic_json(directory / 'reports/provenance.json', provenances[path]['origins'])
+                    atomic_json(directory / 'reports/evidence-integrity.json', evidence)
+                    atomic_json(directory / 'reports/link-check.json', {'passed': not link_errors, 'errors': link_errors})
+                    manifest['counts'] = {key: result[key] for key in ('elements', 'relationships', 'views', 'assertions')}
+                    if not result['passed']:
+                        raise ValueError('Architecture audit failed: ' + '; '.join(result['errors'][:15]))
+                    inspected = run_command(directory, manifest, 'inspect', docker_command() + ['inspect', '-workspace',
+                                            (directory / 'workspace.json').relative_to(ROOT).as_posix()], required=False)
+                    allowed = {'workspace.scope'}
+                    if path != REFERENCE:
+                        allowed |= {'model.element.noview', 'model.element.disconnected'}
+                    manifest['inspection'] = assess(inspected.stdout, inspected.returncode, allowed)
+                    if not manifest['inspection']['passed']:
+                        raise ValueError('Unexpected inspection findings; see this run\'s inspect.txt')
+                    if path == REFERENCE and source_inventory(directory / 'model-catalog.json', directory / 'reports'):
+                        raise ValueError('Reference evidence coverage failed')
+                    manifest['passed'] = True
+                except (ValueError, KeyError, RuntimeError, OSError, subprocess.SubprocessError, StopIteration, AssertionError) as exc:
+                    manifest['failure'] = str(exc)
+                return manifest
+            list(pool.map(inspect_one, selected))
+        unchanged = before == source_snapshot()
+        atomic_json(BUILD / 'source-preservation.json', {'passed': unchanged})
+        for path in selected:
+            manifest, directory = manifests[path], runs[path]
+            if not unchanged:
+                manifest.update(passed=False, failure='Source files changed during validation; no success published')
+            manifest['completed_at'] = timestamp()
+            complete_report(directory, manifest)
+            publish(output_directory(path), directory, manifest)
+            print(f'{manifest["workspace"]}: {"PASS" if manifest["passed"] else "FAIL"} ({directory.name})', flush=True)
+            if manifest['failure']:
+                print(manifest['failure'], file=sys.stderr)
+        try:
+            protected = active_preview_runs()
+            for path in selected:
+                retain_runs(output_directory(path), protected)
+        except (OSError, RuntimeError, subprocess.SubprocessError) as exc:
+            print(f'Retention skipped: {exc}', file=sys.stderr)
+        return [manifests[path] for path in selected]
 
 
 def validate_one(path):
-    path=workspace_path(path); directory=output_directory(path); report=directory/'reports'
-    report.mkdir(parents=True,exist_ok=True)
-    relative=path.relative_to(ROOT).as_posix(); reference=path==REFERENCE
-    manifest={'workspace':relative,'image':IMAGE,'started_at':datetime.now(timezone.utc).isoformat(),
-              'passed':False,'commands':[],'failure':None}
-    def run(name, args, required=True):
-        result=subprocess.run(args,cwd=ROOT,stdout=subprocess.PIPE,stderr=subprocess.STDOUT,
-                              text=True,encoding='utf-8',errors='replace',timeout=180)
-        (report/(name+'.txt')).write_text(result.stdout,encoding='utf-8')
-        manifest['commands'].append({'name':name,'exit_code':result.returncode,'command':args})
-        if required and result.returncode: raise RuntimeError(f'{name} failed; see {report/(name+".txt")}\n{result.stdout[-2000:]}')
-        return result
-    try:
-        manifest['dependencies']=[p.relative_to(ROOT).as_posix() for p in sorted(dependencies(path))]
-        digest=hashlib.sha256()
-        for relative_path in manifest['dependencies']:
-            digest.update(relative_path.encode()); digest.update((ROOT/relative_path).read_bytes())
-        manifest['dsl_sha256']=digest.hexdigest()
-        command=docker_command()
-        run('validate',command+['validate','-workspace',relative])
-        run_directory=directory/'parsed'/uuid.uuid4().hex
-        run_directory.mkdir(parents=True)
-        run('parse',command+['export','-workspace',relative,'-format','json','-output',run_directory.relative_to(ROOT).as_posix()])
-        files=list(run_directory.glob('*.json'))
-        if len(files)!=1: raise RuntimeError(f'Expected one fresh parsed workspace, found {files}')
-        workspace=json.loads(files[0].read_text(encoding='utf-8-sig'))
-        manifest['parsed_workspace']=files[0].relative_to(ROOT).as_posix()
-        catalog=write_catalog(workspace,directory)
-        result=audit(workspace,catalog,json.loads(SOURCES.read_text(encoding='utf-8')),reference)
-        (report/'architecture-audit.json').write_text(json.dumps(result,indent=2)+'\n',encoding='utf-8')
-        manifest['counts']={key:result[key] for key in ('elements','relationships','views','assertions')}
-        if not result['passed']: raise RuntimeError('Architecture audit failed: '+'; '.join(result['errors'][:15]))
-        full=run('inspect',command+['inspect','-workspace',relative],False)
-        allowed={'workspace.scope'}
-        if not reference: allowed.update(('model.element.noview','model.element.disconnected'))
-        inspection=assess(full.stdout,full.returncode,allowed)
-        manifest['inspection']=inspection
-        if not inspection['passed']: raise RuntimeError('Unexpected inspection findings; see '+str(report/'inspect.txt'))
-        run('inspect-errors-warnings',command+['inspect','-workspace',relative,'-severity','error,warning'])
-        if reference and source_inventory(directory/'model-catalog.json',report):
-            raise RuntimeError('Reference evidence coverage failed')
-        errors=check_local_links()
-        (report/'link-check.json').write_text(json.dumps({'passed':not errors,'errors':errors},indent=2)+'\n',encoding='utf-8')
-        if errors: raise RuntimeError('Broken documentation links: '+'; '.join(errors[:10]))
-        # Publish preview input only after every check passes; a failed run cannot serve stale success.
-        (directory/'workspace.json').write_text(json.dumps(workspace,indent=2)+'\n',encoding='utf-8')
-        manifest['passed']=True
-    except (ValueError,KeyError,RuntimeError,OSError,subprocess.SubprocessError) as exc:
-        manifest['failure']=str(exc)
-    finally:
-        manifest['completed_at']=datetime.now(timezone.utc).isoformat()
-        (report/'run.json').write_text(json.dumps(manifest,indent=2)+'\n',encoding='utf-8')
-        lines=['# Architecture validation','',f'**Result: {"PASS" if manifest["passed"] else "FAIL"}**',
-               '',f'Workspace: `{relative}`',f'Image: `{IMAGE}`','',
-               'Authored DSL is read-only. Reports and catalogs are derived from a fresh parse.',
-               '',f'Counts: {manifest.get("counts",{})}', '',
-               '[Architecture audit](architecture-audit.json) | [Run manifest](run.json) | [Inspection](inspect.txt)',
-               '', 'Reference workspaces enforce complete view coverage; initiative workspaces use focused views.',
-               'Retained informational findings are listed individually in the inspection log.',
-               'Deployment provisioning and deployment validation are outside this workflow.']
-        if manifest['failure']: lines+=['','## Failure','',manifest['failure']]
-        (report/'validation-summary.md').write_text('\n'.join(lines)+'\n',encoding='utf-8')
-    print(f'{relative}: {"PASS" if manifest["passed"] else "FAIL"}',flush=True)
-    if manifest['failure']: print(manifest['failure'],file=sys.stderr)
-    return manifest
+    return validate_workspaces([path])[0]
 
 
 def main():
-    parser=argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('--workspace',help='Validate only this repository-relative or absolute DSL entrypoint')
-    args=parser.parse_args()
-    before=source_snapshot()
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument('--workspace', help='Validate this repository-relative or absolute DSL entrypoint')
+    parser.add_argument('--jobs', type=int, default=2)
+    args = parser.parse_args()
     try:
-        require_docker()
-        workspaces=[workspace_path(args.workspace)] if args.workspace else discover_workspaces()
-        results=[validate_one(path) for path in workspaces]
-        unchanged=before==source_snapshot()
-        (BUILD/'source-preservation.json').write_text(json.dumps({'passed':unchanged},indent=2)+'\n',encoding='utf-8')
-        if not unchanged: raise RuntimeError('Validation changed files outside ignored build/cache outputs')
+        results = validate_workspaces([args.workspace] if args.workspace else None, args.jobs)
         return 0 if all(result['passed'] for result in results) else 1
-    except (ValueError,RuntimeError,OSError,subprocess.SubprocessError) as exc:
-        print(str(exc),file=sys.stderr); return 1
+    except (ValueError, RuntimeError, OSError, subprocess.SubprocessError) as exc:
+        print(str(exc), file=sys.stderr)
+        return 1
 
 
-if __name__=='__main__': raise SystemExit(main())
+if __name__ == '__main__':
+    raise SystemExit(main())

@@ -1,0 +1,55 @@
+"""Official source locations used by explicit evidence refresh commands."""
+
+STATIC_REPOS = {
+    'firefly': 'hyperledger-firefly/firefly',
+    'evmconnect': 'hyperledger-firefly/evmconnect',
+    'fftm': 'hyperledger-firefly/transaction-manager',
+    'signer': 'hyperledger-firefly/signer',
+    'common': 'hyperledger-firefly/common',
+    'dx': 'hyperledger-firefly/dataexchange-https',
+    'erc20': 'hyperledger-firefly/tokens-erc20-erc721',
+    'erc1155': 'hyperledger-firefly/tokens-erc1155',
+    'ethconnect': 'hyperledger-firefly/ethconnect',
+    'fabconnect': 'hyperledger-firefly/fabconnect',
+    'tezosconnect': 'hyperledger-firefly/tezosconnect',
+    'cardano': 'hyperledger-firefly/cardano',
+    'cordaconnect': 'hyperledger-firefly/cordaconnect',
+    'cli': 'hyperledger-firefly/cli',
+    'perf': 'hyperledger-firefly/perf-cli',
+    'sdk': 'hyperledger-firefly/sdk-nodejs',
+    'samples': 'hyperledger-firefly/samples',
+    'ui': 'hyperledger-firefly/ui',
+    'sandbox': 'hyperledger-firefly/sandbox',
+    'besu': 'besu-eth/besu',
+}
+
+STATIC_PAGES = {
+    'firefly-head': 'https://hyperledger-firefly.github.io/firefly/head/',
+    'firefly-architecture': 'https://hyperledger-firefly.github.io/firefly/head/architecture/node_component_architecture/',
+    'firefly-plugins': 'https://hyperledger-firefly.github.io/firefly/head/architecture/plugin_architecture/',
+    'qbft': 'https://docs.besu-eth.org/private-networks/how-to/configure/consensus/qbft',
+    'permissioning': 'https://docs.besu-eth.org/private-networks/concepts/permissioning',
+    'besu-rpc': 'https://docs.besu-eth.org/private-networks/reference/api',
+    'structurizr-dsl': 'https://docs.structurizr.com/dsl/language',
+    'inspect': 'https://docs.structurizr.com/inspect',
+    'inspections': 'https://docs.structurizr.com/workspaces/inspections',
+}
+
+SECURITY_PAGES = {
+    'security-keycloak': 'https://www.keycloak.org/docs/latest/server_admin/index.html',
+    'security-keycloak-db': 'https://www.keycloak.org/server/db',
+    'security-hsm': 'https://learn.microsoft.com/en-us/azure/key-vault/managed-hsm/access-control',
+    'security-hsm-keys': 'https://learn.microsoft.com/en-us/azure/key-vault/managed-hsm/about-keys-details',
+    'security-hsm-sign': 'https://learn.microsoft.com/en-us/rest/api/keyvault/keys/sign/sign?view=rest-keyvault-keys-2025-07-01',
+    'security-hsm-get-key': 'https://learn.microsoft.com/en-us/rest/api/keyvault/keys/get-key/get-key?view=rest-keyvault-keys-2025-07-01',
+    'security-pam': 'https://docs.cyberark.com/pam-self-hosted/latest/en/content/pas%20inst/installationoverview.htm',
+    'security-conjur': 'https://docs.cyberark.com/secrets-manager-sh/latest/en/content/resources/_topnav/cc_home.htm',
+    'security-conjur-sync': 'https://docs.cyberark.com/secrets-manager-sh/latest/en/content/conjur/cv_synchronizer-lp.htm',
+    'security-entra': 'https://learn.microsoft.com/en-us/entra/architecture/architecture',
+    'security-entra-oidc': 'https://learn.microsoft.com/en-us/entra/identity-platform/v2-protocols-oidc',
+    'security-cloud-sync': 'https://learn.microsoft.com/en-us/entra/identity/hybrid/cloud-sync/what-is-cloud-sync',
+    'security-ad': 'https://learn.microsoft.com/en-us/windows-server/identity/ad-ds/get-started/virtual-dc/active-directory-domain-services-overview',
+    'security-adfs': 'https://learn.microsoft.com/en-us/windows-server/identity/ad-fs/ad-fs-overview',
+    'security-adfs-claims': 'https://learn.microsoft.com/en-us/windows-server/identity/ad-fs/technical-reference/the-role-of-the-claims-engine',
+    'security-ethereum-transactions': 'https://ethereum.org/en/developers/docs/transactions/',
+}

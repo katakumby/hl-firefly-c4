@@ -109,7 +109,7 @@ The diagrams deliberately select the containers relevant to each interaction. Ro
 
 ## Model mapping
 
-Participant declarations include `%% C4:` comments carrying the canonical identifiers from [the model catalog](../../../build/architecture/reference/model-catalog.json). Repeated member instances retain the same logical identifiers.
+Participant declarations include `%% C4:` comments carrying canonical model identifiers. The [reference status](../../../build/architecture/reference/status.json) selects the successful run containing `model-catalog.json`. Repeated member instances retain the same logical identifiers.
 
 | Canonical ID | Model element | Used at |
 |---|---|---|

@@ -14,3 +14,9 @@ The [deployment archive](archive/README.md) preserves historical DSL fragments
 and placement data. Active workspaces do not load or validate them.
 
 Current commands are in the [root README](../../../README.md).
+
+`presentation-baseline.json` records the reference presentation before the
+workspace-improvement implementation, with its source revision. The explicit
+migration comparison checks it separately from the pre-modular semantic catalog.
+The retired `scripts/dsl_relationships.py` helper is preserved here; current
+relationships and selections are authored directly in DSL.

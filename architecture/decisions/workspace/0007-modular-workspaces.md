@@ -9,6 +9,9 @@ Accepted. Supersedes the generated-model and single-entrypoint portions of
 [decision 3](0003-inspection-policy.md). Relationship-selection and
 inspection-quality principles remain applicable.
 
+[Decision 8](0008-provenance-and-isolated-runs.md) strengthens provenance checks
+and defines isolated artifact publication and transactional evidence refresh.
+
 ## Decision
 
 The shared model is an extendable DSL workspace with ordered local includes

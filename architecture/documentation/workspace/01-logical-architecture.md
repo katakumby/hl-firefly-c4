@@ -56,8 +56,9 @@ identify proposed application examples; dashed logical-reference boxes identify
 inferred proprietary responsibility boundaries. Labels and evidence properties
 remain authoritative; see the security catalog legend.
 
-Source-backed capability coverage is in build/architecture/reference/reports/source-inventory.md;
-element-to-view coverage is in build/architecture/reference/coverage.csv. Relationship evidence in the model
+Source-backed capability coverage is in the selected reference run's `reports/source-inventory.md`;
+element-to-view coverage is in that run's `coverage.csv`. Resolve the run through
+`build/architecture/reference/status.json`. Relationship evidence in the model
 catalog identifies supporting source responsibilities. Architecture flow
 inferences are distinguished from a literal method-call graph. Reference
 applications and operational infrastructure are explicitly marked choices.

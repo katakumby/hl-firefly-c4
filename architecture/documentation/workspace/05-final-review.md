@@ -94,9 +94,11 @@ views retain their keys and product coverage.
 
 ## Verification and limits
 
-The [validation report](../../../build/architecture/reference/reports/validation-summary.md) records
-fresh parser, inspector and semantic audit results. Fault-injection tests run
-separately with `python -B -m unittest discover -s architecture/scripts -p test_workspace_validation.py`.
+The [validation status](../../../build/architecture/reference/status.json) selects
+the current attempt and last successful run. Open that run's
+`reports/validation-summary.md` for fresh parser, inspector and semantic results.
+Fault-injection tests run separately with
+`python -B -m unittest discover -s architecture/scripts -p 'test_workspace*.py'`.
 Checks cover unique definitions, same-owner duplicate names, precise parsed
 scopes/groups, visible directional relationships, full relationship coverage,
 connected views, C4 hierarchy and in-process call boundaries. Source coverage

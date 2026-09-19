@@ -4,8 +4,12 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[2]
 ARCHITECTURE = ROOT / 'architecture'
 REFERENCE = ARCHITECTURE / 'workspace.dsl'
+SHARED = ARCHITECTURE / 'model.dsl'
 BUILD = ROOT / 'build/architecture'
-IMAGE = 'structurizr/structurizr:2026.06.28-noble'
+TOOLCHAIN = dict(line.split('=', 1) for line in (ARCHITECTURE / 'toolchain.env').read_text().splitlines()
+                 if line and not line.startswith('#'))
+VERSION = TOOLCHAIN['STRUCTURIZR_VERSION']
+IMAGE = f'structurizr/structurizr:{VERSION}-noble'
 SOURCES = ARCHITECTURE / 'references/sources.json'
 
 

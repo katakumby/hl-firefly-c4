@@ -275,7 +275,7 @@ command so teams do not copy ignition's DApp-specific exception accidentally.
 
 ### O6 — Low effort: Simplify small maintenance surfaces
 
-- [dsl_relationships.py](../../scripts/dsl_relationships.py) is not imported or
+- [dsl_relationships.py](../../references/legacy/scripts/dsl_relationships.py) is not imported or
   invoked by any active script or test. Move it into legacy material, or retain
   only a tested, read-only relationship-selection audit with a documented user.
   Leave the actual named HSM relationships intact.
@@ -338,3 +338,33 @@ details, or diagram rendering quality. Compose configuration was resolved, but
 existing preview containers were not restarted. The authored DSL, executable
 tooling, ADRs and reference evidence were left unchanged; this report is the
 durable deliverable.
+
+## Implementation status
+
+The findings above describe the pre-improvement implementation and its original
+evidence. Points 1–4 of the approved follow-up plan are implemented. CI, a new
+documentation-check command and Mermaid rendering automation were explicitly
+excluded by the user. Historical evidence links above remain historical.
+
+| Item | Result |
+|---|---|
+| F1 / O2 | Fresh parsed ancestry establishes element origins; shared-only missing-view exceptions, local view coverage, identity collision and dependency-direction checks |
+| F2 | General duplicate-selection checks and local initiative/variant prefixes; inherited keys preserved |
+| F3 | Unified scoped refresh with complete runtime binding updates and preservation of unrelated records |
+| F4 | Content-addressed documents, revision/hash archive directories, fingerprints, staging and concurrent-change detection |
+| F5 / O3 | Isolated completed runs, atomic status manifests, separate preview runtime copies, two-worker default and protected retention |
+| F6 | A source-revision presentation baseline and separate style/layout/description/property comparison |
+| O1 | FireFly and integration entrypoints now include smaller fragments grouped by source ownership |
+| O6 | Legacy helper retired, shared version pin, editor settings, reusable proposed style, initiative template and documented DApp exception lifecycle |
+| O4 / O5 | New documentation automation and CI excluded; existing link checks remain available |
+
+The reference still contains 333 elements, 696 relationships and 95 views. The
+semantic and reference-presentation comparisons pass with zero differences.
+Regression tests cover failed reruns, concurrent readers and publication locks,
+retention, provenance/prefix faults, local evidence refresh and presentation
+mutations. No live product evidence was refreshed.
+
+Use the updated [workflow](../../../README.md#validate-and-preview) and
+[decision 8](../../decisions/workspace/0008-provenance-and-isolated-runs.md).
+Current reports are selected by the [reference status](../../../build/architecture/reference/status.json)
+and [ignition status](../../../build/architecture/initiatives/ignition/workspace/status.json).

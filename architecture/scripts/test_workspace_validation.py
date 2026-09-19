@@ -14,6 +14,12 @@ from check_inspect import assess
 from validate_workspaces import dependencies, docker_command, source_snapshot
 from workspace_catalog import normalize, semantic_difference, write_catalog
 from workspace_paths import ROOT, REFERENCE, BUILD, SOURCES, discover_workspaces, output_directory, workspace_path
+from artifact_store import successful_run
+
+
+def focused_context(reference):
+    return {'shared_ids': {e['id'] for e in normalize(reference)['elements']},
+            'inherited_views': set(), 'prefix': 'ignition-', 'placeholder': True}
 
 
 class InspectionPolicy(unittest.TestCase):
@@ -37,20 +43,20 @@ class InspectionPolicy(unittest.TestCase):
 class SemanticFaults(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        cls.reference=json.loads((ROOT/'build/architecture/reference/workspace.json').read_text(encoding='utf-8'))
-        cls.ignition=json.loads((ROOT/'build/architecture/initiatives/ignition/workspace/workspace.json').read_text(encoding='utf-8'))
+        cls.reference=json.loads((successful_run(REFERENCE)/'workspace.json').read_text(encoding='utf-8-sig'))
+        cls.ignition=json.loads((successful_run(ROOT/'architecture/initiatives/ignition/workspace.dsl')/'workspace.json').read_text(encoding='utf-8-sig'))
         cls.sources=json.loads(SOURCES.read_text(encoding='utf-8'))
 
     def check_fault(self, modify, expected, reference=True):
         raw=deepcopy(self.reference if reference else self.ignition)
         catalog=normalize(raw); modify(raw,catalog)
-        result=audit(raw,catalog,self.sources,reference)
+        result=audit(raw,catalog,self.sources,reference,focused_context(self.reference))
         self.assertFalse(result['passed'])
         self.assertTrue(any(expected in error for error in result['errors']),result['errors'])
 
     def test_current_workspaces_pass(self):
         for raw,reference in ((self.reference,True),(self.ignition,False)):
-            result=audit(raw,normalize(raw),self.sources,reference)
+            result=audit(raw,normalize(raw),self.sources,reference,focused_context(self.reference))
             self.assertTrue(result['passed'],result['errors'])
 
     def test_missing_dataflows_fail(self):
@@ -137,7 +143,7 @@ class LocalWorkflow(unittest.TestCase):
 
     def test_catalog_output_does_not_mutate_sources(self):
         before=source_snapshot()
-        raw=json.loads((ROOT/'build/architecture/reference/workspace.json').read_text(encoding='utf-8'))
+        raw=json.loads((successful_run(REFERENCE)/'workspace.json').read_text(encoding='utf-8-sig'))
         with tempfile.TemporaryDirectory(dir=ROOT/'build/architecture',prefix='test-output-') as directory:
             write_catalog(raw,directory)
         self.assertEqual(before,source_snapshot())
@@ -176,7 +182,7 @@ class PinnedParser(unittest.TestCase):
         before=source_snapshot()
         result,raw=self.run_fixture('workspace extends EPIC_PARENT {\n name "Temporary target variant"\n}\n',True)
         self.assertEqual(0,result.returncode,result.stdout+result.stderr)
-        parent=json.loads((ROOT/'build/architecture/initiatives/ignition/workspace/workspace.json').read_text(encoding='utf-8'))
+        parent=json.loads((successful_run(ROOT/'architecture/initiatives/ignition/workspace.dsl')/'workspace.json').read_text(encoding='utf-8-sig'))
         self.assertEqual([],semantic_difference(normalize(parent),normalize(raw)))
         self.assertEqual(before,source_snapshot())
 

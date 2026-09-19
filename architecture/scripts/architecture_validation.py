@@ -18,7 +18,11 @@ def raw_elements(workspace):
     return list(walk(workspace['model'].get('people', []))) + list(walk(workspace['model'].get('softwareSystems', [])))
 
 
-def audit(workspace, catalog, sources, reference=True):
+def audit(workspace, catalog, sources, reference=True, context=None):
+    context = context or {}
+    shared_ids = set(context.get('shared_ids', ()))
+    inherited_views = set(context.get('inherited_views', ()))
+    allow_placeholder = context.get('placeholder', False)
     checks = []
     def check(value, message): checks.append({'check': message, 'passed': bool(value)})
     elements = {e['id']: e for e in catalog['elements']}
@@ -27,6 +31,10 @@ def audit(workspace, catalog, sources, reference=True):
     check(len(elements)==len(catalog['elements']), 'Unique architecture identifiers')
     check(len(relationships)==len(catalog['relationships']), 'Unique relationship definitions')
     check(len({v['key'] for v in views})==len(views), 'Unique view keys')
+    signatures = [(v['kind'], v['scope'], tuple(sorted(v['elements'])), tuple(sorted(v['relationships']))) for v in views]
+    check(len(signatures) == len(set(signatures)), 'No duplicate view selections within one scope')
+    if not reference:
+        check(bool(context.get('prefix')), 'Initiative validation has workspace provenance')
     check(not workspace['model'].get('deploymentNodes'), 'No deployment content in static workspace')
     for e in elements.values():
         check(e['name'] and e['description'] and e['classification'], e['id']+': identity, responsibility and evidence classification')
@@ -47,11 +55,13 @@ def audit(workspace, catalog, sources, reference=True):
     visible=set()
     for v in views:
         key=v['key']; ids=set(v['elements']); visible.update(ids)
+        if not reference and key not in inherited_views:
+            check(key.startswith(context.get('prefix') or '\0'), key+': initiative/variant view prefix')
         edges=[relationships[r] for r in v['relationships'] if r in relationships]
         check(ids and ids<=elements.keys(), key+': valid visible elements')
         check(len(edges)==len(v['relationships']), key+': valid visible relationships')
         check(all(r['source'] in ids and r['destination'] in ids for r in edges), key+': arrow endpoints visible')
-        placeholder=(not reference and key==PLACEHOLDER_VIEW and v['kind']=='systemContext'
+        placeholder=(not reference and allow_placeholder and key==PLACEHOLDER_VIEW and v['kind']=='systemContext'
                      and v['scope']=='dapp_platform' and ids=={'dapp_platform'} and not edges)
         if not placeholder:
             check(edges, key+': visible static dataflow exists')
@@ -88,10 +98,12 @@ def audit(workspace, catalog, sources, reference=True):
             if obj is workspace and key in {f'structurizr.inspection.{s}' for s in ('error','warning','info','ignore')} and str(value).isdigit():
                 continue
             allowed=(key=='structurizr.inspection.workspace.scope' and value=='info' and obj is workspace)
-            allowed |= (not reference and identifier is not None and identifier!='dapp_platform'
+            allowed |= (not reference and identifier in shared_ids
                         and key=='structurizr.inspection.model.element.noview' and value=='info')
-            allowed |= (not reference and identifier=='dapp_platform' and key=='structurizr.inspection.model.element.disconnected' and value=='info')
+            allowed |= (not reference and allow_placeholder and identifier=='dapp_platform' and key=='structurizr.inspection.model.element.disconnected' and value=='info')
             check(allowed, f'{identifier or "workspace/view"}: narrowly scoped inspection policy {key}')
+    if not reference:
+        check(set(elements) - shared_ids <= visible, 'Every initiative-local element appears in a view')
     if reference:
         check(set(elements)<=visible,'Every reference element appears in a view')
         for kind, view_kind in (('person','systemLandscape'),('softwareSystem','systemLandscape'),('container','container'),('component','component')):
@@ -102,7 +114,7 @@ def audit(workspace, catalog, sources, reference=True):
         checks.extend(audit_security_catalog(catalog,sources))
     if 'dapp_platform' in elements:
         dapp=elements['dapp_platform']
-        check(not reference and dapp['kind']=='softwareSystem' and dapp['name']=='DApp Platform', 'DApp proposal belongs only to an initiative')
+        check(not reference and allow_placeholder and dapp['kind']=='softwareSystem' and dapp['name']=='DApp Platform', 'DApp proposal belongs only to ignition and its variants')
         check(not any(e['parent']=='dapp_platform' for e in elements.values()),'Initial DApp has no children')
         check(not any('dapp_platform' in (r['source'],r['destination']) for r in relationships.values()),'Initial DApp has no integrations')
         raw=next(e for e in raw_elements(workspace) if e.get('properties',{}).get('architecture.id')=='dapp_platform')

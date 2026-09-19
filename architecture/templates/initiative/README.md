@@ -8,6 +8,8 @@ not discovered as entrypoints.
 
 The workspace extends the shared model and uses native missing-view informational
 settings for inherited elements. Teams can adjust inspection properties in DSL.
+Global styles, including the `Proposed` tag, are inherited from
+[styles.dsl](../../styles.dsl); no separate style include is needed.
 Stable identifiers, proposal evidence/status properties, connected views and
 `<epic-id>-` keys are recommended conventions; no custom validator enforces them.
 Variants normally extend the initiative and use `<epic-id>-<variant>-` for new

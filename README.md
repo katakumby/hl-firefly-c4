@@ -28,7 +28,8 @@ and preview derive outputs without rewriting the model.
 | `architecture/model/external-systems/` | Reference systems, each with a folder and container fragments |
 | `architecture/model/modules/` | Reviewed platform systems; initially no definitions |
 | `architecture/model/relationships/` | Relationships grouped by system, plus cross-system integrations |
-| `architecture/views/` | Selectable reference views and shared styles |
+| `architecture/views/reference/` | Reference view fragments, automatically included by the reference workspace |
+| `architecture/styles.dsl` | Global styles inherited by reference, initiative and variant workspaces |
 | `architecture/documentation/` | Explanations and system boundaries |
 | `architecture/use-cases/` | Shared simple flows and detailed sequences |
 | `architecture/initiatives/<epic-id>/` | Goals, ownership, proposed model, focused views and use cases |
@@ -255,6 +256,12 @@ Relationships are declared after all elements. FireFly relationships are split
 by source container; cross-system relationships are split by source system,
 with actor-originated relationships together. Keep the explicit ordered include
 entrypoints, and define each relationship once.
+
+Reference diagrams use the directory include `!include views/reference` in
+`architecture/workspace.dsl`. Add a self-contained `.dsl` view fragment there;
+no new entrypoint include is needed. Global element and relationship styles,
+including the `Proposed` tag, live in `architecture/styles.dsl` and are included
+once by the shared model. Initiatives and variants inherit them automatically.
 
 Shared changes are reviewed by affected architects and technical leads.
 Record actual owners in initiative READMEs; CODEOWNERS enforcement is deferred

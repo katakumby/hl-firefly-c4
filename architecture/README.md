@@ -9,12 +9,13 @@ validation and export run in containers. No host Python or shell scripts are nee
 architecture/
 ├── workspace.dsl            # Reference workspace and its views
 ├── model.dsl                # Extendable shared model and styles; no views
+├── styles.dsl               # Global styles inherited by every workspace
 ├── model/
 │   ├── people.dsl           # Shared actors
 │   ├── external-systems/     # Existing products and reference systems
 │   ├── modules/              # Reviewed, accepted platform systems
 │   └── relationships/        # Ordered relationship fragments
-├── views/                   # Reference diagrams and reusable styles
+├── views/reference/         # Automatically included reference view fragments
 ├── initiatives/<epic-id>/    # Initiative workspace, model, views and use cases
 ├── templates/initiative/    # Starting point for new initiatives
 ├── documentation/           # Shared explanations and system-specific docs
@@ -37,6 +38,12 @@ caches beside the DSL.
 - **Share definitions, choose views locally.** The reference workspace and
   initiatives extend `model.dsl`. Declare elements before relationships using
   explicit, ordered includes; keep relationships in separate fragments.
+- **Add reference diagrams without editing the entrypoint.** Save view blocks
+  as `.dsl` files in `views/reference/`; `workspace.dsl` includes that directory.
+  Keep these fragments self-contained and their view keys unique.
+- **Style once.** Edit [styles.dsl](styles.dsl) for shared element and relationship
+  styles, including the `Proposed` tag. `model.dsl` includes it once; reference,
+  initiative and variant workspaces inherit it automatically.
 - **Keep proposals in their initiative.** Start from the
   [template](templates/initiative/README.md), record ownership and epic links
   (`TBD` when unknown), and prefix view keys with `<epic-id>-`.

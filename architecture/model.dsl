@@ -70,7 +70,7 @@ workspace "Shared architecture model" "Reusable external reference systems; acce
         !include model/relationships/apps.dsl
     }
     views {
-        !include views/styles.dsl
+        !include styles.dsl
         properties {
             "structurizr.sort" "key"
         }

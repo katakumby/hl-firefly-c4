@@ -1,3 +1,4 @@
+// Global styles inherited by the reference workspace, initiatives and variants.
 styles {
     element "Element" {
         color #122C43
@@ -162,5 +163,11 @@ styles {
     }
     relationship "UnleashCatalog" {
         routing Curved
+    }
+    element "Proposed" {
+        background #FFF3D3
+        color #122C43
+        stroke #946B20
+        border Dashed
     }
 }

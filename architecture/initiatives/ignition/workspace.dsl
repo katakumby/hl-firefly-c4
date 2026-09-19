@@ -14,7 +14,6 @@ workspace extends ../../model.dsl {
         !include model.dsl
     }
     views {
-        !include ../../views/proposed.dsl
         !include views.dsl
     }
 }

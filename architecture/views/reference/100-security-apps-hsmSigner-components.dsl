@@ -1,6 +1,6 @@
 component apps.hsmSigner "100-security-apps-hsmSigner-components" "Component - Proposed HSM signing adapter: proposed integration" {
     title "Component - Proposed HSM signing adapter: proposed integration"
-    include apps.hsmSigner.transactions apps.hsmSigner.hsm apps.hsmSigner.signature apps.hsmSigner.rpc firefly.evm managedHsm.service entraId.authentication besu.node
+    include element.parent==apps.hsmSigner firefly.evm managedHsm.service entraId.authentication besu.node
     exclude *->*
     include managedHsm.service->entraId.authentication
     include apps.hsmSigner.transactions->apps.hsmSigner.hsm

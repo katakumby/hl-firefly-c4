@@ -41,6 +41,10 @@ caches beside the DSL.
 - **Add reference diagrams without editing the entrypoint.** Save view blocks
   as `.dsl` files in `views/reference/`; `workspace.dsl` includes that directory.
   Keep these fragments self-contained and their view keys unique.
+- **Select by intent.** Use `element.parent==<identifier>` for all children of a
+  system or container; relationships between included elements appear automatically.
+  Keep explicit selections for focused flows. Matching new children and relationships
+  will appear automatically, so review affected diagrams after model changes.
 - **Style once.** Edit [styles.dsl](styles.dsl) for shared element and relationship
   styles, including the `Proposed` tag. `model.dsl` includes it once; reference,
   initiative and variant workspaces inherit it automatically.

@@ -1,6 +1,6 @@
 ---
 name: structurizr-dsl
-description: Create and update Structurizr DSL architecture diagrams. Use when the user wants a C4-style model or views in Structurizr DSL, needs a starter workspace, or needs help fixing Structurizr DSL syntax, scoping, view selection, or styling issues.
+description: Create and update Structurizr DSL architecture diagrams. Use when the user wants a C4-style model or views in Structurizr DSL, needs a starter workspace, or needs help with syntax, scoping, view expressions, relationship visibility, implied relationships, or styling.
 ---
 
 # Structurizr DSL
@@ -22,8 +22,6 @@ Prefer explicit identifiers, small models, and view definitions that match the m
 4. Add only the views the user actually needs.
 5. Add styles last, using tags instead of repeating per-element styling.
 6. Finish with a validation pass against the DSL file:
-   - Run `structurizr-cli validate -workspace <dsl file>`.
-   - If `structurizr-cli` is not installed, skip the validation step and recommend installing it with `brew install structurizr-cli`.
    - If validation fails, use the reported errors to fix the DSL and rerun validation until it passes.
 
 ## Authoring Rules
@@ -48,6 +46,76 @@ Prefer explicit identifiers, small models, and view definitions that match the m
 - Container: a separately deployable or runnable unit that hosts code or stores data and must run for the system to work. Treat it as a runtime boundary, not specifically a Docker container. Show the system's applications and data stores plus the meaningful interactions between them.
 - Component: a logical grouping of related functionality inside one container, exposed behind a clear interface. It is not separately deployable and should map back to real code structures such as modules, packages, namespaces, services, or classes.
 
+## View Expressions
+
+Use expressions when they describe the intended selection more clearly than a
+list of identifiers. `include` selects diagram contents; `!include` loads files.
+Expressions apply to static view selections, not dynamic interaction steps.
+Quote the entire expression when it contains spaces, including combined expressions.
+See the official [expression documentation](https://docs.structurizr.com/dsl/expressions).
+
+| Selection intent | Example inside a view |
+|---|---|
+| Children of one parent | `include element.parent==platform.api` |
+| Containers owned by a system | `include "element.type==Container && element.parent==platform"` |
+| Elements carrying both tags | `include element.tag==Backend,Stateful` |
+| Property-based selection | `include element.properties[architecture.status]==proposed` |
+| A group with a spaced name | `include "element.group==External systems"` |
+| An element and its incoming/outgoing neighbors | `include ->platform.api->` |
+| Outgoing relationships only | `include platform.api->*` |
+| Relationships with a specific tag | `include relationship.tag==KeyFlow` |
+
+`->id` follows incoming connections; `id->` follows outgoing connections.
+These select elements, whereas `id->*` selects relationships. Combine two
+expressions with `&&` or `||` when appropriate.
+
+Use parent selectors for complete child sets and explicit identifiers for focused
+subsets. Reuse meaningful tags/properties rather than adding diagram-specific
+metadata solely to shorten a list. Broad selectors intentionally admit future
+matching model additions; preserve a curated selection when that is the intent.
+
+## Relationship Visibility
+
+Including elements in a static view also selects existing relationships between
+them. Relationship expressions operate only on endpoints already in that view;
+they do not bring missing endpoints into it. View exclusions hide content without
+deleting model relationships. See the [include/exclude reference](https://docs.structurizr.com/dsl/language#include).
+
+- Avoid `exclude *->*` followed by re-including every existing arrow. Keep that
+  pattern when a view deliberately shows only selected interactions. Use a named
+  relationship identifier when only one of several parallel relationships belongs
+  in the diagram.
+- `include *` uses defaults specific to the view type. For context, container and
+  component views, `include *?` selects the same default elements but restricts
+  relationships to those touching the scoped system, its containers, or the scoped
+  container's components respectively. It suppresses links solely between external
+  neighbors; it does not mean "fewer elements".
+- When simplifying existing views, compare parsed element and relationship IDs
+  per view key before and after. Also preserve descriptions, layout settings and
+  styles. Native validation alone does not establish selection equivalence. Use
+  temporary comparison fixtures without adding permanent project policy checks.
+
+## Implied Relationships
+
+Implied relationships create additional **model relationships** across abstraction
+levels. They are separate from automatically showing existing arrows between
+included elements. See [implied relationships](https://docs.structurizr.com/dsl/implied-relationships)
+and the [worked examples](https://docs.structurizr.com/dsl/cookbook/implied-relationships/).
+
+- By default, a relationship such as `customer -> platform.web` can also produce
+  `customer -> platform`. The default strategy skips a parent pair that already
+  has a relationship, so multiple detailed interactions need not produce multiple
+  summary arrows. Declaration order can determine which summary is created.
+- `!impliedRelationships false` disables this generation; it does not disable
+  automatic visibility of existing relationships in views. Set the policy before
+  declaring relationships. `true` uses the default strategy; a fully qualified
+  Java strategy class is an advanced option, not a routine fix for diagram clutter.
+- With generation disabled, declare `customer -> platform` explicitly if the
+  context diagram needs that connection. Showing `customer` and `platform` cannot
+  invent an absent relationship. Define deliberate summary labels and parallel
+  high-level interactions explicitly when needed.
+
+
 ## Quick Checklist
 
 - Title present, short, and includes the diagram type.
@@ -63,7 +131,6 @@ Prefer explicit identifiers, small models, and view definitions that match the m
 - `systemLandscape` views only support people and software systems. Do not try to surface containers or components there.
 - `systemContext` views do not support components.
 - `filtered` views **MUST** be based on an existing static view and the mode **MUST** be `include` or `exclude`.
-- `include *` and `include *?` are not equivalent. `*` pulls the default full scope for the view; `*?` is the reluctant form and keeps the scoped element with directly related items only.
 - Identifier scope matters. Flat scope is the default; hierarchical scope makes nested identifiers more predictable in larger models.
 - `this` refers to the current parent scope, which is useful inside nested blocks but easy to misuse.
 - `!include` and `workspace extends ...` can be blocked in restricted environments. Do not depend on them unless the runtime allows local or remote includes.

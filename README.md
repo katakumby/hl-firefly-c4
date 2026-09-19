@@ -263,6 +263,12 @@ no new entrypoint include is needed. Global element and relationship styles,
 including the `Proposed` tag, live in `architecture/styles.dsl` and are included
 once by the shared model. Initiatives and variants inherit them automatically.
 
+Use `element.parent==<identifier>` when a view should show every child of a
+system or container. Relationships between included elements appear automatically;
+reserve explicit relationship selections for focused flows. These expressions
+also include future matching model additions, so review affected diagrams when
+the model changes.
+
 Shared changes are reviewed by affected architects and technical leads.
 Record actual owners in initiative READMEs; CODEOWNERS enforcement is deferred
 until team identities are available. Significant architecture decisions go in

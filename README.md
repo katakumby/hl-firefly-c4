@@ -9,6 +9,7 @@ Proprietary security internals are explicitly logical reference abstractions.
 ## Current deliverables
 
 - [Workspace](workspace.dsl): the sole canonical DSL entrypoint, containing static C4 levels 1–3 with no deployment definitions or views.
+- [Smart-contract use cases](docs/use-cases/firefly-besu/README.md): seven FireFly–Besu use cases with paired system/container Mermaid sequence diagrams.
 - [Model catalog](model-catalog.json): the generated logical model and exact view selections.
 - [Deployment archive](archive/README.md): historical deployment-only data and DSL fragments, outside the active workspace.
 - [Validation report](reports/static/validation-summary.md): fresh Docker results, accepted advisories, coverage and deferred checks.

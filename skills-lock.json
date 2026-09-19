@@ -19,6 +19,12 @@
       "skillPath": "domain-driven-design/SKILL.md",
       "computedHash": "3a84c4c48b3d1bcdf07e6ba096749679f97915dd6b4f9c87ab8a715b936fed30"
     },
+    "grill-me": {
+      "source": "mattpocock/skills",
+      "sourceType": "github",
+      "skillPath": "skills/productivity/grill-me/SKILL.md",
+      "computedHash": "9cdbb4b8f7a3aeaef82e6230c9e823500d4a8a1214c726cf342cf9829d34fc7d"
+    },
     "structurizr-dsl": {
       "source": "fedemagnani/structurizr-dsl",
       "sourceType": "github",

@@ -1,5 +1,7 @@
 # Static dataflow scenarios
 
+For ordered runtime interactions, see the [FireFly–Besu smart-contract use cases](../../use-cases/firefly-besu/README.md), with a system-level and a container-level Mermaid sequence for each scenario.
+
 1. **Private Besu transaction:** an application calls Core; the contract or
    multiparty manager uses the Ethereum adapter; EVMConnect's embedded FFTM
    manages transaction state and nonce policy; FireFly Signer resolves the

@@ -4,4 +4,5 @@ __pycache__/
 *.pyc
 .structurizr/
 workspace.json.bak
+architecture/**/workspace.json
 

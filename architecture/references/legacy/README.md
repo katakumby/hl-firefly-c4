@@ -16,7 +16,8 @@ and placement data. Active workspaces do not load or validate them.
 Current commands are in the [root README](../../../README.md).
 
 `presentation-baseline.json` records the reference presentation before the
-workspace-improvement implementation, with its source revision. The explicit
-migration comparison checks it separately from the pre-modular semantic catalog.
+workspace-improvement implementation, with its source revision. The retired
+migration comparison checked it separately from the pre-modular semantic catalog.
+These baselines remain historical evidence; active validation does not compare them.
 The retired `scripts/dsl_relationships.py` helper is preserved here; current
 relationships and selections are authored directly in DSL.

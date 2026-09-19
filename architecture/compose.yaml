@@ -1,31 +1,63 @@
-name: dlt-architecture
+name: ${COMPOSE_PROJECT_NAME:-dlt-architecture}
+
+x-tools: &tools
+  image: ${ARCHITECTURE_TOOLS_IMAGE:-dlt-architecture-tools:local}
+  build:
+    context: .
+    args:
+      STRUCTURIZR_VERSION: ${STRUCTURIZR_VERSION:?Missing version in architecture/.env}
+  user: "${ARCHITECTURE_UID:-1000}:${ARCHITECTURE_GID:-1000}"
+  network_mode: none
+  environment:
+    PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD: "1"
+  read_only: true
+  cap_drop: ["ALL"]
+  security_opt: ["no-new-privileges:true"]
+  init: true
+  shm_size: 256m
+  tmpfs:
+    # Playwright extracts its bundled driver here and must execute it.
+    - /tmp:rw,exec,nosuid,nodev,size=1g,mode=1777
+  volumes:
+    - ./:/workspace/architecture:ro
+    - ../README.md:/workspace/README.md:ro
+    - ../build/architecture:/workspace/build/architecture
+
+x-viewer: &viewer
+  image: structurizr/structurizr:${STRUCTURIZR_VERSION:?Missing version in architecture/.env}-noble
+  # Invoke Java directly; no project or container shell launcher is needed.
+  entrypoint: ["java", "-Dio.netty.noUnsafe=true", "--enable-native-access=ALL-UNNAMED", "-jar", "/usr/local/structurizr.war"]
+  user: "${ARCHITECTURE_UID:-1000}:${ARCHITECTURE_GID:-1000}"
+  read_only: true
+  cap_drop: ["ALL"]
+  security_opt: ["no-new-privileges:true"]
+  init: true
+  tmpfs:
+    - /tmp:rw,nosuid,size=512m,mode=1777
+  volumes:
+    # Native local mode reads workspace.dsl and writes its own Git-ignored cache.
+    - ./:/usr/local/structurizr
+  environment:
+    HOME: /tmp
+    STRUCTURIZR_EDITABLE: "false"
+    STRUCTURIZR_AUTOSAVEINTERVAL: "0"
+    STRUCTURIZR_WORKSPACE_MAXSIZE: "10MB"
+    STRUCTURIZR_NETWORK_URLS_ALLOWED: "^$"
+
 services:
-  structurizr:
-    image: structurizr/structurizr:${STRUCTURIZR_VERSION:?Use architecture/scripts/compose.ps1}-noble
-    command: ["local"]
+  global:
+    <<: *viewer
+    command: ["local", "/usr/local/structurizr"]
     ports:
-      - "127.0.0.1:${STRUCTURIZR_PORT:-8080}:8080"
-    volumes:
-      - ${STRUCTURIZR_PREVIEW_DIR:?Use the Compose wrapper}:/usr/local/structurizr
-    labels:
-      com.dlt-architecture.root: ${ARCHITECTURE_ROOT}
-      com.dlt-architecture.run: ${STRUCTURIZR_RUN}
-    environment:
-      STRUCTURIZR_EDITABLE: "false"
-      STRUCTURIZR_AUTOSAVEINTERVAL: "0"
-      STRUCTURIZR_WORKSPACE_MAXSIZE: "10MB"
-  cli:
-    image: structurizr/structurizr:${STRUCTURIZR_VERSION}-noble
+      - "127.0.0.1:${STRUCTURIZR_GLOBAL_PORT:-8080}:8080"
+
+  ignition:
+    <<: *viewer
+    command: ["local", "/usr/local/structurizr/initiatives/ignition"]
+    ports:
+      - "127.0.0.1:${STRUCTURIZR_IGNITION_PORT:-8081}:8080"
+
+  tools:
+    <<: *tools
     profiles: ["tools"]
-    command: ["validate", "-workspace", "${STRUCTURIZR_DSL}"]
-    volumes:
-      - ../:/usr/local/structurizr:ro
-      - ../build/architecture:/usr/local/structurizr/build/architecture
-  export:
-    image: structurizr/structurizr:${STRUCTURIZR_VERSION}-playwright
-    profiles: ["tools"]
-    command: ["export", "-workspace", "${STRUCTURIZR_JSON}", "-format", "svg", "-output", "${STRUCTURIZR_EXPORT_DIR}"]
-    volumes:
-      - ../:/usr/local/structurizr:ro
-      - ../build/architecture:/usr/local/structurizr/build/architecture
 

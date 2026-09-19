@@ -19,12 +19,22 @@ shows that boundary alone. There are no containers, components, actors or
 integrations for this proposal. Inherited reference systems are available for
 future use but are not selected into the diagram.
 
-From the repository root:
+From the repository root, start this initiative directly from DSL:
 
-```powershell
-./architecture/scripts/validate.ps1 -Workspace architecture/initiatives/ignition/workspace.dsl
-./architecture/scripts/preview.ps1 -Workspace architecture/initiatives/ignition/workspace.dsl -Port 8080
+```text
+docker compose -f architecture/compose.yaml up -d ignition
 ```
+
+Open [ignition](http://127.0.0.1:8081). Structurizr reads the authored
+`workspace.dsl` directly from the mounted architecture directory, including its
+shared model and fragments. No script, custom image build or preprocessing is
+required. The main workspace can stay open on port 8080.
+
+After DSL changes, refresh the browser. Run
+`docker compose -f architecture/compose.yaml stop ignition` to stop only this
+initiative. The `ignition` service in [Compose](../../compose.yaml) selects its
+workspace directory and port. Native Structurizr JSON/cache
+files beside the DSL are generated automatically and ignored by Git.
 
 Record future scenarios in the [use-case index](use-cases/README.md).
 Create interim/target variants only when designs differ, following the

@@ -1,5 +1,15 @@
 # Workspace consistency, duplication and maintainability review
 
+> Historical review. Findings and evidence describe the earlier tooling; the
+> implementation status at the end records the current maintenance scope.
+> [Decision 9](../../decisions/workspace/0009-container-only-tooling.md) subsequently
+> replaces host scripts, run history, evidence automation and product-specific audits
+> with containerized validation/export and a Docker viewer. Retired source files can
+> be inspected in Git history; current commands are in the [root README](../../../README.md).
+> The current workflow explicitly runs native Structurizr `validate` and `inspect`.
+> All custom architecture validation is now removed. Team conventions are
+> advisory; native inspection properties control findings while teams mature.
+
 Reviewed: 2026-09-19. Scope: the current working tree, including the uncommitted
 modular migration. This report records findings and proposed changes; it does
 not apply them to the model or tooling.
@@ -44,7 +54,7 @@ incorrect.
 
 ### F1 — P2: Initiative-local elements can use the inherited-element exception
 
-**Evidence:** In [architecture_validation.py](../../scripts/architecture_validation.py),
+**Historical evidence:** In `architecture_validation.py` (retired),
 lines 91–92 allow `model.element.noview = info` on any non-DApp element in any
 initiative. The audit does not establish whether the element was inherited.
 The documented policy in [decision 7](../../decisions/workspace/0007-modular-workspaces.md)
@@ -68,9 +78,9 @@ ordinary additive variant must still pass.
 
 ### F2 — P2: Initiative view prefixes and duplicate selections are not checked
 
-**Evidence:** [architecture_validation.py](../../scripts/architecture_validation.py)
+**Historical evidence:** `architecture_validation.py` (retired)
 checks unique keys, but calls
-[audit_logical_boundaries.py](../../scripts/audit_logical_boundaries.py) only for
+`audit_logical_boundaries.py` (retired) only for
 the reference workspace. That helper contains the exact duplicate-selection
 check. Neither validator derives the required `<epic-id>-` prefix from the
 entrypoint path.
@@ -92,10 +102,10 @@ different key. Keep distinct scenarios and inherited parent views valid.
 
 ### F3 — P2: Standalone static evidence refresh discards dependency records
 
-**Evidence:** [capture_static_sources.py](../../scripts/capture_static_sources.py),
+**Evidence:** `capture_static_sources.py` (retired),
 line 93, resets `embedded_dependencies` and recreates only EVMConnect and
 FireFly bindings. TezosConnect and Sandbox bindings are restored by the separate
-[component capture command](../../scripts/capture_component_sources.py).
+`capture_component_sources.py` (retired).
 The [reference README](../../references/README.md) lists the refresh commands
 without explaining this required sequence.
 
@@ -120,7 +130,7 @@ records clearly. Simulate a partial failure without changing live evidence.
 
 ### F4 — P2: Evidence caches are updated in place across revisions
 
-**Evidence:** [capture_component_sources.py](../../scripts/capture_component_sources.py),
+**Evidence:** `capture_component_sources.py` (retired),
 lines 38–54, extracts each repository into the same `.cache/source-code/<key>/`
 directory and writes only files present in the new archive. Files removed in a
 new revision remain on disk. Static and security capture helpers also overwrite
@@ -143,7 +153,7 @@ its referenced snapshots consistent.
 
 ### F5 — P2: A failed validation leaves artifacts from different runs together
 
-**Evidence:** [validate_workspaces.py](../../scripts/validate_workspaces.py)
+**Evidence:** `validate_workspaces.py` (retired)
 writes the catalog and coverage before the semantic audit, overwrites reports
 in a shared directory, and publishes `workspace.json` only after success.
 
@@ -170,7 +180,7 @@ set, exposes the failure separately, and does not mix reports across runs.
 
 ### F6 — P3: The migration comparator does not cover presentation settings
 
-**Evidence:** [workspace_catalog.py](../../scripts/workspace_catalog.py)
+**Historical evidence:** `workspace_catalog.py` (retired)
 normalizes model fields and view selections but omits styles, most view layout
 settings, view descriptions and additional properties. The historical catalog
 contains only elements, relationships and views in that normalized format.
@@ -307,7 +317,8 @@ command so teams do not copy ignition's DApp-specific exception accidentally.
 
 ## Evidence, reproducibility and limits
 
-Fresh verification used the existing commands:
+The original review used the following commands, which are now retired.
+Use the [Docker-only workflow](../../../README.md#docker-only-workflow) for current commands.
 
 ```powershell
 ./architecture/scripts/validate.ps1
@@ -341,30 +352,31 @@ durable deliverable.
 
 ## Implementation status
 
-The findings above describe the pre-improvement implementation and its original
-evidence. Points 1–4 of the approved follow-up plan are implemented. CI, a new
-documentation-check command and Mermaid rendering automation were explicitly
-excluded by the user. Historical evidence links above remain historical.
+Updated: 2026-09-20. The first implementation of points 1–4 was subsequently
+simplified under [decision 9](../../decisions/workspace/0009-container-only-tooling.md).
+Teams now rely on native Structurizr validation and configurable inspections.
+Historical evidence links above describe earlier implementations.
 
-| Item | Result |
+| Item | Current status |
 |---|---|
-| F1 / O2 | Fresh parsed ancestry establishes element origins; shared-only missing-view exceptions, local view coverage, identity collision and dependency-direction checks |
-| F2 | General duplicate-selection checks and local initiative/variant prefixes; inherited keys preserved |
-| F3 | Unified scoped refresh with complete runtime binding updates and preservation of unrelated records |
-| F4 | Content-addressed documents, revision/hash archive directories, fingerprints, staging and concurrent-change detection |
-| F5 / O3 | Isolated completed runs, atomic status manifests, separate preview runtime copies, two-worker default and protected retention |
-| F6 | A source-revision presentation baseline and separate style/layout/description/property comparison |
-| O1 | FireFly and integration entrypoints now include smaller fragments grouped by source ownership |
-| O6 | Legacy helper retired, shared version pin, editor settings, reusable proposed style, initiative template and documented DApp exception lifecycle |
-| O4 / O5 | New documentation automation and CI excluded; existing link checks remain available |
+| F1 / O2, F2 | Custom provenance, identity, dependency, coverage, prefix and duplicate-selection gates removed; team conventions are advisory |
+| F3, F4 | Automatic evidence refresh and inventory audits retired; captured evidence retained for manual review |
+| F5 / O3 | Native Docker viewers read authored DSL; tools write the latest results and preserve successful artifacts after failure; custom run history and manifests retired |
+| F6 | Presentation baseline preserved as historical evidence; automatic comparison retired |
+| O1 | Ordered FireFly and integration relationship fragments remain active |
+| O6 | Shared version pin, formatting settings, proposed style and initiative templates remain; no custom DApp validation rule |
+| O4 / O5 | CI, documentation-check commands and Mermaid automation remain excluded; custom Markdown-link validation removed |
 
-The reference still contains 333 elements, 696 relationships and 95 views. The
-semantic and reference-presentation comparisons pass with zero differences.
-Regression tests cover failed reruns, concurrent readers and publication locks,
-retention, provenance/prefix faults, local evidence refresh and presentation
-mutations. No live product evidence was refreshed.
+The reference contains 333 elements, 696 relationships and 95 views. The switch
+to native-only validation preserved the parsed model and views. Current tests
+cover native severity settings, workspace selection, flexible inheritance and
+artifact safety. They do not enforce retired architecture policies.
 
-Use the updated [workflow](../../../README.md#validate-and-preview) and
-[decision 8](../../decisions/workspace/0008-provenance-and-isolated-runs.md).
-Current reports are selected by the [reference status](../../../build/architecture/reference/status.json)
-and [ignition status](../../../build/architecture/initiatives/ignition/workspace/status.json).
+Use the current [workflow](../../../README.md#docker-only-workflow).
+Reports from the earlier implementation were selected by the historical
+[reference status](../../../build/architecture/reference/status.json) and
+[ignition status](../../../build/architecture/initiatives/ignition/workspace/status.json).
+The simplified Docker workflow now writes the latest
+[reference validation](../../../build/architecture/workspaces/reference/validation.json)
+and [ignition validation](../../../build/architecture/workspaces/initiatives/ignition/workspace/validation.json)
+directly.

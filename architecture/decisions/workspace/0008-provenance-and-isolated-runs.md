@@ -4,7 +4,11 @@ Date: 2026-09-19
 
 ## Status
 
-Accepted. Refines [decision 7](0007-modular-workspaces.md) without changing the
+Superseded in tooling and enforcement by [decision 9](0009-container-only-tooling.md).
+Custom provenance and architecture gates are removed; native Structurizr checks
+are the initial validation policy. The original decision below is retained as history.
+
+Originally accepted. Refines [decision 7](0007-modular-workspaces.md) without changing the
 reference architecture or ignition's initial proposal.
 
 ## Decision
@@ -48,7 +52,8 @@ not freeze legitimate future architecture decisions to this historical baseline.
 
 Existing validation and preview interfaces remain available. Generated paths
 change to isolated runs; old flat outputs remain historical. The Structurizr
-pin has one source in `toolchain.env`. Relationship fragments are divided by
+pin has one source in `toolchain.env` (now `architecture/.env` under decision 9).
+Relationship fragments are divided by
 source ownership while their include entrypoints and semantics remain stable.
 
 CI, new documentation validation and Mermaid rendering automation are outside

@@ -94,17 +94,14 @@ views retain their keys and product coverage.
 
 ## Verification and limits
 
-The [validation status](../../../build/architecture/reference/status.json) selects
-the current attempt and last successful run. Open that run's
-`reports/validation-summary.md` for fresh parser, inspector and semantic results.
-Fault-injection tests run separately with
-`python -B -m unittest discover -s architecture/scripts -p 'test_workspace*.py'`.
-Checks cover unique definitions, same-owner duplicate names, precise parsed
-scopes/groups, visible directional relationships, full relationship coverage,
-connected views, C4 hierarchy and in-process call boundaries. Source coverage
-checks every inventoried implementation file against an explicit responsibility
-or support-code classification. This is traceability, not line-by-line runtime
-behavior verification.
+The [validation result](../../../build/architecture/workspaces/reference/validation.json)
+and adjacent `validation.log` contain the latest native Structurizr validation
+and inspection results. Run the containerized test suite described in the
+[root README](../../../README.md#outputs-and-maintenance) after tooling changes.
+Custom architecture, evidence, ownership and Markdown-link checks are no longer
+enforced. Teams initially rely on native Structurizr validation and configurable
+inspections, as recorded in [decision 9](../../decisions/workspace/0009-container-only-tooling.md).
+Earlier source-coverage results are historical evidence.
 
 The review does not certify a deployed system or proprietary internals.
 Ethereum/HSM digest compatibility, low-s normalization, recovery parity, key

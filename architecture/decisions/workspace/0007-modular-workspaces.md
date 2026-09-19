@@ -11,6 +11,10 @@ inspection-quality principles remain applicable.
 
 [Decision 8](0008-provenance-and-isolated-runs.md) strengthens provenance checks
 and defines isolated artifact publication and transactional evidence refresh.
+The execution and evidence-maintenance portions are subsequently superseded by
+[decision 9](0009-container-only-tooling.md); modular DSL remains the source of truth.
+Decision 9 also retires custom validation enforcement. The conventions below
+remain authoring guidance while teams initially rely on native Structurizr checks.
 
 ## Decision
 

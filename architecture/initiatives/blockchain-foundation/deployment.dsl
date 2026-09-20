@@ -19,10 +19,6 @@ production = deploymentEnvironment "Production - three AZ" {
             dns = infrastructureNode "Private DNS and egress" "Azure private zones; CoreDNS spread across AZs; zone-redundant firewall path for allowed Azure endpoints." "Azure Private DNS / CoreDNS / Azure Firewall" "FoundationPlatform"
             signing = infrastructureNode "Transaction signing service" "Three stateless gateway replicas across AZ1/2/3; detail in view 04. FFTM remains the sole nonce owner." "ClusterIP / mTLS JSON-RPC" "FoundationMiddleware"
             rpc = infrastructureNode "Besu RPC routing service" "Three proxy replicas, one per AZ. Pin connector filter sessions to one healthy backend; rebuild filters after failover." "ClusterIP / session-aware JSON-RPC proxy" "FoundationBesu,FoundationMiddleware"
-            recovery = containerInstance foundation.recovery isolated {
-                description "Controller: three candidates across AZs, one elected leader. Azure-confirmed VM fencing precedes singleton recovery. Gate F1."
-                tags "FoundationMiddleware,FoundationSecurity"
-            }
         }
         aks = deploymentNode "Private AKS cluster - one member" "System, ledger and middleware pools; explicit zonal capacity and separate Kubernetes namespaces." "AKS Standard / Azure CNI Overlay + Cilium" {
             az1 = deploymentNode "Availability Zone 1" "Independent power, cooling and network failure domain." "Azure AZ 1" {
@@ -52,6 +48,12 @@ production = deploymentEnvironment "Production - three AZ" {
                         signer = containerInstance foundation.signer isolated {
                             description "Replica 1: key allowlist, fixed chain ID, low-s and recovery-parity checks; EC-HSM transaction keys. Integration gate H2."
                             tags "FoundationMiddleware,FoundationSecurity,FoundationSignerReplica"
+                        }
+                    }
+                    recoverypod = deploymentNode "Recovery controller candidate - AZ1" "One of three candidates; only the elected leader coordinates recovery. Gate F1." "Deployment / one replica per AZ" {
+                        controller = containerInstance foundation.recovery isolated {
+                            description "AZ1 candidate; Kubernetes Lease election. Requires Azure-confirmed old-host fencing before starting a replacement member. Gate F1."
+                            tags "FoundationMiddleware,FoundationSecurity,FoundationRecoveryReplica"
                         }
                     }
                     member = deploymentNode "Member A - active recovery unit" "One active pod, four product containers. Baseline moves this unit after fencing; no unqualified active-active workers." "Singleton StatefulSet / replicas 1" {
@@ -103,6 +105,12 @@ production = deploymentEnvironment "Production - three AZ" {
                             tags "FoundationMiddleware,FoundationSecurity,FoundationSignerReplica"
                         }
                     }
+                    recoverypod = deploymentNode "Recovery controller candidate - AZ2" "One of three candidates; only the elected leader coordinates recovery. Gate F1." "Deployment / one replica per AZ" {
+                        controller = containerInstance foundation.recovery isolated {
+                            description "AZ2 candidate; Kubernetes Lease election. Requires Azure-confirmed old-host fencing before starting a replacement member. Gate F1."
+                            tags "FoundationMiddleware,FoundationSecurity,FoundationRecoveryReplica"
+                        }
+                    }
                     spare = infrastructureNode "Member A recovery slot - AZ2" "Reserved capacity, not a running FireFly replica. Start the same member identity only after old-node fencing and volume reattachment." "AKS scheduling capacity" "FoundationMiddleware,FoundationStandby"
                 }
             }
@@ -133,6 +141,12 @@ production = deploymentEnvironment "Production - three AZ" {
                         signer = containerInstance foundation.signer isolated {
                             description "Replica 3: key allowlist, fixed chain ID, low-s and recovery-parity checks; EC-HSM transaction keys. Integration gate H2."
                             tags "FoundationMiddleware,FoundationSecurity,FoundationSignerReplica"
+                        }
+                    }
+                    recoverypod = deploymentNode "Recovery controller candidate - AZ3" "One of three candidates; only the elected leader coordinates recovery. Gate F1." "Deployment / one replica per AZ" {
+                        controller = containerInstance foundation.recovery isolated {
+                            description "AZ3 candidate; Kubernetes Lease election. Requires Azure-confirmed old-host fencing before starting a replacement member. Gate F1."
+                            tags "FoundationMiddleware,FoundationSecurity,FoundationRecoveryReplica"
                         }
                     }
                     spare = infrastructureNode "Member A recovery slot - AZ3" "Reserved capacity, not a running FireFly replica. Start the same member identity only after old-node fencing and volume reattachment." "AKS scheduling capacity" "FoundationMiddleware,FoundationStandby"
@@ -210,10 +224,18 @@ production.region.network.ingress -> production.region.aks.az1.middleware.member
 production.region.network.ingress -> production.region.aks.az1.middleware.member.dx "Passes through peer-authenticated private exchange traffic" "mTLS / HTTPS"
 production.region.data.pg.core -> production.region.data.standby "Replicates Core WAL before commit acknowledgement" "Managed synchronous replication"
 production.region.data.pg.tx -> production.region.data.standby "Replicates FFTM WAL before commit acknowledgement" "Managed synchronous replication"
-production.region.network.recovery -> production.region.network.control "Replaces workers only after old VM termination is confirmed" "Kubernetes / Azure Compute APIs"
-production.region.network.recovery -> production.region.aks.az2.middleware.spare "Activates one recovery slot after fencing and volume attachment" "Controller reconciliation" "FoundationRecoveryFlow"
-production.region.network.recovery -> production.region.aks.az3.middleware.spare "Activates one recovery slot after fencing and volume attachment" "Controller reconciliation" "FoundationRecoveryFlow"
-production.region.network.recovery -> production.region.security.identity "Obtains scoped credentials for fencing and recovery" "Workload Identity / HTTPS"
+production.region.aks.az1.middleware.recoverypod.controller -> production.region.network.control "Participates in leader election; reconciles recovery only while leader" "Kubernetes API / Lease"
+production.region.aks.az1.middleware.recoverypod.controller -> production.region.aks.az2.middleware.spare "Activates one slot only as leader after fencing and volume attachment" "Controller reconciliation" "FoundationRecoveryFlow"
+production.region.aks.az1.middleware.recoverypod.controller -> production.region.aks.az3.middleware.spare "Activates one slot only as leader after fencing and volume attachment" "Controller reconciliation" "FoundationRecoveryFlow"
+production.region.aks.az1.middleware.recoverypod.controller -> production.region.security.identity "Obtains scoped credentials for fencing and recovery" "Workload Identity / HTTPS"
+production.region.aks.az2.middleware.recoverypod.controller -> production.region.network.control "Participates in leader election; reconciles recovery only while leader" "Kubernetes API / Lease"
+production.region.aks.az2.middleware.recoverypod.controller -> production.region.aks.az2.middleware.spare "Activates one slot only as leader after fencing and volume attachment" "Controller reconciliation" "FoundationRecoveryFlow"
+production.region.aks.az2.middleware.recoverypod.controller -> production.region.aks.az3.middleware.spare "Activates one slot only as leader after fencing and volume attachment" "Controller reconciliation" "FoundationRecoveryFlow"
+production.region.aks.az2.middleware.recoverypod.controller -> production.region.security.identity "Obtains scoped credentials for fencing and recovery" "Workload Identity / HTTPS"
+production.region.aks.az3.middleware.recoverypod.controller -> production.region.network.control "Participates in leader election; reconciles recovery only while leader" "Kubernetes API / Lease"
+production.region.aks.az3.middleware.recoverypod.controller -> production.region.aks.az2.middleware.spare "Activates one slot only as leader after fencing and volume attachment" "Controller reconciliation" "FoundationRecoveryFlow"
+production.region.aks.az3.middleware.recoverypod.controller -> production.region.aks.az3.middleware.spare "Activates one slot only as leader after fencing and volume attachment" "Controller reconciliation" "FoundationRecoveryFlow"
+production.region.aks.az3.middleware.recoverypod.controller -> production.region.security.identity "Obtains scoped credentials for fencing and recovery" "Workload Identity / HTTPS"
 production.region.security.vault -> production.region.data.backup "Stores protected key and secret recovery artifacts" "Controlled backup job"
 production.region.security.validatorhsm -> production.region.data.backup "Exports vendor-protected recovery material after qualification" "Encrypted HSM backup"
 production.region.network.ingress -> production.region.data.pgsummary "Depends on durable member state through Core" "Dependency summary" "FoundationSummaryFlow"

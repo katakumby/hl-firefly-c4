@@ -16,7 +16,7 @@ An aggregate box in the platform view is not an extra set of machines.
 | Core / EVMConnect / DX / Kubo | One pod with four containers, initially AZ1 | Fenced replacement in AZ2 or AZ3 |
 | Signing gateway | Three replicas, one per AZ | Two continue with sufficient HSM capacity |
 | Ingress gateway / RPC proxy | Three replicas of each, one per AZ | Route through healthy replicas/backends |
-| Recovery controller | Three candidates, one elected leader | A surviving leader coordinates fenced recovery |
+| Recovery controller | Three AKS replicas, one per AZ; one elected leader | A surviving leader coordinates fenced recovery |
 | PostgreSQL | One managed primary AZ2 + one standby AZ3 | Managed promotion if primary fails; stable FQDN |
 | Member disk state | Two independent Premium_ZRS data PVCs | Reattach to recovered pod after fencing |
 | Validator HSM | Candidate service, deployment admission pending | Must prove that all four surviving validators can sign and peer |

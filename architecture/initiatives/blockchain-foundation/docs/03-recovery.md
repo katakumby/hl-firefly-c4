@@ -21,8 +21,12 @@ surviving-zone capacity meet their gates. A drawing alone does not establish thi
 
 1. Detect lost readiness/heartbeats, remove unhealthy endpoints and stop sending
    new requests there. Preserve request IDs for uncertain outcomes.
-2. Elect one recovery controller. Record a recovery operation ID and the exact
-   Azure VM/node owning the active member.
+2. Elect one recovery controller from the three AKS candidates, one per AZ,
+   through a Kubernetes Lease. Only the leader may reconcile recovery, and it
+   must stop doing so when it loses leadership. Record a durable recovery
+   operation ID and the exact Azure VM/node owning the active member so a new
+   leader resumes the same operation safely. Leader election does not fence
+   the old member host.
 3. Stop/deallocate or otherwise terminate that VM through an approved Azure
    mechanism and **confirm completion**. Loss of a heartbeat is insufficient.
    If shutdown cannot be established, stop automatic promotion and alert.
@@ -55,6 +59,7 @@ fencing, the proposed 10-minute member recovery target must be revised.
 | Interrupt each AZ separately under representative write/event/blob load | Validator counts, block heights, last/next block time, finality and recovery timestamps |
 | Fail the active member while transactions are being accepted | No second nonce writer; reconcile acknowledged IDs, receipts and final DB state |
 | Partition old member from AKS but leave DB/HSM network access | Old host definitively fenced before new writer starts; no split brain |
+| Lose or partition the elected recovery controller during fencing | A surviving candidate resumes the same operation; stale leader cannot start a competing recovery; no second member writer |
 | Fail each RPC backend while filters/streams are active | Filters recreated, checkpoints replayed, no silent event gaps |
 | Trigger PostgreSQL primary and standby failures separately | Reconnect timing, committed transaction preservation and restored HA status |
 | Detach/reattach DX and Kubo ZRS disks after hard node loss | Original identity and pins survive; file integrity and acknowledged payloads verified |

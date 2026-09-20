@@ -27,7 +27,7 @@ foundation = softwareSystem "Blockchain infrastructure services" "Proposed routi
 firefly.evm -> foundation.signer "Sends nonce-assigned transactions and pinned RPC sessions" "JSON-RPC / mTLS ClusterIP" "FoundationSigningFlow"
 foundation -> firefly "Provides transaction signing and fenced member recovery" "Private infrastructure services"
 foundation -> besu "Submits signed transactions through healthy RPC nodes" "Ethereum JSON-RPC"
-foundation.recovery -> firefly.core "Restarts one member only after old-host fencing" "Kubernetes / Azure Compute APIs" "FoundationRecoveryFlow"
+foundation.recovery -> firefly.core "Restarts one member only when elected leader and after old-host fencing" "Kubernetes / Azure Compute APIs" "FoundationRecoveryFlow"
 // This initiative intentionally shows deployment instances, not additional logical application views.
 !elements element.parent==foundation {
     properties {

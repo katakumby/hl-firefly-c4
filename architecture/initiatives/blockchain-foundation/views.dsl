@@ -41,10 +41,16 @@ deployment * "Production - three AZ" "blockchain-foundation-02-besu" {
 }
 deployment * "Production - three AZ" "blockchain-foundation-03-firefly" {
     title "03 - FireFly deployment - one member with fenced cross-zone recovery"
-    description "One active Core/EVMConnect/DX/Kubo unit, three signing replicas, managed PostgreSQL HA and separate ZRS volumes. Dashed recovery slots are capacity, not active workers."
+    description "One active member; three controller candidates with AZ2 illustrating the elected leader. The signing service summarizes three replicas detailed in view 04. Dashed slots are recovery capacity."
     include element.tag==FoundationMiddleware
+    // The transaction signing service preserves the end-to-end path here; view 04 details all three replicas.
     exclude element.tag==FoundationSignerReplica
     include production.region.data.zrs.blobs production.region.data.zrs.ipfs production.region.security.vault
+    // AZ2 illustrates the elected leader; any candidate can take over. Keep all candidates visible.
+    exclude relationship.tag==FoundationRecoveryFlow
+    include production.region.aks.az2.middleware.recoverypod.controller->production.region.aks.az1.middleware.member.core
+    include production.region.aks.az2.middleware.recoverypod.controller->production.region.aks.az2.middleware.spare
+    include production.region.aks.az2.middleware.recoverypod.controller->production.region.aks.az3.middleware.spare
     autoLayout tb 100 100
 }
 deployment * "Production - three AZ" "blockchain-foundation-04-keys" {

@@ -15,13 +15,20 @@ remain local to this initiative. The reference catalog is not a mandatory stack.
 |---|---|
 | `blockchain-foundation-01-platform` | Azure networking, AKS zone capacity and managed dependencies |
 | `blockchain-foundation-02-besu` | Six validators in a 2/2/2 split, three RPC nodes, peer and HSM paths |
-| `blockchain-foundation-03-firefly` | One member, singleton recovery unit, three signing gateways, database HA and durable volumes |
-| `blockchain-foundation-04-keys` | Separate validator and transaction signing, identity, secrets and recovery material |
+| `blockchain-foundation-03-firefly` | One member, singleton recovery unit, aggregated signing service, database HA and durable volumes |
+| `blockchain-foundation-04-keys` | Three signing gateway replicas across the AZs; separate validator and transaction keys, identity and recovery material |
 | `blockchain-foundation-05-az-outage` | AZ1 outage: four validators remain and the member recovers in AZ2 |
 
 The native diagram key explains colors and line styles. Orange dashed boxes mark
 unresolved qualification gates. Gray dashed boxes are standby/recovery resources;
 their labels distinguish running standbys from reserved scheduling capacity.
+
+View 03 represents the three transaction signing gateways with one **Transaction
+signing service** summary box; view 04 shows their individual AZ placements.
+The recovery controller has three candidates inside AKS, one per AZ; only the
+elected leader coordinates fenced recovery. Views 03 and 04 show all candidates.
+View 03 draws representative recovery paths from AZ2 as the illustrative leader;
+any surviving candidate can be elected to perform those operations.
 
 Start the dedicated viewer from the repository root:
 

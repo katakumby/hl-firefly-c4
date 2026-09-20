@@ -1,4 +1,4 @@
-"""Container-only commands: validate and export. Standard library only."""
+"""Container-only commands: validate and export (C4-PlantUML by default). Standard library only."""
 import argparse
 from contextlib import contextmanager
 from copy import deepcopy
@@ -16,6 +16,13 @@ import tempfile
 from workspace_paths import ROOT, ARCHITECTURE, BUILD, REFERENCE, VERSION, discover_workspaces, output_directory, workspace_path
 
 JAVA = ['java', '-Dio.netty.noUnsafe=true', '--enable-native-access=ALL-UNNAMED', '-jar', '/usr/local/structurizr.war']
+# Native exporter, filename prefix and extension for each public export format.
+EXPORT_FORMATS = {
+    'plantuml': ('plantuml/c4plantuml', 'structurizr-', 'puml'),
+    'mermaid': ('mermaid', 'structurizr-', 'mmd'),
+    'svg': ('svg', '', 'svg'),
+    'png': ('png', '', 'png'),
+}
 
 
 def timestamp():
@@ -146,7 +153,7 @@ def fresh_workspace(path):
 
 def select_view(raw, key):
     raw = deepcopy(raw)
-    if key:
+    if key is not None:
         count = 0
         for kind, views in raw['views'].items():
             if kind.endswith('Views'):
@@ -165,6 +172,7 @@ def select_view(raw, key):
 
 
 def export(path, format, view=None):
+    native_format, prefix, extension = EXPORT_FORMATS[format]
     raw, report = fresh_workspace(path)
     raw = select_view(raw, view)
     # Keep each requested selection separate so an individual export cannot erase a full set.
@@ -176,15 +184,18 @@ def export(path, format, view=None):
         atomic_json(stage / 'workspace.json', raw)
         logs = []
         try:
-            run_java(['export', '-workspace', str(stage / 'workspace.json'), '-format', format,
+            run_java(['export', '-workspace', str(stage / 'workspace.json'), '-format', native_format,
                       '-output', str(stage / 'diagrams')], logs, timeout=600)
-            expected = [stage / 'diagrams' / (view['key'] + '.' + format)
-                        for kind, views in raw['views'].items() if kind.endswith('Views') for view in views]
-            if not expected or any(not image.is_file() or image.stat().st_size == 0 for image in expected):
-                raise ValueError('Renderer did not produce every requested diagram')
+            # Native text exporters prefix filenames; image exports use bare view keys.
+            expected = [stage / 'diagrams' / (prefix + diagram['key'] + '.' + extension)
+                        for kind, views in raw['views'].items() if kind.endswith('Views') for diagram in views]
+            if not expected or any(not diagram.is_file() or diagram.stat().st_size == 0 for diagram in expected):
+                raise ValueError('Exporter did not produce every requested diagram')
             if source_fingerprint() != report['source_sha256']:
                 raise ValueError('Sources changed during export')
-            atomic_json(stage / 'diagrams/export.json', report | {'format': format, 'view': view})
+            atomic_json(stage / 'diagrams/export.json', report | {
+                'format': format, 'native_format': native_format, 'view': view,
+            })
             backup = stage / 'previous'
             if destination.exists():
                 destination.rename(backup)
@@ -206,7 +217,8 @@ def main():
         command = commands.add_parser(name)
         command.add_argument('--workspace', default=None if name == 'validate' else str(REFERENCE))
         if name == 'export':
-            command.add_argument('--format', choices=('svg', 'png'), default='svg')
+            command.add_argument('--format', choices=EXPORT_FORMATS, default='plantuml',
+                                 help='Output format (default: plantuml using C4-PlantUML; svg/png use the native browser renderer)')
             command.add_argument('--view', help='Export only this view key (default: all views)')
             command.add_argument('--clean', action='store_true',
                                  help='Clear build/architecture before export, preserving local.env')

@@ -46,8 +46,18 @@ Keep one Python command with `validate` and `export` subcommands, one path/disco
 module and a focused workflow test suite. These optional tools
 run in a separate container with read-only sources and networking disabled.
 Invoke Java directly without a Docker socket or nested Docker, using Python's
-standard library only. SVG/PNG export uses the browser already included in the
-pinned Playwright image. The tools write only under `build/architecture/`.
+standard library only. C4-PlantUML is the default export format and the primary
+agent review output. Plain `export` and explicit `--format plantuml` invoke
+native `-format plantuml/c4plantuml` on freshly validated JSON without a browser.
+The generated `structurizr-<view-key>.puml` definitions use compact C4 macros and
+embedded legends. Native defaults use the built-in C4 standard library and
+C4 styling. Workspace and single-view selection use the `plantuml/` output
+directory. Successful replacement removes older separate `-key.puml` legends
+from that selection. Export metadata records public `format` and `native_format`.
+
+Explicit `--format mermaid` preserves optional native `.mmd` exports. Explicit
+`--format svg` or `--format png` uses the browser already included in the pinned
+Playwright image. The tools write only under `build/architecture/`.
 
 All services run as a non-root user with dropped capabilities and no privilege
 escalation. The viewer publishes only a localhost port and disables
@@ -83,14 +93,36 @@ manually.
 
 Use one validation/export output directory per workspace and a single writer
 lock per checkout. Keep the latest validation report and last successful JSON.
-Export validates fresh sources first, renders into a fresh directory and only
-then replaces its previous result. Failed validation does not overwrite
-successful exports. Do not retain a custom run history.
+Export validates fresh sources first, exports into a fresh directory and checks
+each requested filename and its non-empty output before replacing its previous
+result. Failed validation or export does not overwrite successful exports.
+Each workspace keeps separate `exports/all/<format>/` and
+`exports/view-<key-hash>/<format>/` selections. C4-PlantUML uses the `plantuml/`
+format directory; optional Mermaid and image paths remain unchanged. Successful replacement removes
+obsolete files only from that selection and format. Retain export metadata and
+source fingerprint checks. Do not retain a custom run history.
 The explicit `export --clean` option clears generated `build/architecture/`
 contents before validation/export, preserving `local.env` and the writer lock.
 Use it once at the start of a multi-workspace rebuild. Explicitly cleared outputs
 cannot be restored after a failed rebuild. Earlier prepared-viewer output
 directories are not read and are removed by this cleanup option.
+
+### C4-PlantUML as the default review artifact (2026-09-20)
+
+C4-PlantUML replaces Mermaid as the default export and primary agent review
+artifact. Reviewers read its compact C4 macro definitions as text to keep review
+context small. For final architecture review, regenerate affected `.puml` exports
+and read them first, then inspect relevant DSL definitions for correctness and
+information omitted by the exporter. Review images only when explicitly
+requested. If DSL corrections follow, regenerate affected exports before
+completing the review. Older files preserved after a failed run are not current
+review evidence. Record this workflow in the root `AGENTS.md` and READMEs.
+
+Use [native C4-PlantUML export](https://docs.structurizr.com/export/c4plantuml).
+Optional [Mermaid exports](https://docs.structurizr.com/export/mermaid) remain
+available; consumers rendering them need `"securityLevel": "loose"` for HTML
+labels. Optional [native PNG/SVG exports](https://docs.structurizr.com/export/png-and-svg)
+remain available for image requests. All generated exports stay ignored by Git.
 
 ## Consequences
 
@@ -101,4 +133,4 @@ the tools image; no host Python, Java or project shell scripts are needed.
 
 This change does not modify any model, relationship, view selection or style.
 Evidence metadata and legacy artifacts remain unchanged. CI and automated
-Mermaid rendering remain outside scope.
+rendering of exported text formats remain outside scope.

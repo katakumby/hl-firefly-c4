@@ -82,9 +82,12 @@ Run these commands **from this `architecture/` directory**. Values passed to
 | Validate all workspaces | `docker compose run --rm --build tools validate` |
 | Validate ignition | `docker compose run --rm --build tools validate --workspace architecture/initiatives/ignition/workspace.dsl` |
 | Validate blockchain foundation | `docker compose run --rm --build tools validate --workspace architecture/initiatives/blockchain-foundation/workspace.dsl` |
-| Export all reference diagrams | `docker compose run --rm --build tools export --format svg` |
-| Export ignition diagrams | `docker compose run --rm --build tools export --workspace architecture/initiatives/ignition/workspace.dsl --format svg` |
-| Export blockchain foundation diagrams | `docker compose run --rm --build tools export --workspace architecture/initiatives/blockchain-foundation/workspace.dsl --format svg` |
+| Export all reference diagrams as C4-PlantUML | `docker compose run --rm --build tools export` |
+| Export ignition diagrams as C4-PlantUML | `docker compose run --rm --build tools export --workspace architecture/initiatives/ignition/workspace.dsl` |
+| Export blockchain foundation diagrams as C4-PlantUML | `docker compose run --rm --build tools export --workspace architecture/initiatives/blockchain-foundation/workspace.dsl` |
+| Export one C4-PlantUML diagram | `docker compose run --rm tools export --view 01-landscape` |
+| Export optional Mermaid definitions | `docker compose run --rm tools export --format mermaid` |
+| Export all reference diagrams as SVG | `docker compose run --rm tools export --format svg` |
 | Export one diagram as PNG | `docker compose run --rm --build tools export --view 01-landscape --format png` |
 
 Open [reference](http://127.0.0.1:8080), [ignition](http://127.0.0.1:8081), or
@@ -92,14 +95,44 @@ Open [reference](http://127.0.0.1:8080), [ignition](http://127.0.0.1:8081), or
 Viewing reads DSL directly without preprocessing; refresh the browser after edits.
 Add a named Compose service for each new initiative or variant, following the template.
 
-Export validates first. Add `--clean` to **the first export only** to clear all
+Export validates first and defaults to `--format plantuml` using C4-PlantUML,
+the primary agent review output. `--format mermaid` requests optional Mermaid
+definitions, while `--format svg` and `--format png` request images.
+Add `--workspace <workspace.dsl>` to
+select any authored initiative or variant, and `--view <key>` for one diagram.
+Add `--clean` to **the first export only** to clear all
 `../build/architecture/` outputs before rebuilding; `local.env` and the command
 lock are preserved. Without it, successful exports replace only their selected
-diagram set. Cleaned outputs cannot be restored if the rebuild fails.
+workspace, diagram set and format. Cleaned outputs cannot be restored if the rebuild fails.
 
 Complete exports are under `../build/architecture/workspaces/reference/exports/all/`
 and `../build/architecture/workspaces/initiatives/<epic-id>/workspace/exports/all/`,
-in `svg/` or `png/`. Single-view exports use `exports/view-<key-hash>/<format>/`.
+in `plantuml/` by default, `mermaid/` for optional Mermaid, or `svg/` and `png/` for images.
+Single-view exports use `exports/view-<key-hash>/<format>/`. Native Mermaid files
+are named `structurizr-<view-key>.mmd`; C4-PlantUML uses `structurizr-<view-key>.puml`
+with an embedded legend. Images use `<view-key>.svg` or `<view-key>.png`.
+[Native C4-PlantUML export](https://docs.structurizr.com/export/c4plantuml) uses
+`-format plantuml/c4plantuml`, preserves its generated macros and defaults to
+the built-in C4 standard library and C4 styling. No browser or separate PlantUML
+installation is needed to export definitions. Successful replacement removes
+old separate `-key.puml` legends from that selection. Each selection includes
+`export.json` identifying its source fingerprint and native exporter format.
+
+## Final review
+
+Regenerate affected C4-PlantUML exports and review their `.puml` text first, then
+check relevant DSL definitions. Read the compact C4 macros directly; routine
+agent reviews need no renderer. Review images only when explicitly requested. If DSL corrections
+are needed, regenerate the affected exports before completing the review. Failed
+exports preserve older files; do not use those as current evidence. Generated
+files stay untracked, and DSL remains the authoring source. The persistent agent
+instructions are in [AGENTS.md](../AGENTS.md).
+
+Optional [native Mermaid export](https://docs.structurizr.com/export/mermaid) runs without
+a browser and preserves the exporter's output. Mermaid does not support every
+Structurizr shape, style or layout feature. Rendering consumers need Mermaid's
+`"securityLevel": "loose"` setting for HTML labels; text reviews need no renderer.
+Optional images continue to use [native PNG/SVG export](https://docs.structurizr.com/export/png-and-svg).
 
 See the [repository README](../README.md) for corporate configuration and the
 full contribution workflow.

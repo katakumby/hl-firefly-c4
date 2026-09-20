@@ -57,7 +57,12 @@ services:
     ports:
       - "127.0.0.1:${STRUCTURIZR_IGNITION_PORT:-8081}:8080"
 
+  blockchain-foundation:
+    <<: *viewer
+    command: ["local", "/usr/local/structurizr/initiatives/blockchain-foundation"]
+    ports:
+      - "127.0.0.1:${STRUCTURIZR_FOUNDATION_PORT:-8082}:8080"
+
   tools:
     <<: *tools
     profiles: ["tools"]
-

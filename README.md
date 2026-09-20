@@ -7,6 +7,9 @@ and preview derive outputs without rewriting the model.
 ## Start here
 
 - [Shared reference workspace](architecture/workspace.dsl): shared C4 reference views.
+- [Blockchain foundation](architecture/initiatives/blockchain-foundation/README.md):
+  proposed three-AZ Azure/AKS deployment for Besu and one FireFly member, with
+  quorum calculations, persistence, key services and explicit HA qualification gates.
 - [Unleash reference](architecture/documentation/system/unleash/01-boundary-and-components.md):
   OSS server and optional OSS Edge, with containers, components and all internal data flows.
 - [Ignition](architecture/initiatives/ignition/README.md): the proposed **DApp Platform** system
@@ -24,7 +27,7 @@ and preview derive outputs without rewriting the model.
 | Location | Purpose |
 |---|---|
 | `architecture/workspace.dsl` | Reference entrypoint, alongside the extendable `model.dsl` |
-| `architecture/compose.yaml` | Named `global` and `ignition` viewers, plus optional Docker tools |
+| `architecture/compose.yaml` | Named `global`, `ignition` and `blockchain-foundation` viewers, plus optional Docker tools |
 | `architecture/model/external-systems/` | Reference systems, each with a folder and container fragments |
 | `architecture/model/modules/` | Reviewed platform systems; initially no definitions |
 | `architecture/model/relationships/` | Relationships grouped by system, plus cross-system integrations |
@@ -117,7 +120,7 @@ outputs, and a subsequent failure cannot restore those explicitly cleared files.
 
 ### View architecture directly from DSL
 
-Start **both workspaces** from the repository root:
+Start **all workspaces** from the repository root:
 
 ```text
 docker compose -f architecture/compose.yaml up -d
@@ -130,6 +133,7 @@ Only the native viewers start; the optional tools service is excluded by its pro
 |---|---|---|
 | `global` | `architecture/workspace.dsl` | [Global reference workspace](http://127.0.0.1:8080) |
 | `ignition` | `architecture/initiatives/ignition/workspace.dsl` | [Ignition](http://127.0.0.1:8081) |
+| `blockchain-foundation` | `architecture/initiatives/blockchain-foundation/workspace.dsl` | [Blockchain foundation](http://127.0.0.1:8082) |
 
 To start just one service, choose its name:
 
@@ -154,7 +158,7 @@ using the shared `viewer` anchor, its workspace directory and an unused localhos
 port. The [initiative template](architecture/templates/initiative/README.md) shows
 the service definition. All workspace choices are visible in one Compose file.
 
-Stop one viewer, or stop and remove both:
+Stop one viewer, or stop and remove all viewers:
 
 ```text
 docker compose -f architecture/compose.yaml stop ignition

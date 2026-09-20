@@ -1,5 +1,8 @@
 # Architecture
 
+For the three-AZ Azure/AKS deployment of Besu and FireFly, start with the
+[blockchain foundation initiative](initiatives/blockchain-foundation/README.md).
+
 Edit Structurizr DSL directly. Docker Compose serves the authored workspaces;
 validation and export run in containers. No host Python or shell scripts are needed.
 

@@ -86,15 +86,55 @@ guidance for authors and reviewers. Custom enforcement can be introduced
 progressively as teams agree on rules worth maintaining. Python currently only
 selects workspaces, runs native commands and manages generated files.
 
-### Export SVG or PNG
+### Export C4-PlantUML (default), Mermaid, SVG or PNG
 
 Exports validate the selected workspace first. Omit `--workspace` for the
-reference workspace, and omit `--view` to export all its diagrams.
+reference workspace, and omit `--view` to export all its diagrams. C4-PlantUML is
+the default and the primary output for agent reviews; `--format plantuml`
+selects it explicitly.
 
 ```text
-docker compose -f architecture/compose.yaml run --rm --build tools export --format svg
-docker compose -f architecture/compose.yaml run --rm --build tools export --format png --view 01-landscape
-docker compose -f architecture/compose.yaml run --rm --build tools export --workspace architecture/initiatives/ignition/workspace.dsl --view ignition-dapp-platform-context --format svg
+docker compose -f architecture/compose.yaml run --rm --build tools export
+docker compose -f architecture/compose.yaml run --rm tools export --view 01-landscape
+docker compose -f architecture/compose.yaml run --rm tools export --workspace architecture/initiatives/ignition/workspace.dsl
+docker compose -f architecture/compose.yaml run --rm tools export --workspace architecture/initiatives/ignition/workspace.dsl --view ignition-dapp-platform-context --format plantuml
+```
+
+The native [C4-PlantUML exporter](https://docs.structurizr.com/export/c4plantuml)
+is invoked with `-format plantuml/c4plantuml` on freshly validated JSON. It
+creates `structurizr-<view-key>.puml` files using C4 macros and embedded legends.
+The generated definitions use the built-in PlantUML C4 standard library and
+default C4 styling; authored export properties can customize that behavior.
+Agents review the compact `.puml` text first, then relevant DSL definitions.
+No browser or separate PlantUML installation is needed to export or review text.
+
+Files stay in the `plantuml/` output directories. Successful re-export replaces
+the previous definitions and removes obsolete separate `-key.puml` legends from
+that selection. `export.json` records `"native_format": "plantuml/c4plantuml"`
+to identify the exporter used.
+
+For optional Mermaid definitions, explicitly select `--format mermaid` with the
+same workspace and view selection options:
+
+```text
+docker compose -f architecture/compose.yaml run --rm tools export --format mermaid
+docker compose -f architecture/compose.yaml run --rm tools export --view 01-landscape --format mermaid
+```
+
+The native [Mermaid exporter](https://docs.structurizr.com/export/mermaid)
+creates one `structurizr-<view-key>.mmd` file per diagram and preserves its
+generated text without launching a browser. Mermaid does not reproduce every
+Structurizr shape, style or layout feature. Consumers rendering these definitions
+must configure Mermaid with `"securityLevel": "loose"` for its HTML labels.
+
+For optional image files, explicitly select `--format svg` or `--format png`.
+Both use the native [PNG/SVG renderer](https://docs.structurizr.com/export/png-and-svg)
+and retain `<view-key>.svg` or `<view-key>.png` filenames. The same workspace and
+view selection options apply:
+
+```text
+docker compose -f architecture/compose.yaml run --rm tools export --format svg
+docker compose -f architecture/compose.yaml run --rm tools export --view 01-landscape --format png
 ```
 
 For a clean rebuild, add `--clean` to the first export command. This removes
@@ -106,14 +146,25 @@ evidence caches outside this directory are unaffected.
 To rebuild both workspaces, clean once and then export the initiative:
 
 ```text
-docker compose -f architecture/compose.yaml run --rm --build tools export --clean --format svg
-docker compose -f architecture/compose.yaml run --rm tools export --workspace architecture/initiatives/ignition/workspace.dsl --format svg
+docker compose -f architecture/compose.yaml run --rm --build tools export --clean
+docker compose -f architecture/compose.yaml run --rm tools export --workspace architecture/initiatives/ignition/workspace.dsl
 ```
 
-Without `--clean`, each successful export replaces its selected diagram set,
-including removal of obsolete images. Use `--clean` only on the first command
+Without `--clean`, each successful export replaces only its selected workspace,
+diagram set and format, including removal of obsolete files in that selection.
+Other selections and formats are preserved. Use `--clean` only on the first command
 when exporting multiple workspaces or formats; it clears all architecture build
 outputs, and a subsequent failure cannot restore those explicitly cleared files.
+
+### Final architecture review
+
+Regenerate C4-PlantUML for the affected workspace or diagrams as the final review
+step. Read those fresh `.puml` exports first, then inspect relevant DSL definitions for
+correctness and details the export omits. Review images only when explicitly
+requested. If corrections change the DSL, regenerate affected exports before
+completing the review. A failed export leaves previous successful files in place;
+those files are not current review evidence. Keep generated exports untracked and
+make corrections in DSL. See [AGENTS.md](AGENTS.md) for persistent agent guidance.
 
 ### View architecture directly from DSL
 
@@ -168,13 +219,17 @@ Current outputs live in `build/architecture/workspaces/reference/` or
 
 - `workspace.json`: last successfully validated model.
 - `validation.json` and `validation.log`: latest validation result, including failures.
-- `exports/all/svg/` or `exports/all/png/`: complete exported diagram sets.
-- `exports/view-<key-hash>/<format>/`: individual view exports.
+- `exports/all/plantuml/`: default C4-PlantUML definitions (`structurizr-<view-key>.puml`) with embedded legends; the primary agent review output.
+- `exports/all/mermaid/`: optional Mermaid definitions, named `structurizr-<view-key>.mmd`.
+- `exports/all/svg/` or `exports/all/png/`: optional complete image sets.
+- `exports/view-<key-hash>/<format>/`: individual view exports; the hash is the first 12 hex characters of the view key's SHA-256.
+- Each export directory contains `export.json` with its workspace, public format, native exporter format, selected view and source fingerprint; `export.log` records the latest export command output for that workspace.
 
 Failed validation does not overwrite successful validation JSON or exports.
 The native viewer reads DSL independently of validation results.
-Exports replace their selection only after successful rendering; removed views
-do not leave old images behind. Tools run sequentially with one writer per checkout.
+Exports replace their selection only after successful export and output checks;
+removed views do not leave old files in that selection. Tools run sequentially
+with one writer per checkout.
 There is no run-history retention service. Older outputs outside these paths
 are historical and are not used; `export --clean` removes them. Everything generated remains under
 ignored `build/architecture/` for the Python tools. Native Structurizr local mode

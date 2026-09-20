@@ -32,13 +32,14 @@ def timestamp():
 def source_fingerprint():
     """No host Git executable or .git mount is needed."""
     digest = hashlib.sha256()
-    paths = [ROOT / 'README.md', *ARCHITECTURE.rglob('*')]
+    paths = [ROOT / 'README.md']
+    for directory, directories, files in os.walk(ARCHITECTURE):
+        # Prune native caches before walking them; only authored files affect freshness.
+        directories[:] = [name for name in directories if name not in ('__pycache__', '.structurizr')]
+        paths.extend(Path(directory) / name for name in files
+                     if name not in ('workspace.json', 'workspace.json.bak') and not name.endswith('.pyc'))
     for path in sorted(paths):
-        if not path.is_file() or path.is_relative_to(ARCHITECTURE / 'references/legacy'):
-            continue
-        if '__pycache__' in path.parts or '.structurizr' in path.parts or path.suffix == '.pyc':
-            continue
-        if path.name in ('workspace.json', 'workspace.json.bak'):
+        if not path.is_file():
             continue
         digest.update(path.relative_to(ROOT).as_posix().encode() + b'\0')
         digest.update(hashlib.sha256(path.read_bytes()).digest())
@@ -48,14 +49,16 @@ def source_fingerprint():
 def atomic_json(path, value):
     path = Path(path)
     path.parent.mkdir(parents=True, exist_ok=True)
-    with tempfile.NamedTemporaryFile(mode='w', encoding='utf-8', dir=path.parent, delete=False) as stream:
-        temporary = Path(stream.name)
-        json.dump(value, stream, indent=2)
-        stream.write('\n')
+    temporary = None
     try:
+        with tempfile.NamedTemporaryFile(mode='w', encoding='utf-8', dir=path.parent, delete=False) as stream:
+            temporary = Path(stream.name)
+            json.dump(value, stream, indent=2)
+            stream.write('\n')
         os.replace(temporary, path)
     finally:
-        temporary.unlink(missing_ok=True)
+        if temporary is not None:
+            temporary.unlink(missing_ok=True)
 
 
 @contextmanager
@@ -74,12 +77,20 @@ def command_lock():
 
 
 def run_java(arguments, log, timeout=240):
-    result = subprocess.run(JAVA + arguments, cwd=ROOT, capture_output=True, text=True,
-                            encoding='utf-8', errors='replace', timeout=timeout)
-    log.append('structurizr ' + ' '.join(arguments) + '\n' + result.stdout + result.stderr)
+    log.append('structurizr ' + ' '.join(arguments) + '\n')
+    try:
+        result = subprocess.run(JAVA + arguments, cwd=ROOT, capture_output=True, text=True,
+                                encoding='utf-8', errors='replace', timeout=timeout)
+    except subprocess.TimeoutExpired as exc:
+        # TimeoutExpired may contain bytes even when subprocess.run uses text=True.
+        for output in (exc.stdout, exc.stderr):
+            if output:
+                log[-1] += output.decode('utf-8', errors='replace') if isinstance(output, bytes) else output
+        log[-1] += f'\nTimed out after {exc.timeout} seconds'
+        raise
+    log[-1] += result.stdout + result.stderr
     if result.returncode:
         raise RuntimeError(log[-1][-4000:])
-    return result
 
 
 def clean_build():
@@ -136,7 +147,7 @@ def validate(paths=None):
             if report['passed']:
                 atomic_json(directory / 'workspace.json', parsed[path])
             atomic_json(directory / 'validation.json', report)
-            (directory / 'validation.log').write_text('\n'.join(logs.get(path, []) + report['errors']), encoding='utf-8')
+            (directory / 'validation.log').write_text('\n'.join(logs[path] + report['errors']), encoding='utf-8')
             print(f'{report["workspace"]}: {"PASS" if report["passed"] else "FAIL"}', flush=True)
             for error in report['errors']:
                 print(error, file=sys.stderr)

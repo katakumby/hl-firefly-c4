@@ -7,6 +7,8 @@
 > with containerized validation/export and a Docker viewer. Retired source files can
 > be inspected in Git history; current commands are in the [root README](../../../README.md).
 > The current workflow explicitly runs native Structurizr `validate` and `inspect`.
+> Historical links below may target removed source files or disposable build
+> artifacts. Use Git history for removed files; generated evidence is not retained.
 > All custom architecture validation is now removed. Team conventions are
 > advisory; native inspection properties control findings while teams mature.
 
@@ -360,14 +362,14 @@ Historical evidence links above describe earlier implementations.
 | Item | Current status |
 |---|---|
 | F1 / O2, F2 | Custom provenance, identity, dependency, coverage, prefix and duplicate-selection gates removed; team conventions are advisory |
-| F3, F4 | Automatic evidence refresh and inventory audits retired; captured evidence retained for manual review |
+| F3, F4 | Automatic evidence refresh and inventory audits retired; removed snapshots are available in Git history |
 | F5 / O3 | Native Docker viewers read authored DSL; tools write the latest results and preserve successful artifacts after failure; custom run history and manifests retired |
 | F6 | Presentation baseline preserved as historical evidence; automatic comparison retired |
 | O1 | Ordered FireFly and integration relationship fragments remain active |
 | O6 | Shared version pin, formatting settings, proposed style and initiative templates remain; no custom DApp validation rule |
 | O4 / O5 | CI, documentation-check commands and Mermaid automation remain excluded; custom Markdown-link validation removed |
 
-The reference contains 333 elements, 696 relationships and 95 views. The switch
+At the time of that migration, the reference contained 333 elements, 696 relationships and 95 views. The switch
 to native-only validation preserved the parsed model and views. Current tests
 cover native severity settings, workspace selection, flexible inheritance and
 artifact safety. They do not enforce retired architecture policies.

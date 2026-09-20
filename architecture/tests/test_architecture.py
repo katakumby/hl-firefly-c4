@@ -32,6 +32,40 @@ def checkout():
         yield architecture
 
 
+def contents(directory):
+    return {path.name: path.read_bytes() for path in directory.iterdir()}
+
+
+def native_output(files):
+    """Stand in for a native export when exercising publication failures."""
+    def run(arguments, logs, **kwargs):
+        output = Path(arguments[arguments.index('-output') + 1])
+        output.mkdir()
+        for name, content in files.items():
+            (output / name).write_text(content)
+    return run
+
+
+# Keep expected native names independent of the production format mapping.
+FORMATS = (('plantuml', 'structurizr-', 'puml'), ('mermaid', 'structurizr-', 'mmd'),
+           ('svg', '', 'svg'), ('png', '', 'png'))
+
+
+@contextmanager
+def export_fixture(format, keys=('one',)):
+    with tempfile.TemporaryDirectory(dir=BUILD) as temporary:
+        directory = Path(temporary)
+        destination = directory / 'exports/all' / format
+        destination.mkdir(parents=True)
+        (destination / 'previous-output').write_text('previous success')
+        (destination / 'export.json').write_text('{"passed": true}')
+        raw = {'views': {'systemContextViews': [{'key': key} for key in keys]}}
+        with patch.object(cli, 'output_directory', return_value=directory), \
+             patch.object(cli, 'fresh_workspace', return_value=(raw, {'source_sha256': 'fixture'})), \
+             patch.object(cli, 'source_fingerprint', return_value='fixture'):
+            yield directory, destination
+
+
 BASE = '''workspace {
  properties {
   "structurizr.inspection.*" "info"
@@ -182,7 +216,7 @@ class C4PlantUMLExport(unittest.TestCase):
             self.assertEqual('plantuml/c4plantuml', report['native_format'])
             self.assertIsNone(report['view'])
             self.assertEqual(before, report['source_sha256'])
-            previous = {p.name: p.read_bytes() for p in complete.iterdir()}
+            previous = contents(complete)
             selection = 'view-' + hashlib.sha256(b'flow').hexdigest()[:12]
             single = directory / 'exports' / selection / 'plantuml'
             single.mkdir(parents=True)
@@ -193,7 +227,7 @@ class C4PlantUMLExport(unittest.TestCase):
             self.assertIn('Rel(A, B, "1: Calls"', (single / 'structurizr-flow.puml').read_text())
             self.assertEqual('flow', json.loads((single / 'export.json').read_text())['view'])
             self.assertIn('-format plantuml/c4plantuml', (directory / 'export.log').read_text())
-            self.assertEqual(previous, {p.name: p.read_bytes() for p in complete.iterdir()})
+            self.assertEqual(previous, contents(complete))
             self.assertEqual('Existing Mermaid export', mermaid.read_text())
             self.assertEqual(before, cli.source_fingerprint())
             self.assertFalse(paths.output_directory(paths.REFERENCE).exists())
@@ -226,7 +260,7 @@ class MermaidExport(unittest.TestCase):
             self.assertIsNone(metadata['view'])
             self.assertEqual(before, metadata['source_sha256'])
             self.assertTrue(metadata['passed'])
-            previous = {p.name: p.read_bytes() for p in complete.iterdir()}
+            previous = contents(complete)
             image = directory / 'exports/all/svg/keep.svg'
             image.parent.mkdir(parents=True)
             image.write_text('existing image')
@@ -238,7 +272,7 @@ class MermaidExport(unittest.TestCase):
             self.assertEqual((complete / 'structurizr-flow.mmd').read_bytes(),
                              (single / 'structurizr-flow.mmd').read_bytes())
             self.assertEqual('flow', json.loads((single / 'export.json').read_text())['view'])
-            self.assertEqual(previous, {p.name: p.read_bytes() for p in complete.iterdir()})
+            self.assertEqual(previous, contents(complete))
             self.assertEqual('existing image', image.read_text())
             log = (directory / 'export.log').read_text()
             self.assertIn('-format mermaid', log)
@@ -265,9 +299,9 @@ class MermaidExport(unittest.TestCase):
                 self.assertEqual(3, len(list(output.glob('*.mmd'))))
                 report = json.loads((output / 'export.json').read_text())
                 self.assertEqual(workspace.relative_to(cli.ROOT).as_posix(), report['workspace'])
-                for previous, contents in outputs.items():
-                    self.assertEqual(contents, {p.name: p.read_bytes() for p in previous.iterdir()})
-                outputs[output] = {p.name: p.read_bytes() for p in output.iterdir()}
+                for previous, snapshot in outputs.items():
+                    self.assertEqual(snapshot, contents(previous))
+                outputs[output] = contents(output)
             self.assertFalse(paths.output_directory(paths.REFERENCE).exists())
 
     def test_bad_selection_and_validation_failure_preserve_mermaid(self):
@@ -276,63 +310,16 @@ class MermaidExport(unittest.TestCase):
             with patch.object(sys, 'argv', ['architecture.py', 'export', '--format', 'mermaid']):
                 self.assertEqual(0, cli.main())
             output = paths.output_directory(paths.REFERENCE) / 'exports/all/mermaid'
-            previous = {p.name: p.read_bytes() for p in output.iterdir()}
+            previous = contents(output)
             for key in ('missing', ''):
                 with self.subTest(key=key), patch.object(sys, 'argv', ['architecture.py', 'export', '--format', 'mermaid', '--view', key]):
                     self.assertEqual(1, cli.main())
-                self.assertEqual(previous, {p.name: p.read_bytes() for p in output.iterdir()})
+                self.assertEqual(previous, contents(output))
             paths.REFERENCE.write_text('workspace {\n !include missing.dsl\n}')
             with patch.object(sys, 'argv', ['architecture.py', 'export', '--format', 'mermaid']):
                 self.assertEqual(1, cli.main())
-            self.assertEqual(previous, {p.name: p.read_bytes() for p in output.iterdir()})
+            self.assertEqual(previous, contents(output))
             self.assertFalse(json.loads((output.parents[2] / 'validation.json').read_text())['passed'])
-
-    def test_incomplete_or_empty_text_output_preserves_previous_exports(self):
-        for format, extension in (('mermaid', 'mmd'), ('plantuml', 'puml')):
-            for failure in ('missing', 'empty', 'wrong-name'):
-                with self.subTest(format=format, failure=failure), tempfile.TemporaryDirectory(dir=BUILD) as temporary:
-                    directory = Path(temporary)
-                    destination = directory / 'exports/all' / format
-                    destination.mkdir(parents=True)
-                    (destination / f'previous.{extension}').write_text('previous success')
-                    (destination / 'export.json').write_text('{"passed": true}')
-                    previous = {p.name: p.read_bytes() for p in destination.iterdir()}
-                    raw = {'views': {'systemContextViews': [{'key': 'one'}, {'key': 'two'}]}}
-                    def incomplete_export(arguments, logs, **kwargs):
-                        output = Path(arguments[arguments.index('-output') + 1])
-                        output.mkdir()
-                        (output / f'structurizr-one.{extension}').write_text('native output')
-                        if failure == 'empty':
-                            (output / f'structurizr-two.{extension}').touch()
-                        elif failure == 'wrong-name':
-                            (output / f'two.{extension}').write_text('native output')
-                    with patch.object(cli, 'output_directory', return_value=directory), \
-                         patch.object(cli, 'fresh_workspace', return_value=(raw, {'source_sha256': 'fixture'})), \
-                         patch.object(cli, 'run_java', side_effect=incomplete_export):
-                        with self.assertRaisesRegex(ValueError, 'every requested diagram'):
-                            cli.export(REFERENCE, format)
-                    self.assertEqual(previous, {p.name: p.read_bytes() for p in destination.iterdir()})
-
-    def test_sources_changed_during_export_preserves_previous_mermaid(self):
-        with tempfile.TemporaryDirectory(dir=BUILD) as temporary:
-            directory = Path(temporary)
-            destination = directory / 'exports/all/mermaid'
-            destination.mkdir(parents=True)
-            (destination / 'structurizr-one.mmd').write_text('previous success')
-            (destination / 'export.json').write_text('{"source_sha256": "previous"}')
-            previous = {p.name: p.read_bytes() for p in destination.iterdir()}
-            raw = {'views': {'systemContextViews': [{'key': 'one'}]}}
-            def export_diagram(arguments, logs, **kwargs):
-                output = Path(arguments[arguments.index('-output') + 1])
-                output.mkdir()
-                (output / 'structurizr-one.mmd').write_text('graph LR\n  A --> B')
-            with patch.object(cli, 'output_directory', return_value=directory), \
-                 patch.object(cli, 'fresh_workspace', return_value=(raw, {'source_sha256': 'fixture'})), \
-                 patch.object(cli, 'source_fingerprint', return_value='changed'), \
-                 patch.object(cli, 'run_java', side_effect=export_diagram):
-                with self.assertRaisesRegex(ValueError, 'Sources changed during export'):
-                    cli.export(REFERENCE, 'mermaid')
-            self.assertEqual(previous, {p.name: p.read_bytes() for p in destination.iterdir()})
 
 
 class FailureHandling(unittest.TestCase):
@@ -389,17 +376,6 @@ class FailureHandling(unittest.TestCase):
                 (architecture / 'workspace.dsl').write_text('Changed DSL')
                 self.assertNotEqual(before, cli.source_fingerprint())
 
-    def test_failed_validation_preserves_previous_json(self):
-        with tempfile.TemporaryDirectory(dir=BUILD) as temporary:
-            destination = Path(temporary)
-            (destination / 'workspace.json').write_text('previous-success')
-            with patch.object(cli, 'output_directory', return_value=destination), \
-                 patch.object(cli, 'run_java', side_effect=RuntimeError('parser failed')):
-                reports = cli.validate([REFERENCE])
-            self.assertFalse(reports[REFERENCE]['passed'])
-            self.assertEqual('previous-success', (destination / 'workspace.json').read_text())
-            self.assertFalse(json.loads((destination / 'validation.json').read_text())['passed'])
-
     def test_native_validation_failure_prevents_publication(self):
         run_native = cli.run_java
         commands = []
@@ -419,21 +395,6 @@ class FailureHandling(unittest.TestCase):
             self.assertIn('native validation rejected fixture', reports[REFERENCE]['errors'][0])
             self.assertEqual('previous-success', (destination / 'workspace.json').read_text())
 
-    def test_failed_export_preserves_previous_files(self):
-        for format, filename in (('mermaid', 'structurizr-old.mmd'), ('plantuml', 'structurizr-old.puml'),
-                                 ('svg', 'old.svg'), ('png', 'old.png')):
-            with self.subTest(format=format), tempfile.TemporaryDirectory(dir=BUILD) as temporary:
-                directory = Path(temporary)
-                destination = directory / 'exports/all' / format
-                destination.mkdir(parents=True)
-                (destination / filename).write_text('old')
-                with patch.object(cli, 'output_directory', return_value=directory), \
-                     patch.object(cli, 'fresh_workspace', return_value=({'views': {}}, {'source_sha256': 'fixture'})), \
-                     patch.object(cli, 'run_java', side_effect=RuntimeError('export failed')):
-                    with self.assertRaisesRegex(RuntimeError, 'export failed'):
-                        cli.export(REFERENCE, format)
-                self.assertEqual('old', (destination / filename).read_text())
-
     def test_command_lock_blocks_a_second_process(self):
         with cli.command_lock():
             command = [sys.executable, '-B', '-c', "from architecture import command_lock;\nwith command_lock(): print('unexpected')"]
@@ -443,48 +404,107 @@ class FailureHandling(unittest.TestCase):
         with cli.command_lock():
             pass
 
-    def test_export_replaces_removed_files_only_after_success(self):
-        for format, filename in (('mermaid', 'structurizr-one.mmd'), ('plantuml', 'structurizr-one.puml'),
-                                 ('svg', 'one.svg'), ('png', 'one.png')):
-            with self.subTest(format=format), tempfile.TemporaryDirectory(dir=BUILD) as temporary:
-                directory = Path(temporary)
-                destination = directory / 'exports/all' / format
-                destination.mkdir(parents=True)
-                (destination / 'removed-file').write_text('old')
+    def test_atomic_json_failure_cleans_temporary_files_and_preserves_previous_report(self):
+        for failure in ('serialization', 'write', 'replace'):
+            with self.subTest(failure=failure), tempfile.TemporaryDirectory(dir=BUILD) as temporary, ExitStack() as stack:
+                destination = Path(temporary) / 'report.json'
+                destination.write_text('previous report')
+                value = {'invalid': object()} if failure == 'serialization' else {'passed': True}
+                if failure == 'write':
+                    def partial_write(value, stream, **kwargs):
+                        stream.write('{')
+                        raise OSError('write failed')
+                    stack.enter_context(patch.object(cli.json, 'dump', side_effect=partial_write))
+                elif failure == 'replace':
+                    stack.enter_context(patch.object(cli.os, 'replace', side_effect=OSError('replace failed')))
+                with self.assertRaises((TypeError, OSError)):
+                    cli.atomic_json(destination, value)
+                self.assertEqual({'report.json': b'previous report'}, contents(destination.parent))
+
+
+class ExportPublication(unittest.TestCase):
+    def test_incomplete_output_preserves_previous_exports(self):
+        for format, prefix, extension in FORMATS:
+            for failure in ('missing', 'empty', 'wrong-name', 'legend-only', 'no-views'):
+                keys = () if failure == 'no-views' else ('one', 'two')
+                with self.subTest(format=format, failure=failure), export_fixture(format, keys) as (_, destination):
+                    before = contents(destination)
+                    files = {f'{prefix}one.{extension}': 'native output'}
+                    if failure == 'empty':
+                        files[f'{prefix}two.{extension}'] = ''
+                    elif failure == 'wrong-name':
+                        files[f'unexpected.{extension}'] = 'native output'
+                    elif failure == 'legend-only':
+                        files[f'{prefix}one-key.{extension}'] = 'native legend'
+                    with patch.object(cli, 'run_java', side_effect=native_output(files)):
+                        with self.assertRaisesRegex(ValueError, 'every requested diagram'):
+                            cli.export(REFERENCE, format)
+                    self.assertEqual(before, contents(destination))
+
+    def test_failed_export_preserves_previous_files(self):
+        for format, _, _ in FORMATS:
+            with self.subTest(format=format), export_fixture(format) as (_, destination):
+                before = contents(destination)
+                with patch.object(cli, 'run_java', side_effect=RuntimeError('export failed')):
+                    with self.assertRaisesRegex(RuntimeError, 'export failed'):
+                        cli.export(REFERENCE, format)
+                self.assertEqual(before, contents(destination))
+
+    def test_sources_changed_during_export_preserves_previous_files(self):
+        for format, prefix, extension in FORMATS:
+            with self.subTest(format=format), export_fixture(format) as (_, destination):
+                before = contents(destination)
+                with patch.object(cli, 'source_fingerprint', return_value='changed'), \
+                     patch.object(cli, 'run_java', side_effect=native_output({f'{prefix}one.{extension}': 'new output'})):
+                    with self.assertRaisesRegex(ValueError, 'Sources changed during export'):
+                        cli.export(REFERENCE, format)
+                self.assertEqual(before, contents(destination))
+
+    def test_success_replaces_obsolete_files_and_preserves_other_selections(self):
+        for format, prefix, extension in FORMATS:
+            with self.subTest(format=format), export_fixture(format) as (directory, destination):
+                filename = f'{prefix}one.{extension}'
                 other_format = 'svg' if format == 'mermaid' else 'mermaid'
                 preserved = [directory / 'exports/all' / other_format / 'keep',
                              directory / 'exports/view-other' / format / 'keep']
                 for path in preserved:
                     path.parent.mkdir(parents=True)
                     path.write_text('preserve')
-                raw = {'views': {'systemContextViews': [{'key': 'one'}]}}
-                def export_diagram(arguments, logs, **kwargs):
-                    output = Path(arguments[arguments.index('-output') + 1])
-                    output.mkdir()
-                    (output / filename).write_text('native output')
-                with patch.object(cli, 'output_directory', return_value=directory), \
-                     patch.object(cli, 'fresh_workspace', return_value=(raw, {'source_sha256': 'fixture'})), \
-                     patch.object(cli, 'source_fingerprint', return_value='fixture'), \
-                     patch.object(cli, 'run_java', side_effect=export_diagram):
+                with patch.object(cli, 'run_java', side_effect=native_output({filename: 'native output'})):
                     cli.export(REFERENCE, format)
                 self.assertEqual({filename, 'export.json'}, {p.name for p in destination.iterdir()})
                 for path in preserved:
                     self.assertEqual('preserve', path.read_text())
 
-    def test_legend_cannot_mask_a_missing_diagram(self):
-        for format, prefix, extension in (('svg', '', 'svg'), ('plantuml', 'structurizr-', 'puml')):
-            with self.subTest(format=format), tempfile.TemporaryDirectory(dir=BUILD) as temporary:
-                raw = {'views': {'systemContextViews': [{'key': 'one'}, {'key': 'two'}]}}
-                def export_diagram(arguments, logs, **kwargs):
-                    output = Path(arguments[arguments.index('-output') + 1])
-                    output.mkdir()
-                    (output / f'{prefix}one.{extension}').write_text('native output')
-                    (output / f'{prefix}one-key.{extension}').write_text('native legend')
-                with patch.object(cli, 'output_directory', return_value=Path(temporary)), \
-                     patch.object(cli, 'fresh_workspace', return_value=(raw, {'source_sha256': 'fixture'})), \
-                     patch.object(cli, 'run_java', side_effect=export_diagram):
-                    with self.assertRaisesRegex(ValueError, 'every requested diagram'):
-                        cli.export(REFERENCE, format)
+    def test_publication_failure_restores_previous_export(self):
+        rename = Path.rename
+        def fail_publication(path, target):
+            if path.name == 'diagrams':
+                raise OSError('publication failed')
+            return rename(path, target)
+        with export_fixture('plantuml') as (_, destination):
+            before = contents(destination)
+            with patch.object(cli, 'run_java', side_effect=native_output({'structurizr-one.puml': 'new output'})), \
+                 patch.object(Path, 'rename', fail_publication):
+                with self.assertRaisesRegex(OSError, 'publication failed'):
+                    cli.export(REFERENCE, 'plantuml')
+            self.assertEqual(before, contents(destination))
+
+    def test_timeout_logs_partial_output_and_preserves_previous_files(self):
+        for stdout, stderr in ((b'partial output', b'partial error'), ('partial output', 'partial error'), (None, None)):
+            with self.subTest(stdout=stdout), export_fixture('plantuml') as (directory, destination):
+                before = contents(destination)
+                timeout = subprocess.TimeoutExpired('java', 600, output=stdout, stderr=stderr)
+                with patch.object(cli.subprocess, 'run', side_effect=timeout):
+                    with self.assertRaises(subprocess.TimeoutExpired):
+                        cli.export(REFERENCE, 'plantuml')
+                log = (directory / 'export.log').read_text()
+                self.assertIn('-format plantuml/c4plantuml', log)
+                self.assertIn('Timed out after 600 seconds', log)
+                if stdout:
+                    self.assertIn('partial output', log)
+                    self.assertIn('partial error', log)
+                self.assertEqual(before, contents(destination))
 
 
 if __name__ == '__main__':

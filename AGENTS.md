@@ -31,17 +31,11 @@ C4-PlantUML is the primary agent review output and the default export format.
 Read its compact C4 macro definitions as text. Omit `--workspace` for the reference
 workspace; omit `--view` for all diagrams in the selected workspace.
 
-Both plain `export` and explicit `--format plantuml` invoke native
-`-format plantuml/c4plantuml`. Files use `structurizr-<view-key>.puml` in
-`exports/all/plantuml/` or `exports/view-<key-hash>/plantuml/`, with embedded legends
-and C4 standard-library macros. The command prints the destination; `export.json`
-records the selection, source fingerprint and `native_format`. A successful
-re-export removes obsolete separate `-key.puml` legends from that selection.
-
-Explicit `--format mermaid` remains available for optional `.mmd` definitions in
-`exports/all/mermaid/` or `exports/view-<key-hash>/mermaid/`. Explicit `--format svg`
-or `--format png` generates optional images. Workspace and view selection options
-are the same for every format. Routine C4-PlantUML text review needs no renderer.
+Both plain `export` and explicit `--format plantuml` use native C4-PlantUML.
+Find `structurizr-<view-key>.puml` in the printed output directory. See the
+[format table](README.md#export-c4-plantuml-default-mermaid-svg-or-png) and
+[output reference](README.md#outputs-and-maintenance) for optional Mermaid,
+SVG/PNG, paths and freshness metadata. Routine text review needs no renderer.
 
 After tooling changes, validate both workspaces and run the containerized tests:
 

@@ -129,7 +129,7 @@ The existing `peerMembers` element summarizes other member systems in static vie
 
 ## Evidence baseline
 
-The requested [FireFly head documentation](https://hyperledger-firefly.github.io/firefly/head/) is a moving reference. This collection uses its official documentation source already pinned in [sources.json](../../references/sources.json), retrieved on 2026-09-18:
+The requested [FireFly head documentation](https://hyperledger-firefly.github.io/firefly/head/) is a moving reference. This collection uses the official documentation revisions listed below and linked from the individual use cases, retrieved on 2026-09-18:
 
 | Repository | Pinned revision |
 |---|---|
@@ -149,7 +149,7 @@ Diagram rules follow official [C4 dynamic views](https://c4model.com/diagrams/dy
 
 Edit the Markdown Mermaid blocks as the source of truth. There are exactly two diagrams per numbered document and none in this index. Keep system views at software-system level and detailed participants at container level; add the canonical model ID whenever a participant changes. Every arrow must retain its technology label.
 
-For a diagram change, parse and render all affected Mermaid blocks, inspect the resulting layout, check relative links and API/source references, and verify the paired views still describe the same outcome. Temporary render outputs belong in the ignored `build/architecture/use-case-validation/` directory. This documentation does not regenerate `workspace.dsl`, the model catalog, or historical exports.
+For a diagram change, follow the [repository review workflow](../../../AGENTS.md): regenerate and read C4-PlantUML for affected workspace views first, then check relevant DSL and the authored Mermaid blocks here. Check relative links and API/source references, and verify paired views describe the same outcome. Render and inspect images only when explicitly requested; temporary render outputs belong in ignored `build/architecture/use-case-validation/`. These handwritten Mermaid sequences remain Markdown documentation and are separate from workspace exports.
 
 
 ### Validation completed 2026-09-19

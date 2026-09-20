@@ -36,14 +36,15 @@ The member-application and operations systems are explicitly reference solution
 boundaries. Groups organize related products without merging those boundaries.
 
 All diagram relationships are directed and describe exchanged information or
-in-process requests. Optional configurations have dedicated views. Sources are
-pinned in [the source inventory](../../references/sources.json). Historical
-coverage reports remain under [legacy references](../../references/legacy/README.md);
-the current workflow uses native Structurizr validation and inspection.
+in-process requests. Optional configurations have dedicated views. Supporting
+source URLs, revision pins and evidence classifications are retained in the
+[DSL definitions](../../model/external-systems) and system documentation.
+Removed source inventories and coverage reports are available in Git history.
+The current workflow uses native Structurizr validation and inspection.
 
 The [reference workspace](../../workspace.dsl) presents this catalog; initiatives
 select their own views while inheriting the same model. Each workspace is
-validated separately. Deployment definitions and historical exports are archived
-outside the active workspace. The [architecture decisions](../../decisions/adr)
+validated separately. Earlier deployment definitions are available in Git history;
+generated exports are disposable build artifacts. The [architecture decisions](../../decisions/adr)
 explain the selected boundaries, and [workspace decisions](../../decisions/workspace)
 record authoring and tooling choices.

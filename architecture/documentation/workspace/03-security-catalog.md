@@ -88,8 +88,9 @@ those two arrows without introducing the alternative browser-login path.
 
 Element properties distinguish documented capabilities, logical reference
 abstractions and proposed integrations. Relationship classifications explicitly
-identify architecture inferences. Source URLs and fingerprints are in
-`architecture/references/sources.json`; the security source coverage report maps each element to
-its documentation. Broad product guides support capability-level claims, not
+identify architecture inferences. Element URLs and `architecture.sources`
+properties in the [DSL definitions](../../model/external-systems) identify the
+supporting documentation. The former source inventory and coverage reports are
+available in Git history. Broad product guides support capability-level claims, not
 claims about unpublished classes or microservices. This pass does not perform
 visual rendering or operational interoperability tests.

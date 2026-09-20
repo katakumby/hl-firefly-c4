@@ -3,8 +3,8 @@
 This workspace describes the documented open-source FireFly ecosystem and a
 private Besu example. The reference entrypoint is **architecture/workspace.dsl**;
 initiative workspaces extend the same modular model and select focused views.
-Previous deployment definitions are preserved separately in the deployment
-archive and are not loaded by the workspace. No deployment, availability-zone,
+Previous deployment definitions are available in Git history and are not
+loaded by the workspace. No deployment, availability-zone,
 recovery, quorum-sizing or export
 claim from the earlier reports is renewed by this validation.
 
@@ -27,7 +27,7 @@ container. The Sandbox browser and Node.js server are also separate containers.
 Core hosts statically compiled plugin adapters. Independent connectors are
 containers. Core and FFTM use separate logical PostgreSQL databases; primary and
 standby server instances belong to deployment modeling. FFTM is embedded in EVMConnect and TezosConnect, with
-each connector's own dependency version recorded in architecture/references/sources.json. SDKs, shared
+dependency evidence retained in the connector DSL definitions. SDKs, shared
 HTTP libraries, ABI/cryptographic utilities and factories are embedded
 responsibilities, not additional services. SQLite and LevelDB boxes represent
 files owned by a process, not database servers.
@@ -38,7 +38,7 @@ labeled as logical reference abstractions. Other ledger, database, broker and
 infrastructure implementations stop at integration boundaries. This does not
 claim to inventory arbitrary vendor plugins or every
 application that could be built with FireFly. Samples and CorDapps are recorded
-as examples/customization points in the source inventory.
+as examples/customization points in the DSL descriptions and evidence properties.
 
 The open-source identity plugin is an unfinished onchain compatibility
 placeholder, not an operational DID resolution service. CordaConnect is a
@@ -64,7 +64,8 @@ remain authoritative; see the security catalog legend.
 The current validation result is in
 `build/architecture/workspaces/reference/validation.json`. The parsed
 `workspace.json` retains element identifiers and relationship evidence.
-Historical source-inventory and coverage reports are no longer regenerated.
+Source URLs and evidence properties remain in DSL; removed source inventories
+and coverage reports can be inspected in Git history.
 Recorded evidence identifies supporting source responsibilities. Architecture flow
 inferences are distinguished from a literal method-call graph. Reference
 applications and operational infrastructure are explicitly marked choices.

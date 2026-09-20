@@ -87,9 +87,10 @@ when the teams have agreed requirements and ownership for maintaining it.
 
 Remove product-specific semantic assertions,
 live evidence refresh, source-file inventories, cache verification, migration
-comparison commands and compatibility wrappers. Reference evidence and
-historical baselines remain available; future evidence changes are reviewed
-manually.
+comparison commands and compatibility wrappers. Source URLs and evidence
+classifications remain in DSL and system documentation; removed inventories
+and historical baselines are available in Git history. Review future evidence
+changes manually.
 
 Use one validation/export output directory per workspace and a single writer
 lock per checkout. Keep the latest validation report and last successful JSON.
@@ -132,5 +133,5 @@ the prebuilt Structurizr image and authored sources. Validation/export require
 the tools image; no host Python, Java or project shell scripts are needed.
 
 This change does not modify any model, relationship, view selection or style.
-Evidence metadata and legacy artifacts remain unchanged. CI and automated
+Authored evidence metadata remains unchanged. CI and automated
 rendering of exported text formats remain outside scope.

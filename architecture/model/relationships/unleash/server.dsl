@@ -233,11 +233,11 @@ unleash_adminHistory = unleash.server.adminApi -> unleash.server.audit "Queries 
     }
 }
 
-unleash_adminInsights = unleash.server.adminApi -> unleash.server.insights "Queries lifecycle and project health reports" "In-process" "Dataflow,UnleashCatalog" {
+unleash_adminInsights = unleash.server.adminApi -> unleash.server.insights "Queries reports and changes lifecycle completion" "In-process" "Dataflow,UnleashCatalog" {
     properties {
         "architecture.id" "unleash.flow.adminInsights"
         "evidence" "Architecture dataflow inferred from pinned implementation"
-        "architecture.sources" "[\"https://github.com/Unleash/unleash/tree/66d4a45c1d24c4bc8a08d8c75d205bd61dc3aed0/src/lib/routes/admin-api\",\"https://github.com/Unleash/unleash/tree/66d4a45c1d24c4bc8a08d8c75d205bd61dc3aed0/src/lib/openapi\",\"https://github.com/Unleash/unleash/tree/66d4a45c1d24c4bc8a08d8c75d205bd61dc3aed0/src/lib/features/feature-lifecycle\",\"https://github.com/Unleash/unleash/tree/66d4a45c1d24c4bc8a08d8c75d205bd61dc3aed0/src/lib/features/project-insights\"]"
+        "architecture.sources" "[\"https://github.com/Unleash/unleash/blob/66d4a45c1d24c4bc8a08d8c75d205bd61dc3aed0/src/lib/features/feature-lifecycle/feature-lifecycle-controller.ts\",\"https://github.com/Unleash/unleash/blob/66d4a45c1d24c4bc8a08d8c75d205bd61dc3aed0/src/lib/features/feature-lifecycle/feature-lifecycle-service.ts\",\"https://github.com/Unleash/unleash/blob/66d4a45c1d24c4bc8a08d8c75d205bd61dc3aed0/src/lib/features/project-insights/project-insights-controller.ts\"]"
     }
 }
 
@@ -289,11 +289,11 @@ unleash_adminSettings = unleash.server.adminApi -> unleash.server.jobs "Reads an
     }
 }
 
-unleash_insightsStore = unleash.server.insights -> unleash.server.persistence "Reads usage and updates lifecycle summaries" "In-process" "Dataflow,UnleashCatalog" {
+unleash_insightsStore = unleash.server.insights -> unleash.server.persistence "Reads reporting data and persists lifecycle state" "In-process" "Dataflow,UnleashCatalog" {
     properties {
         "architecture.id" "unleash.flow.insightsStore"
         "evidence" "Architecture dataflow inferred from pinned implementation"
-        "architecture.sources" "[\"https://github.com/Unleash/unleash/tree/66d4a45c1d24c4bc8a08d8c75d205bd61dc3aed0/src/lib/features/feature-lifecycle\",\"https://github.com/Unleash/unleash/tree/66d4a45c1d24c4bc8a08d8c75d205bd61dc3aed0/src/lib/features/project-insights\",\"https://github.com/Unleash/unleash/tree/66d4a45c1d24c4bc8a08d8c75d205bd61dc3aed0/src/lib/db\",\"https://github.com/Unleash/unleash/blob/66d4a45c1d24c4bc8a08d8c75d205bd61dc3aed0/src/lib/features/events/event-store.ts\"]"
+        "architecture.sources" "[\"https://github.com/Unleash/unleash/blob/66d4a45c1d24c4bc8a08d8c75d205bd61dc3aed0/src/lib/features/feature-lifecycle/feature-lifecycle-service.ts\",\"https://github.com/Unleash/unleash/blob/66d4a45c1d24c4bc8a08d8c75d205bd61dc3aed0/src/lib/features/feature-lifecycle/feature-lifecycle-store.ts\",\"https://github.com/Unleash/unleash/blob/66d4a45c1d24c4bc8a08d8c75d205bd61dc3aed0/src/lib/services/project-health-service.ts\"]"
     }
 }
 
@@ -369,11 +369,11 @@ unleash_jobMetrics = unleash.server.jobs -> unleash.server.metrics "Schedules me
     }
 }
 
-unleash_jobInsights = unleash.server.jobs -> unleash.server.insights "Schedules lifecycle and project health calculations" "In-process" "Dataflow,UnleashCatalog" {
+unleash_jobInsights = unleash.server.jobs -> unleash.server.insights "Schedules project health calculations" "In-process" "Dataflow,UnleashCatalog" {
     properties {
         "architecture.id" "unleash.flow.jobInsights"
         "evidence" "Architecture dataflow inferred from pinned implementation"
-        "architecture.sources" "[\"https://github.com/Unleash/unleash/tree/66d4a45c1d24c4bc8a08d8c75d205bd61dc3aed0/src/lib/features/settings\",\"https://github.com/Unleash/unleash/tree/66d4a45c1d24c4bc8a08d8c75d205bd61dc3aed0/src/lib/features/scheduler\",\"https://github.com/Unleash/unleash/tree/66d4a45c1d24c4bc8a08d8c75d205bd61dc3aed0/src/lib/features/feature-lifecycle\",\"https://github.com/Unleash/unleash/tree/66d4a45c1d24c4bc8a08d8c75d205bd61dc3aed0/src/lib/features/project-insights\"]"
+        "architecture.sources" "[\"https://github.com/Unleash/unleash/blob/66d4a45c1d24c4bc8a08d8c75d205bd61dc3aed0/src/lib/features/scheduler/schedule-services.ts\",\"https://github.com/Unleash/unleash/blob/66d4a45c1d24c4bc8a08d8c75d205bd61dc3aed0/src/lib/services/project-health-service.ts\"]"
     }
 }
 
@@ -446,5 +446,37 @@ unleash_healthEvaluation = unleash.server.health -> unleash.server.evaluation "C
         "architecture.id" "unleash.flow.healthEvaluation"
         "evidence" "Architecture dataflow inferred from pinned implementation"
         "architecture.sources" "[\"https://github.com/Unleash/unleash/blob/66d4a45c1d24c4bc8a08d8c75d205bd61dc3aed0/src/lib/routes/health-check.ts\",\"https://github.com/Unleash/unleash/blob/66d4a45c1d24c4bc8a08d8c75d205bd61dc3aed0/src/lib/routes/ready-check.ts\",\"https://github.com/Unleash/unleash/blob/66d4a45c1d24c4bc8a08d8c75d205bd61dc3aed0/src/lib/features/frontend-api/frontend-api-service.ts\",\"https://github.com/Unleash/unleash/blob/66d4a45c1d24c4bc8a08d8c75d205bd61dc3aed0/src/lib/features/frontend-api/frontend-api-repository.ts\"]"
+    }
+}
+
+unleash_metricsLifecycle = unleash.server.metrics -> unleash.server.insights "Publishes persisted usage for lifecycle transitions" "In-process" "Dataflow,UnleashCatalog" {
+    properties {
+        "architecture.id" "unleash.flow.metricsLifecycle"
+        "evidence" "Architecture dataflow inferred from pinned implementation"
+        "architecture.sources" "[\"https://github.com/Unleash/unleash/blob/66d4a45c1d24c4bc8a08d8c75d205bd61dc3aed0/src/lib/features/metrics/client-metrics/metrics-service-v2.ts\",\"https://github.com/Unleash/unleash/blob/66d4a45c1d24c4bc8a08d8c75d205bd61dc3aed0/src/lib/features/feature-lifecycle/feature-lifecycle-service.ts\"]"
+    }
+}
+
+unleash_auditLifecycle = unleash.server.audit -> unleash.server.insights "Publishes flag events for lifecycle transitions" "In-process" "Dataflow,UnleashCatalog" {
+    properties {
+        "architecture.id" "unleash.flow.auditLifecycle"
+        "evidence" "Architecture dataflow inferred from pinned implementation"
+        "architecture.sources" "[\"https://github.com/Unleash/unleash/blob/66d4a45c1d24c4bc8a08d8c75d205bd61dc3aed0/src/lib/features/events/event-store.ts\",\"https://github.com/Unleash/unleash/blob/66d4a45c1d24c4bc8a08d8c75d205bd61dc3aed0/src/lib/features/feature-lifecycle/feature-lifecycle-service.ts\"]"
+    }
+}
+
+unleash_lifecycleAudit = unleash.server.insights -> unleash.server.audit "Records flag completion and reversal events" "In-process" "Dataflow,UnleashCatalog" {
+    properties {
+        "architecture.id" "unleash.flow.lifecycleAudit"
+        "evidence" "Architecture dataflow inferred from pinned implementation"
+        "architecture.sources" "[\"https://github.com/Unleash/unleash/blob/66d4a45c1d24c4bc8a08d8c75d205bd61dc3aed0/src/lib/features/feature-lifecycle/feature-lifecycle-service.ts\",\"https://github.com/Unleash/unleash/blob/66d4a45c1d24c4bc8a08d8c75d205bd61dc3aed0/src/lib/features/events/event-store.ts\",\"https://github.com/Unleash/unleash/blob/66d4a45c1d24c4bc8a08d8c75d205bd61dc3aed0/src/lib/features/feature-lifecycle/feature-lifecycle-controller.ts\"]"
+    }
+}
+
+unleash_lifecycleMeasurements = unleash.server.insights -> unleash.server.health "Publishes lifecycle stage-entry measurements" "In-process" "Dataflow,UnleashCatalog" {
+    properties {
+        "architecture.id" "unleash.flow.lifecycleMeasurements"
+        "evidence" "Architecture dataflow inferred from pinned implementation"
+        "architecture.sources" "[\"https://github.com/Unleash/unleash/blob/66d4a45c1d24c4bc8a08d8c75d205bd61dc3aed0/src/lib/features/feature-lifecycle/feature-lifecycle-service.ts\",\"https://github.com/Unleash/unleash/blob/66d4a45c1d24c4bc8a08d8c75d205bd61dc3aed0/src/lib/metrics.ts\"]"
     }
 }

@@ -12,6 +12,10 @@ component unleash.server "110-unleash-server-supporting-services" "Component - U
     include unleash_playgroundSegments
     include unleash_adminSettings
     include unleash_insightsStore
+    include unleash_metricsLifecycle
+    include unleash_auditLifecycle
+    include unleash_lifecycleAudit
+    include unleash_lifecycleMeasurements
     include unleash_auditStore
     include unleash_auditAddons
     include unleash_addonStore

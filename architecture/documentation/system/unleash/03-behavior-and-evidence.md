@@ -72,6 +72,45 @@ Relevant flows: `edgeRequestUsage`, `edgeSendUsage`, `edgeUpstreamUsage`,
 `clientUsage`, `frontendUsage`, `metricsStore`, `jobMetrics`,
 `adminUsage`, `insightsStore`.
 
+## Lifecycle event processing
+
+Lifecycle transitions are driven by events and explicit commands. After a metrics
+batch is persisted, the metrics service emits `CLIENT_METRICS_ADDED`; the lifecycle
+subscriber uses feature/environment data to advance stages. Published
+`FEATURE_CREATED`, `FEATURE_ARCHIVED` and `FEATURE_REVIVED` audit events initialize,
+archive or reset lifecycle state. These asynchronous subscribers are not awaited
+by their emitters, and their writes are separate from the originating records.
+Metric-driven transition failures are logged. Audit events can already be marked
+announced before subscriber completion, so publication does not guarantee a
+successful lifecycle update or durable subscriber retry.
+
+Admin API complete/uncomplete commands update lifecycle state and record their
+audit event in one controller transaction. Newly inserted stages emit
+`STAGE_ENTERED` to operational counters; that emission can precede transaction
+commit and is not confirmation of durable business state. The scheduled
+`jobInsights` flow calculates project health only.
+
+Evidence: [lifecycle subscriptions and commands](https://github.com/Unleash/unleash/blob/66d4a45c1d24c4bc8a08d8c75d205bd61dc3aed0/src/lib/features/feature-lifecycle/feature-lifecycle-service.ts),
+[transactional controller](https://github.com/Unleash/unleash/blob/66d4a45c1d24c4bc8a08d8c75d205bd61dc3aed0/src/lib/features/feature-lifecycle/feature-lifecycle-controller.ts),
+[metric flush](https://github.com/Unleash/unleash/blob/66d4a45c1d24c4bc8a08d8c75d205bd61dc3aed0/src/lib/features/metrics/client-metrics/metrics-service-v2.ts),
+[event publication](https://github.com/Unleash/unleash/blob/66d4a45c1d24c4bc8a08d8c75d205bd61dc3aed0/src/lib/features/events/event-store.ts),
+[operational counters](https://github.com/Unleash/unleash/blob/66d4a45c1d24c4bc8a08d8c75d205bd61dc3aed0/src/lib/metrics.ts) and
+[scheduled services](https://github.com/Unleash/unleash/blob/66d4a45c1d24c4bc8a08d8c75d205bd61dc3aed0/src/lib/features/scheduler/schedule-services.ts).
+Relevant flows: `metricsLifecycle`, `auditLifecycle`, `adminInsights`,
+`lifecycleAudit`, `lifecycleMeasurements`, `insightsStore`, `jobInsights`.
+
+## Import/export references
+
+Exports include segment IDs/names and custom-strategy references used by flag
+activation strategies. They do not carry definitions that recreate those
+resources. Import validation requires compatible segments and custom strategies
+in the target and remaps segment references to existing target IDs. Missing
+references reject validation. Supported flag, context-field and tag data can be
+transferred; the model does not promise transfer of all project configuration.
+See [the official contract](https://docs.getunleash.io/concepts/import-export) and
+[the pinned validation/export code](https://github.com/Unleash/unleash/blob/66d4a45c1d24c4bc8a08d8c75d205bd61dc3aed0/src/lib/features/export-import-toggles/export-import-service.ts).
+Relevant flows: `adminTransfer`, `transferStore`, `transferAudit`.
+
 ## Outages, recovery and readiness
 
 - **Warm Edge, transient upstream failure:** Edge can continue serving its last
@@ -117,9 +156,9 @@ Relevant flows: `edgeSnapshotTokens`, `edgeSnapshotFeatures`,
 | Unleash OSS | [8.2.0](https://github.com/Unleash/unleash/releases/tag/v8.2.0) | [`66d4a45c1d24c4bc8a08d8c75d205bd61dc3aed0`](https://github.com/Unleash/unleash/commit/66d4a45c1d24c4bc8a08d8c75d205bd61dc3aed0) |
 | Unleash Edge OSS | [20.5.0](https://github.com/Unleash/unleash-edge/releases/tag/unleash-edge-v20.5.0) | [`c947878de70214235c79eeb5ebe5f35b77ecc075`](https://github.com/Unleash/unleash-edge/commit/c947878de70214235c79eeb5ebe5f35b77ecc075) |
 
-The [reference source inventory](../../../references/sources.json) records these
-revisions and retrieval metadata. Element URLs and `architecture.sources`
-provide module-level evidence; relationships retain their own evidence URLs.
+The release links above record the pinned revisions. Element URLs and
+`architecture.sources` provide module-level evidence; relationships retain their
+own evidence URLs.
 The [component map](01-boundary-and-components.md) links every component to source.
 The [flow catalog](02-interfaces-and-flows.md) documents every named relationship.
 

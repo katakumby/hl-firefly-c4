@@ -77,13 +77,13 @@ server = container "Unleash server" "Hosts OSS administration, configuration del
         }
     }
 
-    flags = component "Flags, projects and environments" "Manages flag state, variants, dependencies, metadata and project/environment configuration." "TypeScript / Node.js" {
+    flags = component "Flags, projects and environments" "Manages flag state, variants, metadata and project/environment configuration." "TypeScript / Node.js" {
         tags "UnleashCatalog"
         url "https://github.com/Unleash/unleash/tree/66d4a45c1d24c4bc8a08d8c75d205bd61dc3aed0/src/lib/features/feature-toggle"
         properties {
             "architecture.id" "unleash.server.flags"
             "evidence" "Implementation; logical C4 grouping"
-            "architecture.sources" "[\"https://github.com/Unleash/unleash/tree/66d4a45c1d24c4bc8a08d8c75d205bd61dc3aed0/src/lib/features/feature-toggle\",\"https://github.com/Unleash/unleash/tree/66d4a45c1d24c4bc8a08d8c75d205bd61dc3aed0/src/lib/features/project\",\"https://github.com/Unleash/unleash/tree/66d4a45c1d24c4bc8a08d8c75d205bd61dc3aed0/src/lib/features/project-environments\",\"https://github.com/Unleash/unleash/tree/66d4a45c1d24c4bc8a08d8c75d205bd61dc3aed0/src/lib/features/dependent-features\",\"https://github.com/Unleash/unleash/blob/66d4a45c1d24c4bc8a08d8c75d205bd61dc3aed0/src/lib/services/tag-service.ts\"]"
+            "architecture.sources" "[\"https://github.com/Unleash/unleash/tree/66d4a45c1d24c4bc8a08d8c75d205bd61dc3aed0/src/lib/features/feature-toggle\",\"https://github.com/Unleash/unleash/tree/66d4a45c1d24c4bc8a08d8c75d205bd61dc3aed0/src/lib/features/project\",\"https://github.com/Unleash/unleash/tree/66d4a45c1d24c4bc8a08d8c75d205bd61dc3aed0/src/lib/features/project-environments\",\"https://github.com/Unleash/unleash/blob/66d4a45c1d24c4bc8a08d8c75d205bd61dc3aed0/src/lib/services/tag-service.ts\"]"
         }
     }
 
@@ -127,7 +127,7 @@ server = container "Unleash server" "Hosts OSS administration, configuration del
         }
     }
 
-    insights = component "Lifecycle and insights" "Reads flag lifecycle, usage and project health data for OSS dashboards and stale-flag insights." "TypeScript / Node.js" {
+    insights = component "Lifecycle and insights" "Updates flag lifecycle from metrics and audit events; supplies OSS usage and project health reports." "TypeScript / Node.js" {
         tags "UnleashCatalog"
         url "https://github.com/Unleash/unleash/tree/66d4a45c1d24c4bc8a08d8c75d205bd61dc3aed0/src/lib/features/feature-lifecycle"
         properties {
@@ -147,7 +147,7 @@ server = container "Unleash server" "Hosts OSS administration, configuration del
         }
     }
 
-    importExport = component "Import and export" "Validates and transfers supported flag, strategy, segment and project configuration." "TypeScript / Node.js" {
+    importExport = component "Import and export" "Transfers flag configuration and validates references to existing segments and custom strategies." "TypeScript / Node.js" {
         tags "UnleashCatalog"
         url "https://github.com/Unleash/unleash/tree/66d4a45c1d24c4bc8a08d8c75d205bd61dc3aed0/src/lib/features/export-import-toggles"
         properties {

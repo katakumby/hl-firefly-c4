@@ -1,5 +1,8 @@
 # Architecture
 
+For the three-AZ Azure/AKS deployment of Besu and FireFly, start with the
+[blockchain foundation initiative](initiatives/blockchain-foundation/README.md).
+
 Edit Structurizr DSL directly. Docker Compose serves the authored workspaces;
 validation and export run in containers. No host Python or shell scripts are needed.
 
@@ -24,7 +27,7 @@ architecture/
 ├── decisions/workspace/     # Authoring and tooling decisions
 ├── scripts/                 # Python validation/export command and path helper
 ├── tests/                   # Containerized tooling tests
-├── compose.yaml             # global, ignition and optional tools services
+├── compose.yaml             # global, ignition, blockchain-foundation and optional tools
 └── .env                     # Pinned Structurizr version
 ```
 
@@ -70,20 +73,24 @@ Run these commands **from this `architecture/` directory**. Values passed to
 
 | Action | Command |
 |---|---|
-| View both workspaces | `docker compose up -d` |
+| View all three workspaces | `docker compose up -d` |
 | Start reference viewer | `docker compose up -d global` |
 | Start ignition viewer | `docker compose up -d ignition` |
+| Start blockchain foundation viewer | `docker compose up -d blockchain-foundation` |
 | Stop and remove viewers | `docker compose down` |
 | Validate all workspaces | `docker compose run --rm --build tools validate` |
 | Validate ignition | `docker compose run --rm --build tools validate --workspace architecture/initiatives/ignition/workspace.dsl` |
+| Validate blockchain foundation | `docker compose run --rm --build tools validate --workspace architecture/initiatives/blockchain-foundation/workspace.dsl` |
 | Export all reference diagrams as C4-PlantUML | `docker compose run --rm --build tools export` |
 | Export ignition diagrams as C4-PlantUML | `docker compose run --rm --build tools export --workspace architecture/initiatives/ignition/workspace.dsl` |
+| Export blockchain foundation diagrams as C4-PlantUML | `docker compose run --rm --build tools export --workspace architecture/initiatives/blockchain-foundation/workspace.dsl` |
 | Export one C4-PlantUML diagram | `docker compose run --rm tools export --view 01-landscape` |
 | Export optional Mermaid definitions | `docker compose run --rm tools export --format mermaid` |
 | Export all reference diagrams as SVG | `docker compose run --rm tools export --format svg` |
 | Export one diagram as PNG | `docker compose run --rm --build tools export --view 01-landscape --format png` |
 
-Open [reference](http://127.0.0.1:8080) or [ignition](http://127.0.0.1:8081).
+Open [reference](http://127.0.0.1:8080), [ignition](http://127.0.0.1:8081), or
+[blockchain foundation](http://127.0.0.1:8082).
 Viewing reads DSL directly without preprocessing; refresh the browser after edits.
 Add a named Compose service for each new initiative or variant, following the template.
 

@@ -37,7 +37,7 @@ Find `structurizr-<view-key>.puml` in the printed output directory. See the
 [output reference](README.md#outputs-and-maintenance) for optional Mermaid,
 SVG/PNG, paths and freshness metadata. Routine text review needs no renderer.
 
-After tooling changes, validate both workspaces and run the containerized tests:
+After tooling changes, validate all workspaces and run the containerized tests:
 
 ```text
 docker compose -f architecture/compose.yaml run --rm tools validate

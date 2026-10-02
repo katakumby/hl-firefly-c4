@@ -7,12 +7,12 @@ and preview derive outputs without rewriting the model.
 ## Start here
 
 - [Shared reference workspace](architecture/workspace.dsl): shared C4 reference views.
-- [Blockchain foundation](architecture/initiatives/blockchain-foundation/README.md):
+- [Blockchain foundation](architecture/workspaces/blockchain-foundation/README.md):
   proposed three-AZ Azure/AKS deployment for Besu and one FireFly member, with
   quorum calculations, persistence, key services and explicit HA qualification gates.
 - [Unleash reference](architecture/documentation/system/unleash/01-boundary-and-components.md):
   OSS server and optional OSS Edge, with containers, components and all internal data flows.
-- [Ignition](architecture/initiatives/ignition/README.md): the proposed **DApp Platform** system
+- [Ignition](architecture/workspaces/ignition/README.md): the proposed **DApp Platform** system
   boundary, with no internal architecture or integrations yet.
 - [Shared model](architecture/model.dsl): reusable actors, external systems,
   relationships and styles, without authored diagrams.
@@ -35,7 +35,7 @@ and preview derive outputs without rewriting the model.
 | `architecture/styles.dsl` | Global styles inherited by reference, initiative and variant workspaces |
 | `architecture/documentation/` | Explanations and system boundaries |
 | `architecture/use-cases/` | Shared simple flows and detailed sequences |
-| `architecture/initiatives/<epic-id>/` | Goals, ownership, proposed model, focused views and use cases |
+| `architecture/workspaces/<epic-id>/` | Goals, ownership, proposed model, focused views and use cases |
 | `architecture/scripts/` | Containerized validation and diagram export |
 | `architecture/templates/initiative/` | Incomplete authoring templates; excluded from workspace discovery |
 | `build/architecture/` | Generated artifacts; ignored by Git |
@@ -65,7 +65,7 @@ Compose automatically reads the committed version pin in `architecture/.env`.
 
 ```text
 docker compose -f architecture/compose.yaml run --rm --build tools validate
-docker compose -f architecture/compose.yaml run --rm --build tools validate --workspace architecture/initiatives/ignition/workspace.dsl
+docker compose -f architecture/compose.yaml run --rm --build tools validate --workspace architecture/workspaces/ignition/workspace.dsl
 ```
 
 Without `--workspace`, validation discovers the reference workspace and every
@@ -95,7 +95,7 @@ workspace and `--view` for all diagrams in that workspace:
 
 ```text
 docker compose -f architecture/compose.yaml run --rm --build tools export
-docker compose -f architecture/compose.yaml run --rm tools export --workspace architecture/initiatives/ignition/workspace.dsl
+docker compose -f architecture/compose.yaml run --rm tools export --workspace architecture/workspaces/ignition/workspace.dsl
 docker compose -f architecture/compose.yaml run --rm tools export --view 01-landscape
 ```
 
@@ -132,8 +132,8 @@ For an intentional full rebuild of all three workspaces, add `--clean` to the
 
 ```text
 docker compose -f architecture/compose.yaml run --rm --build tools export --clean
-docker compose -f architecture/compose.yaml run --rm tools export --workspace architecture/initiatives/ignition/workspace.dsl
-docker compose -f architecture/compose.yaml run --rm tools export --workspace architecture/initiatives/blockchain-foundation/workspace.dsl
+docker compose -f architecture/compose.yaml run --rm tools export --workspace architecture/workspaces/ignition/workspace.dsl
+docker compose -f architecture/compose.yaml run --rm tools export --workspace architecture/workspaces/blockchain-foundation/workspace.dsl
 ```
 
 `--clean` clears all generated `build/architecture/` contents before validation,
@@ -164,8 +164,8 @@ Only the native viewers start; the optional tools service is excluded by its pro
 | Compose service | Authored entrypoint | Open |
 |---|---|---|
 | `global` | `architecture/workspace.dsl` | [Global reference workspace](http://127.0.0.1:8080) |
-| `ignition` | `architecture/initiatives/ignition/workspace.dsl` | [Ignition](http://127.0.0.1:8081) |
-| `blockchain-foundation` | `architecture/initiatives/blockchain-foundation/workspace.dsl` | [Blockchain foundation](http://127.0.0.1:8082) |
+| `ignition` | `architecture/workspaces/ignition/workspace.dsl` | [Ignition](http://127.0.0.1:8081) |
+| `blockchain-foundation` | `architecture/workspaces/blockchain-foundation/workspace.dsl` | [Blockchain foundation](http://127.0.0.1:8082) |
 
 To start just one service, choose its name:
 
@@ -177,7 +177,7 @@ docker compose -f architecture/compose.yaml up -d ignition
 Compose mounts `architecture/` directly at `/usr/local/structurizr`.
 Structurizr's native `local` command takes the **directory containing**
 `workspace.dsl`: the global viewer uses `/usr/local/structurizr`, and ignition
-uses `/usr/local/structurizr/initiatives/ignition`. The original directory tree
+uses `/usr/local/structurizr/workspaces/ignition`. The original directory tree
 is intact, so local includes and workspace extensions resolve normally.
 There is no wrapper DSL, preparation container, Python startup or preprocessing.
 
@@ -200,7 +200,7 @@ docker compose -f architecture/compose.yaml down
 ### Outputs and maintenance
 
 Current outputs live in `build/architecture/workspaces/reference/` or
-`build/architecture/workspaces/initiatives/<epic-id>/workspace/`:
+`build/architecture/workspaces/workspaces/<epic-id>/workspace/`:
 
 - `workspace.json`: last successfully validated model.
 - `validation.json` and `validation.log`: latest validation result, including failures.
@@ -268,7 +268,7 @@ These are recommended team conventions, not custom validation gates. The initial
 workflow relies on native Structurizr validation; automation of team-specific
 rules is deferred until teams choose to introduce it.
 
-1. Create `architecture/initiatives/<epic-id>/` with a README recording goal, status, architect,
+1. Create `architecture/workspaces/<epic-id>/` with a README recording goal, status, architect,
    technical lead/team, and epic link. Use `TBD` for unknown values.
 2. Start with the [initiative template](architecture/templates/initiative/README.md),
    extending `../../model.dsl`. Add an agreed model and focused views. The template

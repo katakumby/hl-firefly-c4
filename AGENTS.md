@@ -23,7 +23,7 @@ ignored by Git and must not be edited as source.
 
 ```text
 docker compose -f architecture/compose.yaml run --rm --build tools export
-docker compose -f architecture/compose.yaml run --rm tools export --workspace architecture/initiatives/ignition/workspace.dsl
+docker compose -f architecture/compose.yaml run --rm tools export --workspace architecture/workspaces/ignition/workspace.dsl
 docker compose -f architecture/compose.yaml run --rm tools export --workspace architecture/workspace.dsl --view 01-landscape
 ```
 

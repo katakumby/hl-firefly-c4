@@ -39,12 +39,12 @@ docker compose -f architecture/compose.yaml up -d blockchain-foundation
 Open [the foundation diagrams](http://127.0.0.1:8082). Edit the DSL and refresh.
 
 ```text
-docker compose -f architecture/compose.yaml run --rm tools validate --workspace architecture/initiatives/blockchain-foundation/workspace.dsl
-docker compose -f architecture/compose.yaml run --rm tools export --workspace architecture/initiatives/blockchain-foundation/workspace.dsl
+docker compose -f architecture/compose.yaml run --rm tools validate --workspace architecture/workspaces/blockchain-foundation/workspace.dsl
+docker compose -f architecture/compose.yaml run --rm tools export --workspace architecture/workspaces/blockchain-foundation/workspace.dsl
 ```
 
 Use `--build` on the first tools run if its image has not been built.
-The default C4-PlantUML definitions live under `build/architecture/workspaces/initiatives/blockchain-foundation/workspace/exports/all/plantuml/`.
+The default C4-PlantUML definitions live under `build/architecture/workspaces/workspaces/blockchain-foundation/workspace/exports/all/plantuml/`.
 Add `--format svg` or `--format png` when image exports are needed.
 
 ## Design and implementation plan

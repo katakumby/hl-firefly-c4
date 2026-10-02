@@ -26,4 +26,4 @@ def output_directory(path):
 
 
 def discover_workspaces():
-    return [REFERENCE, *sorted((ARCHITECTURE / 'initiatives').rglob('workspace.dsl'))]
+    return [REFERENCE, *sorted((ARCHITECTURE / 'workspaces').rglob('workspace.dsl'))]

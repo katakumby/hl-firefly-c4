@@ -1,7 +1,7 @@
 # Architecture
 
 For the three-AZ Azure/AKS deployment of Besu and FireFly, start with the
-[blockchain foundation initiative](initiatives/blockchain-foundation/README.md).
+[blockchain foundation initiative](workspaces/blockchain-foundation/README.md).
 
 Edit Structurizr DSL directly. Docker Compose serves the authored workspaces;
 validation and export run in containers. No host Python or shell scripts are needed.
@@ -19,7 +19,7 @@ architecture/
 │   ├── modules/              # Reviewed, accepted platform systems
 │   └── relationships/        # Ordered relationship fragments
 ├── views/reference/         # Automatically included reference view fragments
-├── initiatives/<epic-id>/    # Initiative workspace, model, views and use cases
+├── workspaces/<epic-id>/    # Initiative workspace, model, views and use cases
 ├── templates/initiative/    # Starting point for new initiatives
 ├── documentation/           # Shared explanations and system-specific docs
 ├── use-cases/               # Shared flows and detailed sequences
@@ -79,11 +79,11 @@ Run these commands **from this `architecture/` directory**. Values passed to
 | Start blockchain foundation viewer | `docker compose up -d blockchain-foundation` |
 | Stop and remove viewers | `docker compose down` |
 | Validate all workspaces | `docker compose run --rm --build tools validate` |
-| Validate ignition | `docker compose run --rm --build tools validate --workspace architecture/initiatives/ignition/workspace.dsl` |
-| Validate blockchain foundation | `docker compose run --rm --build tools validate --workspace architecture/initiatives/blockchain-foundation/workspace.dsl` |
+| Validate ignition | `docker compose run --rm --build tools validate --workspace architecture/workspaces/ignition/workspace.dsl` |
+| Validate blockchain foundation | `docker compose run --rm --build tools validate --workspace architecture/workspaces/blockchain-foundation/workspace.dsl` |
 | Export all reference diagrams as C4-PlantUML | `docker compose run --rm --build tools export` |
-| Export ignition diagrams as C4-PlantUML | `docker compose run --rm --build tools export --workspace architecture/initiatives/ignition/workspace.dsl` |
-| Export blockchain foundation diagrams as C4-PlantUML | `docker compose run --rm --build tools export --workspace architecture/initiatives/blockchain-foundation/workspace.dsl` |
+| Export ignition diagrams as C4-PlantUML | `docker compose run --rm --build tools export --workspace architecture/workspaces/ignition/workspace.dsl` |
+| Export blockchain foundation diagrams as C4-PlantUML | `docker compose run --rm --build tools export --workspace architecture/workspaces/blockchain-foundation/workspace.dsl` |
 | Export one C4-PlantUML diagram | `docker compose run --rm tools export --view 01-landscape` |
 | Export optional Mermaid definitions | `docker compose run --rm tools export --format mermaid` |
 | Export all reference diagrams as SVG | `docker compose run --rm tools export --format svg` |
@@ -105,7 +105,7 @@ lock are preserved. Without it, successful exports replace only their selected
 workspace, diagram set and format. Cleaned outputs cannot be restored if the rebuild fails.
 
 Complete exports are under `../build/architecture/workspaces/reference/exports/all/`
-and `../build/architecture/workspaces/initiatives/<epic-id>/workspace/exports/all/`.
+and `../build/architecture/workspaces/workspaces/<epic-id>/workspace/exports/all/`.
 Single-view exports use `exports/view-<key-hash>/<format>/`. The default `plantuml/`
 directory contains `structurizr-<view-key>.puml` and `export.json`; the command
 prints its destination. See the [format table](../README.md#export-c4-plantuml-default-mermaid-svg-or-png)

@@ -380,5 +380,5 @@ Reports from the earlier implementation were selected by the historical
 [ignition status](../../../build/architecture/initiatives/ignition/workspace/status.json).
 The simplified Docker workflow now writes the latest
 [reference validation](../../../build/architecture/workspaces/reference/validation.json)
-and [ignition validation](../../../build/architecture/workspaces/initiatives/ignition/workspace/validation.json)
+and [ignition validation](../../../build/architecture/workspaces/workspaces/ignition/workspace/validation.json)
 directly.

@@ -108,13 +108,13 @@ BASE = '''workspace {
 class NativeWorkflow(unittest.TestCase):
     def test_native_policy_accepts_flexible_models_and_inheritance(self):
         with checkout() as architecture:
-            first = architecture / 'initiatives/TeamA/workspace.dsl'
-            cross = architecture / 'initiatives/TeamB/experiment/workspace.dsl'
-            variant = architecture / 'initiatives/TeamB/variants/target/workspace.dsl'
+            first = architecture / 'workspaces/TeamA/workspace.dsl'
+            cross = architecture / 'workspaces/TeamB/experiment/workspace.dsl'
+            variant = architecture / 'workspaces/TeamB/variants/target/workspace.dsl'
             for path in (first, cross, variant):
                 path.parent.mkdir(parents=True, exist_ok=True)
             first.write_text(BASE)
-            paths.REFERENCE.write_text('workspace extends initiatives/TeamA/workspace.dsl {\n}')
+            paths.REFERENCE.write_text('workspace extends workspaces/TeamA/workspace.dsl {\n}')
             cross.write_text('workspace extends ../../TeamA/workspace.dsl {\n}')
             variant.write_text('workspace extends ../../experiment/workspace.dsl {\n}')
             template = architecture / 'templates/example/workspace.dsl'
@@ -154,7 +154,7 @@ class NativeWorkflow(unittest.TestCase):
     def test_selected_workspace_does_not_validate_unrelated_entrypoints(self):
         with checkout() as architecture:
             paths.REFERENCE.write_text('Invalid DSL')
-            initiative = architecture / 'initiatives/example/workspace.dsl'
+            initiative = architecture / 'workspaces/example/workspace.dsl'
             initiative.parent.mkdir(parents=True)
             initiative.write_text(BASE)
             reports = cli.validate([initiative])
@@ -182,7 +182,7 @@ class C4PlantUMLExport(unittest.TestCase):
             'PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD': '1',
         }):
             paths.REFERENCE.write_text('Invalid unrelated DSL')
-            workspace = architecture / 'initiatives/example/workspace.dsl'
+            workspace = architecture / 'workspaces/example/workspace.dsl'
             workspace.parent.mkdir(parents=True)
             workspace.write_text(BASE)
             arguments = ['architecture.py', 'export', '--workspace', str(workspace.relative_to(cli.ROOT))]
@@ -282,8 +282,8 @@ class MermaidExport(unittest.TestCase):
     def test_native_explicit_workspace_and_variant_export(self):
         with checkout() as architecture:
             paths.REFERENCE.write_text('Invalid unrelated DSL')
-            initiative = architecture / 'initiatives/example/workspace.dsl'
-            variant = architecture / 'initiatives/example/variants/target/workspace.dsl'
+            initiative = architecture / 'workspaces/example/workspace.dsl'
+            variant = architecture / 'workspaces/example/variants/target/workspace.dsl'
             initiative.parent.mkdir(parents=True)
             variant.parent.mkdir(parents=True)
             initiative.write_text(BASE)

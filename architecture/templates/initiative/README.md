@@ -1,6 +1,6 @@
 # Initiative template
 
-Copy the `.template` files into a new `architecture/initiatives/<epic-id>/`
+Copy the `.template` files into a new `architecture/workspaces/<epic-id>/`
 directory, removing the suffix and replacing `<epic-id>`. Copy
 `README.md.template` as the initiative README. Add an agreed model and focused
 views before validating. Empty templates are intentionally incomplete and are
@@ -21,7 +21,7 @@ Add a service under `services:` in [compose.yaml](../../compose.yaml), replacing
 ```yaml
   <epic-id>:
     <<: *viewer
-    command: ["local", "/usr/local/structurizr/initiatives/<epic-id>"]
+    command: ["local", "/usr/local/structurizr/workspaces/<epic-id>"]
     ports:
       - "127.0.0.1:8082:8080"
 ```

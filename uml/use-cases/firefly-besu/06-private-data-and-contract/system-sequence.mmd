@@ -1,0 +1,37 @@
+---
+title: UC6 - Private payload and contract - systems
+config:
+  theme: default
+  sequence:
+    mirrorActors: false
+    wrap: true
+---
+sequenceDiagram
+    autonumber
+%% C4: AppA=apps; FFA=firefly; Ledger=besu; FFB=firefly; AppB=apps
+    participant AppA as Member application<br/>reference - A<br/>[Software System]
+    participant FFA as Hyperledger FireFly - A<br/>[Software System]
+    participant Ledger as Private Besu<br/>network<br/>[Software System]
+    participant FFB as Hyperledger FireFly - B<br/>[Software System]
+    participant AppB as Member application<br/>reference - B<br/>[Software System]
+    Note over AppA,AppB: Durable message subscriptions already connected, withData true
+    AppA->>FFA: Invoke with private message [HTTPS REST / JSON]
+    FFA-->>AppA: 202 Accepted, operation id and tx [HTTPS REST / JSON]
+    par Private payload delivery
+        FFA->>FFB: Transfer private batch [HTTPS / mutual TLS]
+        FFB-->>FFA: Transfer acknowledgement [HTTPS / mutual TLS]
+    and Invocation and member A confirmation
+        FFA->>Ledger: Submit signed custom-pin call [Ethereum JSON-RPC / HTTP]
+        Note over Ledger: CustomPin calls pinBatchData in the same transaction
+        FFA->>Ledger: Poll receipt, pin logs and blocks [Ethereum JSON-RPC / HTTP]
+        Ledger-->>FFA: Receipt, pin and block data [Ethereum JSON-RPC / HTTP]
+        Note over FFA: Apply event confirmation policy, await local payload and sequenced pin
+        FFA-->>AppA: message_confirmed with JSON data [WebSocket / JSON over TLS]
+        AppA->>FFA: ACK after durable processing [WebSocket / JSON over TLS]
+    and Member B confirmation
+        FFB->>Ledger: Poll pin logs and blocks [Ethereum JSON-RPC / HTTP]
+        Ledger-->>FFB: Pin and block data [Ethereum JSON-RPC / HTTP]
+        Note over FFB: Apply event confirmation policy, await local payload and sequenced pin
+        FFB-->>AppB: message_confirmed with JSON data [WebSocket / JSON over TLS]
+        AppB->>FFB: ACK after durable processing [WebSocket / JSON over TLS]
+    end

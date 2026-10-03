@@ -1,0 +1,30 @@
+"""Shared paths for authored workspaces and disposable build outputs."""
+from pathlib import Path
+
+ROOT = Path(__file__).resolve().parents[1]
+REFERENCE = ROOT / 'workspace.dsl'
+BUILD = ROOT / 'build'
+TOOLCHAIN = dict(line.split('=', 1) for line in (ROOT / '.env').read_text().splitlines()
+                 if line and not line.startswith('#'))
+VERSION = TOOLCHAIN['STRUCTURIZR_VERSION']
+
+
+def workspace_path(value=REFERENCE):
+    path = Path(value)
+    path = (ROOT / path).resolve() if not path.is_absolute() else path.resolve()
+    path.relative_to(ROOT)
+    if not path.is_file() or path.suffix != '.dsl':
+        raise ValueError(f'Workspace does not exist or is not DSL: {path}')
+    return path
+
+
+def output_directory(path):
+    if Path(path).resolve() == REFERENCE:
+        return BUILD / 'c4/reference'
+    relative = Path(path).resolve().relative_to(ROOT)
+    # Canonical workspace entrypoints map to their directory, including variants.
+    return BUILD / 'c4' / (relative.parent if relative.name == 'workspace.dsl' else relative.with_suffix(''))
+
+
+def discover_workspaces():
+    return [REFERENCE, *sorted((ROOT / 'workspaces').rglob('workspace.dsl'))]

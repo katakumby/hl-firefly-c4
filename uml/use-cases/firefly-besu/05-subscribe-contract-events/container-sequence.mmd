@@ -1,0 +1,64 @@
+---
+title: UC5 - Subscribe to contract events - containers
+config:
+  theme: default
+  sequence:
+    mirrorActors: false
+    wrap: true
+---
+sequenceDiagram
+    autonumber
+box rgb(235,245,255) Member application reference
+        %% C4: App=apps.client
+        participant App as Member business<br/>application<br/>[Container]<br/>REST client
+    end
+    box rgb(235,250,240) Hyperledger FireFly
+        %% C4: Core=firefly.core
+        participant Core as FireFly Core<br/>[Container]<br/>Go
+        %% C4: DB=firefly.pg
+        participant DB as Core PostgreSQL<br/>database<br/>[Container]<br/>PostgreSQL
+        %% C4: EVM=firefly.evm
+        participant EVM as EVMConnect<br/>+ FFTM<br/>[Container]<br/>Go
+        %% C4: TxDB=firefly.fftmDb
+        participant TxDB as FFTM PostgreSQL<br/>database<br/>[Container]<br/>PostgreSQL
+        %% C4: Signer=firefly.signer
+        participant Signer as FireFly Signer<br/>[Container]<br/>Go
+    end
+
+    box rgb(255,247,224) Private Besu network
+        %% C4: Besu=besu.node
+        participant Besu as Besu node<br/>[Container]<br/>Java / Besu<br/>RocksDB
+    end
+
+    App->>Core: POST /contracts/listeners, Changed filter [HTTPS REST / JSON]
+    Core->>EVM: Configure listener and starting block [HTTP REST / JSON]
+    EVM->>TxDB: Persist listener and stream state [PostgreSQL wire / TLS]
+    EVM-->>Core: Listener registration [HTTP REST / JSON]
+    Core->>DB: Persist contract listener [PostgreSQL wire / TLS]
+    Core-->>App: Listener id [HTTPS REST / JSON]
+    App->>Core: POST /subscriptions, durable name and filter [HTTPS REST / JSON]
+    Core->>DB: Store subscription and initial offset [PostgreSQL wire / TLS]
+    Core-->>App: Subscription id [HTTPS REST / JSON]
+    App->>Core: Start named subscription, autoack false [WebSocket / JSON over TLS]
+    loop Poll from listener checkpoint
+        EVM->>Signer: Query blocks and contract logs [Ethereum JSON-RPC / HTTP]
+        Signer->>Besu: Forward block and log RPCs [Ethereum JSON-RPC / HTTP]
+        Besu-->>Signer: Blocks and matching Changed logs [Ethereum JSON-RPC / HTTP]
+        Signer-->>EVM: Block and log results [Ethereum JSON-RPC / HTTP]
+    end
+    Note over EVM: Decode logs and apply configured event confirmation policy
+    EVM-->>Core: Confirmed event batch [WebSocket / JSON]
+    Core->>DB: Persist blockchain events and application events [PostgreSQL wire / TLS]
+    Core->>EVM: ACK connector batch after ingestion [WebSocket / JSON]
+    EVM->>TxDB: Advance connector checkpoint [PostgreSQL wire / TLS]
+    Core-->>App: blockchain_event_received, Changed output [WebSocket / JSON over TLS]
+    App->>Core: ACK after processing event [WebSocket / JSON over TLS]
+    Core->>DB: Advance application subscription offset [PostgreSQL wire / TLS]
+    opt Disconnect before a later application ACK
+        App->>Core: Reconnect and start same subscription [WebSocket / JSON over TLS]
+        Core->>DB: Read saved offset and subsequent events [PostgreSQL wire / TLS]
+        DB-->>Core: Events after persisted offset [PostgreSQL wire / TLS]
+        Core-->>App: Resume delivery, duplicate possible [WebSocket / JSON over TLS]
+        App->>Core: ACK after duplicate-safe processing [WebSocket / JSON over TLS]
+        Core->>DB: Persist new subscription offset [PostgreSQL wire / TLS]
+    end

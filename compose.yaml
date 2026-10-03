@@ -1,0 +1,69 @@
+name: ${COMPOSE_PROJECT_NAME:-dlt-architecture}
+
+x-tools: &tools
+  image: ${ARCHITECTURE_TOOLS_IMAGE:-dlt-architecture-tools:local}
+  build:
+    context: .
+    args:
+      STRUCTURIZR_VERSION: ${STRUCTURIZR_VERSION:?Missing version in .env}
+      NODE_VERSION: ${NODE_VERSION:?Missing version in .env}
+      PLANTUML_VERSION: ${PLANTUML_VERSION:?Missing version in .env}
+  user: "${ARCHITECTURE_UID:-1000}:${ARCHITECTURE_GID:-1000}"
+  network_mode: none
+  environment:
+    PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD: "1"
+  read_only: true
+  cap_drop: ["ALL"]
+  security_opt: ["no-new-privileges:true"]
+  init: true
+  shm_size: 256m
+  tmpfs:
+    # Playwright extracts its bundled driver here and must execute it.
+    - /tmp:rw,exec,nosuid,nodev,size=1g,mode=1777
+  volumes:
+    - ./:/workspace:ro
+    - ./build:/workspace/build
+
+x-viewer: &viewer
+  image: structurizr/structurizr:${STRUCTURIZR_VERSION:?Missing version in .env}-noble
+  # Invoke Java directly; no project or container shell launcher is needed.
+  entrypoint: ["java", "-Dio.netty.noUnsafe=true", "--enable-native-access=ALL-UNNAMED", "-jar", "/usr/local/structurizr.war"]
+  user: "${ARCHITECTURE_UID:-1000}:${ARCHITECTURE_GID:-1000}"
+  read_only: true
+  cap_drop: ["ALL"]
+  security_opt: ["no-new-privileges:true"]
+  init: true
+  tmpfs:
+    - /tmp:rw,nosuid,size=512m,mode=1777
+  volumes:
+    # Native local mode reads workspace.dsl and writes its own Git-ignored cache.
+    - ./:/usr/local/structurizr
+  environment:
+    HOME: /tmp
+    STRUCTURIZR_EDITABLE: "false"
+    STRUCTURIZR_AUTOSAVEINTERVAL: "0"
+    STRUCTURIZR_WORKSPACE_MAXSIZE: "10MB"
+    STRUCTURIZR_NETWORK_URLS_ALLOWED: "^$"
+
+services:
+  global:
+    <<: *viewer
+    command: ["local", "/usr/local/structurizr"]
+    ports:
+      - "127.0.0.1:${STRUCTURIZR_GLOBAL_PORT:-8080}:8080"
+
+  ignition:
+    <<: *viewer
+    command: ["local", "/usr/local/structurizr/workspaces/ignition"]
+    ports:
+      - "127.0.0.1:${STRUCTURIZR_IGNITION_PORT:-8081}:8080"
+
+  blockchain-foundation:
+    <<: *viewer
+    command: ["local", "/usr/local/structurizr/workspaces/blockchain-foundation"]
+    ports:
+      - "127.0.0.1:${STRUCTURIZR_FOUNDATION_PORT:-8082}:8080"
+
+  tools:
+    <<: *tools
+    profiles: ["tools"]

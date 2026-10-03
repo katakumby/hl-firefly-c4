@@ -1,0 +1,4 @@
+# Initiative UML diagrams
+
+Author standalone `.puml` or `.mmd` diagrams here and link them from Markdown.
+Use `.pumlinc` for PlantUML include fragments; only `.puml` and `.mmd` are rendered.

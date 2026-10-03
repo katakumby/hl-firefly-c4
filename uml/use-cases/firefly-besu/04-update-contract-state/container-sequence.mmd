@@ -1,0 +1,60 @@
+---
+title: UC4 - Update contract state - containers
+config:
+  theme: default
+  sequence:
+    mirrorActors: false
+    wrap: true
+---
+sequenceDiagram
+    autonumber
+box rgb(235,245,255) Member application reference
+        %% C4: App=apps.client
+        participant App as Member business<br/>application<br/>[Container]<br/>REST client
+    end
+    box rgb(235,250,240) Hyperledger FireFly
+        %% C4: Core=firefly.core
+        participant Core as FireFly Core<br/>[Container]<br/>Go
+        %% C4: DB=firefly.pg
+        participant DB as Core PostgreSQL<br/>database<br/>[Container]<br/>PostgreSQL
+        %% C4: EVM=firefly.evm
+        participant EVM as EVMConnect<br/>+ FFTM<br/>[Container]<br/>Go
+        %% C4: TxDB=firefly.fftmDb
+        participant TxDB as FFTM PostgreSQL<br/>database<br/>[Container]<br/>PostgreSQL
+        %% C4: Signer=firefly.signer
+        participant Signer as FireFly Signer<br/>[Container]<br/>Go
+    end
+
+    box rgb(255,247,224) Private Besu network
+        %% C4: Besu=besu.node
+        participant Besu as Besu node<br/>[Container]<br/>Java / Besu<br/>RocksDB
+    end
+
+    Note over App,Core: Durable operation subscription already connected
+    App->>Core: POST /apis/simple-storage/invoke/set [HTTPS REST / JSON]
+    Core->>DB: Store transaction key and invocation operation [PostgreSQL wire / TLS]
+    Core->>EVM: Enqueue invocation using operation id [HTTP REST / JSON]
+    Note over EVM,Signer: Encode and prepare before acceptance, RPCs via Signer
+    EVM->>TxDB: Persist managed transaction and nonce [PostgreSQL wire / TLS]
+    EVM-->>Core: Managed transaction accepted [HTTP REST / JSON]
+    Core-->>App: 202 Accepted, operation id and tx [HTTPS REST / JSON]
+    EVM->>Signer: eth_sendTransaction, encoded set call [Ethereum JSON-RPC / HTTP]
+    Signer->>Signer: Sign with member account key [Go / secp256k1]
+    Signer->>Besu: eth_sendRawTransaction [Ethereum JSON-RPC / HTTP]
+    Besu-->>Signer: Transaction hash [Ethereum JSON-RPC / HTTP]
+    Signer-->>EVM: Transaction hash [Ethereum JSON-RPC / HTTP]
+    EVM->>TxDB: Record submission hash and tracking state [PostgreSQL wire / TLS]
+    Note over Besu: QBFT block processing runs the EVM, state and logs are stored
+    loop Track receipt and required confirmations
+        EVM->>Signer: Get receipt and block data [Ethereum JSON-RPC / HTTP]
+        Signer->>Besu: Forward tracking RPCs [Ethereum JSON-RPC / HTTP]
+        Besu-->>Signer: Receipt or pending, block data [Ethereum JSON-RPC / HTTP]
+        Signer-->>EVM: Receipt or pending, block data [Ethereum JSON-RPC / HTTP]
+    end
+    Note over EVM: Transaction-confirmation policy satisfied
+    EVM->>TxDB: Persist receipt and terminal status [PostgreSQL wire / TLS]
+    EVM-->>Core: TransactionSuccess summary, best effort [WebSocket / JSON]
+    Core->>DB: Store status, output and completion event [PostgreSQL wire / TLS]
+    Core-->>App: Invocation succeeded event [WebSocket / JSON over TLS]
+    App->>Core: ACK after durable processing [WebSocket / JSON over TLS]
+    Core->>DB: Advance subscription offset [PostgreSQL wire / TLS]

@@ -1,0 +1,17 @@
+workspace extends ../../model.dsl {
+    name "<epic-id>"
+    !identifiers hierarchical
+    !impliedRelationships false
+    !docs .
+    model {
+        !elements element.tag==Element {
+            properties {
+                "structurizr.inspection.model.element.noview" "info"
+            }
+        }
+        !include model.dsl
+    }
+    views {
+        !include views/main.dsl
+    }
+}

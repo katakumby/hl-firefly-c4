@@ -1,0 +1,28 @@
+---
+title: UC4 - Update contract state - software systems
+config:
+  theme: default
+  sequence:
+    mirrorActors: false
+    wrap: true
+---
+sequenceDiagram
+    autonumber
+%% C4: App=apps; FF=firefly; Ledger=besu
+    participant App as Member application<br/>reference<br/>[Software System]
+    participant FF as Hyperledger FireFly<br/>[Software System]
+    participant Ledger as Private Besu<br/>network<br/>[Software System]
+
+    Note over App,FF: Durable operation subscription already connected
+    App->>FF: Invoke set with value and idempotency key [HTTPS REST / JSON]
+    FF-->>App: 202 Accepted, operation identifier [HTTPS REST / JSON]
+    FF->>Ledger: Submit signed contract transaction [Ethereum JSON-RPC / HTTP]
+    Ledger-->>FF: Transaction hash [Ethereum JSON-RPC / HTTP]
+    Note over Ledger: QBFT block processing executes set and emits Changed
+    loop Until receipt and required confirmations
+        FF->>Ledger: Get receipt and block data [Ethereum JSON-RPC / HTTP]
+        Ledger-->>FF: Receipt or pending, block data [Ethereum JSON-RPC / HTTP]
+    end
+    Note over FF: Transaction-confirmation policy satisfied
+    FF-->>App: Invocation succeeded event [WebSocket / JSON over TLS]
+    App->>FF: ACK after durable processing [WebSocket / JSON over TLS]

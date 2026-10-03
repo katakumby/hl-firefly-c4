@@ -1,0 +1,7 @@
+**
+!Dockerfile
+!scripts/
+!scripts/renderers/
+!scripts/renderers/package.json
+!scripts/renderers/package-lock.json
+!scripts/renderers/configure.py

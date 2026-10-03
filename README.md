@@ -1,53 +1,58 @@
 # Modular platform architecture workspace
 
 Solutions Architects and Technical Leads collaborate here on a shared reference
-model and separate initiative proposals. **Edit the DSL directly.** Validation
-and preview derive outputs without rewriting the model.
+model and separate initiative proposals. Architects author static C4 in Structurizr DSL and reference UML patterns.
+Technical leads primarily own behavioral/use-case and code diagrams, authored
+as standalone PlantUML (`.puml`) or Mermaid (`.mmd`) files. All generated
+artifacts stay under ignored `build/`.
 
 ## Start here
 
-- [Shared reference workspace](architecture/workspace.dsl): shared C4 reference views.
-- [Blockchain foundation](architecture/workspaces/blockchain-foundation/README.md):
+- [Shared reference workspace](workspace.dsl): shared C4 reference views.
+- [Blockchain foundation](workspaces/blockchain-foundation/README.md):
   proposed three-AZ Azure/AKS deployment for Besu and one FireFly member, with
   quorum calculations, persistence, key services and explicit HA qualification gates.
-- [Unleash reference](architecture/documentation/system/unleash/01-boundary-and-components.md):
+- [Unleash reference](documentation/system/unleash/01-boundary-and-components.md):
   OSS server and optional OSS Edge, with containers, components and all internal data flows.
-- [Ignition](architecture/workspaces/ignition/README.md): the proposed **DApp Platform** system
+- [Ignition](workspaces/ignition/README.md): the proposed **DApp Platform** system
   boundary, with no internal architecture or integrations yet.
-- [Shared model](architecture/model.dsl): reusable actors, external systems,
+- [Shared model](model.dsl): reusable actors, external systems,
   relationships and styles, without authored diagrams.
-- [Architecture documentation](architecture/documentation/workspace/01-logical-architecture.md)
-  and [FireFly/Besu use cases](architecture/use-cases/firefly-besu/README.md).
-- [Architecture decisions](architecture/decisions/adr),
-  [workspace decisions](architecture/decisions/workspace), and
-  [boundaries and evidence](architecture/documentation/workspace/06-boundaries.md).
+- [Architecture documentation](documentation/workspace/01-logical-architecture.md)
+  and [FireFly/Besu use cases](uml/use-cases/firefly-besu/README.md).
+- [Architecture decisions](decisions/adr),
+  [workspace decisions](decisions/workspace), and
+  [boundaries and evidence](documentation/workspace/06-boundaries.md).
 
 ## Layout and ownership
 
 | Location | Purpose |
 |---|---|
-| `architecture/workspace.dsl` | Reference entrypoint, alongside the extendable `model.dsl` |
-| `architecture/compose.yaml` | Named `global`, `ignition` and `blockchain-foundation` viewers, plus optional Docker tools |
-| `architecture/model/external-systems/` | Reference systems, each with a folder and container fragments |
-| `architecture/model/modules/` | Reviewed platform systems; initially no definitions |
-| `architecture/model/relationships/` | Relationships grouped by system, plus cross-system integrations |
-| `architecture/views/reference/` | Reference view fragments, automatically included by the reference workspace |
-| `architecture/styles.dsl` | Global styles inherited by reference, initiative and variant workspaces |
-| `architecture/documentation/` | Explanations and system boundaries |
-| `architecture/use-cases/` | Shared simple flows and detailed sequences |
-| `architecture/workspaces/<epic-id>/` | Goals, ownership, proposed model, focused views and use cases |
-| `architecture/scripts/` | Containerized validation and diagram export |
-| `architecture/templates/initiative/` | Incomplete authoring templates; excluded from workspace discovery |
-| `build/architecture/` | Generated artifacts; ignored by Git |
+| `workspace.dsl` | Reference entrypoint, alongside the extendable `model.dsl` |
+| `compose.yaml` | Named `global`, `ignition` and `blockchain-foundation` viewers, plus optional Docker tools |
+| `model/external-systems/` | Reference systems, each with a folder and container fragments |
+| `model/platform/` | Reviewed platform systems; initially no definitions |
+| `model/relationships/` | Relationships grouped by system, plus cross-system integrations |
+| `views/external-systems/` | Reference view fragments, automatically included by the reference workspace |
+| `styles/styles.dsl` | Global styles inherited by reference, initiative and variant workspaces |
+| `documentation/` | Explanations and system boundaries |
+| `uml/patterns/`, `uml/use-cases/`, `uml/code/` | Standalone reference patterns, behavioral and code diagrams |
+| `views/platform/` | Approved platform C4 views |
+| `workspaces/<epic-id>/` | Goals, ownership, proposed model, focused views and use cases |
+| `scripts/` | Containerized validation and diagram export |
+| `templates/initiative/` | Incomplete authoring templates; excluded from workspace discovery |
+| `build/` | Generated artifacts; ignored by Git |
 
 Existing application and operations examples remain reference choices, not
-adopted platform modules. Security examples are independent options, not a
+adopted platform systems. Catalog membership records available or potential
+integrations; it does not imply adoption. Preserve product internals, evidence
+and pinned reference revisions for audit and capability-gap analysis. Security examples are independent options, not a
 mandatory combined stack.
 
 Unleash is an independent, reusable product reference with no selected consumer
 integrations. Its eight `110-unleash-` views cover Unleash 8.2.0 and OSS Edge
-20.5.0. The [flow catalog](architecture/documentation/system/unleash/02-interfaces-and-flows.md)
-documents every named relationship; [behavior and evidence](architecture/documentation/system/unleash/03-behavior-and-evidence.md)
+20.5.0. The [flow catalog](documentation/system/unleash/02-interfaces-and-flows.md)
+documents every named relationship; [behavior and evidence](documentation/system/unleash/03-behavior-and-evidence.md)
 explain optional storage, offline mode, recovery and edition boundaries.
 
 ## Docker-only workflow
@@ -58,14 +63,14 @@ from the repository root in your terminal.
 
 The viewer uses the pinned Structurizr image directly. No scripts, custom image
 build, validation command or generated JSON are required before viewing.
-Python runs only when you explicitly request validation, export or tooling tests.
-Compose automatically reads the committed version pin in `architecture/.env`.
+Python runs only when you explicitly request validation, export, builds or tooling tests.
+Compose automatically reads the committed version pin in `.env`.
 
 ### Validate
 
 ```text
-docker compose -f architecture/compose.yaml run --rm --build tools validate
-docker compose -f architecture/compose.yaml run --rm --build tools validate --workspace architecture/workspaces/ignition/workspace.dsl
+docker compose run --rm --build tools validate
+docker compose run --rm --build tools validate --workspace workspaces/ignition/workspace.dsl
 ```
 
 Without `--workspace`, validation discovers the reference workspace and every
@@ -94,9 +99,9 @@ Export validates fresh sources first. Omit `--workspace` for the reference
 workspace and `--view` for all diagrams in that workspace:
 
 ```text
-docker compose -f architecture/compose.yaml run --rm --build tools export
-docker compose -f architecture/compose.yaml run --rm tools export --workspace architecture/workspaces/ignition/workspace.dsl
-docker compose -f architecture/compose.yaml run --rm tools export --view 01-landscape
+docker compose run --rm --build tools export
+docker compose run --rm tools export --workspace workspaces/ignition/workspace.dsl
+docker compose run --rm tools export --view 01-landscape
 ```
 
 Add `--format` to any selection to choose an output:
@@ -105,12 +110,12 @@ Add `--format` to any selection to choose an output:
 |---|---|---|
 | `plantuml` (default) | [C4-PlantUML](https://docs.structurizr.com/export/c4plantuml), `plantuml/c4plantuml` | `structurizr-<view-key>.puml` |
 | `mermaid` | [Mermaid](https://docs.structurizr.com/export/mermaid) | `structurizr-<view-key>.mmd` |
-| `svg` | [PNG/SVG renderer](https://docs.structurizr.com/export/png-and-svg) | `<view-key>.svg` |
-| `png` | Same native renderer | `<view-key>.png` |
+| `svg` | PlantUML rendering of the C4 export | `<view-key>.svg` |
+| `png` | PlantUML rendering of the C4 export | `<view-key>.png` |
 
 ```text
-docker compose -f architecture/compose.yaml run --rm tools export --format mermaid
-docker compose -f architecture/compose.yaml run --rm tools export --view 01-landscape --format png
+docker compose run --rm tools export --format mermaid
+docker compose run --rm tools export --view 01-landscape --format png
 ```
 
 C4-PlantUML is the primary agent review output. Its compact definitions use the
@@ -120,8 +125,8 @@ and need no browser or separate renderer installation.
 
 Mermaid does not reproduce every Structurizr shape, style or layout feature.
 Consumers rendering its HTML labels need `"securityLevel": "loose"`. Routine
-reviews read exported text directly; optional SVG/PNG exports use the browser
-bundled in the tools image.
+reviews read exported text directly. C4 SVG/PNG exports render the same
+C4-PlantUML definitions; their layout can differ from the native Structurizr viewer.
 
 A successful export replaces only its workspace, selection and format, removing
 obsolete files from that destination. The command prints the output path; see
@@ -131,14 +136,54 @@ For an intentional full rebuild of all three workspaces, add `--clean` to the
 **first export only**:
 
 ```text
-docker compose -f architecture/compose.yaml run --rm --build tools export --clean
-docker compose -f architecture/compose.yaml run --rm tools export --workspace architecture/workspaces/ignition/workspace.dsl
-docker compose -f architecture/compose.yaml run --rm tools export --workspace architecture/workspaces/blockchain-foundation/workspace.dsl
+docker compose run --rm --build tools export --clean
+docker compose run --rm tools export --workspace workspaces/ignition/workspace.dsl
+docker compose run --rm tools export --workspace workspaces/blockchain-foundation/workspace.dsl
 ```
 
-`--clean` clears all generated `build/architecture/` contents before validation,
-including other workspaces, formats and historical build folders. It preserves
-`local.env` and the writer lock. A failed rebuild cannot restore cleared files.
+`--clean` clears `build/c4/`, `build/uml/`, `build/workspaces/`, and the full-build
+reports before validation. It preserves `local.env`, the writer lock, and
+historical or unrelated build directories. A failed rebuild cannot restore cleared files.
+
+### Build all diagrams
+
+```text
+docker compose run --rm --build tools build
+```
+
+This validates every workspace once, exports its C4-PlantUML definitions, renders
+those definitions to SVG and PNG, and renders every standalone `.puml`/`.mmd`
+under shared `uml/` and workspace-local `uml/` directories. Rendering runs offline.
+Each source contains one diagram. Use `.pumlinc` for local PlantUML includes;
+paths resolve relative to the including source. Remote includes require replacing
+URLs with repository files or bundled PlantUML libraries. A `.puml` and `.mmd`
+with the same relative stem are rejected because their image outputs would collide.
+
+C4 outputs use the paths described below. Authored UML mirrors its source path:
+`uml/patterns/example/sequence.puml` produces
+`build/uml/patterns/example/sequence.svg` and `.png`; workspace-local diagrams
+produce `build/workspaces/<epic-id>/uml/...` images. Mermaid and PlantUML are
+independent authoring choices; there is no conversion or generated participant list.
+Optional comments can record canonical model IDs. A future consistency fitness
+check will warn about discrepancies; this build does not implement it.
+
+Markdown links to the source and to relative generated SVG/PNG paths. Previews
+require a successful build. All 14 existing FireFly–Besu sequences have standalone
+sources beside their use-case README. Consumers may copy generated images or
+embed this repository with both sources and build output; preserve relative paths
+when copying linked Markdown. No documentation hosting service is required.
+
+`build/build.json` records the latest attempt, source fingerprint, renderer
+versions, sources and output paths. `build/build.log` records tool diagnostics.
+A failed build preserves the previous images and exports, records `passed: false`,
+and does not claim those artifacts are current. The complete build stages all
+outputs before publication; successful builds remove obsolete authored UML outputs.
+Individual exports also record their latest attempt in `export-status.json`.
+
+The repository can be cloned or used as a Git submodule beneath another codebase.
+Run Compose here, or use `docker compose -f <checkout>/compose.yaml ...` from
+elsewhere. Paths passed to `--workspace` are relative to this architecture
+repository, independent of the parent repository and Git metadata.
 
 ### Final architecture review
 
@@ -155,26 +200,25 @@ make corrections in DSL. See [AGENTS.md](AGENTS.md) for persistent agent guidanc
 Start **all workspaces** from the repository root:
 
 ```text
-docker compose -f architecture/compose.yaml up -d
+docker compose up -d
 ```
 
-Or, from inside `architecture/`, simply run `docker compose up -d`.
 Only the native viewers start; the optional tools service is excluded by its profile.
 
 | Compose service | Authored entrypoint | Open |
 |---|---|---|
-| `global` | `architecture/workspace.dsl` | [Global reference workspace](http://127.0.0.1:8080) |
-| `ignition` | `architecture/workspaces/ignition/workspace.dsl` | [Ignition](http://127.0.0.1:8081) |
-| `blockchain-foundation` | `architecture/workspaces/blockchain-foundation/workspace.dsl` | [Blockchain foundation](http://127.0.0.1:8082) |
+| `global` | `workspace.dsl` | [Global reference workspace](http://127.0.0.1:8080) |
+| `ignition` | `workspaces/ignition/workspace.dsl` | [Ignition](http://127.0.0.1:8081) |
+| `blockchain-foundation` | `workspaces/blockchain-foundation/workspace.dsl` | [Blockchain foundation](http://127.0.0.1:8082) |
 
 To start just one service, choose its name:
 
 ```text
-docker compose -f architecture/compose.yaml up -d global
-docker compose -f architecture/compose.yaml up -d ignition
+docker compose up -d global
+docker compose up -d ignition
 ```
 
-Compose mounts `architecture/` directly at `/usr/local/structurizr`.
+Compose mounts the repository root directly at `/usr/local/structurizr`.
 Structurizr's native `local` command takes the **directory containing**
 `workspace.dsl`: the global viewer uses `/usr/local/structurizr`, and ignition
 uses `/usr/local/structurizr/workspaces/ignition`. The original directory tree
@@ -185,22 +229,22 @@ Edit the DSL and refresh the browser. No export or restart is needed for DSL
 changes. Structurizr performs its own parsing; the optional `tools validate`
 command runs the native validator and inspector and saves their results.
 
-For another initiative or variant, add a named service in `architecture/compose.yaml`
+For another initiative or variant, add a named service in `compose.yaml`
 using the shared `viewer` anchor, its workspace directory and an unused localhost
-port. The [initiative template](architecture/templates/initiative/README.md) shows
+port. The [initiative template](templates/initiative/README.md) shows
 the service definition. All workspace choices are visible in one Compose file.
 
 Stop one viewer, or stop and remove all viewers:
 
 ```text
-docker compose -f architecture/compose.yaml stop ignition
-docker compose -f architecture/compose.yaml down
+docker compose stop ignition
+docker compose down
 ```
 
 ### Outputs and maintenance
 
-Current outputs live in `build/architecture/workspaces/reference/` or
-`build/architecture/workspaces/workspaces/<epic-id>/workspace/`:
+Current outputs live in `build/c4/reference/` or
+`build/c4/workspaces/<epic-id>/`:
 
 - `workspace.json`: last successfully validated model.
 - `validation.json` and `validation.log`: latest validation result, including failures.
@@ -217,35 +261,36 @@ Exports replace their selection only after successful export and output checks;
 removed views do not leave old files in that selection. Tools run sequentially
 with one writer per checkout.
 Tools keep the latest results rather than a run history. Previous build layouts
-are unused and can be removed with `export --clean`. Native Structurizr local
+are unused and preserved by current commands, including `export --clean`. Native Structurizr local
 mode creates ignored `workspace.json` and `.structurizr/` caches beside the DSL;
 these are viewer outputs. DSL remains the source of truth.
 
-Only [architecture.py](architecture/scripts/architecture.py) is a command.
-One small supporting module, [workspace_paths.py](architecture/scripts/workspace_paths.py),
-handles paths, workspace discovery and the shared version pin. The test suite lives in
-[architecture/tests](architecture/tests). After changing tooling, validate and run:
+Only [architecture.py](scripts/architecture.py) is a command.
+[workspace_paths.py](scripts/workspace_paths.py) handles root-relative paths,
+workspace discovery and the shared version pin.
+[diagram_renderers.py](scripts/diagram_renderers.py) handles offline rendering. The test suite lives in
+[tests](tests). After changing tooling, validate and run:
 
 ```text
-docker compose -f architecture/compose.yaml run --rm --entrypoint python3 tools -B -m unittest discover -s architecture/tests -v
+docker compose run --rm --entrypoint python3 tools -B -m unittest discover -s tests -v
 ```
 
 ### Corporate environment
 
 The image uses Structurizr **2026.06.28**, centrally selected in
-[architecture/.env](architecture/.env), and Ubuntu's Python standard library.
+[.env](.env), and Ubuntu's Python standard library.
 Building needs access to the approved image/package repositories. Afterwards,
-validation and export run with networking disabled; the browser renderer is
-already in the image. The viewer publishes its port only on localhost using
+validation, export and full builds run with networking disabled. PlantUML, its
+C4 library, Graphviz, fonts, Mermaid CLI and Chromium are installed in the image.
+Renderer versions and dependency-lock hashes are recorded in build metadata. The viewer publishes its port only on localhost using
 Docker's bridge network and disables Structurizr's outbound URL loading.
 
 All services run as a non-root user with a read-only container filesystem,
 dropped capabilities and no Docker socket. Tools receive read-only architecture
-sources and write only to `build/architecture/`. The viewer mounts architecture
+sources and write only to `build/`. The viewer mounts architecture
 writable because native local mode keeps its cache beside the DSL; diagram editing
 and autosave are disabled. Temporary files remain inside the container. The
-tools container's temporary filesystem permits execution because Playwright
-extracts its bundled driver there.
+tools container's temporary filesystem permits execution for browser runtime compatibility.
 
 For a managed environment, have the platform team build, scan and publish the
 tools image to an approved registry, then set `ARCHITECTURE_TOOLS_IMAGE` to its
@@ -254,13 +299,12 @@ Compose override. Container isolation reduces host exposure; it does not
 guarantee that arbitrary code is safe.
 
 Defaults use UID/GID 1000. On Linux, ensure the selected architecture directory
-and `build/architecture/` are writable
+and `build/` are writable
 by that user or set `ARCHITECTURE_UID` and `ARCHITECTURE_GID` to your approved
 local IDs. Docker Desktop handles the mounted Windows directory. Optional
 settings, including `STRUCTURIZR_GLOBAL_PORT` and `STRUCTURIZR_IGNITION_PORT`, can
-be placed in an ignored `build/architecture/local.env` file. For local overrides,
-add `--env-file architecture/.env --env-file build/architecture/local.env` before
-`-f` in the commands above. No shell script is needed.
+be placed in an ignored `build/local.env` file. For local overrides,
+add `--env-file .env --env-file build/local.env` immediately after `docker compose` in the commands above. No shell script is needed.
 
 ## Contributing an initiative
 
@@ -268,13 +312,13 @@ These are recommended team conventions, not custom validation gates. The initial
 workflow relies on native Structurizr validation; automation of team-specific
 rules is deferred until teams choose to introduce it.
 
-1. Create `architecture/workspaces/<epic-id>/` with a README recording goal, status, architect,
+1. Create `workspaces/<epic-id>/` with a README recording goal, status, architect,
    technical lead/team, and epic link. Use `TBD` for unknown values.
-2. Start with the [initiative template](architecture/templates/initiative/README.md),
+2. Start with the [initiative template](templates/initiative/README.md),
    extending `../../model.dsl`. Add an agreed model and focused views. The template
    uses native `model.element.noview` informational settings for inherited elements.
    Adjust inspection properties in DSL as the initiative needs. Include local
-   `model.dsl` and `views.dsl`; keep proposals local.
+   `model.dsl` and `views/main.dsl`; keep proposals local.
 3. Prefix view keys with `<epic-id>-`. Give elements stable, meaningful
    `architecture.id` values; do not duplicate shared systems.
 4. Use explicit ordered includes: actors and systems first, relationships
@@ -294,10 +338,11 @@ by source container; cross-system relationships are split by source system,
 with actor-originated relationships together. Keep the explicit ordered include
 entrypoints, and define each relationship once.
 
-Reference diagrams use the directory include `!include views/reference` in
-`architecture/workspace.dsl`. Add a self-contained `.dsl` view fragment there;
-no new entrypoint include is needed. Global element and relationship styles,
-including the `Proposed` tag, live in `architecture/styles.dsl` and are included
+Reference diagrams use the directory include `!include views/external-systems` in
+`workspace.dsl`. Add a self-contained `.dsl` view fragment there;
+no new entrypoint include is needed. Approved platform views are included
+from `views/platform/` in the same way. Global element and relationship styles,
+including the `Proposed` tag, live in `styles/styles.dsl` and are included
 once by the shared model. Initiatives and variants inherit them automatically.
 
 Use `element.parent==<identifier>` when a view should show every child of a
@@ -309,33 +354,38 @@ the model changes.
 Shared changes are reviewed by affected architects and technical leads.
 Record actual owners in initiative READMEs; CODEOWNERS enforcement is deferred
 until team identities are available. Significant architecture decisions go in
-`architecture/decisions/adr`; authoring/tooling decisions go in
-`architecture/decisions/workspace`. Routine notes belong in READMEs.
+`decisions/adr`; authoring/tooling decisions go in
+`decisions/workspace`. Routine notes belong in READMEs.
 
 Attach shared documentation and ADRs once at workspace level. The reference
-workspace imports `architecture/documentation/workspace/` (including the
-[shared boundary explanation](architecture/documentation/workspace/06-boundaries.md))
+workspace imports `documentation/workspace/` (including the
+[shared boundary explanation](documentation/workspace/06-boundaries.md))
 and both decision directories. Attach `!docs` or `!adrs` to a software system
 only when it has documentation or decisions specifically about that system;
 do not attach the shared directories to every system or create placeholder
 documents to satisfy inspection checks.
 Store system-specific documentation under
-`architecture/documentation/system/<system-id>/`.
+`documentation/system/<system-id>/`.
 
 ## Variants and promotion
 
 Create `variants/interim/workspace.dsl` or `variants/target/workspace.dsl`
 only when designs differ. Each extends `../../workspace.dsl` and includes
 variant-local fragments. Use view keys such as `<epic-id>-interim-...`.
-Extension inherits parent models and views; variants are additive. Select the
+Each workspace loads an independent model instance. Local `!element` or
+`!elements` annotations (for example, adding `Future` tags) do not edit the
+shared definitions or affect sibling workspaces. Use include/exclude expressions
+to select local alternatives. Extension inherits parent models and views;
+variants are additive. Select the
 desired elements in each view instead of deleting inherited definitions.
 Use `<epic-id>-<variant>-` for local variant keys as a naming convention;
 inherited keys stay unchanged.
 
-After review, **move** accepted definitions into shared modules/relationships,
+After explicit approval, **move** accepted definitions into `model/platform/`
+and shared relationship fragments,
 preserving identifiers. Remove initiative-local definitions in the same change,
-add explicit shared includes, and validate every entrypoint. Promote reusable
-use cases with the model. Keep shared files independent of initiative folders
+add explicit shared includes, and validate every entrypoint. Promote approved C4 views into `views/platform/` and reusable
+behavioral diagrams into `uml/` with the model. Keep shared files independent of initiative folders
 as an authoring convention reviewed by the team.
 
 Ignition currently contains only the proposed DApp boundary. Its disconnected
@@ -343,7 +393,7 @@ inspection is informational through a native DSL property. Review that setting
 when the design introduces children or integrations. There is no custom rule
 preventing the proposal from evolving.
 
-See [decision 7](architecture/decisions/workspace/0007-modular-workspaces.md) and
-[decision 9](architecture/decisions/workspace/0009-container-only-tooling.md)
-for policy, the [review implementation status](architecture/documentation/reviews/2026-09-19-workspace-review.md#implementation-status)
+See [decision 7](decisions/workspace/0007-modular-workspaces.md) and
+[decision 9](decisions/workspace/0009-container-only-tooling.md)
+for policy, the [review implementation status](documentation/reviews/2026-09-19-workspace-review.md#implementation-status)
 for historical findings. Removed scripts and evidence inventories remain in Git history.

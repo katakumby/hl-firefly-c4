@@ -5,4 +5,7 @@
 *.yml text eol=lf
 *.json text eol=lf
 *.env text eol=lf
+*.puml text eol=lf
+*.pumlinc text eol=lf
+*.mmd text eol=lf
 architecture/references/legacy/** -text

@@ -1,0 +1,82 @@
+---
+title: UC7 - Failure recovery - containers
+config:
+  theme: default
+  sequence:
+    mirrorActors: false
+    wrap: true
+    messageMargin: 24
+    noteMargin: 8
+---
+sequenceDiagram
+    autonumber
+box rgb(235,245,255) Member application reference
+        %% C4: App=apps.client
+        participant App as Member business<br/>application<br/>[Container]<br/>REST client
+    end
+    box rgb(235,250,240) Hyperledger FireFly
+        %% C4: Core=firefly.core
+        participant Core as FireFly Core<br/>[Container]<br/>Go
+        %% C4: DB=firefly.pg
+        participant DB as Core PostgreSQL<br/>database<br/>[Container]<br/>PostgreSQL
+        %% C4: EVM=firefly.evm
+        participant EVM as EVMConnect<br/>+ FFTM<br/>[Container]<br/>Go
+        %% C4: Signer=firefly.signer
+        participant Signer as FireFly Signer<br/>[Container]<br/>Go
+    end
+
+    box rgb(255,247,224) Private Besu network
+        %% C4: Besu=besu.node
+        participant Besu as Besu node<br/>[Container]<br/>Java / Besu<br/>RocksDB
+    end
+
+    Note over App,Core: Durable operation subscription already connected
+    App->>Core: Original invoke, stable key [HTTPS REST / JSON]
+    alt Validation or preparation rejected
+        Note over Core,EVM: Preparation precedes managed acceptance
+        Core-->>App: Request error [HTTPS REST / JSON]
+    else Managed transaction accepted
+        Note over Core,EVM: Persistence and acceptance follow use case 4
+        Core-->>App: 202 Accepted, operation id and tx [HTTPS REST / JSON]
+        EVM->>Signer: eth_sendTransaction [Ethereum JSON-RPC / HTTP]
+        Note over Signer: Sign with member key
+        Signer->>Besu: eth_sendRawTransaction [Ethereum JSON-RPC / HTTP]
+        Besu-->>Signer: Hash or RPC rejection [Ethereum JSON-RPC / HTTP]
+        Signer-->>EVM: Submission result [Ethereum JSON-RPC / HTTP]
+        alt Node rejects submission
+            Note over EVM: Retain original managed transaction, apply retry policy
+        else Mined transaction reverts
+            EVM->>Signer: Get receipt and confirmation blocks [Ethereum JSON-RPC / HTTP]
+            Signer->>Besu: Forward tracking RPCs [Ethereum JSON-RPC / HTTP]
+            Besu-->>Signer: Receipt status 0 and blocks [Ethereum JSON-RPC / HTTP]
+            Signer-->>EVM: Tracking results [Ethereum JSON-RPC / HTTP]
+            Note over EVM: Transaction-confirmation policy satisfied
+            opt Result notification reaches Core
+                EVM-->>Core: TransactionFailure summary, best effort [WebSocket / JSON]
+                Core->>DB: Store Failed, output and event [PostgreSQL wire / TLS]
+            end
+        end
+    end
+    opt Original HTTP response lost
+        App->>Core: Repeat same request and key [HTTPS REST / JSON]
+        Core->>DB: Check transaction key and operation [PostgreSQL wire / TLS]
+        DB-->>Core: Existing references and state, or absent [PostgreSQL wire / TLS]
+        Note over Core,EVM: Accept or resume once if needed, reuse operation identity
+        Core-->>App: 409 duplicate or accept/resume original [HTTPS REST / JSON]
+        App->>Core: Lookup transaction and operations by key [HTTPS REST / JSON]
+        Core-->>App: Original operation reference [HTTPS REST / JSON]
+    end
+    opt Completion missing or outcome uncertain
+        App->>Core: GET /operations/{opid}?fetchstatus=true [HTTPS REST / JSON]
+        Core->>EVM: Fetch original managed transaction [HTTP REST / JSON]
+        EVM-->>Core: Status, receipt and available errors [HTTP REST / JSON]
+        Core-->>App: Recorded operation plus detail [HTTPS REST / JSON]
+        opt Core stale and connector terminal
+            Core->>DB: Reconcile status and enqueue event [PostgreSQL wire / TLS]
+        end
+    end
+    opt Completion event available
+        Core-->>App: Invocation succeeded or failed event [WebSocket / JSON over TLS]
+        App->>Core: ACK after durable processing [WebSocket / JSON over TLS]
+        Core->>DB: Advance subscription offset [PostgreSQL wire / TLS]
+    end

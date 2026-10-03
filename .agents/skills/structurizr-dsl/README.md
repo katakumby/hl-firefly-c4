@@ -1,23 +1,14 @@
-# Structurizr skill
+# Structurizr DSL skill
 
-This skills walks trhough your codebase and generates beatufiful diagrams via the [C4 model](https://c4model.com/).
+Use [SKILL.md](SKILL.md) for the authoring/review workflow and links to focused
+references. [The documentation map](references/documentation-map.md) records
+official source coverage and version-sensitive limitations.
 
-Unlike Mermaid, structurizr provides a harness to create simple yet expressive diagrams without clutter or complex node interactions. Diagrams can be expanded as needed, allowing the viewer to focus on specific containers or components with full control.
+The [starter workspace](assets/workspace-template.dsl) is a small syntax example;
+adapt its domain and technologies, and add documentation/decisions required by
+the target repository. Validate with the configured Structurizr runtime. In this
+repository, follow the root `AGENTS.md` and Compose tools workflow.
 
-I find it particularly useful when I need to:
-- Reading the codebase for the first time
-- Mitigate cognitive debt after several agentic contributions
-
-## Installation
-
-You can install the skill via
-```
-npx skills add fedemagnani/structurizr-skill
-```
-
-The skill validates the structurizr diagram via the cli tool. You can install it via 
-
-```
-brew install structurizr-cli
-```
-![demo](./demo.png)
+This skill originated from [fedemagnani/structurizr-skill](https://github.com/fedemagnani/structurizr-skill)
+and is maintained here for the repository's architecture work. The existing
+`demo.png` is a historical illustration, not current validation evidence.

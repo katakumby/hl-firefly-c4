@@ -33,6 +33,8 @@ workspace extends ../../model.dsl {
             title "Browse top 20 books feature"
             example_system.api -> example_system.backend "Requests the top 20 books from"
             example_system.backend -> example_system.api "Queries the top 20 books using"
+            example_system.api -> example_system.backend "Query another set of books"
+            example_system.backend -> example_system.api "Sends the updated top 20 books back to the API"
         }
     }
 }

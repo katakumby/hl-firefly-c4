@@ -36,7 +36,6 @@ x-viewer: &viewer
     - ./:/usr/local/structurizr
   environment:
     HOME: /tmp
-    STRUCTURIZR_EDITABLE: "false"
     STRUCTURIZR_AUTOSAVEINTERVAL: "0"
     STRUCTURIZR_WORKSPACE_MAXSIZE: "10MB"
     STRUCTURIZR_NETWORK_URLS_ALLOWED: "^$"

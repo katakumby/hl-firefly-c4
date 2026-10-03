@@ -18,7 +18,7 @@ import diagram_renderers as renderer
 
 class Renderers(unittest.TestCase):
     def test_tall_png_is_not_cropped_at_the_default_4096_pixel_limit(self):
-        with tempfile.TemporaryDirectory(dir=cli.BUILD) as temporary:
+        with tempfile.TemporaryDirectory() as temporary:
             source = Path(temporary) / 'tall.puml'
             source.write_text('@startuml\n' + 'A -> B: Message\n' * 220 + '@enduml\n')
             for format in ('svg', 'png'):
@@ -30,7 +30,7 @@ class Renderers(unittest.TestCase):
             self.assertLessEqual(abs(svg_height - png_height), 2)
 
     def test_offline_formats_and_local_plantuml_includes(self):
-        with tempfile.TemporaryDirectory(dir=cli.BUILD) as temporary:
+        with tempfile.TemporaryDirectory() as temporary:
             root = Path(temporary)
             (root / 'participants.pumlinc').write_text('participant Architect\nparticipant Platform\n')
             plantuml = root / 'sequence.puml'
@@ -49,7 +49,7 @@ class Renderers(unittest.TestCase):
             self.assertEqual(before, {p.name: p.read_bytes() for p in root.iterdir() if p.is_file()})
 
     def test_malformed_sources_fail_instead_of_publishing_error_images(self):
-        with tempfile.TemporaryDirectory(dir=cli.BUILD) as temporary:
+        with tempfile.TemporaryDirectory() as temporary:
             root = Path(temporary)
             for name, source in [('broken.puml', '@startuml\nthis is not valid syntax !!!\n@enduml'),
                                  ('broken.mmd', 'sequenceDiagram\nthis is not valid syntax !!!')]:
@@ -59,7 +59,7 @@ class Renderers(unittest.TestCase):
                     renderer.render(file, file.with_suffix('.svg'), [])
 
     def test_renderer_timeout_and_invalid_output_are_failures(self):
-        with tempfile.TemporaryDirectory(dir=cli.BUILD) as temporary:
+        with tempfile.TemporaryDirectory() as temporary:
             source = Path(temporary) / 'example.puml'
             source.write_text('@startuml\nA -> B\n@enduml')
             log = []
@@ -91,10 +91,9 @@ class CompleteBuild(unittest.TestCase):
             self.assertEqual(10, len(images))
             for image in images:
                 renderer.check_image(image)
-            for format in ('svg', 'png'):
-                report = json.loads((paths.output_directory(paths.REFERENCE) / 'exports/all' / format / 'export.json').read_text())
-                self.assertEqual('plantuml/c4plantuml', report['native_format'])
-                self.assertIn('plantuml', report['renderers'])
+            for entry in cli.inventory():
+                if entry['format'] in ('svg', 'png'):
+                    self.assertIn('plantuml', entry['renderers'])
             previous = {image: image.read_bytes() for image in images}
             with patch.object(cli, 'render', side_effect=RuntimeError('renderer unavailable')):
                 with self.assertRaisesRegex(RuntimeError, 'renderer unavailable'):
@@ -131,26 +130,25 @@ class CompleteBuild(unittest.TestCase):
             self.assertFalse(json.loads((cli.BUILD / 'build.json').read_text())['passed'])
 
     def test_multi_destination_publication_rolls_back(self):
-        with tempfile.TemporaryDirectory(dir=cli.BUILD) as temporary:
-            root = Path(temporary)
+        with checkout():
+            cli.BUILD.mkdir()
             replacements = []
-            for name in ('first', 'second'):
-                source, destination = root / ('new-' + name), root / name
-                source.mkdir(); destination.mkdir()
-                (source / 'image.svg').write_text('new')
-                (destination / 'image.svg').write_text('previous')
-                replacements.append((source, destination))
-            backup = root / 'backups'; backup.mkdir()
-            rename = Path.rename
-            def fail_second(source, target):
-                if source.name == 'new-second':
-                    raise OSError('cannot publish second')
-                return rename(source, target)
-            with patch.object(Path, 'rename', fail_second):
-                with self.assertRaisesRegex(OSError, 'cannot publish'):
-                    cli.publish(replacements, backup)
+            with cli.staging(cli.BUILD) as stage:
+                for name in ('first.svg', 'second.svg'):
+                    source, destination = stage / name, cli.BUILD / name
+                    source.write_text('new')
+                    destination.write_text('previous')
+                    replacements.append((source, destination))
+                rename = Path.rename
+                def fail_second(source, target):
+                    if source == stage / 'second.svg':
+                        raise OSError('cannot publish second')
+                    return rename(source, target)
+                with patch.object(Path, 'rename', fail_second):
+                    with self.assertRaisesRegex(OSError, 'cannot publish'):
+                        cli.publish(replacements, stage / 'previous')
             for _, destination in replacements:
-                self.assertEqual('previous', (destination / 'image.svg').read_text())
+                self.assertEqual('previous', destination.read_text())
 
 
 class RootAndIsolation(unittest.TestCase):
@@ -174,7 +172,7 @@ class RootAndIsolation(unittest.TestCase):
             self.assertNotEqual(before, cli.source_fingerprint())
 
     def test_checkout_embedded_in_another_repository_without_git(self):
-        with tempfile.TemporaryDirectory(dir=cli.BUILD) as temporary:
+        with tempfile.TemporaryDirectory() as temporary:
             parent = Path(temporary)
             root = parent / 'codebase/modules/architecture'
             root.mkdir(parents=True)
@@ -186,7 +184,7 @@ class RootAndIsolation(unittest.TestCase):
                                      'validate', '--workspace', 'workspace.dsl'], cwd=parent,
                                     capture_output=True, text=True, timeout=60)
             self.assertEqual(0, result.returncode, result.stdout + result.stderr)
-            self.assertTrue((root / 'build/c4/reference/workspace.json').is_file())
+            self.assertTrue((root / 'build/.reports/workspace.dsl/workspace.json').is_file())
             self.assertFalse((parent / 'build').exists())
 
     def test_experimental_tags_and_elements_do_not_leak_to_siblings(self):
@@ -238,7 +236,7 @@ class RootAndIsolation(unittest.TestCase):
                 self.assertEqual(workspace == experiment, 'Future' in systems[0]['tags'])
             for workspace in (paths.REFERENCE, experiment):
                 cli.export(workspace, 'plantuml')
-                diagrams = paths.output_directory(workspace) / 'exports/all/plantuml'
+                diagrams = cli.BUILD / workspace.relative_to(root).parent
                 text = next(diagrams.glob('*.puml')).read_text()
                 self.assertEqual(workspace == experiment, 'Experimental system' in text)
             self.assertNotIn('Future', (root / 'model.dsl').read_text())

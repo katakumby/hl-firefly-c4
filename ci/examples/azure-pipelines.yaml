@@ -1,0 +1,88 @@
+# Create a pipeline using this path, after configuring its variables and service connection.
+trigger:
+  branches:
+    include: [main]
+pr:
+  branches:
+    include: [main]
+parameters:
+  - name: acquireImage
+    type: boolean
+    default: false
+  - name: registryServiceConnection
+    type: string
+    default: architecture-registry
+pool:
+  name: $(ARCHITECTURE_AGENT_POOL)
+  demands:
+    - Agent.OS -equals Linux
+workspace:
+  clean: all
+steps:
+  - checkout: self
+    path: s/architecture
+    clean: true
+    persistCredentials: false
+  - ${{ if eq(parameters.acquireImage, true) }}:
+    - task: Docker@2
+      displayName: Authenticate to approved registry
+      inputs:
+        command: login
+        containerRegistry: ${{ parameters.registryServiceConnection }}
+    - bash: |
+        set -euo pipefail
+        : "${ARCHITECTURE_TOOLS_IMAGE:?Configure the approved tools image}"
+        docker pull "$ARCHITECTURE_TOOLS_IMAGE"
+      displayName: Acquire approved image
+      env:
+        ARCHITECTURE_TOOLS_IMAGE: $(ARCHITECTURE_TOOLS_IMAGE)
+  - bash: |
+      set -euo pipefail
+      : "${ARCHITECTURE_TOOLS_IMAGE:?Configure the approved tools image}"
+      docker image inspect "$ARCHITECTURE_TOOLS_IMAGE" >/dev/null
+      mkdir -p build/.reports
+      docker/run.sh test 2>&1 | tee build/.reports/tests.log
+      docker/run.sh build
+    displayName: Regressions and full offline build
+    workingDirectory: $(Pipeline.Workspace)/s/architecture
+    env:
+      ARCHITECTURE_TOOLS_IMAGE: $(ARCHITECTURE_TOOLS_IMAGE)
+  - bash: |
+      set -euo pipefail
+      mkdir -p "$ARCHITECTURE_ARTIFACT_DIR"
+      docker/run.sh package
+    displayName: Package current artifacts
+    condition: succeeded()
+    workingDirectory: $(Pipeline.Workspace)/s/architecture
+    env:
+      ARCHITECTURE_TOOLS_IMAGE: $(ARCHITECTURE_TOOLS_IMAGE)
+      ARCHITECTURE_ARTIFACT_DIR: $(Build.ArtifactStagingDirectory)/architecture
+  - task: PublishPipelineArtifact@1
+    condition: succeeded()
+    inputs:
+      targetPath: $(Build.ArtifactStagingDirectory)/architecture
+      artifact: architecture-$(Build.BuildId)
+  - bash: |
+      set -euo pipefail
+      mkdir -p "$ARCHITECTURE_ARTIFACT_DIR"
+      if docker image inspect "$ARCHITECTURE_TOOLS_IMAGE" >/dev/null 2>&1; then
+        docker/run.sh package --diagnostics
+      fi
+    displayName: Package failure diagnostics
+    condition: failed()
+    workingDirectory: $(Pipeline.Workspace)/s/architecture
+    env:
+      ARCHITECTURE_TOOLS_IMAGE: $(ARCHITECTURE_TOOLS_IMAGE)
+      ARCHITECTURE_ARTIFACT_DIR: $(Build.ArtifactStagingDirectory)/architecture-diagnostics
+  - task: PublishPipelineArtifact@1
+    condition: failed()
+    inputs:
+      targetPath: $(Build.ArtifactStagingDirectory)/architecture-diagnostics
+      artifact: architecture-diagnostics-$(Build.BuildId)
+  - ${{ if eq(parameters.acquireImage, true) }}:
+    - task: Docker@2
+      displayName: Remove registry credentials
+      condition: always()
+      inputs:
+        command: logout
+        containerRegistry: ${{ parameters.registryServiceConnection }}

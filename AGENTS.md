@@ -22,9 +22,9 @@ ignored by Git and must not be edited as source.
 ## Commands from the repository root
 
 ```text
-docker compose run --rm --build tools export
-docker compose run --rm tools export --workspace workspaces/ignition/workspace.dsl
-docker compose run --rm tools export --workspace workspace.dsl --view 01-landscape
+docker compose run --rm --pull never tools export
+docker compose run --rm --pull never tools export --workspace workspaces/ignition/workspace.dsl
+docker compose run --rm --pull never tools export --workspace workspace.dsl --view 01-landscape
 ```
 
 C4-PlantUML is the primary agent review output and the default export format.
@@ -32,7 +32,7 @@ Read its compact C4 macro definitions as text. Omit `--workspace` for the refere
 workspace; omit `--view` for all diagrams in the selected workspace.
 
 Both plain `export` and explicit `--format plantuml` use native C4-PlantUML.
-Find `structurizr-<view-key>.puml` in the printed output directory. See the
+Find `<view-key>.puml` in the source-mirrored folder listed in `build/artifacts.json`. See the
 [format table](README.md#export-c4-plantuml-default-mermaid-svg-or-png) and
 [output reference](README.md#outputs-and-maintenance) for optional Mermaid,
 SVG/PNG, paths and freshness metadata. Routine text review needs no renderer.
@@ -40,14 +40,17 @@ SVG/PNG, paths and freshness metadata. Routine text review needs no renderer.
 After tooling changes, validate all workspaces and run the containerized tests:
 
 ```text
-docker compose run --rm tools validate
+docker compose run --rm --pull never tools validate
 docker compose run --rm --entrypoint python3 tools -B -m unittest discover -s tests -v
 ```
 
 Use `--clean` only when explicitly rebuilding all generated architecture output:
-it clears current C4/UML outputs and build reports before export, preserving
+it clears inventory-managed C4/UML outputs and build reports before export, preserving
 `local.env`, the writer lock, and historical or unrelated build directories. Routine reviews do not need it.
 
-The full `docker compose run --rm --build tools build` command renders C4 and
+The full `docker compose run --rm --pull never tools build` command renders C4 and
 standalone `.puml`/`.mmd` sources to SVG and PNG. Rendering is appropriate when
 verifying this build pipeline; routine architecture reviews still use text only.
+
+Acquire approved images before running commands; normal Compose execution never
+builds or pulls them. See [corporate Docker instructions](documentation/build.md).

@@ -15,6 +15,8 @@ import tempfile
 
 from workspace_paths import ROOT, BUILD, REFERENCE, VERSION, discover_workspaces, output_directory, workspace_path
 from diagram_renderers import render, renderer_versions
+from view_sources import index_views, safe_name
+from artifact_store import atomic_json, staging, publish, recover, confined, prune_empty
 
 JAVA = ['java', '-Dio.netty.noUnsafe=true', '--enable-native-access=ALL-UNNAMED', '-jar', '/usr/local/structurizr.war']
 # Native exporter, filename prefix and extension for each public export format.
@@ -33,13 +35,13 @@ def timestamp():
 def source_fingerprint():
     """No host Git executable or .git mount is needed."""
     digest = hashlib.sha256()
-    paths = [ROOT / name for name in ('README.md', 'AGENTS.md', 'workspace.dsl', 'model.dsl',
-             'compose.yaml', 'Dockerfile', '.env', '.dockerignore')]
+    paths = [ROOT / name for name in ('README.md', 'workspace.dsl', 'model.dsl',
+             'compose.yaml', '.env')]
     # Additional root-level entrypoints and include fragments are valid authoring inputs.
     for extension in ('dsl', 'puml', 'pumlinc', 'mmd'):
         paths.extend(ROOT.glob('*.' + extension))
     for tree in ('model', 'views', 'styles', 'uml', 'workspaces', 'documentation',
-                 'decisions', 'templates', 'scripts', 'tests'):
+                 'decisions', 'templates', 'scripts', 'tests', 'ci', 'docker'):
         for directory, directories, files in os.walk(ROOT / tree):
             directories[:] = [name for name in directories if not name.startswith('.')
                               and name not in ('__pycache__', 'node_modules', 'build')]
@@ -53,21 +55,6 @@ def source_fingerprint():
     return digest.hexdigest()
 
 
-def atomic_json(path, value):
-    path = Path(path)
-    path.parent.mkdir(parents=True, exist_ok=True)
-    temporary = None
-    try:
-        with tempfile.NamedTemporaryFile(mode='w', encoding='utf-8', dir=path.parent, delete=False) as stream:
-            temporary = Path(stream.name)
-            json.dump(value, stream, indent=2)
-            stream.write('\n')
-        os.replace(temporary, path)
-    finally:
-        if temporary is not None:
-            temporary.unlink(missing_ok=True)
-
-
 @contextmanager
 def command_lock():
     """One writer per checkout; OS releases the lock if a container is interrupted."""
@@ -78,6 +65,7 @@ def command_lock():
         except BlockingIOError as exc:
             raise RuntimeError('Another architecture command is running in this checkout') from exc
         try:
+            recover(BUILD)
             yield
         finally:
             fcntl.flock(stream, fcntl.LOCK_UN)
@@ -100,20 +88,52 @@ def run_java(arguments, log, timeout=240):
         raise RuntimeError(log[-1][-4000:])
 
 
+def inventory():
+    file = BUILD / 'artifacts.json'
+    return json.loads(file.read_text())['artifacts'] if file.exists() else []
+
+
+def legacy_files():
+    """Recognize the prior managed layout without deleting unrelated historical files."""
+    selected = set()
+    for metadata in (BUILD / 'c4').rglob('export.json'):
+        report = json.loads(metadata.read_text())
+        for name in report.get('outputs', []):
+            if Path(name).name != name:
+                raise ValueError(f'Unsafe legacy output name: {name}')
+            selected.add(metadata.parent / name)
+        selected.add(metadata)
+    for report in (BUILD / 'c4').rglob('validation.json'):
+        if 'workspace' in json.loads(report.read_text()):
+            for name in ('workspace.json', 'validation.json', 'validation.log', 'export-status.json', 'export.log'):
+                selected.add(report.parent / name)
+    manifest = BUILD / 'build.json'
+    if manifest.exists() and json.loads(manifest.read_text()).get('layout_version') != 2:
+        for output in json.loads(manifest.read_text()).get('outputs', []):
+            relative = Path(output).relative_to('build')
+            if relative.parts[0] in ('c4', 'uml', 'workspaces'):
+                selected.add(confined(BUILD, relative))
+    cache = BUILD / '.reports/legacy.json'
+    if cache.exists():
+        selected.update(confined(BUILD, item) for item in json.loads(cache.read_text()))
+        selected.add(cache)
+    return {p for p in selected if p.is_file()}
+
+
 def clean_build():
-    """Clear generated architecture output while holding the checkout writer lock."""
-    expected = ROOT.resolve() / 'build'
-    if BUILD.resolve() != expected:
+    """Explicitly remove inventory-managed artifacts, preserving unrelated files."""
+    if BUILD.resolve() != ROOT.resolve() / 'build':
         raise ValueError('Refusing to clean outside build')
-    for path in BUILD.iterdir():
-        # Keep the locked inode and optional user-authored Compose settings.
-        if path.name not in ('c4', 'uml', 'workspaces', 'build.json', 'build.log'):
-            continue
-        if path.is_symlink() or not path.is_dir():
-            path.unlink()
-        else:
-            shutil.rmtree(path)
-    print('Cleaned current architecture output (preserved local.env, legacy outputs and command lock)', flush=True)
+    managed = {confined(BUILD, item['output']) for item in inventory()} | legacy_files()
+    for file in managed:
+        file.unlink(missing_ok=True)
+    for name in ('artifacts.json', 'build.json', 'build.log'):
+        (BUILD / name).unlink(missing_ok=True)
+    reports = confined(BUILD, '.reports')
+    if reports.exists():
+        shutil.rmtree(reports)
+    prune_empty(BUILD, managed)
+    print('Cleaned managed artifacts (preserved local settings, unrelated files and writer lock)', flush=True)
 
 
 def validate(paths=None):
@@ -122,7 +142,7 @@ def validate(paths=None):
     before = source_fingerprint()
     parsed, reports, logs = {}, {}, {}
     BUILD.mkdir(parents=True, exist_ok=True)
-    with tempfile.TemporaryDirectory(prefix='validate-', dir=BUILD) as temporary:
+    with tempfile.TemporaryDirectory(prefix='architecture-validate-') as temporary:
         for index, path in enumerate(selected):
             logs[path] = []
             report = {'workspace': path.relative_to(ROOT).as_posix(),
@@ -184,32 +204,8 @@ def select_view(raw, key):
     for kind, views in raw['views'].items():
         if kind.endswith('Views'):
             for view in views:
-                if not view['key'] or any(char in view['key'] for char in '/\\:') or view['key'] in ('.', '..'):
-                    raise ValueError('Diagram keys used for export must be safe file names')
+                safe_name(view['key'])
     return raw
-
-
-def publish(replacements, backup_root):
-    """Publish a set of staged directories/files, rolling back on a failed rename."""
-    backups, installed = [], []
-    try:
-        for index, (source, destination) in enumerate(replacements):
-            destination.parent.mkdir(parents=True, exist_ok=True)
-            backup = backup_root / str(index)
-            if destination.exists():
-                destination.rename(backup)
-                backups.append((backup, destination))
-            source.rename(destination)
-            installed.append(destination)
-    except OSError:
-        for destination in reversed(installed):
-            if destination.is_dir():
-                shutil.rmtree(destination)
-            else:
-                destination.unlink()
-        for backup, destination in reversed(backups):
-            backup.rename(destination)
-        raise
 
 
 def produce_diagrams(raw, format, stage, logs, c4_source=None):
@@ -250,6 +246,62 @@ def stage_export(raw, report, format, view, stage, logs, c4_source=None):
     return diagrams
 
 
+def artifact(output, source, workspace, format, fingerprint, key=None):
+    confined(BUILD, output)
+    return {'output': output.as_posix(), 'source': source.relative_to(ROOT).as_posix(),
+            'workspace': workspace.relative_to(ROOT).as_posix() if workspace else None,
+            'view': key, 'format': format, 'source_sha256': fingerprint,
+            'structurizr_version': VERSION if key else None,
+            'renderers': renderer_versions() if format in ('svg', 'png') else {},
+            'completed_at': timestamp()}
+
+
+def c4_plan(path, raw, formats, fingerprint):
+    mapping = index_views(path, ROOT, view_keys(raw))
+    return [artifact(stem.with_suffix(stem.suffix + '.' + EXPORT_FORMATS[format][2]),
+                     source, path, format, fingerprint, key)
+            for key, (source, stem) in mapping.items() for format in formats]
+
+
+def check_collisions(entries):
+    seen = {}
+    for entry in entries:
+        output = entry['output']
+        folded = output.casefold()
+        if folded in seen:
+            raise ValueError(f'Diagram output collision: {seen[folded]} and {entry["source"]}: {output}')
+        confined(BUILD, output)
+        seen[folded] = entry['source']
+
+
+def stage_c4(path, raw, report, formats, entries, stage, logs):
+    replacements = []
+    c4_source = None
+    for format in formats:
+        diagrams = stage_export(raw, report, format, None, stage / format, logs, c4_source)
+        if format == 'plantuml':
+            c4_source = diagrams
+        _, prefix, extension = EXPORT_FORMATS[format]
+        for entry in entries:
+            if entry['format'] == format:
+                source = diagrams / f'{prefix}{entry["view"]}.{extension}'
+                entry['output_sha256'] = hashlib.sha256(source.read_bytes()).hexdigest()
+                replacements.append((source, BUILD / entry['output']))
+        print(f'Generated {path.relative_to(ROOT)}: {format}', flush=True)
+    return replacements
+
+
+def commit_artifacts(entries, retained, replacements, removed, stage):
+    check_collisions(entries + retained)
+    staged_inventory = stage / 'artifacts.json'
+    atomic_json(staged_inventory, {'schema_version': 1,
+                'artifacts': sorted(entries + retained, key=lambda item: item['output'])})
+    replacements.extend((None, path) for path in sorted(removed)
+                        if path not in {destination for _, destination in replacements})
+    replacements.append((staged_inventory, BUILD / 'artifacts.json'))
+    publish(replacements, stage / 'previous')
+
+
 def export(path, format, view=None):
     directory = output_directory(path)
     directory.mkdir(parents=True, exist_ok=True)
@@ -258,20 +310,26 @@ def export(path, format, view=None):
     atomic_json(directory / 'export-status.json', status | {'in_progress': True, 'started_at': timestamp()})
     logs = []
     try:
-        raw, report = fresh_workspace(path)
-        raw = select_view(raw, view)
-        selection = 'all' if view is None else 'view-' + hashlib.sha256(view.encode()).hexdigest()[:12]
-        destination = directory / 'exports' / selection / format
-        with tempfile.TemporaryDirectory(prefix='export-', dir=BUILD) as temporary:
-            stage = Path(temporary)
-            diagrams = stage_export(raw, report, format, view, stage, logs)
+        with staging(BUILD) as stage:
+            raw, report = fresh_workspace(path)
+            # Index the whole workspace before selection, cross-checking native keys.
+            plan = c4_plan(path, raw, [format], report['source_sha256'])
+            raw = select_view(raw, view)
+            entries = [entry for entry in plan if view is None or entry['view'] == view]
+            old = inventory()
+            replaced = [item for item in old if item['workspace'] == status['workspace']
+                        and item['view'] is not None and item['format'] == format
+                        and (view is None or item['view'] == view)]
+            retained = [item for item in old if item not in replaced]
+            check_collisions(entries + retained)
+            replacements = stage_c4(path, raw, report, [format], entries, stage / 'c4', logs)
             if source_fingerprint() != report['source_sha256']:
                 raise ValueError('Sources changed during export')
-            backup = stage / 'previous'
-            backup.mkdir()
-            publish([(diagrams, destination)], backup)
-        status.update(passed=True, source_sha256=report['source_sha256'])
-        print(f'Exported {format.upper()}: {destination.relative_to(ROOT)}', flush=True)
+            commit_artifacts(entries, retained, replacements,
+                             {BUILD / item['output'] for item in replaced}, stage)
+        status.update(passed=True, source_sha256=report['source_sha256'],
+                      outputs=[item['output'] for item in entries])
+        print(f'Exported {format.upper()}: {len(entries)} canonical files under build/ (see artifacts.json)', flush=True)
     except (ValueError, OSError, RuntimeError, subprocess.SubprocessError) as exc:
         status['errors'].append(str(exc))
         raise
@@ -283,10 +341,14 @@ def export(path, format, view=None):
 def discover_uml():
     roots = [ROOT / 'uml', *sorted((ROOT / 'workspaces').rglob('uml'))]
     selected, stems = [], {}
+    visited = set()
     for root in roots:
         for source in sorted(root.rglob('*')):
             if not source.is_file() or source.suffix not in ('.puml', '.mmd'):
                 continue
+            if source in visited:
+                continue
+            visited.add(source)
             source.resolve().relative_to(ROOT.resolve())
             relative = source.relative_to(ROOT)
             stem = relative.with_suffix('').as_posix().casefold()
@@ -298,52 +360,68 @@ def discover_uml():
 
 
 def build():
-    """Validate once, stage every image/text export, then publish the complete build."""
-    status = {'passed': False, 'errors': [], 'outputs': [], 'sources': []}
+    """Validate and stage everything before changing any published diagram."""
+    status = {'layout_version': 2, 'passed': False, 'errors': [], 'outputs': [], 'sources': []}
     logs = []
     BUILD.mkdir(parents=True, exist_ok=True)
+    # Capture legacy inventory before replacing the old attempt manifest.
+    legacy = legacy_files()
+    if legacy:
+        cache = BUILD / '.reports/legacy.json'
+        atomic_json(cache, sorted(p.relative_to(BUILD).as_posix() for p in legacy if p != cache))
+        legacy.add(cache)
     atomic_json(BUILD / 'build.json', status | {'in_progress': True, 'started_at': timestamp()})
     try:
-        sources = discover_uml()
-        reports = validate()
-        if not reports or not all(report['passed'] for report in reports.values()):
-            raise ValueError('Validation failed. Previous build artifacts were not updated.')
-        fingerprint = next(iter(reports.values()))['source_sha256']
-        status.update(source_sha256=fingerprint, structurizr_version=VERSION, renderers=renderer_versions())
-        with tempfile.TemporaryDirectory(prefix='build-', dir=BUILD) as temporary:
-            stage = Path(temporary)
-            replacements = []
-            for index, (path, report) in enumerate(reports.items()):
+        with staging(BUILD) as stage:
+            sources = discover_uml()
+            reports = validate()
+            if not reports or not all(report['passed'] for report in reports.values()):
+                raise ValueError('Validation failed. Previous build artifacts were not updated.')
+            fingerprint = next(iter(reports.values()))['source_sha256']
+            status.update(source_sha256=fingerprint, structurizr_version=VERSION, renderers=renderer_versions())
+            entries, workspaces, possible = [], {}, set()
+            for path, report in reports.items():
                 raw = select_view(json.loads((output_directory(path) / 'workspace.json').read_text()), None)
+                plan = c4_plan(path, raw, EXPORT_FORMATS, fingerprint)
+                possible.update((item['output'], item['source'], item['workspace'], item['view'], item['format']) for item in plan)
+                selected = [item for item in plan if item['format'] != 'mermaid']
+                workspaces[path] = (raw, selected)
+                entries.extend(selected)
                 status['sources'].append(path.relative_to(ROOT).as_posix())
-                c4_source = None
-                for format in ('plantuml', 'svg', 'png'):
-                    diagrams = stage_export(raw, report, format, None, stage / str(index) / format, logs, c4_source)
-                    if format == 'plantuml':
-                        c4_source = diagrams
-                    destination = output_directory(path) / 'exports/all' / format
-                    replacements.append((diagrams, destination))
-                    status['outputs'].extend((destination / p.name).relative_to(ROOT).as_posix()
-                                             for p in sorted(diagrams.iterdir()))
-                    print(f'Built {path.relative_to(ROOT)}: {format}', flush=True)
-            # Mirror only authored UML outputs here; C4 artifacts have their own namespace.
-            authored = stage / 'authored'
-            for name in ('uml', 'workspaces'):
-                (authored / name).mkdir(parents=True)
-                replacements.append((authored / name, BUILD / name))
             for source in sources:
                 relative = source.relative_to(ROOT)
+                owners = [p for p in reports if source.is_relative_to(p.parent)]
+                owner = max(owners, key=lambda p: len(p.parts)) if owners else None
+                entries.extend(artifact(relative.with_suffix('.' + format), source, owner, format, fingerprint)
+                               for format in ('svg', 'png'))
                 status['sources'].append(relative.as_posix())
-                for format in ('svg', 'png'):
-                    output = (authored / relative).with_suffix('.' + format)
-                    render(source, output, logs)
-                    status['outputs'].append((BUILD / relative).with_suffix('.' + format).relative_to(ROOT).as_posix())
-                print(f'Built {relative}: svg, png', flush=True)
+            old = inventory()
+            retained = [item for item in old if item['format'] == 'mermaid'
+                        and (item['output'], item['source'], item['workspace'], item['view'], item['format']) in possible]
+            check_collisions(entries + retained)
+            replacements = []
+            for path, (raw, plan) in workspaces.items():
+                replacements.extend(stage_c4(path, raw, reports[path], ('plantuml', 'svg', 'png'),
+                                    plan, stage / 'c4' / path.relative_to(ROOT), logs))
+            for entry in entries:
+                if entry['view'] is not None:
+                    continue
+                output = stage / 'authored' / entry['output']
+                render(ROOT / entry['source'], output, logs)
+                entry['output_sha256'] = hashlib.sha256(output.read_bytes()).hexdigest()
+                replacements.append((output, BUILD / entry['output']))
+                print(f'Generated {entry["source"]}: {entry["format"]}', flush=True)
             if source_fingerprint() != fingerprint:
                 raise ValueError('Sources changed during build')
-            backup = stage / 'previous'
-            backup.mkdir()
-            publish(replacements, backup)
+            kept = {item['output'] for item in entries + retained}
+            removed = {BUILD / item['output'] for item in old if item['output'] not in kept} | legacy
+            # Deleted workspace reports must not linger as apparently active workspaces.
+            report_directories = {output_directory(path) for path in reports}
+            for file in (BUILD / '.reports').rglob('validation.json'):
+                if file.parent not in report_directories:
+                    removed.update(p for p in file.parent.iterdir() if p.is_file())
+            status['outputs'] = ['build/' + item['output'] for item in entries]
+            commit_artifacts(entries, retained, replacements, removed, stage)
         status['passed'] = True
         print('Built all diagrams: build/build.json', flush=True)
     except (ValueError, OSError, RuntimeError, subprocess.SubprocessError) as exc:
@@ -367,7 +445,7 @@ def main():
                                  help='Output format (default: plantuml using C4-PlantUML; svg/png render C4-PlantUML)')
             command.add_argument('--view', help='Export only this view key (default: all views)')
             command.add_argument('--clean', action='store_true',
-                                 help='Clear current diagram outputs before export, preserving local.env and legacy outputs')
+                                 help='Clear inventory-managed outputs before export, preserving local settings and unrelated files')
     args = parser.parse_args()
     try:
         if not Path('/usr/local/structurizr.war').is_file():

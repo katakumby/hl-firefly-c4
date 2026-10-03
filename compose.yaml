@@ -2,12 +2,7 @@ name: ${COMPOSE_PROJECT_NAME:-dlt-architecture}
 
 x-tools: &tools
   image: ${ARCHITECTURE_TOOLS_IMAGE:-dlt-architecture-tools:local}
-  build:
-    context: .
-    args:
-      STRUCTURIZR_VERSION: ${STRUCTURIZR_VERSION:?Missing version in .env}
-      NODE_VERSION: ${NODE_VERSION:?Missing version in .env}
-      PLANTUML_VERSION: ${PLANTUML_VERSION:?Missing version in .env}
+  pull_policy: never
   user: "${ARCHITECTURE_UID:-1000}:${ARCHITECTURE_GID:-1000}"
   network_mode: none
   environment:
@@ -25,7 +20,8 @@ x-tools: &tools
     - ./build:/workspace/build
 
 x-viewer: &viewer
-  image: structurizr/structurizr:${STRUCTURIZR_VERSION:?Missing version in .env}-noble
+  image: ${ARCHITECTURE_VIEWER_IMAGE:-structurizr/structurizr:${STRUCTURIZR_VERSION:?Missing version in .env}-noble}
+  pull_policy: never
   # Invoke Java directly; no project or container shell launcher is needed.
   entrypoint: ["java", "-Dio.netty.noUnsafe=true", "--enable-native-access=ALL-UNNAMED", "-jar", "/usr/local/structurizr.war"]
   user: "${ARCHITECTURE_UID:-1000}:${ARCHITECTURE_GID:-1000}"

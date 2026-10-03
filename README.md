@@ -40,6 +40,7 @@ artifacts stay under ignored `build/`.
 | `views/platform/` | Approved platform C4 views |
 | `workspaces/<epic-id>/` | Goals, ownership, proposed model, focused views and use cases |
 | `scripts/` | Containerized validation and diagram export |
+| `docker/` | Tools image, renderer dependencies, maintenance override and `run.sh` launcher |
 | `templates/initiative/` | Incomplete authoring templates; excluded from workspace discovery |
 | `build/` | Generated artifacts; ignored by Git |
 
@@ -57,9 +58,11 @@ explain optional storage, offline mode, recovery and edition boundaries.
 
 ## Docker-only workflow
 
-Install Docker with the Compose plugin. **No host Python, Java, PowerShell, Bash
-scripts or pip packages are required.** Run these single-line Docker commands
-from the repository root in your terminal.
+Use your approved Docker installation; Compose is optional with plain Docker.
+**No host Python, Java, Node, npm or diagram software is required.** Acquire the
+approved tools and viewer images first using the [corporate build guide](documentation/build.md).
+Normal commands use preloaded images and never install packages, pull images or
+build the toolchain. Run these commands from the repository root.
 
 The viewer uses the pinned Structurizr image directly. No scripts, custom image
 build, validation command or generated JSON are required before viewing.
@@ -69,8 +72,8 @@ Compose automatically reads the committed version pin in `.env`.
 ### Validate
 
 ```text
-docker compose run --rm --build tools validate
-docker compose run --rm --build tools validate --workspace workspaces/ignition/workspace.dsl
+docker compose run --rm --pull never tools validate
+docker compose run --rm --pull never tools validate --workspace workspaces/ignition/workspace.dsl
 ```
 
 Without `--workspace`, validation discovers the reference workspace and every
@@ -90,8 +93,8 @@ configured in the shared model and inherited by initiatives.
 
 Naming, evidence, ownership, diagram and dependency conventions below are
 guidance for authors and reviewers. Custom enforcement can be introduced
-progressively as teams agree on rules worth maintaining. Python currently only
-selects workspaces, runs native commands and manages generated files.
+progressively as teams agree on rules worth maintaining. The build also requires explicit portable view keys and unambiguous local source
+paths so generated files have deterministic destinations.
 
 ### Export C4-PlantUML (default), Mermaid, SVG or PNG
 
@@ -99,23 +102,23 @@ Export validates fresh sources first. Omit `--workspace` for the reference
 workspace and `--view` for all diagrams in that workspace:
 
 ```text
-docker compose run --rm --build tools export
-docker compose run --rm tools export --workspace workspaces/ignition/workspace.dsl
-docker compose run --rm tools export --view 01-landscape
+docker compose run --rm --pull never tools export
+docker compose run --rm --pull never tools export --workspace workspaces/ignition/workspace.dsl
+docker compose run --rm --pull never tools export --view 01-landscape
 ```
 
 Add `--format` to any selection to choose an output:
 
 | Format | Native exporter | Diagram filename |
 |---|---|---|
-| `plantuml` (default) | [C4-PlantUML](https://docs.structurizr.com/export/c4plantuml), `plantuml/c4plantuml` | `structurizr-<view-key>.puml` |
-| `mermaid` | [Mermaid](https://docs.structurizr.com/export/mermaid) | `structurizr-<view-key>.mmd` |
+| `plantuml` (default) | [C4-PlantUML](https://docs.structurizr.com/export/c4plantuml), `plantuml/c4plantuml` | `<view-key>.puml` |
+| `mermaid` | [Mermaid](https://docs.structurizr.com/export/mermaid) | `<view-key>.mmd` |
 | `svg` | PlantUML rendering of the C4 export | `<view-key>.svg` |
 | `png` | PlantUML rendering of the C4 export | `<view-key>.png` |
 
 ```text
-docker compose run --rm tools export --format mermaid
-docker compose run --rm tools export --view 01-landscape --format png
+docker compose run --rm --pull never tools export --format mermaid
+docker compose run --rm --pull never tools export --view 01-landscape --format png
 ```
 
 C4-PlantUML is the primary agent review output. Its compact definitions use the
@@ -128,27 +131,28 @@ Consumers rendering its HTML labels need `"securityLevel": "loose"`. Routine
 reviews read exported text directly. C4 SVG/PNG exports render the same
 C4-PlantUML definitions; their layout can differ from the native Structurizr viewer.
 
-A successful export replaces only its workspace, selection and format, removing
-obsolete files from that destination. The command prints the output path; see
+A successful export updates the canonical files for its requested workspace,
+selection and format. Other diagrams and formats retain their files and freshness metadata. The command prints the output path; see
 [outputs and maintenance](#outputs-and-maintenance) for directories and metadata.
 
 For an intentional full rebuild of all three workspaces, add `--clean` to the
 **first export only**:
 
 ```text
-docker compose run --rm --build tools export --clean
-docker compose run --rm tools export --workspace workspaces/ignition/workspace.dsl
-docker compose run --rm tools export --workspace workspaces/blockchain-foundation/workspace.dsl
+docker compose run --rm --pull never tools export --clean
+docker compose run --rm --pull never tools export --workspace workspaces/ignition/workspace.dsl
+docker compose run --rm --pull never tools export --workspace workspaces/blockchain-foundation/workspace.dsl
 ```
 
-`--clean` clears `build/c4/`, `build/uml/`, `build/workspaces/`, and the full-build
-reports before validation. It preserves `local.env`, the writer lock, and
-historical or unrelated build directories. A failed rebuild cannot restore cleared files.
+`--clean` explicitly removes inventory-managed diagrams and reports before validation.
+It preserves `local.env`, the writer lock, and unrelated or historical artifacts.
+A failed rebuild cannot restore explicitly cleared files. Ordinary full builds
+already prune obsolete managed files after successful generation.
 
 ### Build all diagrams
 
 ```text
-docker compose run --rm --build tools build
+docker compose run --rm --pull never tools build
 ```
 
 This validates every workspace once, exports its C4-PlantUML definitions, renders
@@ -177,12 +181,12 @@ when copying linked Markdown. No documentation hosting service is required.
 versions, sources and output paths. `build/build.log` records tool diagnostics.
 A failed build preserves the previous images and exports, records `passed: false`,
 and does not claim those artifacts are current. The complete build stages all
-outputs before publication; successful builds remove obsolete authored UML outputs.
+outputs before publication; successful builds remove obsolete managed C4 and UML outputs.
 Individual exports also record their latest attempt in `export-status.json`.
 
 The repository can be cloned or used as a Git submodule beneath another codebase.
-Run Compose here, or use `docker compose -f <checkout>/compose.yaml ...` from
-elsewhere. Paths passed to `--workspace` are relative to this architecture
+Run Compose here, or use `docker compose --project-directory <checkout>
+--env-file <checkout>/.env -f <checkout>/compose.yaml ...` from elsewhere. Paths passed to `--workspace` are relative to this architecture
 repository, independent of the parent repository and Git metadata.
 
 ### Final architecture review
@@ -243,68 +247,62 @@ docker compose down
 
 ### Outputs and maintenance
 
-Current outputs live in `build/c4/reference/` or
-`build/c4/workspaces/<epic-id>/`:
+Diagram outputs mirror their source directories recursively, with formats side by side:
 
-- `workspace.json`: last successfully validated model.
-- `validation.json` and `validation.log`: latest validation result, including failures.
-- `exports/all/plantuml/`: default C4-PlantUML definitions (`structurizr-<view-key>.puml`) with embedded legends; the primary agent review output.
-- `exports/all/mermaid/`: optional Mermaid definitions, named `structurizr-<view-key>.mmd`.
-- `exports/all/svg/` or `exports/all/png/`: optional complete image sets.
-- `exports/view-<key-hash>/<format>/`: individual view exports; the hash is the first 12 hex characters of the view key's SHA-256.
-- Each export directory contains `export.json` with its workspace, public format, native exporter format, selected view and source fingerprint; `export.log` records the latest export command output for that workspace.
+| Source | Generated output |
+|---|---|
+| `views/external-systems/01-landscape.dsl` | `build/views/external-systems/01-landscape.{puml,svg,png}` |
+| `workspaces/blockchain-foundation/views/main.dsl` | `build/workspaces/blockchain-foundation/views/<view-key>.{puml,svg,png}` |
+| `uml/patterns/messaging/claim-check/sequence.puml` | `build/uml/patterns/messaging/claim-check/sequence.{svg,png}` |
+| `workspaces/ignition/uml/payments/submit.mmd` | `build/workspaces/ignition/uml/payments/submit.{svg,png}` |
 
-Failed validation preserves the last successful `workspace.json` and exports;
-`validation.json` and `validation.log` record the latest attempt.
-The native viewer reads DSL independently of validation results.
-Exports replace their selection only after successful export and output checks;
-removed views do not leave old files in that selection. Tools run sequentially
-with one writer per checkout.
-Tools keep the latest results rather than a run history. Previous build layouts
-are unused and preserved by current commands, including `export --clean`. Native Structurizr local
-mode creates ignored `workspace.json` and `.structurizr/` caches beside the DSL;
-these are viewer outputs. DSL remains the source of truth.
+A DSL file may declare multiple views; each uses its explicit view key as the
+filename. `export --view` writes the same canonical file as a complete export.
+Inherited views retain their relative view folders within the consuming workspace:
+`workspaces/team/variants/future/workspace.dsl` writes inherited `views/main.dsl`
+views into `build/workspaces/team/variants/future/views/`. Inline views use the
+workspace directory. Named noncanonical entrypoints get their own stem namespace.
+Local include/extension provenance is cross-checked with native Structurizr view
+keys. Ambiguous declarations, generated keys, unsafe filenames and collisions
+(including case-only differences) fail before publication. Keep view keys literal
+and include/extends paths local; plugin/script-generated views cannot be mapped.
 
-Only [architecture.py](scripts/architecture.py) is a command.
-[workspace_paths.py](scripts/workspace_paths.py) handles root-relative paths,
-workspace discovery and the shared version pin.
-[diagram_renderers.py](scripts/diagram_renderers.py) handles offline rendering. The test suite lives in
-[tests](tests). After changing tooling, validate and run:
+`build/.reports/<workspace-entrypoint>/` holds `workspace.json`, `validation.json`,
+`validation.log`, and the latest `export-status.json` / `export.log` when exported.
+For example, root validation is `build/.reports/workspace.dsl/validation.json`.
+The parsed JSON remains the last successful validation if a later attempt fails.
+`build/artifacts.json` inventories each diagram's source, workspace, view key,
+format, source/output fingerprints, versions and generation time. A retained
+format is current only when its fingerprint matches current inputs; exporting
+PlantUML does not refresh older SVG metadata. Hashes never determine filenames.
+
+One writer lock protects `build/.staging/`. Publication updates individual files
+and an on-disk journal allows the next command to recover interrupted publication.
+Failures preserve previous successful diagrams and inventory; attempt reports
+record failure. A full successful build prunes removed/moved views and sources,
+and removes recognized outputs from the previous `build/c4/` layout. Unrelated
+historical files and local settings remain untouched. Empty generated folders
+are removed. Build twice without source changes to get the same output path set.
+
+Freshness scans architecture sources, documentation and tooling. Generated output,
+Git metadata, agent configuration and caches are excluded. Native Structurizr
+viewers write ignored `workspace.json` and `.structurizr/` caches beside DSL.
+DSL remains the source of truth.
+
+Tooling lives in [scripts](scripts), with containerized tests in [tests](tests):
 
 ```text
-docker compose run --rm --entrypoint python3 tools -B -m unittest discover -s tests -v
+docker compose run --rm --pull never --entrypoint python3 tools -B -m unittest discover -s tests -v
 ```
 
-### Corporate environment
+### Corporate environment and CI
 
-The image uses Structurizr **2026.06.28**, centrally selected in
-[.env](.env), and Ubuntu's Python standard library.
-Building needs access to the approved image/package repositories. Afterwards,
-validation, export and full builds run with networking disabled. PlantUML, its
-C4 library, Graphviz, fonts, Mermaid CLI and Chromium are installed in the image.
-Renderer versions and dependency-lock hashes are recorded in build metadata. The viewer publishes its port only on localhost using
-Docker's bridge network and disables Structurizr's outbound URL loading.
-
-All services run as a non-root user with a read-only container filesystem,
-dropped capabilities and no Docker socket. Tools receive read-only architecture
-sources and write only to `build/`. The viewer mounts architecture
-writable because native local mode keeps its cache beside the DSL; diagram editing
-and autosave are disabled. Temporary files remain inside the container. The
-tools container's temporary filesystem permits execution for browser runtime compatibility.
-
-For a managed environment, have the platform team build, scan and publish the
-tools image to an approved registry, then set `ARCHITECTURE_TOOLS_IMAGE` to its
-approved image digest and omit `--build` from the commands. The base viewer image can likewise be mirrored using a
-Compose override. Container isolation reduces host exposure; it does not
-guarantee that arbitrary code is safe.
-
-Defaults use UID/GID 1000. On Linux, ensure the selected architecture directory
-and `build/` are writable
-by that user or set `ARCHITECTURE_UID` and `ARCHITECTURE_GID` to your approved
-local IDs. Docker Desktop handles the mounted Windows directory. Optional
-settings, including `STRUCTURIZR_GLOBAL_PORT` and `STRUCTURIZR_IGNITION_PORT`, can
-be placed in an ignored `build/local.env` file. For local overrides,
-add `--env-file .env --env-file build/local.env` immediately after `docker compose` in the commands above. No shell script is needed.
+See the [corporate Docker guide](documentation/build.md) for approved image
+acquisition, offline image archives, plain Docker commands, permissions and
+explicit platform-team image maintenance. See [CI examples](ci/examples/README.md)
+for GitHub Actions and Azure DevOps Services pipelines. Both run tests and the
+complete offline build and publish only allowlisted artifacts; failure uploads
+contain diagnostics, not a stale diagram set.
 
 ## Contributing an initiative
 

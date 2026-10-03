@@ -19,11 +19,8 @@ def workspace_path(value=REFERENCE):
 
 
 def output_directory(path):
-    if Path(path).resolve() == REFERENCE:
-        return BUILD / 'c4/reference'
     relative = Path(path).resolve().relative_to(ROOT)
-    # Canonical workspace entrypoints map to their directory, including variants.
-    return BUILD / 'c4' / (relative.parent if relative.name == 'workspace.dsl' else relative.with_suffix(''))
+    return BUILD / '.reports' / relative
 
 
 def discover_workspaces():

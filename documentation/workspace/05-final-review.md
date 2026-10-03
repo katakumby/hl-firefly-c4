@@ -94,7 +94,7 @@ views retain their keys and product coverage.
 
 ## Verification and limits
 
-The [validation result](../../build/c4/reference/validation.json)
+The [validation result](../../build/.reports/workspace.dsl/validation.json)
 and adjacent `validation.log` contain the latest native Structurizr validation
 and inspection results. Run the containerized test suite described in the
 [root README](../../README.md#outputs-and-maintenance) after tooling changes.

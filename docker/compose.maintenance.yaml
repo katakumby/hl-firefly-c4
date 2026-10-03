@@ -1,0 +1,10 @@
+# Explicit image construction for the platform team; normal compose.yaml is image-only.
+services:
+  tools:
+    build:
+      # Override paths resolve relative to the root compose.yaml.
+      context: ./docker
+      args:
+        STRUCTURIZR_VERSION: ${STRUCTURIZR_VERSION:?Missing version in .env}
+        NODE_VERSION: ${NODE_VERSION:?Missing version in .env}
+        PLANTUML_VERSION: ${PLANTUML_VERSION:?Missing version in .env}

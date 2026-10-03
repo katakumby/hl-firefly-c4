@@ -43,8 +43,8 @@ docker compose run --rm tools validate --workspace workspaces/blockchain-foundat
 docker compose run --rm tools export --workspace workspaces/blockchain-foundation/workspace.dsl
 ```
 
-Use `--build` on the first tools run if its image has not been built.
-The default C4-PlantUML definitions live under `build/c4/workspaces/blockchain-foundation/exports/all/plantuml/`.
+Acquire the approved tools image first; see the [corporate build guide](../../documentation/build.md).
+The default C4-PlantUML definitions live under `build/workspaces/blockchain-foundation/views/`.
 Add `--format svg` or `--format png` when image exports are needed.
 
 ## Design and implementation plan

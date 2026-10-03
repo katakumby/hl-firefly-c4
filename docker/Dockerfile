@@ -4,7 +4,7 @@ ARG STRUCTURIZR_VERSION
 FROM node:${NODE_VERSION}-bookworm-slim AS mermaid
 WORKDIR /opt/renderers
 ENV PUPPETEER_SKIP_DOWNLOAD=true
-COPY scripts/renderers/package*.json ./
+COPY renderers/package*.json ./
 RUN npm ci --ignore-scripts --omit=dev --no-audit --no-fund
 
 FROM structurizr/structurizr:${STRUCTURIZR_VERSION}-playwright
@@ -18,7 +18,7 @@ RUN mkdir -p /opt/plantuml && curl --fail --location --retry 3 \
     && echo "4a01ea09b317180fb8e7eef712dfdca725409d2ee1919e4b5adfe9d8362b6fe5  /opt/plantuml/plantuml.jar" | sha256sum --check -
 COPY --from=mermaid /usr/local/bin/node /usr/local/bin/node
 COPY --from=mermaid /opt/renderers /opt/renderers
-COPY scripts/renderers/configure.py /opt/renderers/configure.py
+COPY renderers/configure.py /opt/renderers/configure.py
 RUN python3 /opt/renderers/configure.py
 ENV PYTHONDONTWRITEBYTECODE=1 PYTHONUNBUFFERED=1 HOME=/tmp
 USER 1000:1000

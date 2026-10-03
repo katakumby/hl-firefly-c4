@@ -62,7 +62,7 @@ inferred proprietary responsibility boundaries. Labels and evidence properties
 remain authoritative; see the security catalog legend.
 
 The current validation result is in
-`build/c4/reference/validation.json`. The parsed
+`build/.reports/workspace.dsl/validation.json`. The parsed
 `workspace.json` retains element identifiers and relationship evidence.
 Source URLs and evidence properties remain in DSL; removed source inventories
 and coverage reports can be inspected in Git history.

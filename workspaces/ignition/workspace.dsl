@@ -25,8 +25,18 @@ workspace extends ../../model.dsl {
     views {
         !include views/main.dsl
 
-        container example_system {
+        container example_system "ignition-example-containers" {
             include *
+        }
+        container example_system "example-container-animation" {
+            title "API and Backend"
+            include example_system.api example_system.backend
+            autoLayout lr
+
+            animation {
+                example_system.api
+                example_system.backend
+            }
         }
 
         dynamic example_system "stable_key_name"{

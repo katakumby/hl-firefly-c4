@@ -82,8 +82,11 @@ entrypoint is checked. Structurizr resolves its includes and extensions, exports
 fresh JSON, and runs native [`validate`](https://docs.structurizr.com/validate)
 and [`inspect -severity error,warning`](https://docs.structurizr.com/inspect).
 
-**There are no custom architecture validation rules.** Native errors and warnings
-fail the command. Teams control inspection severity using Structurizr's
+**There are no custom architecture validation rules.** The standalone `validate`
+command is a strict quality check: native inspection errors and warnings fail it.
+`build` and `export` report those findings and continue generating diagrams.
+DSL parsing, native model validation, inspector execution failures and rendering
+errors still block generation. Teams control inspection severity using Structurizr's
 [`structurizr.inspection.*` properties](https://docs.structurizr.com/workspaces/inspections);
 findings configured as `info` or `ignore` do not block validation. Existing DSL
 settings for shared-reference coverage, workspace scope and the initial DApp
@@ -158,6 +161,12 @@ docker compose run --rm --pull never tools build
 This validates every workspace once, exports its C4-PlantUML definitions, renders
 those definitions to SVG and PNG, and renders every standalone `.puml`/`.mmd`
 under shared `uml/` and workspace-local `uml/` directories. Rendering runs offline.
+Inspection errors and warnings are printed during the build and recorded in each
+workspace's `validation.json` / `validation.log`, plus `build/build.json` and
+`build/build.log`. Reports distinguish `inspection_passed` from the command's
+`passed` result and declare the `strict` or `report-only` inspection policy.
+Inspection findings keep their original severity; they do not block publication.
+Explicit stable view keys and collision-free output paths are still required.
 Each source contains one diagram. Use `.pumlinc` for local PlantUML includes;
 paths resolve relative to the including source. Remote includes require replacing
 URLs with repository files or bundled PlantUML libraries. A `.puml` and `.mmd`

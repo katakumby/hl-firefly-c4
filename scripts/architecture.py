@@ -8,6 +8,7 @@ import hashlib
 import json
 import os
 from pathlib import Path
+import re
 import shutil
 import subprocess
 import sys
@@ -71,7 +72,7 @@ def command_lock():
             fcntl.flock(stream, fcntl.LOCK_UN)
 
 
-def run_java(arguments, log, timeout=240):
+def run_java(arguments, log, timeout=240, check=True):
     log.append('structurizr ' + ' '.join(arguments) + '\n')
     try:
         result = subprocess.run(JAVA + arguments, cwd=ROOT, capture_output=True, text=True,
@@ -84,8 +85,34 @@ def run_java(arguments, log, timeout=240):
         log[-1] += f'\nTimed out after {exc.timeout} seconds'
         raise
     log[-1] += result.stdout + result.stderr
-    if result.returncode:
+    if check and result.returncode:
         raise RuntimeError(log[-1][-4000:])
+    return result
+
+
+def inspect_workspace(path, logs):
+    """Separate native quality findings from inspector execution failures."""
+    result = run_java(['inspect', '-workspace', str(path), '-severity', 'error,warning'],
+                      logs, check=False)
+    findings, unexpected = [], []
+    for line in result.stdout.splitlines():
+        if not line.strip():
+            continue
+        match = re.fullmatch(r'\s*(ERROR|WARNING)\s*\|\s*([\w.-]+)\s*\|\s*(.+)', line)
+        if match:
+            findings.append(dict(zip(('severity', 'rule', 'message'), match.groups())))
+        else:
+            unexpected.append(line)
+    # The pinned inspector exits with the finding count (limited to a Unix exit
+    # byte). A nonzero status with a crash/unknown diagnostic is still a failure.
+    if result.returncode and (not findings or unexpected or result.stderr.strip()
+                              or result.returncode != len(findings) % 256):
+        raise RuntimeError('Inspector execution failed:\n' + logs[-1][-4000:])
+    return findings
+
+
+def inspection_message(finding):
+    return f'{finding["severity"]} | {finding["rule"]} | {finding["message"]}'
 
 
 def inventory():
@@ -136,8 +163,8 @@ def clean_build():
     print('Cleaned managed artifacts (preserved local settings, unrelated files and writer lock)', flush=True)
 
 
-def validate(paths=None):
-    """Delegate parsing, validation and inspection policy entirely to Structurizr."""
+def validate(paths=None, inspections_blocking=True):
+    """Native parsing/validation always block; inspection policy is caller-specific."""
     selected = [workspace_path(p) for p in (paths if paths is not None else discover_workspaces())]
     before = source_fingerprint()
     parsed, reports, logs = {}, {}, {}
@@ -147,7 +174,10 @@ def validate(paths=None):
             logs[path] = []
             report = {'workspace': path.relative_to(ROOT).as_posix(),
                       'structurizr_version': VERSION, 'source_sha256': before,
-                      'inspection_severity': 'error,warning', 'passed': False, 'errors': []}
+                      'inspection_severity': 'error,warning',
+                      'inspection_policy': 'strict' if inspections_blocking else 'report-only',
+                      'inspection_passed': None, 'inspection_findings': [],
+                      'passed': False, 'errors': []}
             reports[path] = report
             try:
                 directory = Path(temporary) / str(index)
@@ -159,9 +189,13 @@ def validate(paths=None):
                     raise ValueError('Parser did not produce exactly one JSON workspace')
                 # Reuse the parsed workspace for both official commands.
                 run_java(['validate', '-workspace', str(files[0])], logs[path])
-                run_java(['inspect', '-workspace', str(files[0]), '-severity', 'error,warning'], logs[path])
+                findings = inspect_workspace(files[0], logs[path])
+                report['inspection_findings'] = findings
+                report['inspection_passed'] = not findings
                 parsed[path] = json.loads(files[0].read_text(encoding='utf-8-sig'))
-                report['passed'] = True
+                report['passed'] = not (inspections_blocking and findings)
+                if not report['passed']:
+                    report['errors'].append(f'Inspection reported {len(findings)} error/warning findings')
             except (ValueError, OSError, RuntimeError, subprocess.SubprocessError) as exc:
                 report['errors'].append(str(exc))
             report['completed_at'] = timestamp()
@@ -175,14 +209,19 @@ def validate(paths=None):
                 atomic_json(directory / 'workspace.json', parsed[path])
             atomic_json(directory / 'validation.json', report)
             (directory / 'validation.log').write_text('\n'.join(logs[path] + report['errors']), encoding='utf-8')
-            print(f'{report["workspace"]}: {"PASS" if report["passed"] else "FAIL"}', flush=True)
+            summary = 'PASS' if report['passed'] else 'FAIL'
+            if report['inspection_findings']:
+                summary += f' ({len(report["inspection_findings"])} inspection findings; {report["inspection_policy"]})'
+            print(f'{report["workspace"]}: {summary}', flush=True)
+            for finding in report['inspection_findings']:
+                print('  ' + inspection_message(finding), flush=True)
             for error in report['errors']:
                 print(error, file=sys.stderr)
         return reports
 
 
 def fresh_workspace(path):
-    report = validate([path])[path]
+    report = validate([path], inspections_blocking=False)[path]
     if not report['passed']:
         raise ValueError('Validation failed. Previous exports were not updated.')
     raw = json.loads((output_directory(path) / 'workspace.json').read_text(encoding='utf-8'))
@@ -328,6 +367,7 @@ def export(path, format, view=None):
             commit_artifacts(entries, retained, replacements,
                              {BUILD / item['output'] for item in replaced}, stage)
         status.update(passed=True, source_sha256=report['source_sha256'],
+                      inspection_findings=report.get('inspection_findings', []),
                       outputs=[item['output'] for item in entries])
         print(f'Exported {format.upper()}: {len(entries)} canonical files under build/ (see artifacts.json)', flush=True)
     except (ValueError, OSError, RuntimeError, subprocess.SubprocessError) as exc:
@@ -361,7 +401,8 @@ def discover_uml():
 
 def build():
     """Validate and stage everything before changing any published diagram."""
-    status = {'layout_version': 2, 'passed': False, 'errors': [], 'outputs': [], 'sources': []}
+    status = {'layout_version': 2, 'passed': False, 'errors': [], 'outputs': [], 'sources': [],
+              'inspection_findings': []}
     logs = []
     BUILD.mkdir(parents=True, exist_ok=True)
     # Capture legacy inventory before replacing the old attempt manifest.
@@ -374,7 +415,12 @@ def build():
     try:
         with staging(BUILD) as stage:
             sources = discover_uml()
-            reports = validate()
+            reports = validate(inspections_blocking=False)
+            status['inspection_findings'] = [finding | {'workspace': report['workspace']}
+                                             for report in reports.values()
+                                             for finding in report['inspection_findings']]
+            logs.extend(f'Inspection {finding["workspace"]}: {inspection_message(finding)}'
+                        for finding in status['inspection_findings'])
             if not reports or not all(report['passed'] for report in reports.values()):
                 raise ValueError('Validation failed. Previous build artifacts were not updated.')
             fingerprint = next(iter(reports.values()))['source_sha256']
@@ -423,7 +469,7 @@ def build():
             status['outputs'] = ['build/' + item['output'] for item in entries]
             commit_artifacts(entries, retained, replacements, removed, stage)
         status['passed'] = True
-        print('Built all diagrams: build/build.json', flush=True)
+        print(f'Built all diagrams: build/build.json ({len(status["inspection_findings"])} inspection findings)', flush=True)
     except (ValueError, OSError, RuntimeError, subprocess.SubprocessError) as exc:
         status['errors'].append(str(exc))
         status['outputs'] = []

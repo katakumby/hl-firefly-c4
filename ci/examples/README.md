@@ -8,7 +8,9 @@ runner account with access to Docker and enough memory for Chromium/Java renderi
 
 Both pipelines check out an isolated clean directory, acquire an approved image
 or use a preloaded image, run all regression tests, and run `build` (which validates
-all workspaces before rendering). Registry acquisition and provider artifact uploads
+all workspaces before rendering and reports inspection findings without blocking).
+Use an explicit `validate` step only if your CI policy requires strict inspection
+gates. Registry acquisition and provider artifact uploads
 use the runner network. Diagram/test containers have networking disabled. The
 approved image contains the toolchain; neither example builds or publishes images.
 

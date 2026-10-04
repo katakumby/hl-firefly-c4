@@ -54,3 +54,7 @@ verifying this build pipeline; routine architecture reviews still use text only.
 
 Acquire approved images before running commands; normal Compose execution never
 builds or pulls them. See [corporate Docker instructions](documentation/build.md).
+
+`build` and `export` report inspection errors/warnings without blocking output.
+The standalone `validate` command remains strict. Parsing, native model validation,
+inspector execution failures, output naming errors and rendering failures still block.

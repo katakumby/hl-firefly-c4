@@ -3,7 +3,8 @@
 Developers need an approved Docker engine; Docker Compose is optional. The tools
 image contains Structurizr, Java, Python, Node, PlantUML and its C4 library, Mermaid
 CLI, Chromium, Graphviz and fonts. No host language runtime, package manager or
-diagram application is required. The [Dockerfile](../docker/Dockerfile), version pins, npm lock
+diagram application is required. `build` and `export` report inspection findings
+without failing; use `validate` for the separate strict quality check. The [Dockerfile](../docker/Dockerfile), version pins, npm lock
 and PlantUML checksum define the platform team's toolchain build.
 
 ## Acquire approved images explicitly

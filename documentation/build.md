@@ -1,28 +1,36 @@
 # Corporate Docker builds
 
-Developers need an approved Docker engine; Docker Compose is optional. The tools
-image contains Structurizr, Java, Python, Node, PlantUML and its C4 library, Mermaid
-CLI, Chromium, Graphviz and fonts. No host language runtime, package manager or
-diagram application is required. `build` and `export` report inspection findings
-without failing; use `validate` for the separate strict quality check. The [Dockerfile](../docker/Dockerfile), version pins, npm lock
-and PlantUML checksum define the platform team's toolchain build.
+Developers need an approved Docker engine; Docker Compose is optional. No host
+Python, Java, Node, npm or diagram software is required. Two project images use
+distinct names with no explicit version/tag (Docker resolves implicit `latest`):
 
-Chromium is required for Mermaid image rendering and explicit `export-native`
-commands. Structurizr validation, text exports and PlantUML/C4 image rendering do
-not use it. Native exports use the image's bundled Structurizr renderer and Gifshot
-encoder through Puppeteer; no additional dependency or image rebuild is required.
+| Variable | Default image | Capabilities |
+|---|---|---|
+| `ARCHITECTURE_TOOLS_IMAGE` | `dlt-architecture-tools-light` | Structurizr, Java, Python, PlantUML/C4, Graphviz, fonts |
+| `ARCHITECTURE_BROWSER_IMAGE` | `dlt-architecture-tools-browser` | Complete toolchain plus Node, Mermaid CLI, Puppeteer, Chromium |
+
+The lightweight image has no browser or Node runtime. Ordinary C4/PlantUML images
+need Java/Graphviz; Mermaid images and native Structurizr exports need Chromium.
+Installed capabilities and versions are recorded in each image. Unsupported
+operations fail with the required service name, without installing dependencies.
+
+`build` generates C4 and authored PlantUML resources; `build-browser` completes
+Mermaid images from a matching successful lightweight handoff. Neither invokes
+native exports. Inspection findings remain nonblocking; `validate` is the strict
+quality check. The [Dockerfile](../docker/Dockerfile), upstream version pins, npm
+lockfile and PlantUML checksum remain the platform team's toolchain controls.
 
 ## Acquire approved images explicitly
 
-Obtain `ARCHITECTURE_TOOLS_IMAGE` and `ARCHITECTURE_VIEWER_IMAGE` from your platform
-team, preferably pinned to registry digests. On a connected approved machine:
+Obtain both tools image names and the existing viewer reference from your platform
+team. On a connected approved machine, acquire only images needed for your work:
 
 ```sh
-export ARCHITECTURE_TOOLS_IMAGE='registry.example.com/architecture/tools:approved'
-export ARCHITECTURE_VIEWER_IMAGE='registry.example.com/architecture/viewer:approved'
+export ARCHITECTURE_TOOLS_IMAGE='registry.example.com/architecture/dlt-architecture-tools-light'
+export ARCHITECTURE_BROWSER_IMAGE='registry.example.com/architecture/dlt-architecture-tools-browser'
 docker login registry.example.com
 docker pull "$ARCHITECTURE_TOOLS_IMAGE"
-docker pull "$ARCHITECTURE_VIEWER_IMAGE"
+docker pull "$ARCHITECTURE_BROWSER_IMAGE"
 docker image inspect "$ARCHITECTURE_TOOLS_IMAGE"
 ```
 
@@ -36,11 +44,11 @@ container image compatible with its architecture.
 For an offline workstation, the platform team transfers an approved archive:
 
 ```sh
-docker image save --output architecture-images.tar "$ARCHITECTURE_TOOLS_IMAGE" "$ARCHITECTURE_VIEWER_IMAGE"
+docker image save --output architecture-images.tar "$ARCHITECTURE_TOOLS_IMAGE" "$ARCHITECTURE_BROWSER_IMAGE"
 docker image load --input architecture-images.tar
 ```
 
-Archive loading retains saved tags; set image variables to the loaded references.
+Archive loading retains both image names; set image variables to those names.
 The team should supply and verify archive checksums through its trusted channel.
 Image acquisition requires registry/archive access; generation subsequently runs
 with `--network none`. Public dependencies are never downloaded at runtime.
@@ -58,6 +66,7 @@ docker compose run --rm --pull never tools validate
 docker compose run --rm --pull never --entrypoint python3 tools -B -m unittest discover -s tests -v
 docker compose run --rm --pull never tools export --workspace workspaces/ignition/workspace.dsl --view ignition-dapp-platform-context
 docker compose run --rm --pull never tools build
+docker compose run --rm --pull never tools-browser build-browser
 ```
 
 Use an approved nonzero UID; defaults are `1000:1000`. Do not use `sudo` to run
@@ -112,16 +121,69 @@ same flags, resolves paths relative to itself, and checks that the image is load
 ```sh
 docker/run.sh validate
 docker/run.sh test
+docker/run.sh --browser test
 docker/run.sh export --view 01-landscape
 docker/run.sh export --all-workspaces
 docker/run.sh export-native --workspace workspaces/ignition/workspace.dsl --view example-container-animation --view stable_key_name --format gif
 docker/run.sh build
+docker/run.sh build-browser
 ```
 
 The wrapper reads exported environment variables; it does not load `.env` or
-`build/local.env` as shell settings. Export `ARCHITECTURE_TOOLS_IMAGE` and any
-UID/GID overrides before using it. The Python tooling still reads the committed
+`build/local.env` as shell settings. Export the required image variable and any UID/GID overrides before using it.
+`build-browser` and `export-native` automatically choose the browser image; use
+`--browser` before `test` or `package` to select it explicitly. The Python tooling still reads the committed
 version pins from `.env` inside the mounted checkout.
+
+## Lightweight handoffs and completion
+
+`build` now produces only C4/PlantUML outputs. This is a deliberate change from
+the previous single-image full build. Run `build-browser` afterward to complete
+Mermaid previews. The browser stage reads current Mermaid sources and verifies
+the previous light build; it does not repeat DSL parsing or C4 rendering.
+
+Reports use `build/.reports/build-light.json` and `build-browser.json`, with
+adjacent logs. The root `build.json` describes the latest stage attempt.
+Light success is `passed: true`, `stage: light`, `complete: false`; ordinary build
+completion is recorded only after a successful browser stage. Existing deferred
+Mermaid files retain their previous freshness. Deleted/moved Mermaid outputs are
+pruned only after browser completion succeeds.
+
+To transfer the light result to another checkout of the same sources:
+
+```sh
+mkdir -p /tmp/architecture-light-artifacts
+ARCHITECTURE_ARTIFACT_DIR=/tmp/architecture-light-artifacts docker/run.sh package --stage light
+```
+
+Use an empty destination. Copy that package's contents into the other checkout's
+`build/` directory, then run `docker/run.sh build-browser`. CI performs this restore
+in an isolated checkout. Do not mix packages from different runs. The package
+contains generated light files, filtered inventory, parsed workspace reports,
+source fingerprints, deferred paths and provenance. It excludes old browser/native
+images, snapshots, local settings, locks and staging. Missing/changed inputs,
+required reports or output hashes fail before rendering; no automatic rebuild or
+fallback to an older commit occurs.
+
+CI supplies `ARCHITECTURE_SOURCE_REVISION` (the exact checked-out commit) and
+`ARCHITECTURE_CI_RUN`; these are metadata, never directory names. Browser completion
+checks the expected revision in addition to source fingerprints. Local operation
+needs no Git metadata. Full packages require both stages:
+
+```sh
+mkdir -p /tmp/architecture-full-artifacts
+ARCHITECTURE_ARTIFACT_DIR=/tmp/architecture-full-artifacts docker/run.sh --browser package --stage full
+```
+
+`package --diagnostics` excludes diagram files. Light packages remain available
+when browser completion fails; full packaging refuses failed or stale completion.
+Changing sources or lightweight artifacts requires a new lightweight build.
+Frozen validation evidence under `build/.reports/light/` stays independent of
+the latest ad-hoc export diagnostics, so native exports do not invalidate it.
+
+When migrating, acquire the two new images, update image variables and rerun the
+light stage. Older single-image manifests cannot serve as lightweight handoffs.
+The old image and historical output are not automatically deleted.
 
 ## Manual layout snapshots
 
@@ -130,7 +192,7 @@ that have no `autoLayout` and explicitly save; then capture the result:
 
 ```text
 docker compose run --rm --pull never tools capture-layout --workspace workspaces/ignition/workspace.dsl
-docker compose run --rm --pull never tools export-native --workspace workspaces/ignition/workspace.dsl --format png
+docker compose run --rm --pull never tools-browser export-native --workspace workspaces/ignition/workspace.dsl --format png
 ```
 
 The equivalent plain-Docker launcher is `docker/run.sh capture-layout ...` or
@@ -184,15 +246,17 @@ Image construction is a separate, network-enabled maintenance operation:
 
 ```sh
 docker compose -f compose.yaml -f docker/compose.maintenance.yaml build tools
+docker compose -f compose.yaml -f docker/compose.maintenance.yaml build tools-browser
 ```
 
 The build context is `docker/`; its `.dockerignore` includes only the Dockerfile
 and renderer dependency setup. The maintenance environment needs approved access or mirrors for the pinned base
 images, Ubuntu packages, npm packages and Maven artifact in `docker/Dockerfile`. Adapt
 registry/package mirror and CA configuration there to corporate policy; retain
-version pins, the lockfile and checksum verification. The resulting tools image
-contains every dependency; repository scripts are mounted read-only at runtime.
-Test it offline, scan/sign it and publish it using your platform process. Mirror
+version pins, the lockfile and checksum verification. The `light` target never depends on the Node/npm or Playwright stages. The
+`browser` target includes the complete runtime; both keep pinned dependencies and
+checksum verification. Each target produces its own image name; repository scripts are mounted read-only at runtime.
+Test each image offline, scan/sign it and publish it using your platform process. Mirror
 the pinned Structurizr `-noble` viewer image separately. No application pipeline
 builds or publishes toolchain images.
 

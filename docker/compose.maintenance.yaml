@@ -4,6 +4,15 @@ services:
     build:
       # Override paths resolve relative to the root compose.yaml.
       context: ./docker
+      target: light
+      args:
+        STRUCTURIZR_VERSION: ${STRUCTURIZR_VERSION:?Missing version in .env}
+        NODE_VERSION: ${NODE_VERSION:?Missing version in .env}
+        PLANTUML_VERSION: ${PLANTUML_VERSION:?Missing version in .env}
+  tools-browser:
+    build:
+      context: ./docker
+      target: browser
       args:
         STRUCTURIZR_VERSION: ${STRUCTURIZR_VERSION:?Missing version in .env}
         NODE_VERSION: ${NODE_VERSION:?Missing version in .env}

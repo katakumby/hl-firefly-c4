@@ -1,20 +1,31 @@
-# Copy to .github/workflows/architecture.yaml after configuring the repository variables.
+# Copy to .github/workflows/architecture.yaml after configuring repository variables.
 name: Architecture
 on:
   workflow_dispatch:
+    inputs:
+      stage:
+        description: Build stage
+        type: choice
+        options: [browser, light]
+        default: browser
+  schedule:
+    - cron: '0 2 * * *' # 02:00 UTC; browser completion only
   push:
     branches: [main]
   pull_request:
 permissions:
   contents: read
+  actions: read
 jobs:
   diagrams:
-    # Example variable: ["self-hosted", "linux", "architecture"]
     runs-on: ${{ fromJSON(vars.ARCHITECTURE_RUNNER_LABELS) }}
     env:
+      BUILD_STAGE: ${{ github.event_name == 'schedule' && 'browser' || github.event_name == 'workflow_dispatch' && inputs.stage || 'light' }}
       ARCHITECTURE_TOOLS_IMAGE: ${{ vars.ARCHITECTURE_TOOLS_IMAGE }}
-      # "preloaded" (default) or "pull". Use an approved image digest.
+      ARCHITECTURE_BROWSER_IMAGE: ${{ vars.ARCHITECTURE_BROWSER_IMAGE }}
       ARCHITECTURE_IMAGE_ACQUISITION: ${{ vars.ARCHITECTURE_IMAGE_ACQUISITION }}
+      ARCHITECTURE_SOURCE_REVISION: ${{ github.sha }}
+      ARCHITECTURE_CI_RUN: github:${{ github.run_id }}:${{ github.run_attempt }}
       DOCKER_CONFIG: ${{ runner.temp }}/architecture-docker-${{ github.run_id }}-${{ github.run_attempt }}
     defaults:
       run:
@@ -24,41 +35,76 @@ jobs:
       - uses: actions/checkout@v6
         with:
           path: architecture
+          ref: ${{ github.sha }}
           clean: true
           persist-credentials: false
-      - name: Acquire approved image
+      - name: Acquire only the selected approved image
         env:
           REGISTRY: ${{ vars.ARCHITECTURE_REGISTRY }}
           REGISTRY_USER: ${{ secrets.ARCHITECTURE_REGISTRY_USER }}
           REGISTRY_PASSWORD: ${{ secrets.ARCHITECTURE_REGISTRY_PASSWORD }}
         run: |
           set -euo pipefail
-          : "${ARCHITECTURE_TOOLS_IMAGE:?Configure the approved tools image}"
+          if [ "$BUILD_STAGE" = browser ]; then
+            image="${ARCHITECTURE_BROWSER_IMAGE:?Configure the browser image name}"
+          else
+            image="${ARCHITECTURE_TOOLS_IMAGE:?Configure the lightweight image name}"
+          fi
           if [ "$ARCHITECTURE_IMAGE_ACQUISITION" = pull ]; then
             mkdir -p "$DOCKER_CONFIG"
             printf '%s' "$REGISTRY_PASSWORD" | docker login "$REGISTRY" --username "$REGISTRY_USER" --password-stdin
-            docker pull "$ARCHITECTURE_TOOLS_IMAGE"
+            docker pull "$image"
           fi
-          docker image inspect "$ARCHITECTURE_TOOLS_IMAGE" >/dev/null
-      - name: Regressions and full offline build
+          docker image inspect "$image" >/dev/null
+      - name: Offline regressions
         run: |
           set -euo pipefail
           mkdir -p build/.reports
-          docker/run.sh test 2>&1 | tee build/.reports/tests.log
-          docker/run.sh build
+          if [ "$BUILD_STAGE" = browser ]; then
+            docker/run.sh --browser test 2>&1 | tee build/.reports/tests-browser.log
+          else
+            docker/run.sh test 2>&1 | tee build/.reports/tests-light.log
+          fi
+      - name: Find prior lightweight artifact for this commit
+        if: env.BUILD_STAGE == 'browser'
+        id: prior
+        uses: actions/github-script@v9
+        with:
+          script: |
+            const select = require(process.env.GITHUB_WORKSPACE + '/architecture/ci/select-light-run.cjs');
+            const workflow_id = process.env.GITHUB_WORKFLOW_REF.split('@')[0].split('/').pop();
+            const match = await select(github, {...context.repo, workflow_id,
+              sha: context.sha, branch: context.ref.replace(/^refs\/heads\//, '')});
+            core.setOutput('run', match.run_id);
+            core.setOutput('artifact', match.artifact_id);
+      - uses: actions/download-artifact@v8
+        if: env.BUILD_STAGE == 'browser'
+        with:
+          artifact-ids: ${{ steps.prior.outputs.artifact }}
+          run-id: ${{ steps.prior.outputs.run }}
+          github-token: ${{ github.token }}
+          path: architecture/build
+      - name: Build selected stage offline
+        run: |
+          set -euo pipefail
+          if [ "$BUILD_STAGE" = browser ]; then docker/run.sh build-browser; else docker/run.sh build; fi
       - name: Package current artifacts
-        if: success()
         env:
           ARCHITECTURE_ARTIFACT_DIR: ${{ runner.temp }}/architecture-artifacts-${{ github.run_id }}-${{ github.run_attempt }}
         run: |
+          set -euo pipefail
           mkdir -p "$ARCHITECTURE_ARTIFACT_DIR"
-          docker/run.sh package
+          if [ "$BUILD_STAGE" = browser ]; then
+            docker/run.sh --browser package --stage full
+          else
+            docker/run.sh package --stage light
+          fi
       - uses: actions/upload-artifact@v7
-        if: success()
         with:
-          name: architecture-${{ github.run_id }}-${{ github.run_attempt }}
+          name: architecture-${{ env.BUILD_STAGE == 'light' && 'light' || 'full' }}
           path: ${{ runner.temp }}/architecture-artifacts-${{ github.run_id }}-${{ github.run_attempt }}/
-          include-hidden-files: true # Only the allowlisted package; includes .reports.
+          include-hidden-files: true
+          retention-days: 30
           if-no-files-found: error
       - name: Package failure diagnostics
         if: failure()
@@ -66,15 +112,18 @@ jobs:
           ARCHITECTURE_ARTIFACT_DIR: ${{ runner.temp }}/architecture-diagnostics-${{ github.run_id }}-${{ github.run_attempt }}
         run: |
           mkdir -p "$ARCHITECTURE_ARTIFACT_DIR"
-          if docker image inspect "$ARCHITECTURE_TOOLS_IMAGE" >/dev/null 2>&1; then
-            docker/run.sh package --diagnostics
+          if [ "$BUILD_STAGE" = browser ]; then
+            if docker image inspect "$ARCHITECTURE_BROWSER_IMAGE" >/dev/null 2>&1; then docker/run.sh --browser package --diagnostics; fi
+          else
+            if docker image inspect "$ARCHITECTURE_TOOLS_IMAGE" >/dev/null 2>&1; then docker/run.sh package --diagnostics; fi
           fi
       - uses: actions/upload-artifact@v7
         if: failure()
         with:
-          name: architecture-diagnostics-${{ github.run_id }}-${{ github.run_attempt }}
+          name: architecture-diagnostics
           path: ${{ runner.temp }}/architecture-diagnostics-${{ github.run_id }}-${{ github.run_attempt }}/
           include-hidden-files: true
+          retention-days: 30
           if-no-files-found: ignore
       - name: Remove temporary registry credentials
         if: always()

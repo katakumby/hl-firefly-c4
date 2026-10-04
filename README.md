@@ -247,10 +247,10 @@ that saved state before exporting:
 
 ```text
 docker compose run --rm --pull never tools capture-layout --workspace workspaces/ignition/workspace.dsl
-docker compose run --rm --pull never tools export-native --workspace workspaces/ignition/workspace.dsl --format svg
-docker compose run --rm --pull never tools export-native --workspace workspaces/ignition/workspace.dsl --view ignition-example-containers --format png
-docker compose run --rm --pull never tools export-native --workspace workspaces/ignition/workspace.dsl --view example-container-animation --view stable_key_name --format gif
-docker compose run --rm --pull never tools export-native --all-workspaces --format svg
+docker compose run --rm --pull never tools-browser export-native --workspace workspaces/ignition/workspace.dsl --format svg
+docker compose run --rm --pull never tools-browser export-native --workspace workspaces/ignition/workspace.dsl --view ignition-example-containers --format png
+docker compose run --rm --pull never tools-browser export-native --workspace workspaces/ignition/workspace.dsl --view example-container-animation --view stable_key_name --format gif
+docker compose run --rm --pull never tools-browser export-native --all-workspaces --format svg
 ```
 
 Capture stores the saved JSON and capture metadata in
@@ -288,13 +288,30 @@ by Git: back them up or copy them explicitly to share manual work. See the
 
 ### Build all diagrams
 
+Build in two explicit stages, using two separately named images without explicit tags:
+
+| Service / image | Work |
+|---|---|
+| `tools` / `dlt-architecture-tools-light` | Validate all workspaces; export C4-PlantUML; render C4 and authored PlantUML SVG/PNG |
+| `tools-browser` / `dlt-architecture-tools-browser` | Complete deferred Mermaid SVG/PNG from a matching successful light build; native exports on demand |
+
 ```text
 docker compose run --rm --pull never tools build
+docker compose run --rm --pull never tools-browser build-browser
 ```
 
-This validates every workspace once, exports its C4-PlantUML definitions, renders
-those definitions to SVG and PNG, and renders every standalone `.puml`/`.mmd`
-under shared `uml/` and workspace-local `uml/` directories. Rendering runs offline.
+The frequent `build` command uses no browser or Node runtime. It discovers all
+shared and workspace-local UML sources and checks cross-format collisions, but
+records Mermaid sources and expected image paths as deferred. Mermaid syntax is
+checked when the browser stage renders it. Existing Mermaid images retain their
+previous freshness metadata until browser completion.
+
+`build-browser` verifies the light report, current source fingerprint, required
+artifact/report hashes and CI commit when provided. It renders only Mermaid:
+it does not reparse DSL or repeat C4/PlantUML generation. Missing or stale handoffs
+fail with instructions to run the light stage first. Each stage renders offline
+and publishes its own selection atomically. Native images and GIFs remain explicit
+`export-native` operations; neither ordinary stage invokes them.
 Inspection errors and warnings are printed during the build and recorded in each
 workspace's `validation.json` / `validation.log`, plus `build/build.json` and
 `build/build.log`. Reports distinguish `inspection_passed` from the command's
@@ -315,16 +332,18 @@ Optional comments can record canonical model IDs. A future consistency fitness
 check will warn about discrepancies; this build does not implement it.
 
 Markdown links to the source and to relative generated SVG/PNG paths. Previews
-require a successful build. All 14 existing FireFly–Besu sequences have standalone
+require the corresponding successful stage; Mermaid previews require browser completion. All 14 existing FireFly–Besu sequences have standalone
 sources beside their use-case README. Consumers may copy generated images or
 embed this repository with both sources and build output; preserve relative paths
 when copying linked Markdown. No documentation hosting service is required.
 
-`build/build.json` records the latest attempt, source fingerprint, renderer
-versions, sources and output paths. `build/build.log` records tool diagnostics.
-A failed build preserves the previous images and exports, records `passed: false`,
-and does not claim those artifacts are current. The complete build stages all
-outputs before publication; successful builds remove obsolete managed C4 and UML outputs.
+`build/build.json` records the latest stage attempt, source fingerprint, renderer
+versions, sources and output paths. `passed: true` with `stage: light` means the
+lightweight stage succeeded; `complete: true` requires browser completion.
+`build/.reports/build-light.json` and `build-browser.json` retain each stage's
+report, with adjacent `.log` diagnostics. A failed stage preserves previous
+artifacts and records failure. Light builds prune obsolete C4/PlantUML outputs;
+browser completion prunes obsolete Mermaid outputs after successful generation.
 Individual exports also record their latest attempt in `export-status.json`.
 
 The repository can be cloned or used as a Git submodule beneath another codebase.
@@ -350,7 +369,7 @@ Start **all workspaces** from the repository root:
 docker compose up -d
 ```
 
-Only the native viewers start; the optional tools service is excluded by its profile.
+Only the native viewers start; both tools services are excluded by their profile.
 
 | Compose service | Authored entrypoint | Open |
 |---|---|---|
@@ -423,8 +442,8 @@ build/
 │   └── workspaces/<epic-id>/workspace.dsl/  # Reports for each workstream
 ├── .layouts/<workspace-entrypoint>/  # Captured manual layouts; preserved by --clean
 ├── artifacts.json                # Inventory of managed files and per-format freshness
-├── build.json                    # Latest complete-build attempt and findings
-├── build.log                     # Latest complete-build diagnostics
+├── build.json                    # Latest stage attempt, completion state and findings
+├── build.log                     # Latest stage diagnostics
 ├── .tools.lock                   # Persistent writer-lock file
 ├── .staging/                     # Temporary publication state; cleaned after completion
 └── local.env                     # Optional local Compose settings; never an artifact
@@ -443,7 +462,7 @@ captured-layout fingerprint. Hashes never determine filenames.
 One writer lock protects `build/.staging/`. Publication updates individual files
 and an on-disk journal allows the next command to recover interrupted publication.
 Failures preserve previous successful diagrams and inventory; attempt reports
-record failure. A full successful build prunes removed/moved views and sources,
+record failure. Completing both stages prunes removed/moved views and sources,
 and removes recognized outputs from the previous `build/c4/` layout. Unrelated
 historical files and local settings remain untouched. Empty generated folders
 are removed. Build twice without source changes to get the same output path set.
@@ -457,6 +476,7 @@ Tooling lives in [scripts](scripts), with containerized tests in [tests](tests):
 
 ```text
 docker compose run --rm --pull never --entrypoint python3 tools -B -m unittest discover -s tests -v
+docker compose run --rm --pull never --entrypoint python3 tools-browser -B -m unittest discover -s tests -v
 ```
 
 ### Corporate environment and CI

@@ -245,7 +245,7 @@ class Packaging(unittest.TestCase):
             self.assertFalse((output / '.staging').exists())
             failed = root / 'failure'
             failed.mkdir()
-            cli.atomic_json(cli.BUILD / 'build.json', {'passed': False})
+            cli.atomic_json(cli.BUILD / '.reports/build-light.json', {'passed': False})
             with self.assertRaisesRegex(ValueError, 'failed or stale'):
                 ci_artifacts.package(failed)
             ci_artifacts.package(failed, diagnostics=True)

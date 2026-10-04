@@ -39,6 +39,8 @@ class Renderers(unittest.TestCase):
             mermaid.write_text('sequenceDiagram\nArchitect->>Platform: Propose change\n')
             before = contents(root)
             for source in (plantuml, mermaid):
+                if source.suffix == '.mmd' and not renderer.has_capability('mermaid'):
+                    continue
                 for format in ('svg', 'png'):
                     with self.subTest(source=source, format=format):
                         output = root / 'rendered' / source.with_suffix('.' + format).name
@@ -53,6 +55,8 @@ class Renderers(unittest.TestCase):
             root = Path(temporary)
             for name, source in [('broken.puml', '@startuml\nthis is not valid syntax !!!\n@enduml'),
                                  ('broken.mmd', 'sequenceDiagram\nthis is not valid syntax !!!')]:
+                if name.endswith('.mmd') and not renderer.has_capability('mermaid'):
+                    continue
                 file = root / name
                 file.write_text(source)
                 with self.subTest(source=name), self.assertRaisesRegex(RuntimeError, 'Rendering failed'):
@@ -83,12 +87,14 @@ class CompleteBuild(unittest.TestCase):
             local.parent.mkdir(parents=True)
             local.write_text('sequenceDiagram\nA->>B: Request\n')
             cli.build()
+            if renderer.has_capability('mermaid'):
+                cli.build_browser()
             status = json.loads((cli.BUILD / 'build.json').read_text())
             self.assertTrue(status['passed'])
             self.assertIn('uml/patterns/request/sequence.puml', status['sources'])
             self.assertIn('workspaces/team/uml/sequence.mmd', status['sources'])
             images = [root / output for output in status['outputs'] if output.endswith(('.svg', '.png'))]
-            self.assertEqual(10, len(images))
+            self.assertEqual(10 if renderer.has_capability('mermaid') else 8, len(images))
             for image in images:
                 renderer.check_image(image)
             for entry in cli.inventory():

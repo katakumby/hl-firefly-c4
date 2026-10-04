@@ -2,7 +2,17 @@
 # Optional POSIX convenience wrapper; equivalent plain Docker commands are documented.
 set -eu
 architecture_root=$(CDPATH= cd -- "$(dirname -- "$0")/.." && pwd)
-architecture_image=${ARCHITECTURE_TOOLS_IMAGE:-dlt-architecture-tools:local}
+architecture_browser=false
+if [ "${1:-}" = --browser ]; then
+    architecture_browser=true
+    shift
+fi
+case "${1:-}" in build-browser|export-native) architecture_browser=true ;; esac
+if [ "$architecture_browser" = true ]; then
+    architecture_image=${ARCHITECTURE_BROWSER_IMAGE:-dlt-architecture-tools-browser}
+else
+    architecture_image=${ARCHITECTURE_TOOLS_IMAGE:-dlt-architecture-tools-light}
+fi
 if ! docker image inspect "$architecture_image" >/dev/null 2>&1; then
     echo "Approved tools image is not loaded: $architecture_image" >&2
     echo 'Acquire it explicitly with docker pull or docker load; see documentation/build.md.' >&2
@@ -31,6 +41,7 @@ else
     set -- "$architecture_image" "$@"
 fi
 exec docker run --rm --pull never --network none --read-only --init \
+    --env ARCHITECTURE_SOURCE_REVISION --env ARCHITECTURE_CI_RUN \
     --user "$architecture_uid:$architecture_gid" \
     --cap-drop ALL --security-opt no-new-privileges:true --shm-size 256m \
     --tmpfs /tmp:rw,exec,nosuid,nodev,size=1g,mode=1777 \

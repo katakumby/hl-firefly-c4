@@ -14,7 +14,7 @@ from test_output_layout import quick_render
 import architecture as cli
 import workspace_paths as paths
 import native_exports as native
-from diagram_renderers import check_gif, check_image
+from diagram_renderers import check_gif, check_image, has_capability
 
 NATIVE = '''workspace {
  properties {
@@ -114,6 +114,8 @@ class Selection(unittest.TestCase):
         with checkout():
             paths.REFERENCE.write_text(BASE)
             for is_native in (False, True):
+                if is_native and not has_capability('native'):
+                    continue
                 with self.subTest(native=is_native), patch.object(cli, 'stage_c4') as c4, \
                      patch.object(native, 'render_native') as renderer:
                     with self.assertRaisesRegex(ValueError, "missing-one.*missing-two"):
@@ -147,6 +149,7 @@ class Selection(unittest.TestCase):
             self.assertFalse((cli.BUILD / '.staging').exists())
 
 
+@unittest.skipUnless(has_capability('native'), 'Native rendering runs in tools-browser')
 class NativeLayouts(unittest.TestCase):
     def test_capture_merge_preserves_positions_routes_and_current_dsl(self):
         with checkout() as root:

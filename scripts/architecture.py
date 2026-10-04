@@ -1,4 +1,4 @@
-"""Container-only commands: validate, export and build (C4-PlantUML by default). Standard library only."""
+"""Offline architecture validation, exports and light/browser build stages. Standard library only."""
 import argparse
 from contextlib import contextmanager
 from copy import deepcopy
@@ -15,8 +15,8 @@ import subprocess
 import sys
 import tempfile
 
-from workspace_paths import ROOT, BUILD, REFERENCE, VERSION, discover_workspaces, output_directory, workspace_path
-from diagram_renderers import render, renderer_versions
+from workspace_paths import ROOT, BUILD, REFERENCE, VERSION, TOOLCHAIN, discover_workspaces, output_directory, workspace_path
+from diagram_renderers import render, renderer_versions, require_capability
 from view_sources import index_views, safe_name
 from artifact_store import atomic_json, staging, publish, recover, confined, prune_empty
 import native_exports
@@ -381,6 +381,8 @@ def export(path, format, view=None):
 
 
 def export_batch(paths, format, views=None, native=False, frame_duration=3):
+    if native:
+        require_capability('native')
     paths = [workspace_path(path) for path in paths]
     keys = selected_keys(views)
     command = 'export-native' if native else 'export'
@@ -506,10 +508,77 @@ def discover_uml():
     return selected
 
 
+def browser_artifact(item):
+    return item.get('view') is None and Path(item['source']).suffix == '.mmd'
+
+
+def phase_status(phase):
+    return {'layout_version': 2, 'handoff_version': 1, 'stage': phase, 'complete': False,
+            'passed': False, 'errors': [], 'outputs': [], 'sources': [], 'artifacts': [],
+            'inspection_findings': [], 'started_at': timestamp(), 'toolchain': TOOLCHAIN,
+            'source_revision': os.environ.get('ARCHITECTURE_SOURCE_REVISION') or None,
+            'ci_run': os.environ.get('ARCHITECTURE_CI_RUN') or None}
+
+
+def write_phase(status, logs, in_progress=False):
+    value = status | {'in_progress': in_progress}
+    if not in_progress:
+        value['completed_at'] = timestamp()
+    report = BUILD / '.reports' / f'build-{status["stage"]}.json'
+    atomic_json(report, value)
+    report.with_suffix('.log').write_text('\n'.join(logs + status['errors']), encoding='utf-8')
+    atomic_json(BUILD / 'build.json', value)
+    (BUILD / 'build.log').write_text('\n'.join(logs + status['errors']), encoding='utf-8')
+
+
+def verify_light_handoff():
+    """Verify an earlier light build without reparsing DSL or regenerating its files."""
+    try:
+        return _verify_light_handoff()
+    except (KeyError, TypeError, AttributeError) as exc:
+        raise ValueError('Malformed lightweight handoff; run tools build first.') from exc
+
+
+def _verify_light_handoff():
+    file = BUILD / '.reports/build-light.json'
+    if not file.is_file():
+        raise ValueError('Missing lightweight handoff. Run tools build for this checkout/commit first.')
+    report = json.loads(file.read_text())
+    if (report.get('handoff_version') != 1 or report.get('stage') != 'light'
+            or not report.get('passed') or report.get('in_progress')
+            or report.get('source_sha256') != source_fingerprint() or report.get('toolchain') != TOOLCHAIN):
+        raise ValueError('Lightweight handoff is incompatible, failed or stale; run tools build first.')
+    revision = os.environ.get('ARCHITECTURE_SOURCE_REVISION') or None
+    if revision and report.get('source_revision') != revision:
+        raise ValueError('Lightweight handoff belongs to a different commit; run the light job for this commit.')
+    entries = {item['output']: item for item in inventory()}
+    if not report.get('artifacts') or report['outputs'] != ['build/' + item['output'] for item in report['artifacts']]:
+        raise ValueError('Incomplete lightweight artifact manifest')
+    for item in report['artifacts']:
+        path = confined(BUILD, item['output'])
+        if (entries.get(item['output']) != item or not path.is_file()
+                or hashlib.sha256(path.read_bytes()).hexdigest() != item['output_sha256']):
+            raise ValueError(f'Lightweight artifact is missing or modified: {item["output"]}')
+    if not report.get('reports'):
+        raise ValueError('Lightweight handoff is missing its workspace reports')
+    for relative, digest in report['reports'].items():
+        path = confined(BUILD, relative)
+        if not path.is_file() or hashlib.sha256(path.read_bytes()).hexdigest() != digest:
+            raise ValueError(f'Lightweight report is missing or modified: {relative}')
+    # Re-discover authored paths to verify the deferred plan, including collisions.
+    expected = {(p.relative_to(ROOT).as_posix(), p.relative_to(ROOT).with_suffix('.' + f).as_posix(), f)
+                for p in discover_uml() if p.suffix == '.mmd' for f in ('svg', 'png')}
+    actual = {(item['source'], item['output'], item['format']) for item in report['deferred']}
+    if actual != expected or len(actual) != len(report['deferred']):
+        raise ValueError('Deferred Mermaid manifest does not match current sources')
+    check_collisions(report['artifacts'] + report['deferred'])
+    return report, hashlib.sha256(file.read_bytes()).hexdigest()
+
+
 def build():
-    """Validate and stage everything before changing any published diagram."""
-    status = {'layout_version': 2, 'passed': False, 'errors': [], 'outputs': [], 'sources': [],
-              'inspection_findings': []}
+    """Publish non-browser diagrams; retain Mermaid outputs for browser completion."""
+    require_capability('plantuml')
+    status = phase_status('light') | {'deferred': [], 'reports': {}}
     logs = []
     BUILD.mkdir(parents=True, exist_ok=True)
     # Capture legacy inventory before replacing the old attempt manifest.
@@ -518,7 +587,7 @@ def build():
         cache = BUILD / '.reports/legacy.json'
         atomic_json(cache, sorted(p.relative_to(BUILD).as_posix() for p in legacy if p != cache))
         legacy.add(cache)
-    atomic_json(BUILD / 'build.json', status | {'in_progress': True, 'started_at': timestamp()})
+    write_phase(status, logs, in_progress=True)
     try:
         with staging(BUILD) as stage:
             sources = discover_uml()
@@ -553,15 +622,18 @@ def build():
                 relative = source.relative_to(ROOT)
                 owners = [p for p in reports if source.is_relative_to(p.parent)]
                 owner = max(owners, key=lambda p: len(p.parts)) if owners else None
-                entries.extend(artifact(relative.with_suffix('.' + format), source, owner, format, fingerprint)
-                               for format in ('svg', 'png'))
+                target = status['deferred'] if source.suffix == '.mmd' else entries
+                target.extend(artifact(relative.with_suffix('.' + format), source, owner, format, fingerprint)
+                              for format in ('svg', 'png'))
                 status['sources'].append(relative.as_posix())
             old = inventory()
-            retained = [item for item in old
-                        if ((item.get('renderer') == 'structurizr' and
+            replaced_paths = {item['output'] for item in entries}
+            retained = [item for item in old if item['output'] not in replaced_paths
+                        and (browser_artifact(item) or (item.get('renderer') == 'structurizr' and
                              (item['output'], item['source'], item['workspace'], item['view'], item['format']) in possible_native)
                             or (item.get('renderer') != 'structurizr' and item['format'] == 'mermaid' and
                                 (item['output'], item['source'], item['workspace'], item['view'], item['format']) in possible))]
+            check_collisions(entries + status['deferred'])
             check_collisions(entries + retained)
             replacements = []
             for path, (raw, plan) in workspaces.items():
@@ -585,22 +657,76 @@ def build():
                 if file.parent not in report_directories:
                     removed.update(p for p in file.parent.iterdir() if p.is_file())
             status['outputs'] = ['build/' + item['output'] for item in entries]
+            status['artifacts'] = entries
+            for directory in report_directories:
+                for name in ('workspace.json', 'validation.json', 'validation.log'):
+                    file = directory / name
+                    # Keep handoff reports separate from the latest ad-hoc export
+                    # diagnostics, which native/manual commands may overwrite.
+                    relative = Path('.reports/light') / directory.relative_to(BUILD / '.reports') / name
+                    frozen = stage / 'reports' / relative
+                    frozen.parent.mkdir(parents=True, exist_ok=True)
+                    shutil.copyfile(file, frozen)
+                    status['reports'][relative.as_posix()] = hashlib.sha256(frozen.read_bytes()).hexdigest()
+                    replacements.append((frozen, confined(BUILD, relative)))
+            removed.update(file for file in (BUILD / '.reports/light').rglob('*')
+                           if file.is_file() and file.relative_to(BUILD).as_posix() not in status['reports'])
             commit_artifacts(entries, retained, replacements, removed, stage)
         status['passed'] = True
-        print(f'Built all diagrams: build/build.json ({len(status["inspection_findings"])} inspection findings)', flush=True)
+        print(f'Built lightweight diagrams: build/build.json ({len(status["deferred"]) // 2} Mermaid sources deferred; '
+              f'{len(status["inspection_findings"])} inspection findings)', flush=True)
     except (ValueError, OSError, RuntimeError, subprocess.SubprocessError) as exc:
         status['errors'].append(str(exc))
         status['outputs'] = []
         raise
     finally:
-        atomic_json(BUILD / 'build.json', status | {'in_progress': False, 'completed_at': timestamp()})
-        (BUILD / 'build.log').write_text('\n'.join(logs + status['errors']), encoding='utf-8')
+        write_phase(status, logs)
+
+
+def build_browser():
+    """Complete only deferred Mermaid outputs from a verified light handoff."""
+    status, logs = phase_status('browser'), []
+    write_phase(status, logs, in_progress=True)
+    try:
+        require_capability('mermaid')
+        with staging(BUILD) as stage:
+            light, digest = verify_light_handoff()
+            status.update(source_sha256=light['source_sha256'], light_sha256=digest,
+                          source_revision=light['source_revision'], renderers=renderer_versions(),
+                          inspection_findings=light['inspection_findings'])
+            entries = deepcopy(light['deferred'])
+            for item in entries:
+                item.update(renderers=renderer_versions(), completed_at=timestamp())
+            old = inventory()
+            retained = [item for item in old if not browser_artifact(item)]
+            check_collisions(entries + retained)
+            replacements = []
+            for item in entries:
+                output = stage / 'browser' / item['output']
+                render(ROOT / item['source'], output, logs)
+                item['output_sha256'] = hashlib.sha256(output.read_bytes()).hexdigest()
+                replacements.append((output, BUILD / item['output']))
+                print(f'Generated {item["source"]}: {item["format"]}', flush=True)
+            if verify_light_handoff()[1] != digest:
+                raise ValueError('Lightweight handoff changed during browser rendering')
+            removed = {BUILD / item['output'] for item in old if browser_artifact(item)}
+            commit_artifacts(entries, retained, replacements, removed, stage)
+            status.update(artifacts=entries, outputs=light['outputs'] + ['build/' + item['output'] for item in entries],
+                          sources=light['sources'], passed=True, complete=True)
+        print('Completed ordinary diagrams: build/build.json (native exports remain on demand)', flush=True)
+    except (ValueError, OSError, RuntimeError, subprocess.SubprocessError) as exc:
+        status['errors'].append(str(exc))
+        status.update(passed=False, complete=False, outputs=[])
+        raise
+    finally:
+        write_phase(status, logs)
 
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     commands = parser.add_subparsers(dest='command', required=True)
-    commands.add_parser('build', help='Validate and render every C4 and standalone UML diagram as SVG and PNG')
+    commands.add_parser('build', help='Validate and render C4/PlantUML; defer Mermaid images')
+    commands.add_parser('build-browser', help='Complete Mermaid images from a matching successful lightweight build')
     for name in ('validate', 'export', 'export-native', 'capture-layout'):
         command = commands.add_parser(name)
         selection = command.add_mutually_exclusive_group()
@@ -631,6 +757,9 @@ def main():
                 return 0 if all(r['passed'] for r in validate([args.workspace] if args.workspace else None).values()) else 1
             if args.command == 'build':
                 build()
+                return 0
+            if args.command == 'build-browser':
+                build_browser()
                 return 0
             if args.command == 'capture-layout':
                 capture_layout(workspace_path(args.workspace or REFERENCE))

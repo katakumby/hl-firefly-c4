@@ -1,12 +1,14 @@
 name: ${COMPOSE_PROJECT_NAME:-dlt-architecture}
 
 x-tools: &tools
-  image: ${ARCHITECTURE_TOOLS_IMAGE:-dlt-architecture-tools:local}
+  image: ${ARCHITECTURE_TOOLS_IMAGE:-dlt-architecture-tools-light}
   pull_policy: never
   user: "${ARCHITECTURE_UID:-1000}:${ARCHITECTURE_GID:-1000}"
   network_mode: none
   environment:
     PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD: "1"
+    ARCHITECTURE_SOURCE_REVISION: ${ARCHITECTURE_SOURCE_REVISION:-}
+    ARCHITECTURE_CI_RUN: ${ARCHITECTURE_CI_RUN:-}
   read_only: true
   cap_drop: ["ALL"]
   security_opt: ["no-new-privileges:true"]
@@ -61,4 +63,9 @@ services:
 
   tools:
     <<: *tools
+    profiles: ["tools"]
+
+  tools-browser:
+    <<: *tools
+    image: ${ARCHITECTURE_BROWSER_IMAGE:-dlt-architecture-tools-browser}
     profiles: ["tools"]

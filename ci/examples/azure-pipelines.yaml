@@ -1,17 +1,29 @@
-# Create a pipeline using this path, after configuring its variables and service connection.
+# Configure image variables, 30-day retention and registry connection before activation.
 trigger:
   branches:
     include: [main]
 pr:
   branches:
     include: [main]
+schedules:
+  - cron: '0 2 * * *'
+    displayName: Daily browser completion (UTC)
+    branches:
+      include: [main]
+    always: true
 parameters:
+  - name: stage
+    type: string
+    default: browser
+    values: [browser, light]
   - name: acquireImage
     type: boolean
     default: false
   - name: registryServiceConnection
     type: string
     default: architecture-registry
+variables:
+  architectureStage: $[ iif(eq(variables['Build.Reason'], 'Schedule'), 'browser', iif(eq(variables['Build.Reason'], 'Manual'), '${{ parameters.stage }}', 'light')) ]
 pool:
   name: $(ARCHITECTURE_AGENT_POOL)
   demands:
@@ -29,56 +41,96 @@ steps:
       inputs:
         command: login
         containerRegistry: ${{ parameters.registryServiceConnection }}
-    - bash: |
-        set -euo pipefail
-        : "${ARCHITECTURE_TOOLS_IMAGE:?Configure the approved tools image}"
-        docker pull "$ARCHITECTURE_TOOLS_IMAGE"
-      displayName: Acquire approved image
-      env:
-        ARCHITECTURE_TOOLS_IMAGE: $(ARCHITECTURE_TOOLS_IMAGE)
   - bash: |
       set -euo pipefail
-      : "${ARCHITECTURE_TOOLS_IMAGE:?Configure the approved tools image}"
-      docker image inspect "$ARCHITECTURE_TOOLS_IMAGE" >/dev/null
+      if [ "$BUILD_STAGE" = browser ]; then
+        image="${ARCHITECTURE_BROWSER_IMAGE:?Configure the browser image name}"
+      else
+        image="${ARCHITECTURE_TOOLS_IMAGE:?Configure the lightweight image name}"
+      fi
+      if [ "${ACQUIRE_IMAGE,,}" = true ]; then docker pull "$image"; fi
+      docker image inspect "$image" >/dev/null
       mkdir -p build/.reports
-      docker/run.sh test 2>&1 | tee build/.reports/tests.log
-      docker/run.sh build
-    displayName: Regressions and full offline build
+      if [ "$BUILD_STAGE" = browser ]; then
+        docker/run.sh --browser test 2>&1 | tee build/.reports/tests-browser.log
+      else
+        docker/run.sh test 2>&1 | tee build/.reports/tests-light.log
+      fi
+    displayName: Acquire selected image and run offline regressions
     workingDirectory: $(Pipeline.Workspace)/s/architecture
     env:
+      BUILD_STAGE: $(architectureStage)
+      ACQUIRE_IMAGE: ${{ parameters.acquireImage }}
       ARCHITECTURE_TOOLS_IMAGE: $(ARCHITECTURE_TOOLS_IMAGE)
+      ARCHITECTURE_BROWSER_IMAGE: $(ARCHITECTURE_BROWSER_IMAGE)
+  - task: DownloadPipelineArtifact@2
+    displayName: Download prior successful light artifact for this commit (run light first if missing)
+    condition: and(succeeded(), eq(variables['architectureStage'], 'browser'))
+    inputs:
+      buildType: specific
+      project: $(System.TeamProjectId)
+      definition: $(System.DefinitionId)
+      buildVersionToDownload: latestFromBranch
+      branchName: $(Build.SourceBranch)
+      tags: architecture-light-$(Build.SourceVersion)
+      allowPartiallySucceededBuilds: false
+      allowFailedBuilds: false
+      artifactName: architecture-light
+      targetPath: $(Pipeline.Workspace)/s/architecture/build
   - bash: |
       set -euo pipefail
       mkdir -p "$ARCHITECTURE_ARTIFACT_DIR"
-      docker/run.sh package
-    displayName: Package current artifacts
-    condition: succeeded()
+      if [ "$BUILD_STAGE" = browser ]; then
+        docker/run.sh build-browser
+        docker/run.sh --browser package --stage full
+      else
+        docker/run.sh build
+        docker/run.sh package --stage light
+      fi
+    displayName: Build and package selected stage offline
     workingDirectory: $(Pipeline.Workspace)/s/architecture
     env:
+      BUILD_STAGE: $(architectureStage)
+      ARCHITECTURE_SOURCE_REVISION: $(Build.SourceVersion)
+      ARCHITECTURE_CI_RUN: azure:$(Build.BuildId)
       ARCHITECTURE_TOOLS_IMAGE: $(ARCHITECTURE_TOOLS_IMAGE)
+      ARCHITECTURE_BROWSER_IMAGE: $(ARCHITECTURE_BROWSER_IMAGE)
       ARCHITECTURE_ARTIFACT_DIR: $(Build.ArtifactStagingDirectory)/architecture
   - task: PublishPipelineArtifact@1
-    condition: succeeded()
+    condition: and(succeeded(), eq(variables['architectureStage'], 'light'))
     inputs:
       targetPath: $(Build.ArtifactStagingDirectory)/architecture
-      artifact: architecture-$(Build.BuildId)
+      artifact: architecture-light
+  - bash: echo "##vso[build.addbuildtag]architecture-light-$SOURCE_REVISION"
+    displayName: Index successful light build by commit
+    condition: and(succeeded(), eq(variables['architectureStage'], 'light'))
+    env:
+      SOURCE_REVISION: $(Build.SourceVersion)
+  - task: PublishPipelineArtifact@1
+    condition: and(succeeded(), eq(variables['architectureStage'], 'browser'))
+    inputs:
+      targetPath: $(Build.ArtifactStagingDirectory)/architecture
+      artifact: architecture-full
   - bash: |
-      set -euo pipefail
       mkdir -p "$ARCHITECTURE_ARTIFACT_DIR"
-      if docker image inspect "$ARCHITECTURE_TOOLS_IMAGE" >/dev/null 2>&1; then
-        docker/run.sh package --diagnostics
+      if [ "$BUILD_STAGE" = browser ]; then
+        if docker image inspect "$ARCHITECTURE_BROWSER_IMAGE" >/dev/null 2>&1; then docker/run.sh --browser package --diagnostics; fi
+      else
+        if docker image inspect "$ARCHITECTURE_TOOLS_IMAGE" >/dev/null 2>&1; then docker/run.sh package --diagnostics; fi
       fi
     displayName: Package failure diagnostics
     condition: failed()
     workingDirectory: $(Pipeline.Workspace)/s/architecture
     env:
+      BUILD_STAGE: $(architectureStage)
       ARCHITECTURE_TOOLS_IMAGE: $(ARCHITECTURE_TOOLS_IMAGE)
+      ARCHITECTURE_BROWSER_IMAGE: $(ARCHITECTURE_BROWSER_IMAGE)
       ARCHITECTURE_ARTIFACT_DIR: $(Build.ArtifactStagingDirectory)/architecture-diagnostics
   - task: PublishPipelineArtifact@1
     condition: failed()
     inputs:
       targetPath: $(Build.ArtifactStagingDirectory)/architecture-diagnostics
-      artifact: architecture-diagnostics-$(Build.BuildId)
+      artifact: architecture-diagnostics
   - ${{ if eq(parameters.acquireImage, true) }}:
     - task: Docker@2
       displayName: Remove registry credentials

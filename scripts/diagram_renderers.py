@@ -60,6 +60,17 @@ def renderer_versions():
     return json.loads((RENDERERS / 'versions.json').read_text())
 
 
+def has_capability(name):
+    return name in renderer_versions().get('capabilities', [])
+
+
+def require_capability(name):
+    if not has_capability(name):
+        service = 'tools-browser' if name in ('mermaid', 'native') else 'tools'
+        raise ValueError(f'This image lacks {name} support. Use the approved {service} image/service; '
+                         'acquire it explicitly before execution.')
+
+
 def check_image(path):
     """Reject missing files, renderer error text, and incomplete image streams."""
     path = Path(path)
@@ -87,6 +98,7 @@ def render(source, output, logs, timeout=180):
     format = output.suffix.lstrip('.')
     if format not in ('svg', 'png'):
         raise ValueError(f'Unsupported rendering format: {format}')
+    require_capability('mermaid' if source.suffix == '.mmd' else 'plantuml')
     output.parent.mkdir(parents=True, exist_ok=True)
     if source.suffix == '.puml':
         # Pipe controls the output name; cwd preserves includes relative to the source.

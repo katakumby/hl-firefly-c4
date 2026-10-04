@@ -1,0 +1,50 @@
+@startuml
+title <size:24>Component - FireFly Core: API and tenancy</size>\n<size:24>Component - FireFly Core: API and tenancy</size>
+
+set separator none
+left to right direction
+
+<style>
+  root {
+    BackgroundColor: #ffffff
+    FontColor: #444444
+  }
+</style>
+
+!include <C4/C4>
+!include <C4/C4_Context>
+!include <C4/C4_Container>
+!include <C4/C4_Component>
+
+System_Boundary("HyperledgerFireFly_boundary", "Hyperledger FireFly", $tags="") {
+  Container_Boundary("HyperledgerFireFly.FireFlyCore_boundary", "FireFly Core", $tags="") {
+    Component(HyperledgerFireFly.FireFlyCore.RESTAPIandrouting, "REST API and routing", $techn="Go", $descr="Accepts namespace-scoped commands and queries.", $tags="", $link="https://github.com/hyperledger-firefly/firefly/tree/9d20f3081c9074d5b012427e5572ebc03da8d95d/internal/apiserver")
+    Component(HyperledgerFireFly.FireFlyCore.APIauthentication, "API authentication", $techn="Go", $descr="Applies configured namespace authorization; Basic Auth reference plugin.", $tags="", $link="https://github.com/hyperledger-firefly/common/tree/b91a1eb645e5bc39c54ed20ad0e917cff7d15d2e/pkg/auth")
+    Component(HyperledgerFireFly.FireFlyCore.Namespacemanager, "Namespace manager", $techn="Go", $descr="Initializes isolated orchestrators and configured plugins.", $tags="", $link="https://github.com/hyperledger-firefly/firefly/tree/9d20f3081c9074d5b012427e5572ebc03da8d95d/internal/namespace")
+    Component(HyperledgerFireFly.FireFlyCore.Orchestrator, "Orchestrator", $techn="Go", $descr="Coordinates API operations and subsystem lifecycles.", $tags="", $link="https://github.com/hyperledger-firefly/firefly/tree/9d20f3081c9074d5b012427e5572ebc03da8d95d/internal/orchestrator")
+    Component(HyperledgerFireFly.FireFlyCore.Syncasyncbridge, "Sync/async bridge", $techn="Go", $descr="Correlates asynchronous completion with waiting API requests.", $tags="", $link="https://github.com/hyperledger-firefly/firefly/tree/9d20f3081c9074d5b012427e5572ebc03da8d95d/internal/syncasync")
+    Component(HyperledgerFireFly.FireFlyCore.SPIeventmanager, "SPI event manager", $techn="Go", $descr="Publishes internal lifecycle and namespace change events.", $tags="", $link="https://github.com/hyperledger-firefly/firefly/tree/9d20f3081c9074d5b012427e5572ebc03da8d95d/internal/spievents")
+    Component(HyperledgerFireFly.FireFlyCore.Eventtransportinterface, "Event transport interface", $techn="Go", $descr="Binds subscriber delivery to a configured event transport.", $tags="", $link="https://github.com/hyperledger-firefly/firefly/tree/9d20f3081c9074d5b012427e5572ebc03da8d95d/internal/events")
+    Component(HyperledgerFireFly.FireFlyCore.Configurationandplugininitialization, "Configuration and plugin initialization", $techn="Go", $descr="Loads namespace settings and initializes plugin factories.", $tags="", $link="https://github.com/hyperledger-firefly/firefly/tree/9d20f3081c9074d5b012427e5572ebc03da8d95d/internal/coreconfig")
+    Component(HyperledgerFireFly.FireFlyCore.HTTPBasicauthentication, "HTTP Basic authentication", $techn="Go", $descr="Verifies htpasswd bcrypt credentials for configured namespaces.", $tags="", $link="https://github.com/hyperledger-firefly/common/tree/b91a1eb645e5bc39c54ed20ad0e917cff7d15d2e/pkg/auth/basic")
+  }
+
+  Container(HyperledgerFireFly.FireFlyExplorer, "FireFly Explorer", $techn="React / TypeScript / browser", $descr="Browser application served by Core; queries member state through the Core API.", $tags="", $link="https://github.com/hyperledger-firefly/ui/tree/658bae40220f124e0e20182cc48b231473e754c5/src")
+}
+
+Rel(HyperledgerFireFly.FireFlyCore.Eventtransportinterface, Memberapplicationreference.Memberbusinessapplication, "Delivers events through configured transports", $techn="WebSocket / webhook / HTTPS", $tags="", $link="")
+Rel(HyperledgerFireFly.FireFlyCore.RESTAPIandrouting, HyperledgerFireFly.FireFlyCore.APIauthentication, "Passes request credentials for authorization", $techn="In-process calls / Go", $tags="", $link="")
+Rel(HyperledgerFireFly.FireFlyCore.RESTAPIandrouting, HyperledgerFireFly.FireFlyCore.Namespacemanager, "Resolves the requested namespace", $techn="In-process calls / Go", $tags="", $link="")
+Rel(HyperledgerFireFly.FireFlyCore.Namespacemanager, HyperledgerFireFly.FireFlyCore.Orchestrator, "Initializes namespace resources and plugins", $techn="In-process calls / Go", $tags="", $link="")
+Rel(HyperledgerFireFly.FireFlyCore.RESTAPIandrouting, HyperledgerFireFly.FireFlyCore.Orchestrator, "Submits validated commands and queries", $techn="In-process calls / Go", $tags="", $link="")
+Rel(HyperledgerFireFly.FireFlyCore.Orchestrator, HyperledgerFireFly.FireFlyCore.Syncasyncbridge, "Waits for asynchronous request completion", $techn="In-process calls / Go", $tags="", $link="")
+Rel(HyperledgerFireFly.FireFlyCore.Namespacemanager, HyperledgerFireFly.FireFlyCore.SPIeventmanager, "Publishes namespace lifecycle changes", $techn="In-process calls / Go", $tags="", $link="")
+Rel(HyperledgerFireFly.FireFlyCore.SPIeventmanager, HyperledgerFireFly.FireFlyCore.Eventtransportinterface, "Publishes system notifications", $techn="In-process calls / Go", $tags="", $link="")
+Rel(HyperledgerFireFly.FireFlyCore.Namespacemanager, HyperledgerFireFly.FireFlyCore.Configurationandplugininitialization, "Loads namespace configuration and plugin selections", $techn="In-process calls / Go", $tags="", $link="")
+Rel(HyperledgerFireFly.FireFlyCore.APIauthentication, HyperledgerFireFly.FireFlyCore.HTTPBasicauthentication, "Verifies configured Basic credentials", $techn="In-process calls / Go", $tags="", $link="")
+Rel(HyperledgerFireFly.FireFlyExplorer, HyperledgerFireFly.FireFlyCore.RESTAPIandrouting, "Queries messages, operations and network state", $techn="HTTP(S) / REST / JSON", $tags="", $link="")
+Rel(Memberapplicationreference.Memberbusinessapplication, HyperledgerFireFly.FireFlyCore.RESTAPIandrouting, "Submits API commands and queries", $techn="HTTPS / REST", $tags="", $link="")
+
+SHOW_LEGEND(true)
+hide stereotypes
+@enduml

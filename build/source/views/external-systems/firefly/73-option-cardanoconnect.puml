@@ -1,0 +1,40 @@
+@startuml
+title <size:24>Container - Optional CardanoConnect</size>\n<size:24>Container - Optional CardanoConnect</size>
+
+set separator none
+left to right direction
+
+<style>
+  root {
+    BackgroundColor: #ffffff
+    FontColor: #444444
+  }
+</style>
+
+!include <C4/C4>
+!include <C4/C4_Context>
+!include <C4/C4_Container>
+
+System(BlockfrostAPI, "Blockfrost API", $descr="Hosted or self-managed Cardano ledger API; alternative to direct node access.", $tags="", $link="https://github.com/hyperledger-firefly/cardano/tree/0300bca6b0b99d2a16a81b94f65496934999346e/README.md")
+System(Cardanonetwork, "Cardano network", $descr="External Cardano ledger accessed through Blockfrost or node-to-client protocols.", $tags="", $link="https://github.com/hyperledger-firefly/cardano/tree/0300bca6b0b99d2a16a81b94f65496934999346e/README.md")
+
+System_Boundary("HyperledgerFireFly_boundary", "Hyperledger FireFly", $tags="") {
+  ContainerDb(HyperledgerFireFly.Cardanosigningkeys, "Cardano signing keys", $techn="Filesystem keystore", $descr="Address-indexed signing key files held by the Cardano Signer.", $tags="", $link="https://github.com/hyperledger-firefly/cardano/tree/0300bca6b0b99d2a16a81b94f65496934999346e/firefly-cardanosigner/src/keys.rs")
+  ContainerDb(HyperledgerFireFly.CardanoConnectSQLitefiles, "CardanoConnect SQLite files", $techn="SQLite / filesystem", $descr="Operation, checkpoint and optional contract worker state.", $tags="", $link="https://github.com/hyperledger-firefly/cardano/tree/0300bca6b0b99d2a16a81b94f65496934999346e/firefly-cardanoconnect/src/persistence")
+  Container(HyperledgerFireFly.CardanoConnect, "CardanoConnect", $techn="Rust / Axum", $descr="Native Cardano connector with operation, contract and event managers.", $tags="", $link="https://github.com/hyperledger-firefly/cardano/tree/0300bca6b0b99d2a16a81b94f65496934999346e/firefly-cardanoconnect")
+  Container(HyperledgerFireFly.CardanoSigner, "Cardano Signer", $techn="Rust / Axum", $descr="Signs CBOR transaction bodies using separately stored Cardano keys.", $tags="", $link="https://github.com/hyperledger-firefly/cardano/tree/0300bca6b0b99d2a16a81b94f65496934999346e/firefly-cardanosigner")
+  Container(HyperledgerFireFly.FireFlyCore, "FireFly Core", $techn="Go", $descr="Exposes member APIs, serves Explorer assets and orchestrates multiparty operations.", $tags="", $link="https://github.com/hyperledger-firefly/firefly/tree/9d20f3081c9074d5b012427e5572ebc03da8d95d/internal/orchestrator")
+}
+
+Rel(HyperledgerFireFly.CardanoConnect, BlockfrostAPI, "Queries ledger data and submits transactions in Blockfrost mode", $techn="HTTPS / Blockfrost API", $tags="", $link="")
+Rel(HyperledgerFireFly.CardanoConnect, Cardanonetwork, "Synchronizes ledger state in direct-node mode", $techn="Cardano node-to-client / local socket", $tags="", $link="")
+Rel(HyperledgerFireFly.CardanoConnect, HyperledgerFireFly.CardanoSigner, "Requests transaction witnesses", $techn="HTTP / JSON", $tags="", $link="")
+Rel(HyperledgerFireFly.CardanoConnect, HyperledgerFireFly.CardanoConnectSQLitefiles, "Persists operation and stream state", $techn="SQLite / filesystem", $tags="", $link="")
+Rel(HyperledgerFireFly.CardanoConnect, HyperledgerFireFly.FireFlyCore, "Delivers Cardano operation and contract events", $techn="WebSocket / JSON", $tags="", $link="")
+Rel(HyperledgerFireFly.CardanoSigner, HyperledgerFireFly.Cardanosigningkeys, "Loads Cardano signing keys", $techn="Filesystem I/O", $tags="", $link="")
+Rel(HyperledgerFireFly.FireFlyCore, HyperledgerFireFly.CardanoConnect, "Submits Cardano operations when configured", $techn="HTTP REST + WebSocket", $tags="", $link="")
+Rel(BlockfrostAPI, Cardanonetwork, "Reads the ledger and relays submitted transactions", $techn="Cardano integration / service boundary", $tags="", $link="")
+
+SHOW_LEGEND(true)
+hide stereotypes
+@enduml

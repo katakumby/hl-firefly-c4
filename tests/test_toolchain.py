@@ -89,11 +89,11 @@ class Toolchain(unittest.TestCase):
                 return_value=LIGHT | {'structurizr_version': 'old'}), patch.object(cli, 'run_java') as native:
             workspace = root / 'workspace.dsl'
             workspace.write_text(BASE)
-            for operation in (lambda: cli.validate(), lambda: cli.capture_layout(workspace), cli.build):
+            for operation in (lambda: cli.validate(), cli.build_source):
                 with self.assertRaisesRegex(ValueError, 'Installed toolchain does not match'):
                     operation()
             native.assert_not_called()
-            self.assertFalse(json.loads((cli.BUILD / 'build.json').read_text())['passed'])
+            self.assertFalse(json.loads((cli.BUILD / '.reports/source.json').read_text())['passed'])
 
     def test_browser_pins_and_handoff_compatibility_allow_profile_extras(self):
         with tempfile.TemporaryDirectory() as temporary, patch.object(renderers, 'RENDERER_SOURCES', Path(temporary)):

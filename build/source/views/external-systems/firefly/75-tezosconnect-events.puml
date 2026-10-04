@@ -1,0 +1,46 @@
+@startuml
+title <size:24>Component - TezosConnect + FFTM: events</size>\n<size:24>Component - TezosConnect + FFTM: events</size>
+
+set separator none
+left to right direction
+
+<style>
+  root {
+    BackgroundColor: #ffffff
+    FontColor: #444444
+  }
+</style>
+
+!include <C4/C4>
+!include <C4/C4_Context>
+!include <C4/C4_Container>
+!include <C4/C4_Component>
+
+System(Tezosnetwork, "Tezos network", $descr="External Tezos node RPC and chain-monitoring endpoints.", $tags="", $link="https://github.com/hyperledger-firefly/tezosconnect/tree/508ec1e8bb8b671c1eb6e9c090a1d219043dbd8b/README.md")
+
+System_Boundary("HyperledgerFireFly_boundary", "Hyperledger FireFly", $tags="") {
+  Container_Boundary("HyperledgerFireFly.TezosConnectFFTM_boundary", "TezosConnect + FFTM", $tags="") {
+    Component(HyperledgerFireFly.TezosConnectFFTM.ConnectorAPIandtransactionmanager, "Connector API and transaction manager", $techn="Go", $descr="Accepts and manages durable transaction and stream requests.", $tags="", $link="https://github.com/hyperledger-firefly/transaction-manager/tree/7a882ddaeaf2e7b9b2203a053402576e436debd9/pkg/fftm")
+    Component(HyperledgerFireFly.TezosConnectFFTM.Tezosblocklistener, "Tezos block listener", $techn="Go", $descr="Monitors chain heads for events and receipts.", $tags="", $link="https://github.com/hyperledger-firefly/tezosconnect/tree/508ec1e8bb8b671c1eb6e9c090a1d219043dbd8b/internal/tezos/blocklistener.go")
+    Component(HyperledgerFireFly.TezosConnectFFTM.Eventlistenerandstreamadapter, "Event listener and stream adapter", $techn="Go", $descr="Converts Tezos contract events to connector events.", $tags="", $link="https://github.com/hyperledger-firefly/tezosconnect/tree/508ec1e8bb8b671c1eb6e9c090a1d219043dbd8b/internal/tezos/event_stream.go")
+    Component(HyperledgerFireFly.TezosConnectFFTM.FFTMconfirmationsandeventdelivery, "FFTM confirmations and event delivery", $techn="Go", $descr="Confirms and delivers checkpointed event batches.", $tags="", $link="https://github.com/hyperledger-firefly/transaction-manager/tree/7a882ddaeaf2e7b9b2203a053402576e436debd9/internal/events")
+    Component(HyperledgerFireFly.TezosConnectFFTM.FFTMpersistence, "FFTM persistence", $techn="Go", $descr="Stores managed transactions and event checkpoints.", $tags="", $link="https://github.com/hyperledger-firefly/transaction-manager/tree/7a882ddaeaf2e7b9b2203a053402576e436debd9/internal/persistence")
+  }
+
+  Container(HyperledgerFireFly.FireFlyCore, "FireFly Core", $techn="Go", $descr="Exposes member APIs, serves Explorer assets and orchestrates multiparty operations.", $tags="", $link="https://github.com/hyperledger-firefly/firefly/tree/9d20f3081c9074d5b012427e5572ebc03da8d95d/internal/orchestrator")
+  ContainerDb(HyperledgerFireFly.TezosConnectstate, "TezosConnect state", $techn="PostgreSQL or LevelDB", $descr="Optional PostgreSQL or LevelDB persistence for the embedded FFTM.", $tags="", $link="https://github.com/hyperledger-firefly/transaction-manager/tree/7a882ddaeaf2e7b9b2203a053402576e436debd9/internal/persistence")
+}
+
+Rel(HyperledgerFireFly.TezosConnectFFTM.Tezosblocklistener, Tezosnetwork, "Monitors chain heads and retrieves blocks", $techn="Tezos HTTP RPC / streaming", $tags="", $link="")
+Rel(HyperledgerFireFly.FireFlyCore, HyperledgerFireFly.TezosConnectFFTM.ConnectorAPIandtransactionmanager, "Submits configured ledger requests", $techn="HTTP REST / JSON", $tags="", $link="")
+Rel(HyperledgerFireFly.TezosConnectFFTM.Tezosblocklistener, HyperledgerFireFly.TezosConnectFFTM.Eventlistenerandstreamadapter, "Supplies observed Tezos blocks", $techn="In-process calls / Go", $tags="", $link="")
+Rel(HyperledgerFireFly.TezosConnectFFTM.Eventlistenerandstreamadapter, HyperledgerFireFly.TezosConnectFFTM.FFTMconfirmationsandeventdelivery, "Supplies decoded contract events", $techn="In-process calls / Go", $tags="", $link="")
+Rel(HyperledgerFireFly.TezosConnectFFTM.ConnectorAPIandtransactionmanager, HyperledgerFireFly.TezosConnectFFTM.FFTMconfirmationsandeventdelivery, "Configures event streams", $techn="In-process calls / Go", $tags="", $link="")
+Rel(HyperledgerFireFly.TezosConnectFFTM.ConnectorAPIandtransactionmanager, HyperledgerFireFly.TezosConnectFFTM.FFTMpersistence, "Persists managed transaction state", $techn="In-process calls / Go", $tags="", $link="")
+Rel(HyperledgerFireFly.TezosConnectFFTM.FFTMconfirmationsandeventdelivery, HyperledgerFireFly.TezosConnectFFTM.FFTMpersistence, "Persists acknowledged checkpoints", $techn="In-process calls / Go", $tags="", $link="")
+Rel(HyperledgerFireFly.TezosConnectFFTM.FFTMpersistence, HyperledgerFireFly.TezosConnectstate, "Reads and writes managed state", $techn="PostgreSQL wire or LevelDB API", $tags="", $link="")
+Rel(HyperledgerFireFly.TezosConnectFFTM.FFTMconfirmationsandeventdelivery, HyperledgerFireFly.FireFlyCore, "Delivers confirmed event batches", $techn="WebSocket / JSON", $tags="", $link="")
+
+SHOW_LEGEND(true)
+hide stereotypes
+@enduml

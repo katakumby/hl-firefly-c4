@@ -1,0 +1,35 @@
+@startuml
+title <size:24>System Context - FireFly developer tools</size>\n<size:24>System Context - FireFly developer tools</size>
+
+set separator none
+left to right direction
+
+<style>
+  root {
+    BackgroundColor: #ffffff
+    FontColor: #444444
+  }
+</style>
+
+!include <C4/C4>
+!include <C4/C4_Context>
+
+AddBoundaryTag("FireFly ecosystem", $borderColor="#444444", $fontColor="#444444", $borderStyle="dashed")
+Boundary(group_1, "FireFly ecosystem", $tags="FireFly ecosystem") {
+  System(HyperledgerFireFly, "Hyperledger FireFly", $descr="Reusable supernode architecture; each consortium member deploys an isolated instance.", $tags="", $link="https://github.com/hyperledger-firefly/firefly/tree/9d20f3081c9074d5b012427e5572ebc03da8d95d")
+  System(FireFlydevelopertools, "FireFly developer tools", $descr="Development utilities and optional sample applications.", $tags="", $link="https://github.com/hyperledger-firefly/firefly/tree/9d20f3081c9074d5b012427e5572ebc03da8d95d/doc-site/docs/overview/key_components/tools.md")
+}
+
+Person(Applicationdeveloper, "Application developer", $descr="Builds and tests member business integrations.", $tags="", $link="https://hyperledger-firefly.github.io/firefly/head/architecture/node_component_architecture/")
+System(DeveloperDockerengine, "Developer Docker engine", $descr="Local container engine used by FireFly CLI; no network is provisioned by this architecture task.", $tags="", $link="https://github.com/hyperledger-firefly/cli/tree/9b868d3326ba4fbadd01c74a36c7e5a92a8c2609/internal/docker")
+
+Rel(HyperledgerFireFly, Applicationdeveloper, "Returns customized starter event batches", $techn="WebSocket / JSON", $tags="", $link="")
+Rel(Applicationdeveloper, FireFlydevelopertools, "Develops and tests integrations", $techn="CLI + HTTPS", $tags="", $link="")
+Rel(Applicationdeveloper, HyperledgerFireFly, "Exercises customized Corda starter operations", $techn="HTTP REST / JSON", $tags="", $link="")
+Rel(FireFlydevelopertools, HyperledgerFireFly, "Exercises the selected member API", $techn="HTTPS + WebSocket", $tags="", $link="")
+Rel(FireFlydevelopertools, Applicationdeveloper, "Returns audit results and migrated configuration for review", $techn="Local process output", $tags="", $link="")
+Rel(FireFlydevelopertools, DeveloperDockerengine, "Creates and manages local development stack services", $techn="Docker Compose CLI", $tags="", $link="")
+
+SHOW_LEGEND(true)
+hide stereotypes
+@enduml

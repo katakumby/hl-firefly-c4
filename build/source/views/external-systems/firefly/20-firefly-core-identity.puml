@@ -1,0 +1,43 @@
+@startuml
+title <size:24>Component - FireFly Core: Identity and multiparty coordination</size>\n<size:24>Component - FireFly Core: Identity and multiparty coordination</size>
+
+set separator none
+left to right direction
+
+<style>
+  root {
+    BackgroundColor: #ffffff
+    FontColor: #444444
+  }
+</style>
+
+!include <C4/C4>
+!include <C4/C4_Context>
+!include <C4/C4_Component>
+
+System_Boundary("HyperledgerFireFly_boundary", "Hyperledger FireFly", $tags="") {
+  Container_Boundary("HyperledgerFireFly.FireFlyCore_boundary", "FireFly Core", $tags="") {
+    Component(HyperledgerFireFly.FireFlyCore.Orchestrator, "Orchestrator", $techn="Go", $descr="Coordinates API operations and subsystem lifecycles.", $tags="", $link="https://github.com/hyperledger-firefly/firefly/tree/9d20f3081c9074d5b012427e5572ebc03da8d95d/internal/orchestrator")
+    Component(HyperledgerFireFly.FireFlyCore.Identitymanager, "Identity manager", $techn="Go", $descr="Resolves organizations, nodes and transaction signing identities.", $tags="", $link="https://github.com/hyperledger-firefly/firefly/tree/9d20f3081c9074d5b012427e5572ebc03da8d95d/internal/identity")
+    Component(HyperledgerFireFly.FireFlyCore.Networkmap, "Network map", $techn="Go", $descr="Indexes registered members, nodes and their endpoints.", $tags="", $link="https://github.com/hyperledger-firefly/firefly/tree/9d20f3081c9074d5b012427e5572ebc03da8d95d/internal/networkmap")
+    Component(HyperledgerFireFly.FireFlyCore.Definitionexchange, "Definition exchange", $techn="Go", $descr="Publishes and processes schemas, interfaces and token definitions.", $tags="", $link="https://github.com/hyperledger-firefly/firefly/tree/9d20f3081c9074d5b012427e5572ebc03da8d95d/internal/definitions")
+    Component(HyperledgerFireFly.FireFlyCore.Broadcastmanager, "Broadcast manager", $techn="Go", $descr="Publishes shared payloads and orchestrates ledger pinning.", $tags="", $link="https://github.com/hyperledger-firefly/firefly/tree/9d20f3081c9074d5b012427e5572ebc03da8d95d/internal/broadcast")
+    Component(HyperledgerFireFly.FireFlyCore.Multipartymanager, "Multiparty manager", $techn="Go", $descr="Coordinates network actions and FireFly contract pinning.", $tags="", $link="https://github.com/hyperledger-firefly/firefly/tree/9d20f3081c9074d5b012427e5572ebc03da8d95d/internal/multiparty")
+    Component(HyperledgerFireFly.FireFlyCore.Blockchainplugin, "Blockchain plugin", $techn="Go", $descr="Defines blockchain operations and dispatches to the configured chain adapter.", $tags="", $link="https://github.com/hyperledger-firefly/firefly/tree/9d20f3081c9074d5b012427e5572ebc03da8d95d/internal/blockchain")
+    Component(HyperledgerFireFly.FireFlyCore.Identityextensionplaceholder, "Identity extension placeholder", $techn="Go", $descr="Registers the onchain compatibility placeholder; external identity resolution is not implemented.", $tags="", $link="https://github.com/hyperledger-firefly/firefly/tree/9d20f3081c9074d5b012427e5572ebc03da8d95d/internal/identity/tbd")
+  }
+
+}
+
+Rel(HyperledgerFireFly.FireFlyCore.Orchestrator, HyperledgerFireFly.FireFlyCore.Identitymanager, "Resolves signing identities", $techn="In-process calls / Go", $tags="", $link="")
+Rel(HyperledgerFireFly.FireFlyCore.Identitymanager, HyperledgerFireFly.FireFlyCore.Identityextensionplaceholder, "Initializes the configured onchain placeholder", $techn="In-process calls / Go", $tags="", $link="")
+Rel(HyperledgerFireFly.FireFlyCore.Identitymanager, HyperledgerFireFly.FireFlyCore.Networkmap, "Looks up members and node endpoints", $techn="In-process calls / Go", $tags="", $link="")
+Rel(HyperledgerFireFly.FireFlyCore.Networkmap, HyperledgerFireFly.FireFlyCore.Definitionexchange, "Registers shared member definitions", $techn="In-process calls / Go", $tags="", $link="")
+Rel(HyperledgerFireFly.FireFlyCore.Definitionexchange, HyperledgerFireFly.FireFlyCore.Broadcastmanager, "Publishes network definitions", $techn="In-process calls / Go", $tags="", $link="")
+Rel(HyperledgerFireFly.FireFlyCore.Orchestrator, HyperledgerFireFly.FireFlyCore.Multipartymanager, "Submits consortium network actions", $techn="In-process calls / Go", $tags="", $link="")
+Rel(HyperledgerFireFly.FireFlyCore.Multipartymanager, HyperledgerFireFly.FireFlyCore.Blockchainplugin, "Submits contract pinning transactions", $techn="In-process calls / Go", $tags="", $link="")
+Rel(HyperledgerFireFly.FireFlyCore.Broadcastmanager, HyperledgerFireFly.FireFlyCore.Multipartymanager, "Pins batch hashes on the ledger", $techn="In-process calls / Go", $tags="", $link="")
+
+SHOW_LEGEND(true)
+hide stereotypes
+@enduml

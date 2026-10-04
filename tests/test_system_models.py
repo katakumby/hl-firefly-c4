@@ -124,7 +124,7 @@ class SystemOwnedModels(unittest.TestCase):
                 'views/external-systems/a/containers.dsl':
                     'container a "a-containers" {\n include *\n}\n',
             })
-            cli.export(paths.REFERENCE, 'plantuml')
+            cli.build_source([paths.REFERENCE])
             raw = json.loads((paths.output_directory(paths.REFERENCE) / 'workspace.json').read_text())
             elements = by_identifier(raw)
             self.assertIn('a.worker', elements)
@@ -133,7 +133,7 @@ class SystemOwnedModels(unittest.TestCase):
             self.assertEqual(elements['a.api']['id'], elements['platform.api']['relationships'][0]['destinationId'])
             for name, content in unchanged.items():
                 self.assertEqual(content, (root / name).read_bytes())
-            self.assertEqual({'views/platform/landscape.puml', 'views/external-systems/a/a-containers.puml'},
+            self.assertEqual({'source/views/platform/landscape.puml', 'source/views/external-systems/a/a-containers.puml'},
                              {item['output'] for item in cli.inventory()})
 
     def test_cross_system_relationships_require_the_final_integration_phase(self):
@@ -154,11 +154,11 @@ class SystemOwnedModels(unittest.TestCase):
     def test_deleted_explicit_reference_blocks_build_until_view_is_updated(self):
         with checkout() as root:
             selection_workspace(root, 'include target survivor')
-            cli.export(paths.REFERENCE, 'plantuml')
-            output = paths.BUILD / 'views/platform/landscape.puml'
+            cli.build_source([paths.REFERENCE])
+            output = paths.BUILD / 'source/views/platform/landscape.puml'
             previous = output.read_bytes()
             (root / 'model/external-systems/target/00-system.dsl').unlink()
-            with patch.object(sys, 'argv', ['architecture.py', 'build']), \
+            with patch.object(sys, 'argv', ['architecture.py', 'build-source']), \
                  patch.object(cli, 'stage_c4') as renderer, \
                  redirect_stderr(io.StringIO()), redirect_stdout(io.StringIO()):
                 self.assertEqual(1, cli.main())
@@ -170,7 +170,7 @@ class SystemOwnedModels(unittest.TestCase):
             self.assertIn('"target" does not exist', '\n'.join(report['errors']))
             (root / 'views/platform/landscape.dsl').write_text(
                 'systemLandscape "landscape" {\n include survivor\n}\n')
-            cli.export(paths.REFERENCE, 'plantuml')
+            cli.build_source([paths.REFERENCE])
             self.assertIn('"Survivor"', output.read_text())
             self.assertNotIn('"Target"', output.read_text())
 
@@ -178,12 +178,12 @@ class SystemOwnedModels(unittest.TestCase):
         for selection in ('include *', 'include element.tag==Published'):
             with self.subTest(selection=selection), checkout() as root:
                 selection_workspace(root, selection)
-                cli.export(paths.REFERENCE, 'plantuml')
-                output = paths.BUILD / 'views/platform/landscape.puml'
+                cli.build_source([paths.REFERENCE])
+                output = paths.BUILD / 'source/views/platform/landscape.puml'
                 self.assertIn('"Target"', output.read_text())
                 view_source = (root / 'views/platform/landscape.dsl').read_bytes()
                 (root / 'model/external-systems/target/00-system.dsl').unlink()
-                cli.export(paths.REFERENCE, 'plantuml')
+                cli.build_source([paths.REFERENCE])
                 self.assertNotIn('"Target"', output.read_text())
                 self.assertIn('"Survivor"', output.read_text())
                 self.assertEqual(view_source, (root / 'views/platform/landscape.dsl').read_bytes())

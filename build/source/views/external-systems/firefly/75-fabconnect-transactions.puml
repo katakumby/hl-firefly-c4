@@ -1,0 +1,52 @@
+@startuml
+title <size:24>Component - FabConnect: transactions</size>\n<size:24>Component - FabConnect: transactions</size>
+
+set separator none
+left to right direction
+
+<style>
+  root {
+    BackgroundColor: #ffffff
+    FontColor: #444444
+  }
+</style>
+
+!include <C4/C4>
+!include <C4/C4_Context>
+!include <C4/C4_Container>
+!include <C4/C4_Component>
+
+System(HyperledgerFabricnetwork, "Hyperledger Fabric network", $descr="External Fabric peer, ordering, discovery and chaincode services.", $tags="", $link="https://github.com/hyperledger-firefly/fabconnect/tree/efab8a2b0ff11863bbd9c5eb8a566820f560546b/README.md")
+System(Fabriccertificateauthority, "Fabric certificate authority", $descr="Registers and enrolls client identities used by FabConnect.", $tags="", $link="https://github.com/hyperledger-firefly/fabconnect/tree/efab8a2b0ff11863bbd9c5eb8a566820f560546b/internal/fabric/client/identity.go")
+System(MongoDBreceiptservice, "MongoDB receipt service", $descr="Optional receipt persistence for legacy Ethereum and Fabric connectors.", $tags="", $link="https://github.com/hyperledger-firefly/ethconnect/tree/e8ae0eda16cc61b8ac256cdbf5f09edeb571b8c0/internal/receipts/mongoreceipts.go")
+
+System_Boundary("HyperledgerFireFly_boundary", "Hyperledger FireFly", $tags="") {
+  Container_Boundary("HyperledgerFireFly.FabConnect_boundary", "FabConnect", $tags="") {
+    Component(HyperledgerFireFly.FabConnect.RESTgatewayanddispatch, "REST gateway and dispatch", $techn="Go", $descr="Routes identity, transaction and receipt requests.", $tags="", $link="https://github.com/hyperledger-firefly/fabconnect/tree/efab8a2b0ff11863bbd9c5eb8a566820f560546b/internal/rest")
+    Component(HyperledgerFireFly.FabConnect.Authorizationextension, "Authorization extension", $techn="Go", $descr="Applies configured API authorization hooks.", $tags="", $link="https://github.com/hyperledger-firefly/fabconnect/tree/efab8a2b0ff11863bbd9c5eb8a566820f560546b/internal/auth")
+    Component(HyperledgerFireFly.FabConnect.IdentityenrollmentAPI, "Identity enrollment API", $techn="Go", $descr="Registers and enrolls Fabric signing identities.", $tags="", $link="https://github.com/hyperledger-firefly/fabconnect/tree/efab8a2b0ff11863bbd9c5eb8a566820f560546b/internal/rest/identity")
+    Component(HyperledgerFireFly.FabConnect.Transactionprocessor, "Transaction processor", $techn="Go", $descr="Submits chaincode transactions and tracks completion.", $tags="", $link="https://github.com/hyperledger-firefly/fabconnect/tree/efab8a2b0ff11863bbd9c5eb8a566820f560546b/internal/tx")
+    Component(HyperledgerFireFly.FabConnect.Fabricclientsandwallet, "Fabric clients and wallet", $techn="Go", $descr="Uses connection profiles or discovery to access peers and ordering services.", $tags="", $link="https://github.com/hyperledger-firefly/fabconnect/tree/efab8a2b0ff11863bbd9c5eb8a566820f560546b/internal/fabric/client")
+    Component(HyperledgerFireFly.FabConnect.Receiptpersistence, "Receipt persistence", $techn="Go", $descr="Stores transaction results in configured receipt backends.", $tags="", $link="https://github.com/hyperledger-firefly/fabconnect/tree/efab8a2b0ff11863bbd9c5eb8a566820f560546b/internal/rest/receipt")
+  }
+
+  Container(HyperledgerFireFly.FireFlyCore, "FireFly Core", $techn="Go", $descr="Exposes member APIs, serves Explorer assets and orchestrates multiparty operations.", $tags="", $link="https://github.com/hyperledger-firefly/firefly/tree/9d20f3081c9074d5b012427e5572ebc03da8d95d/internal/orchestrator")
+  ContainerDb(HyperledgerFireFly.FabConnectlocalstate, "FabConnect local state", $techn="LevelDB + wallet files", $descr="Connector LevelDB state and Fabric wallet identity material.", $tags="", $link="https://github.com/hyperledger-firefly/fabconnect/tree/efab8a2b0ff11863bbd9c5eb8a566820f560546b/internal/fabric/client/store.go")
+}
+
+Rel(HyperledgerFireFly.FabConnect.Fabricclientsandwallet, HyperledgerFabricnetwork, "Invokes chaincode and consumes peer ledger events", $techn="Fabric SDK / gRPC + TLS", $tags="", $link="")
+Rel(HyperledgerFireFly.FabConnect.Fabricclientsandwallet, Fabriccertificateauthority, "Registers and enrolls Fabric identities", $techn="Fabric CA / HTTPS", $tags="", $link="")
+Rel(HyperledgerFireFly.FabConnect.Receiptpersistence, MongoDBreceiptservice, "Persists receipts when MongoDB is selected", $techn="MongoDB wire protocol", $tags="", $link="")
+Rel(HyperledgerFireFly.FireFlyCore, HyperledgerFireFly.FabConnect.RESTgatewayanddispatch, "Submits configured ledger requests", $techn="HTTP REST / JSON", $tags="", $link="")
+Rel(HyperledgerFireFly.FabConnect.RESTgatewayanddispatch, HyperledgerFireFly.FabConnect.Authorizationextension, "Checks configured authorization hooks", $techn="In-process calls / Go", $tags="", $link="")
+Rel(HyperledgerFireFly.FabConnect.RESTgatewayanddispatch, HyperledgerFireFly.FabConnect.IdentityenrollmentAPI, "Routes identity enrollment requests", $techn="In-process calls / Go", $tags="", $link="")
+Rel(HyperledgerFireFly.FabConnect.IdentityenrollmentAPI, HyperledgerFireFly.FabConnect.Fabricclientsandwallet, "Registers and enrolls signing identities", $techn="In-process calls / Go", $tags="", $link="")
+Rel(HyperledgerFireFly.FabConnect.RESTgatewayanddispatch, HyperledgerFireFly.FabConnect.Transactionprocessor, "Dispatches chaincode transaction requests", $techn="In-process calls / Go", $tags="", $link="")
+Rel(HyperledgerFireFly.FabConnect.Transactionprocessor, HyperledgerFireFly.FabConnect.Fabricclientsandwallet, "Submits chaincode invocations", $techn="In-process calls / Go", $tags="", $link="")
+Rel(HyperledgerFireFly.FabConnect.Transactionprocessor, HyperledgerFireFly.FabConnect.Receiptpersistence, "Persists transaction results", $techn="In-process calls / Go", $tags="", $link="")
+Rel(HyperledgerFireFly.FabConnect.Fabricclientsandwallet, HyperledgerFireFly.FabConnectlocalstate, "Reads and writes wallet identities", $techn="Filesystem I/O", $tags="", $link="")
+Rel(HyperledgerFireFly.FabConnect.Receiptpersistence, HyperledgerFireFly.FabConnectlocalstate, "Persists receipts when LevelDB is selected", $techn="LevelDB API / filesystem", $tags="", $link="")
+
+SHOW_LEGEND(true)
+hide stereotypes
+@enduml

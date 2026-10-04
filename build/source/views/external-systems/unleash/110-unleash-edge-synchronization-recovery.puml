@@ -1,0 +1,60 @@
+@startuml
+title <size:24>Component - Unleash Edge: synchronization and recovery</size>\n<size:24>Component - Unleash Edge: synchronization and recovery</size>
+
+set separator none
+top to bottom direction
+
+<style>
+  root {
+    BackgroundColor: #ffffff
+    FontColor: #444444
+  }
+</style>
+
+!include <C4/C4>
+!include <C4/C4_Context>
+!include <C4/C4_Container>
+!include <C4/C4_Component>
+
+System_Boundary("Unleash_boundary", "Unleash", $tags="") {
+  Container_Boundary("Unleash.UnleashEdgeOSSoptional_boundary", "Unleash Edge (OSS, optional)", $tags="") {
+    Component(Unleash.UnleashEdgeOSSoptional.Tokenvalidationandcache, "Token validation and cache", $techn="Rust / Tokio", $descr="Validates tokens upstream or against offline configuration and caches authorized scopes.", $tags="", $link="https://github.com/Unleash/unleash-edge/blob/c947878de70214235c79eeb5ebe5f35b77ecc075/crates/oss/unleash-edge-auth/src/token_validator.rs")
+    Component(Unleash.UnleashEdgeOSSoptional.UpstreamHTTPclient, "Upstream HTTP client", $techn="Rust / reqwest", $descr="Fetches full feature payloads, validates tokens and posts registration/metric batches.", $tags="", $link="https://github.com/Unleash/unleash-edge/blob/c947878de70214235c79eeb5ebe5f35b77ecc075/crates/oss/unleash-edge-http-client/src/lib.rs")
+    Component(Unleash.UnleashEdgeOSSoptional.Pollingandrefresh, "Polling and refresh", $techn="Rust / Tokio", $descr="Hydrates scoped configuration and periodically refreshes features and compiled evaluation state.", $tags="", $link="https://github.com/Unleash/unleash-edge/blob/c947878de70214235c79eeb5ebe5f35b77ecc075/crates/oss/unleash-edge-feature-refresh/src/lib.rs")
+    Component(Unleash.UnleashEdgeOSSoptional.Featurecacheandfiltering, "Feature cache and filtering", $techn="Rust / Tokio", $descr="Stores in-memory feature payloads and applies token, environment and request filters.", $tags="", $link="https://github.com/Unleash/unleash-edge/blob/c947878de70214235c79eeb5ebe5f35b77ecc075/crates/oss/unleash-edge-feature-cache/src/lib.rs")
+    Component(Unleash.UnleashEdgeOSSoptional.Evaluationengine, "Evaluation engine", $techn="Rust / unleash-yggdrasil", $descr="Evaluates context against compiled strategies and returns enabled flags and variants.", $tags="", $link="https://github.com/Unleash/unleash-edge/blob/c947878de70214235c79eeb5ebe5f35b77ecc075/crates/oss/unleash-edge-frontend-api/src/frontend.rs")
+    Component(Unleash.UnleashEdgeOSSoptional.Registrationandmetricsaggregation, "Registration and metrics aggregation", $techn="Rust / Tokio", $descr="Buffers SDK registrations and flag/variant counts, batches them and forwards usage upstream.", $tags="", $link="https://github.com/Unleash/unleash-edge/blob/c947878de70214235c79eeb5ebe5f35b77ecc075/crates/oss/unleash-edge-client-api/src/register.rs")
+    Component(Unleash.UnleashEdgeOSSoptional.Snapshotpersistenceandrecovery, "Snapshot persistence and recovery", $techn="Rust / Tokio", $descr="Saves validated tokens and feature snapshots; restores caches using a configured backend.", $tags="", $link="https://github.com/Unleash/unleash-edge/blob/c947878de70214235c79eeb5ebe5f35b77ecc075/crates/oss/unleash-edge-persistence/src/lib.rs")
+    Component(Unleash.UnleashEdgeOSSoptional.Offlinebootstrapandreload, "Offline bootstrap and reload", $techn="Rust / Tokio", $descr="Loads local feature JSON and configured tokens; optionally reloads file changes without upstream calls.", $tags="", $link="https://github.com/Unleash/unleash-edge/blob/c947878de70214235c79eeb5ebe5f35b77ecc075/crates/oss/unleash-edge/src/offline_builder.rs")
+  }
+
+  ContainerDb(Unleash.Edgefilesoptional, "Edge files (optional)", $techn="Filesystem / JSON", $descr="Stores local feature/token snapshots or offline bootstrap JSON; these are distinct file roles.", $tags="", $link="https://github.com/Unleash/unleash-edge/blob/c947878de70214235c79eeb5ebe5f35b77ecc075/crates/oss/unleash-edge-persistence/src/file.rs")
+  ContainerDb(Unleash.EdgeRedisstorageoptional, "Edge Redis storage (optional)", $techn="Redis / serialized JSON", $descr="Stores feature/token recovery snapshots; an alternative to file or S3 persistence.", $tags="", $link="https://github.com/Unleash/unleash-edge/blob/c947878de70214235c79eeb5ebe5f35b77ecc075/crates/oss/unleash-edge-persistence/src/redis.rs")
+  ContainerDb(Unleash.EdgeS3storageoptional, "Edge S3 storage (optional)", $techn="Amazon S3 API / JSON objects", $descr="Stores feature/token recovery snapshots; an alternative to file or Redis persistence.", $tags="", $link="https://github.com/Unleash/unleash-edge/blob/c947878de70214235c79eeb5ebe5f35b77ecc075/crates/oss/unleash-edge-persistence/src/s3.rs")
+  Container(Unleash.Unleashserver, "Unleash server", $techn="Node.js / TypeScript / Express", $descr="Hosts OSS administration, configuration delivery, evaluation and background services.", $tags="", $link="https://github.com/Unleash/unleash/blob/66d4a45c1d24c4bc8a08d8c75d205bd61dc3aed0/src/lib/server-impl.ts")
+}
+
+Rel(Unleash.UnleashEdgeOSSoptional.Tokenvalidationandcache, Unleash.UnleashEdgeOSSoptional.UpstreamHTTPclient, "Validates and revalidates token batches", $techn="In-process", $tags="", $link="")
+Rel(Unleash.UnleashEdgeOSSoptional.Tokenvalidationandcache, Unleash.UnleashEdgeOSSoptional.Pollingandrefresh, "Registers validated scopes for feature refresh", $techn="In-process", $tags="", $link="")
+Rel(Unleash.UnleashEdgeOSSoptional.Pollingandrefresh, Unleash.UnleashEdgeOSSoptional.UpstreamHTTPclient, "Fetches full configuration with conditional polling", $techn="In-process", $tags="", $link="")
+Rel(Unleash.UnleashEdgeOSSoptional.Pollingandrefresh, Unleash.UnleashEdgeOSSoptional.Featurecacheandfiltering, "Updates scoped feature definitions", $techn="In-process", $tags="", $link="")
+Rel(Unleash.UnleashEdgeOSSoptional.Pollingandrefresh, Unleash.UnleashEdgeOSSoptional.Evaluationengine, "Rebuilds evaluation state from refreshed features", $techn="In-process", $tags="", $link="")
+Rel(Unleash.UnleashEdgeOSSoptional.Registrationandmetricsaggregation, Unleash.UnleashEdgeOSSoptional.UpstreamHTTPclient, "Sends aggregated registrations and usage batches", $techn="In-process", $tags="", $link="")
+Rel(Unleash.UnleashEdgeOSSoptional.UpstreamHTTPclient, Unleash.Unleashserver, "Calls the Client API for feature configuration", $techn="HTTP(S) / JSON", $tags="", $link="")
+Rel(Unleash.UnleashEdgeOSSoptional.UpstreamHTTPclient, Unleash.Unleashserver, "Calls the Edge API to validate tokens", $techn="HTTP(S) / JSON", $tags="", $link="")
+Rel(Unleash.UnleashEdgeOSSoptional.UpstreamHTTPclient, Unleash.Unleashserver, "Posts SDK registration and usage batches", $techn="HTTP(S) / JSON", $tags="", $link="")
+Rel(Unleash.UnleashEdgeOSSoptional.Tokenvalidationandcache, Unleash.UnleashEdgeOSSoptional.Snapshotpersistenceandrecovery, "Persists newly validated token metadata", $techn="In-process", $tags="", $link="")
+Rel(Unleash.UnleashEdgeOSSoptional.Snapshotpersistenceandrecovery, Unleash.UnleashEdgeOSSoptional.Tokenvalidationandcache, "Reads and restores validated-token snapshots", $techn="In-process", $tags="", $link="")
+Rel(Unleash.UnleashEdgeOSSoptional.Snapshotpersistenceandrecovery, Unleash.UnleashEdgeOSSoptional.Featurecacheandfiltering, "Reads and restores feature snapshots", $techn="In-process", $tags="", $link="")
+Rel(Unleash.UnleashEdgeOSSoptional.Snapshotpersistenceandrecovery, Unleash.UnleashEdgeOSSoptional.Evaluationengine, "Rebuilds engine state from recovered features", $techn="In-process", $tags="", $link="")
+Rel(Unleash.UnleashEdgeOSSoptional.Snapshotpersistenceandrecovery, Unleash.Edgefilesoptional, "Writes and reads local token/feature snapshots", $techn="Filesystem / JSON", $tags="", $link="")
+Rel(Unleash.UnleashEdgeOSSoptional.Snapshotpersistenceandrecovery, Unleash.EdgeRedisstorageoptional, "Writes and reads Redis token/feature snapshots", $techn="Redis protocol / JSON", $tags="", $link="")
+Rel(Unleash.UnleashEdgeOSSoptional.Snapshotpersistenceandrecovery, Unleash.EdgeS3storageoptional, "Writes and reads S3 token/feature snapshots", $techn="HTTPS / S3 API", $tags="", $link="")
+Rel(Unleash.UnleashEdgeOSSoptional.Offlinebootstrapandreload, Unleash.Edgefilesoptional, "Reads and reloads offline bootstrap JSON", $techn="Filesystem / JSON", $tags="", $link="")
+Rel(Unleash.UnleashEdgeOSSoptional.Offlinebootstrapandreload, Unleash.UnleashEdgeOSSoptional.Tokenvalidationandcache, "Seeds allowed offline tokens from configuration", $techn="In-process", $tags="", $link="")
+Rel(Unleash.UnleashEdgeOSSoptional.Offlinebootstrapandreload, Unleash.UnleashEdgeOSSoptional.Featurecacheandfiltering, "Loads offline feature definitions into memory", $techn="In-process", $tags="", $link="")
+Rel(Unleash.UnleashEdgeOSSoptional.Offlinebootstrapandreload, Unleash.UnleashEdgeOSSoptional.Evaluationengine, "Compiles offline feature evaluation state", $techn="In-process", $tags="", $link="")
+
+SHOW_LEGEND(true)
+hide stereotypes
+@enduml

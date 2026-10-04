@@ -1,0 +1,55 @@
+@startuml
+title <size:24>Component - Managed HSM data-plane service: logical responsibilities</size>\n<size:24>Component - Managed HSM data-plane service: logical responsibilities</size>
+
+set separator none
+left to right direction
+
+<style>
+  root {
+    BackgroundColor: #ffffff
+    FontColor: #444444
+  }
+</style>
+
+!include <C4/C4>
+!include <C4/C4_Context>
+!include <C4/C4_Container>
+!include <C4/C4_Component>
+
+Person(Securityadministrator, "Security administrator", $descr="Configures identity, privileged access, secret policies and key permissions in these reference examples.", $tags="", $link="https://docs.cyberark.com/pam-self-hosted/latest/en/content/pas%20inst/installationoverview.htm")
+
+System_Boundary("AzureManagedHSM_boundary", "Azure Managed HSM", $tags="") {
+  Container_Boundary("AzureManagedHSM.ManagedHSMdataplaneservice_boundary", "Managed HSM data-plane service", $tags="") {
+    Component(AzureManagedHSM.ManagedHSMdataplaneservice.DataplaneAPI, "Data-plane API", $techn="Managed service responsibility / implementation undisclosed", $descr="Logical reference: Accepts authenticated key-management and cryptographic requests.", $tags="", $link="https://learn.microsoft.com/en-us/azure/key-vault/managed-hsm/access-control")
+    Component(AzureManagedHSM.ManagedHSMdataplaneservice.Entratokenvalidation, "Entra token validation", $techn="Managed service responsibility / implementation undisclosed", $descr="Logical reference: Validates token signature, issuer and resource audience using trusted metadata.", $tags="", $link="https://learn.microsoft.com/en-us/azure/key-vault/managed-hsm/access-control")
+    Component(AzureManagedHSM.ManagedHSMdataplaneservice.LocalRBACauthorization, "Local RBAC authorization", $techn="Managed service responsibility / implementation undisclosed", $descr="Logical reference: Checks Managed HSM local roles and key scope separately from Azure resource-management RBAC.", $tags="", $link="https://learn.microsoft.com/en-us/azure/key-vault/managed-hsm/access-control")
+    Component(AzureManagedHSM.ManagedHSMdataplaneservice.Keylifecycle, "Key lifecycle", $techn="Managed service responsibility / implementation undisclosed", $descr="Logical reference: Creates and versions keys and manages permitted key operations and role assignments.", $tags="", $link="https://learn.microsoft.com/en-us/azure/key-vault/managed-hsm/access-control")
+    Component(AzureManagedHSM.ManagedHSMdataplaneservice.Cryptographicoperations, "Cryptographic operations", $techn="Managed service responsibility / implementation undisclosed", $descr="Logical reference: Performs sign, verify, encrypt, decrypt, wrap and unwrap operations supported by the selected key.", $tags="", $link="https://learn.microsoft.com/en-us/azure/key-vault/managed-hsm/access-control")
+    Component(AzureManagedHSM.ManagedHSMdataplaneservice.Operationauditing, "Operation auditing", $techn="Managed service responsibility / implementation undisclosed", $descr="Logical reference: Records principal, operation, key identifier and outcome without secret key material.", $tags="", $link="https://learn.microsoft.com/en-us/azure/key-vault/managed-hsm/access-control")
+  }
+
+  ContainerDb(AzureManagedHSM.HSMprotectedkeystorage, "HSM-protected key storage", $techn="HSM-protected managed storage (logical)", $descr="Logical protected store for non-exportable example private keys, key versions and local role data; not a separate database server.", $tags="", $link="https://learn.microsoft.com/en-us/azure/key-vault/managed-hsm/about-keys-details")
+}
+
+Rel(MicrosoftEntraID.Authenticationandtokenservice, Memberapplicationreference.Memberbusinessapplication, "Returns authenticated identity tokens or assertions through the selected protocol flow", $techn="HTTPS / OIDC reference client", $tags="", $link="")
+Rel(MicrosoftEntraID.Authenticationandtokenservice, Memberapplicationreference.Memberbusinessapplication, "Returns HSM-audience workload access token", $techn="HTTPS / OAuth 2.0 token response", $tags="", $link="")
+Rel(AzureManagedHSM.ManagedHSMdataplaneservice.DataplaneAPI, Memberapplicationreference.Memberbusinessapplication, "Returns signature or wrapped data key; never the HSM private key", $techn="HTTPS / Managed HSM REST response", $tags="", $link="")
+Rel(AzureManagedHSM.ManagedHSMdataplaneservice.Entratokenvalidation, MicrosoftEntraID.Authenticationandtokenservice, "Retrieves issuer metadata and public signing keys for cached token verification", $techn="HTTPS / OpenID metadata and JWKS", $tags="", $link="")
+Rel(Securityadministrator, AzureManagedHSM.ManagedHSMdataplaneservice.Keylifecycle, "Submits authorized configuration or access-policy changes", $techn="HTTPS / product administration API", $tags="", $link="")
+Rel(AzureManagedHSM.ManagedHSMdataplaneservice.DataplaneAPI, AzureManagedHSM.ManagedHSMdataplaneservice.Entratokenvalidation, "Passes bearer token and requested resource audience", $techn="In-process logical interface", $tags="", $link="")
+Rel(AzureManagedHSM.ManagedHSMdataplaneservice.Entratokenvalidation, AzureManagedHSM.ManagedHSMdataplaneservice.LocalRBACauthorization, "Passes validated caller identity and requested operation", $techn="In-process logical interface", $tags="", $link="")
+Rel(AzureManagedHSM.ManagedHSMdataplaneservice.LocalRBACauthorization, AzureManagedHSM.ManagedHSMdataplaneservice.Keylifecycle, "Authorizes key lifecycle or local role-management command", $techn="In-process logical interface", $tags="", $link="")
+Rel(AzureManagedHSM.ManagedHSMdataplaneservice.LocalRBACauthorization, AzureManagedHSM.ManagedHSMdataplaneservice.Cryptographicoperations, "Authorizes cryptographic operation on the selected key version", $techn="In-process logical interface", $tags="", $link="")
+Rel(AzureManagedHSM.ManagedHSMdataplaneservice.Cryptographicoperations, AzureManagedHSM.ManagedHSMdataplaneservice.DataplaneAPI, "Returns signature, ciphertext or wrapped-key result", $techn="In-process logical interface", $tags="", $link="")
+Rel(AzureManagedHSM.ManagedHSMdataplaneservice.Keylifecycle, AzureManagedHSM.ManagedHSMdataplaneservice.DataplaneAPI, "Returns key identifier, public metadata and operation outcome", $techn="In-process logical interface", $tags="", $link="")
+Rel(AzureManagedHSM.ManagedHSMdataplaneservice.DataplaneAPI, AzureManagedHSM.ManagedHSMdataplaneservice.Operationauditing, "Records caller, key identifier, operation and outcome", $techn="In-process logical interface", $tags="", $link="")
+Rel(AzureManagedHSM.ManagedHSMdataplaneservice.Keylifecycle, AzureManagedHSM.HSMprotectedkeystorage, "Creates or updates protected keys, versions and local role records", $techn="Protected managed-service storage interface", $tags="", $link="")
+Rel(AzureManagedHSM.ManagedHSMdataplaneservice.Cryptographicoperations, AzureManagedHSM.HSMprotectedkeystorage, "Invokes cryptographic operation using protected key handle; no private-key export", $techn="Protected cryptographic interface (logical)", $tags="", $link="")
+Rel(AzureManagedHSM.HSMprotectedkeystorage, AzureManagedHSM.ManagedHSMdataplaneservice.Cryptographicoperations, "Returns cryptographic result without private key material", $techn="Protected cryptographic interface (logical)", $tags="", $link="")
+Rel(Memberapplicationreference.Memberbusinessapplication, MicrosoftEntraID.Authenticationandtokenservice, "Submits authorization request via browser and configured protocol client", $techn="HTTPS / OIDC reference client", $tags="", $link="")
+Rel(Memberapplicationreference.Memberbusinessapplication, AzureManagedHSM.ManagedHSMdataplaneservice.DataplaneAPI, "Submits bearer token, key identifier and digest or key-wrapping input", $techn="HTTPS / Managed HSM REST API", $tags="", $link="")
+Rel(Memberapplicationreference.Memberbusinessapplication, MicrosoftEntraID.Authenticationandtokenservice, "Authenticates workload identity and requests HSM-audience access token", $techn="HTTPS / OAuth 2.0 client credentials", $tags="", $link="")
+
+SHOW_LEGEND(true)
+hide stereotypes
+@enduml

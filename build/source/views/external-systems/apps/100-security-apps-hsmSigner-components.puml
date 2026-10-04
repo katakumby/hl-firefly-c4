@@ -1,0 +1,46 @@
+@startuml
+title <size:24>Component - Proposed HSM signing adapter: proposed integration</size>\n<size:24>Component - Proposed HSM signing adapter: proposed integration</size>
+
+set separator none
+left to right direction
+
+<style>
+  root {
+    BackgroundColor: #ffffff
+    FontColor: #444444
+  }
+</style>
+
+!include <C4/C4>
+!include <C4/C4_Context>
+!include <C4/C4_Container>
+!include <C4/C4_Component>
+
+System_Boundary("Memberapplicationreference_boundary", "Member application reference", $tags="") {
+  Container_Boundary("Memberapplicationreference.ProposedHSMsigningadapter_boundary", "Proposed HSM signing adapter", $tags="") {
+    Component(Memberapplicationreference.ProposedHSMsigningadapter.Transactionpreparation, "Transaction preparation", $techn="Custom integration responsibility / implementation required", $descr="Proposed reference: Prepares chain-aware Ethereum signing payloads and Keccak-256 digests; preserves supplied transaction fields.", $tags="", $link="https://ethereum.org/en/developers/docs/transactions/")
+    Component(Memberapplicationreference.ProposedHSMsigningadapter.HSMaccessclient, "HSM access client", $techn="Custom integration responsibility / implementation required", $descr="Proposed reference: Acquires an Entra application token and requests signing with the selected non-exportable secp256k1 key.", $tags="", $link="https://ethereum.org/en/developers/docs/transactions/")
+    Component(Memberapplicationreference.ProposedHSMsigningadapter.Signatureconversionandvalidation, "Signature conversion and validation", $techn="Custom integration responsibility / implementation required", $descr="Proposed reference: Normalizes low-s, determines recovery parity and verifies the Ethereum sender before transaction encoding.", $tags="", $link="https://ethereum.org/en/developers/docs/transactions/")
+    Component(Memberapplicationreference.ProposedHSMsigningadapter.RPCsubmission, "RPC submission", $techn="Custom integration responsibility / implementation required", $descr="Proposed reference: Submits the encoded signed transaction to Besu and returns the transaction hash or RPC error.", $tags="", $link="https://ethereum.org/en/developers/docs/transactions/")
+  }
+
+}
+
+Rel(MicrosoftEntraID.Authenticationandtokenservice, Memberapplicationreference.ProposedHSMsigningadapter.HSMaccessclient, "Returns Managed HSM audience access token", $techn="HTTPS / OAuth 2.0 token response", $tags="", $link="")
+Rel(HyperledgerFireFly.EVMConnectFFTM, Memberapplicationreference.ProposedHSMsigningadapter.Transactionpreparation, "Submits unsigned Ethereum transaction fields", $techn="Ethereum JSON-RPC / HTTPS (reference)", $tags="", $link="")
+Rel(AzureManagedHSM.ManagedHSMdataplaneservice, MicrosoftEntraID.Authenticationandtokenservice, "Retrieves issuer metadata and public signing keys for cached token verification", $techn="HTTPS / OpenID metadata and JWKS", $tags="", $link="")
+Rel(AzureManagedHSM.ManagedHSMdataplaneservice, Memberapplicationreference.ProposedHSMsigningadapter.HSMaccessclient, "Returns signature bytes and signing key identifier; never private key material", $techn="HTTPS / Managed HSM Sign API response", $tags="", $link="")
+Rel(AzureManagedHSM.ManagedHSMdataplaneservice, Memberapplicationreference.ProposedHSMsigningadapter.HSMaccessclient, "Returns public key parameters for sender and signature verification", $techn="HTTPS / Managed HSM Get Key API response", $tags="", $link="")
+Rel(Memberapplicationreference.ProposedHSMsigningadapter.Transactionpreparation, Memberapplicationreference.ProposedHSMsigningadapter.HSMaccessclient, "Passes Ethereum digest, key version and required signing algorithm", $techn="In-process logical interface", $tags="", $link="")
+Rel(Memberapplicationreference.ProposedHSMsigningadapter.HSMaccessclient, Memberapplicationreference.ProposedHSMsigningadapter.Signatureconversionandvalidation, "Returns HSM signature, public key and original signing digest", $techn="In-process logical interface", $tags="", $link="")
+Rel(Memberapplicationreference.ProposedHSMsigningadapter.Signatureconversionandvalidation, Memberapplicationreference.ProposedHSMsigningadapter.RPCsubmission, "Supplies verified and encoded signed Ethereum transaction", $techn="In-process logical interface", $tags="", $link="")
+Rel(Memberapplicationreference.ProposedHSMsigningadapter.RPCsubmission, Memberapplicationreference.ProposedHSMsigningadapter.Transactionpreparation, "Returns submitted transaction hash or RPC error", $techn="In-process logical interface", $tags="", $link="")
+Rel(Memberapplicationreference.ProposedHSMsigningadapter.HSMaccessclient, MicrosoftEntraID.Authenticationandtokenservice, "Authenticates application identity and requests Managed HSM access token", $techn="HTTPS / OAuth 2.0 client credentials", $tags="", $link="")
+Rel(Memberapplicationreference.ProposedHSMsigningadapter.HSMaccessclient, AzureManagedHSM.ManagedHSMdataplaneservice, "Submits Ethereum digest for secp256k1 signing; compatibility must be verified", $techn="HTTPS / Managed HSM Sign API (proposed)", $tags="", $link="")
+Rel(Memberapplicationreference.ProposedHSMsigningadapter.HSMaccessclient, AzureManagedHSM.ManagedHSMdataplaneservice, "Requests public key metadata for the selected key version", $techn="HTTPS / Managed HSM Get Key API", $tags="", $link="")
+Rel(Memberapplicationreference.ProposedHSMsigningadapter.RPCsubmission, PrivateBesunetwork.Besunode, "Submits encoded signed transaction for validation and propagation", $techn="Ethereum JSON-RPC / eth_sendRawTransaction", $tags="", $link="")
+Rel(PrivateBesunetwork.Besunode, Memberapplicationreference.ProposedHSMsigningadapter.RPCsubmission, "Returns transaction hash or JSON-RPC rejection", $techn="Ethereum JSON-RPC response", $tags="", $link="")
+
+SHOW_LEGEND(true)
+hide stereotypes
+@enduml

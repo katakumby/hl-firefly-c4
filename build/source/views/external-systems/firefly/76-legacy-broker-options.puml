@@ -1,0 +1,33 @@
+@startuml
+title <size:24>Container - Legacy connector broker and receipt options</size>\n<size:24>Container - Legacy connector broker and receipt options</size>
+
+set separator none
+left to right direction
+
+<style>
+  root {
+    BackgroundColor: #ffffff
+    FontColor: #444444
+  }
+</style>
+
+!include <C4/C4>
+!include <C4/C4_Context>
+!include <C4/C4_Container>
+
+System(ApacheKafka, "Apache Kafka", $descr="Optional transaction request/reply broker for legacy connector configurations.", $tags="", $link="https://github.com/hyperledger-firefly/ethconnect/tree/e8ae0eda16cc61b8ac256cdbf5f09edeb571b8c0/internal/kafka")
+System(MongoDBreceiptservice, "MongoDB receipt service", $descr="Optional receipt persistence for legacy Ethereum and Fabric connectors.", $tags="", $link="https://github.com/hyperledger-firefly/ethconnect/tree/e8ae0eda16cc61b8ac256cdbf5f09edeb571b8c0/internal/receipts/mongoreceipts.go")
+
+System_Boundary("HyperledgerFireFly_boundary", "Hyperledger FireFly", $tags="") {
+  Container(HyperledgerFireFly.EthConnectlegacyoption, "EthConnect (legacy option)", $techn="Go", $descr="Original Ethereum connector; REST/direct and optional Kafka bridge configurations.", $tags="", $link="https://github.com/hyperledger-firefly/ethconnect/tree/e8ae0eda16cc61b8ac256cdbf5f09edeb571b8c0")
+  Container(HyperledgerFireFly.FabConnect, "FabConnect", $techn="Go / Fabric SDK", $descr="Fabric transaction, identity and ledger-event connector.", $tags="", $link="https://github.com/hyperledger-firefly/fabconnect/tree/efab8a2b0ff11863bbd9c5eb8a566820f560546b")
+}
+
+Rel(HyperledgerFireFly.EthConnectlegacyoption, ApacheKafka, "Publishes requests and consumes transaction work in Kafka mode", $techn="Kafka protocol", $tags="", $link="")
+Rel(HyperledgerFireFly.FabConnect, ApacheKafka, "Processes requests through the optional Kafka bridge", $techn="Kafka protocol", $tags="", $link="")
+Rel(HyperledgerFireFly.EthConnectlegacyoption, MongoDBreceiptservice, "Stores receipts in the optional MongoDB backend", $techn="MongoDB wire protocol", $tags="", $link="")
+Rel(HyperledgerFireFly.FabConnect, MongoDBreceiptservice, "Stores receipts in the optional MongoDB backend", $techn="MongoDB wire protocol", $tags="", $link="")
+
+SHOW_LEGEND(true)
+hide stereotypes
+@enduml

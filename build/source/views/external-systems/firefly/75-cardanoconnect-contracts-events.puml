@@ -1,0 +1,51 @@
+@startuml
+title <size:24>Component - CardanoConnect: contracts-events</size>\n<size:24>Component - CardanoConnect: contracts-events</size>
+
+set separator none
+left to right direction
+
+<style>
+  root {
+    BackgroundColor: #ffffff
+    FontColor: #444444
+  }
+</style>
+
+!include <C4/C4>
+!include <C4/C4_Context>
+!include <C4/C4_Container>
+!include <C4/C4_Component>
+
+System_Boundary("HyperledgerFireFly_boundary", "Hyperledger FireFly", $tags="") {
+  Container_Boundary("HyperledgerFireFly.CardanoConnect_boundary", "CardanoConnect", $tags="") {
+    Component(HyperledgerFireFly.CardanoConnect.HTTPandWebSocketAPI, "HTTP and WebSocket API", $techn="Rust", $descr="Routes transaction, contract, operation and stream requests.", $tags="", $link="https://github.com/hyperledger-firefly/cardano/tree/0300bca6b0b99d2a16a81b94f65496934999346e/firefly-cardanoconnect/src/routes")
+    Component(HyperledgerFireFly.CardanoConnect.Operationsmanager, "Operations manager", $techn="Rust", $descr="Coordinates transaction construction, signing and submission.", $tags="", $link="https://github.com/hyperledger-firefly/cardano/tree/0300bca6b0b99d2a16a81b94f65496934999346e/firefly-cardanoconnect/src/operations")
+    Component(HyperledgerFireFly.CardanoConnect.Blockchainclient, "Blockchain client", $techn="Rust", $descr="Selects Blockfrost or direct node-to-client ledger access.", $tags="", $link="https://github.com/hyperledger-firefly/cardano/tree/0300bca6b0b99d2a16a81b94f65496934999346e/firefly-cardanoconnect/src/blockchain")
+    Component(HyperledgerFireFly.CardanoConnect.ContractmanagerandBaliusruntime, "Contract manager and Balius runtime", $techn="Rust", $descr="Runs optional application WASM workers over Cardano ledger data.", $tags="", $link="https://github.com/hyperledger-firefly/cardano/tree/0300bca6b0b99d2a16a81b94f65496934999346e/firefly-cardanoconnect/src/contracts")
+    Component(HyperledgerFireFly.CardanoConnect.FireFlyBaliusworkerSDK, "FireFly Balius worker SDK", $techn="Rust", $descr="Implements WASM worker logic, monitoring and contract events.", $tags="", $link="https://github.com/hyperledger-firefly/cardano/tree/0300bca6b0b99d2a16a81b94f65496934999346e/firefly-balius/src")
+    Component(HyperledgerFireFly.CardanoConnect.Streammanagerandeventmultiplexer, "Stream manager and event multiplexer", $techn="Rust", $descr="Orders operation and blockchain notifications for consumers.", $tags="", $link="https://github.com/hyperledger-firefly/cardano/tree/0300bca6b0b99d2a16a81b94f65496934999346e/firefly-cardanoconnect/src/streams")
+    Component(HyperledgerFireFly.CardanoConnect.SQLitepersistence, "SQLite persistence", $techn="Rust", $descr="Persists operations, checkpoints and contract key-value state.", $tags="", $link="https://github.com/hyperledger-firefly/cardano/tree/0300bca6b0b99d2a16a81b94f65496934999346e/firefly-cardanoconnect/src/persistence")
+  }
+
+  ContainerDb(HyperledgerFireFly.CardanoConnectSQLitefiles, "CardanoConnect SQLite files", $techn="SQLite / filesystem", $descr="Operation, checkpoint and optional contract worker state.", $tags="", $link="https://github.com/hyperledger-firefly/cardano/tree/0300bca6b0b99d2a16a81b94f65496934999346e/firefly-cardanoconnect/src/persistence")
+  Container(HyperledgerFireFly.FireFlyCore, "FireFly Core", $techn="Go", $descr="Exposes member APIs, serves Explorer assets and orchestrates multiparty operations.", $tags="", $link="https://github.com/hyperledger-firefly/firefly/tree/9d20f3081c9074d5b012427e5572ebc03da8d95d/internal/orchestrator")
+}
+
+Rel(HyperledgerFireFly.CardanoConnect.HTTPandWebSocketAPI, HyperledgerFireFly.CardanoConnect.Operationsmanager, "Submits operation requests", $techn="In-process calls / Rust", $tags="", $link="")
+Rel(HyperledgerFireFly.CardanoConnect.HTTPandWebSocketAPI, HyperledgerFireFly.CardanoConnect.Streammanagerandeventmultiplexer, "Creates streams and consumes notifications", $techn="In-process calls / Rust", $tags="", $link="")
+Rel(HyperledgerFireFly.CardanoConnect.Operationsmanager, HyperledgerFireFly.CardanoConnect.Blockchainclient, "Builds and submits ledger transactions", $techn="In-process calls / Rust", $tags="", $link="")
+Rel(HyperledgerFireFly.CardanoConnect.Operationsmanager, HyperledgerFireFly.CardanoConnect.ContractmanagerandBaliusruntime, "Invokes configured contract workers", $techn="In-process calls / Rust", $tags="", $link="")
+Rel(HyperledgerFireFly.CardanoConnect.ContractmanagerandBaliusruntime, HyperledgerFireFly.CardanoConnect.FireFlyBaliusworkerSDK, "Loads FireFly-compatible WASM worker logic", $techn="In-process calls / Rust", $tags="", $link="")
+Rel(HyperledgerFireFly.CardanoConnect.ContractmanagerandBaliusruntime, HyperledgerFireFly.CardanoConnect.Blockchainclient, "Retrieves ledger data for contract workers", $techn="In-process calls / Rust", $tags="", $link="")
+Rel(HyperledgerFireFly.CardanoConnect.Operationsmanager, HyperledgerFireFly.CardanoConnect.SQLitepersistence, "Persists operation lifecycle state", $techn="In-process calls / Rust", $tags="", $link="")
+Rel(HyperledgerFireFly.CardanoConnect.Streammanagerandeventmultiplexer, HyperledgerFireFly.CardanoConnect.Blockchainclient, "Tracks ledger updates", $techn="In-process calls / Rust", $tags="", $link="")
+Rel(HyperledgerFireFly.CardanoConnect.Streammanagerandeventmultiplexer, HyperledgerFireFly.CardanoConnect.ContractmanagerandBaliusruntime, "Consumes application contract events", $techn="In-process calls / Rust", $tags="", $link="")
+Rel(HyperledgerFireFly.CardanoConnect.Streammanagerandeventmultiplexer, HyperledgerFireFly.CardanoConnect.SQLitepersistence, "Persists stream checkpoints", $techn="In-process calls / Rust", $tags="", $link="")
+Rel(HyperledgerFireFly.CardanoConnect.ContractmanagerandBaliusruntime, HyperledgerFireFly.CardanoConnect.SQLitepersistence, "Persists contract worker state", $techn="In-process calls / Rust", $tags="", $link="")
+Rel(HyperledgerFireFly.CardanoConnect.SQLitepersistence, HyperledgerFireFly.CardanoConnectSQLitefiles, "Reads and writes operation and checkpoint records", $techn="SQLite API / filesystem", $tags="", $link="")
+Rel(HyperledgerFireFly.CardanoConnect.Streammanagerandeventmultiplexer, HyperledgerFireFly.FireFlyCore, "Delivers ordered operation and contract events", $techn="WebSocket / JSON", $tags="", $link="")
+Rel(HyperledgerFireFly.FireFlyCore, HyperledgerFireFly.CardanoConnect.HTTPandWebSocketAPI, "Submits configured ledger requests", $techn="HTTP REST / JSON", $tags="", $link="")
+
+SHOW_LEGEND(true)
+hide stereotypes
+@enduml

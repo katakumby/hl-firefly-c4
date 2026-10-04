@@ -1,0 +1,39 @@
+@startuml
+title <size:24>Component - FireFly Performance CLI</size>\n<size:24>Component - FireFly Performance CLI</size>
+
+set separator none
+left to right direction
+
+<style>
+  root {
+    BackgroundColor: #ffffff
+    FontColor: #444444
+  }
+</style>
+
+!include <C4/C4>
+!include <C4/C4_Context>
+!include <C4/C4_Container>
+!include <C4/C4_Component>
+
+Person(Applicationdeveloper, "Application developer", $descr="Builds and tests member business integrations.", $tags="", $link="https://hyperledger-firefly.github.io/firefly/head/architecture/node_component_architecture/")
+
+System_Boundary("FireFlydevelopertools_boundary", "FireFly developer tools", $tags="") {
+  Container_Boundary("FireFlydevelopertools.FireFlyPerformanceCLI_boundary", "FireFly Performance CLI", $tags="") {
+    Component(FireFlydevelopertools.FireFlyPerformanceCLI.WorkloadCLI, "Workload CLI", $techn="Go", $descr="Loads test configuration and starts performance scenarios.", $tags="", $link="https://github.com/hyperledger-firefly/perf-cli/tree/3d3ec0242b23b30fea41362eb60f0c190dfedde9/cmd")
+    Component(FireFlydevelopertools.FireFlyPerformanceCLI.Scenariorunner, "Scenario runner", $techn="Go", $descr="Submits message, blob, token and contract workloads.", $tags="", $link="https://github.com/hyperledger-firefly/perf-cli/tree/3d3ec0242b23b30fea41362eb60f0c190dfedde9/internal/perf")
+    Component(FireFlydevelopertools.FireFlyPerformanceCLI.Controlandobservationserver, "Control and observation server", $techn="Go", $descr="Exposes run control and measurements.", $tags="", $link="https://github.com/hyperledger-firefly/perf-cli/tree/3d3ec0242b23b30fea41362eb60f0c190dfedde9/internal/server")
+    Component(FireFlydevelopertools.FireFlyPerformanceCLI.Resultreporting, "Result reporting", $techn="Go", $descr="Builds workload timing and throughput reports.", $tags="", $link="https://github.com/hyperledger-firefly/perf-cli/tree/3d3ec0242b23b30fea41362eb60f0c190dfedde9/internal/util")
+  }
+
+}
+
+Rel(Applicationdeveloper, FireFlydevelopertools.FireFlyPerformanceCLI.WorkloadCLI, "Invokes configured workload scenarios", $techn="Local process invocation", $tags="", $link="")
+Rel(FireFlydevelopertools.FireFlyPerformanceCLI.Scenariorunner, HyperledgerFireFly.FireFlyCore, "Submits workloads and consumes completion events", $techn="HTTP REST + WebSocket", $tags="", $link="")
+Rel(FireFlydevelopertools.FireFlyPerformanceCLI.WorkloadCLI, FireFlydevelopertools.FireFlyPerformanceCLI.Scenariorunner, "Starts selected workload scenarios", $techn="In-process calls / Go", $tags="", $link="")
+Rel(FireFlydevelopertools.FireFlyPerformanceCLI.Controlandobservationserver, FireFlydevelopertools.FireFlyPerformanceCLI.Scenariorunner, "Controls workload execution", $techn="In-process calls / Go", $tags="", $link="")
+Rel(FireFlydevelopertools.FireFlyPerformanceCLI.Scenariorunner, FireFlydevelopertools.FireFlyPerformanceCLI.Resultreporting, "Supplies measured workload results", $techn="In-process calls / Go", $tags="", $link="")
+
+SHOW_LEGEND(true)
+hide stereotypes
+@enduml

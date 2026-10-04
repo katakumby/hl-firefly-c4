@@ -1,0 +1,22 @@
+---
+title: UC2 - Register API - systems
+config:
+  theme: default
+  sequence:
+    mirrorActors: false
+    wrap: true
+---
+sequenceDiagram
+    autonumber
+%% C4: App=apps; FF=firefly
+    participant App as Member application<br/>reference<br/>[Software System]
+    participant FF as Hyperledger FireFly<br/>[Software System]
+    App->>FF: Generate interface from ABI [HTTPS REST / JSON]
+    FF-->>App: FireFly Interface definition [HTTPS REST / JSON]
+    App->>FF: Register interface locally [HTTPS REST / JSON]
+    FF-->>App: Interface id [HTTPS REST / JSON]
+    App->>FF: Bind named API to interface and contract address [HTTPS REST / JSON]
+    FF-->>App: API definition and documentation URLs [HTTPS REST / JSON]
+    App->>FF: Retrieve generated OpenAPI [HTTPS REST / JSON]
+    FF-->>App: OpenAPI specification [HTTPS REST / JSON]
+    Note over FF: Local metadata registration, no ledger transaction

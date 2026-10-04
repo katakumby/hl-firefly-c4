@@ -1,0 +1,53 @@
+@startuml
+title <size:24>Component - FabConnect: events</size>\n<size:24>Component - FabConnect: events</size>
+
+set separator none
+left to right direction
+
+<style>
+  root {
+    BackgroundColor: #ffffff
+    FontColor: #444444
+  }
+</style>
+
+!include <C4/C4>
+!include <C4/C4_Context>
+!include <C4/C4_Container>
+!include <C4/C4_Component>
+
+System(HyperledgerFabricnetwork, "Hyperledger Fabric network", $descr="External Fabric peer, ordering, discovery and chaincode services.", $tags="", $link="https://github.com/hyperledger-firefly/fabconnect/tree/efab8a2b0ff11863bbd9c5eb8a566820f560546b/README.md")
+System(ApacheKafka, "Apache Kafka", $descr="Optional transaction request/reply broker for legacy connector configurations.", $tags="", $link="https://github.com/hyperledger-firefly/ethconnect/tree/e8ae0eda16cc61b8ac256cdbf5f09edeb571b8c0/internal/kafka")
+
+System_Boundary("HyperledgerFireFly_boundary", "Hyperledger FireFly", $tags="") {
+  Container_Boundary("HyperledgerFireFly.FabConnect_boundary", "FabConnect", $tags="") {
+    Component(HyperledgerFireFly.FabConnect.RESTgatewayanddispatch, "REST gateway and dispatch", $techn="Go", $descr="Routes identity, transaction and receipt requests.", $tags="", $link="https://github.com/hyperledger-firefly/fabconnect/tree/efab8a2b0ff11863bbd9c5eb8a566820f560546b/internal/rest")
+    Component(HyperledgerFireFly.FabConnect.Transactionprocessor, "Transaction processor", $techn="Go", $descr="Submits chaincode transactions and tracks completion.", $tags="", $link="https://github.com/hyperledger-firefly/fabconnect/tree/efab8a2b0ff11863bbd9c5eb8a566820f560546b/internal/tx")
+    Component(HyperledgerFireFly.FabConnect.Fabricclientsandwallet, "Fabric clients and wallet", $techn="Go", $descr="Uses connection profiles or discovery to access peers and ordering services.", $tags="", $link="https://github.com/hyperledger-firefly/fabconnect/tree/efab8a2b0ff11863bbd9c5eb8a566820f560546b/internal/fabric/client")
+    Component(HyperledgerFireFly.FabConnect.Eventsubscriptionsandcheckpoints, "Event subscriptions and checkpoints", $techn="Go", $descr="Filters Fabric events and manages delivery checkpoints.", $tags="", $link="https://github.com/hyperledger-firefly/fabconnect/tree/efab8a2b0ff11863bbd9c5eb8a566820f560546b/internal/events")
+    Component(HyperledgerFireFly.FabConnect.WebSocketdelivery, "WebSocket delivery", $techn="Go", $descr="Delivers event batches and consumes acknowledgements.", $tags="", $link="https://github.com/hyperledger-firefly/fabconnect/tree/efab8a2b0ff11863bbd9c5eb8a566820f560546b/internal/ws")
+    Component(HyperledgerFireFly.FabConnect.Kafkabridge, "Kafka bridge", $techn="Go", $descr="Supports optional asynchronous transaction request/reply messaging.", $tags="", $link="https://github.com/hyperledger-firefly/fabconnect/tree/efab8a2b0ff11863bbd9c5eb8a566820f560546b/internal/kafka")
+    Component(HyperledgerFireFly.FabConnect.Keyvaluepersistence, "Key-value persistence", $techn="Go", $descr="Persists connector event state in LevelDB.", $tags="", $link="https://github.com/hyperledger-firefly/fabconnect/tree/efab8a2b0ff11863bbd9c5eb8a566820f560546b/internal/kvstore")
+  }
+
+  Container(HyperledgerFireFly.FireFlyCore, "FireFly Core", $techn="Go", $descr="Exposes member APIs, serves Explorer assets and orchestrates multiparty operations.", $tags="", $link="https://github.com/hyperledger-firefly/firefly/tree/9d20f3081c9074d5b012427e5572ebc03da8d95d/internal/orchestrator")
+  ContainerDb(HyperledgerFireFly.FabConnectlocalstate, "FabConnect local state", $techn="LevelDB + wallet files", $descr="Connector LevelDB state and Fabric wallet identity material.", $tags="", $link="https://github.com/hyperledger-firefly/fabconnect/tree/efab8a2b0ff11863bbd9c5eb8a566820f560546b/internal/fabric/client/store.go")
+}
+
+Rel(HyperledgerFireFly.FabConnect.Fabricclientsandwallet, HyperledgerFabricnetwork, "Invokes chaincode and consumes peer ledger events", $techn="Fabric SDK / gRPC + TLS", $tags="", $link="")
+Rel(HyperledgerFireFly.FabConnect.Kafkabridge, ApacheKafka, "Consumes transaction requests and publishes replies", $techn="Kafka protocol", $tags="", $link="")
+Rel(HyperledgerFireFly.FireFlyCore, HyperledgerFireFly.FabConnect.RESTgatewayanddispatch, "Submits configured ledger requests", $techn="HTTP REST / JSON", $tags="", $link="")
+Rel(HyperledgerFireFly.FabConnect.RESTgatewayanddispatch, HyperledgerFireFly.FabConnect.Transactionprocessor, "Dispatches chaincode transaction requests", $techn="In-process calls / Go", $tags="", $link="")
+Rel(HyperledgerFireFly.FabConnect.RESTgatewayanddispatch, HyperledgerFireFly.FabConnect.Kafkabridge, "Publishes requests in asynchronous Kafka mode", $techn="In-process calls / Go", $tags="", $link="")
+Rel(HyperledgerFireFly.FabConnect.Kafkabridge, HyperledgerFireFly.FabConnect.Transactionprocessor, "Dispatches consumed transaction requests", $techn="In-process calls / Go", $tags="", $link="")
+Rel(HyperledgerFireFly.FabConnect.Transactionprocessor, HyperledgerFireFly.FabConnect.Fabricclientsandwallet, "Submits chaincode invocations", $techn="In-process calls / Go", $tags="", $link="")
+Rel(HyperledgerFireFly.FabConnect.Eventsubscriptionsandcheckpoints, HyperledgerFireFly.FabConnect.Fabricclientsandwallet, "Subscribes to Fabric ledger events", $techn="In-process calls / Go", $tags="", $link="")
+Rel(HyperledgerFireFly.FabConnect.Eventsubscriptionsandcheckpoints, HyperledgerFireFly.FabConnect.WebSocketdelivery, "Delivers filtered ledger event batches", $techn="In-process calls / Go", $tags="", $link="")
+Rel(HyperledgerFireFly.FabConnect.Eventsubscriptionsandcheckpoints, HyperledgerFireFly.FabConnect.Keyvaluepersistence, "Persists subscriptions and checkpoints", $techn="In-process calls / Go", $tags="", $link="")
+Rel(HyperledgerFireFly.FabConnect.WebSocketdelivery, HyperledgerFireFly.FireFlyCore, "Delivers acknowledged Fabric event batches", $techn="WebSocket / JSON", $tags="", $link="")
+Rel(HyperledgerFireFly.FabConnect.Fabricclientsandwallet, HyperledgerFireFly.FabConnectlocalstate, "Reads and writes wallet identities", $techn="Filesystem I/O", $tags="", $link="")
+Rel(HyperledgerFireFly.FabConnect.Keyvaluepersistence, HyperledgerFireFly.FabConnectlocalstate, "Persists event checkpoints", $techn="LevelDB API / filesystem", $tags="", $link="")
+
+SHOW_LEGEND(true)
+hide stereotypes
+@enduml

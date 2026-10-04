@@ -1,0 +1,33 @@
+@startuml
+title <size:24>Container - Optional Corda connector starter</size>\n<size:24>Container - Optional Corda connector starter</size>
+
+set separator none
+left to right direction
+
+<style>
+  root {
+    BackgroundColor: #ffffff
+    FontColor: #444444
+  }
+</style>
+
+!include <C4/C4>
+!include <C4/C4_Context>
+!include <C4/C4_Container>
+
+Person(Applicationdeveloper, "Application developer", $descr="Builds and tests member business integrations.", $tags="", $link="https://hyperledger-firefly.github.io/firefly/head/architecture/node_component_architecture/")
+System(Cordanetwork, "Corda network", $descr="External Corda node with application-specific CorDapps; starter integration requires customization.", $tags="", $link="https://github.com/hyperledger-firefly/cordaconnect/tree/6579ca46e0d46c9c330c8b2b95f1dd83f0804640/README.md")
+
+System_Boundary("HyperledgerFireFly_boundary", "Hyperledger FireFly", $tags="") {
+  ContainerDb(HyperledgerFireFly.Cordastarterdatabase, "Corda starter database", $techn="H2 / in-memory default", $descr="Starter JPA database; the supplied configuration uses in-memory H2 and is not durable.", $tags="", $link="https://github.com/hyperledger-firefly/cordaconnect/tree/6579ca46e0d46c9c330c8b2b95f1dd83f0804640/connector/src/main/resources")
+  Container(HyperledgerFireFly.Cordaconnectorstarter, "Corda connector starter", $techn="Java / Spring Boot", $descr="Spring Boot reference starter; application CorDapps and a Core binding require customization.", $tags="", $link="https://github.com/hyperledger-firefly/cordaconnect/tree/6579ca46e0d46c9c330c8b2b95f1dd83f0804640/connector")
+}
+
+Rel(HyperledgerFireFly.Cordaconnectorstarter, Cordanetwork, "Invokes custom CorDapps and consumes vault updates", $techn="Corda RPC", $tags="", $link="")
+Rel(Applicationdeveloper, Cordanetwork, "Customizes the CorDapp and Core binding required by the starter", $techn="Development toolchain", $tags="", $link="")
+Rel(Applicationdeveloper, HyperledgerFireFly.Cordaconnectorstarter, "Exercises the starter after application-specific customization", $techn="HTTP REST + WebSocket", $tags="", $link="")
+Rel(HyperledgerFireFly.Cordaconnectorstarter, HyperledgerFireFly.Cordastarterdatabase, "Persists starter stream definitions", $techn="JPA / embedded H2", $tags="", $link="")
+
+SHOW_LEGEND(true)
+hide stereotypes
+@enduml

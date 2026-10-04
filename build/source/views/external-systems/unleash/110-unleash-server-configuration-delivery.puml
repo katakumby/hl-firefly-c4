@@ -1,0 +1,60 @@
+@startuml
+title <size:24>Component - Unleash server: configuration delivery</size>\n<size:24>Component - Unleash server: configuration delivery</size>
+
+set separator none
+left to right direction
+
+<style>
+  root {
+    BackgroundColor: #ffffff
+    FontColor: #444444
+  }
+</style>
+
+!include <C4/C4>
+!include <C4/C4_Context>
+!include <C4/C4_Container>
+!include <C4/C4_Component>
+
+System_Boundary("Unleash_boundary", "Unleash", $tags="") {
+  Container_Boundary("Unleash.Unleashserver_boundary", "Unleash server", $tags="") {
+    Component(Unleash.Unleashserver.ClientAPI, "Client API", $techn="TypeScript / Node.js", $descr="Serves full feature configurations and accepts SDK registration and usage metrics.", $tags="", $link="https://github.com/Unleash/unleash/tree/66d4a45c1d24c4bc8a08d8c75d205bd61dc3aed0/src/lib/routes/client-api")
+    Component(Unleash.Unleashserver.FrontendAPI, "Frontend API", $techn="TypeScript / Node.js", $descr="Accepts evaluation context and returns evaluated enabled flags and variants; accepts usage metrics.", $tags="", $link="https://github.com/Unleash/unleash/blob/66d4a45c1d24c4bc8a08d8c75d205bd61dc3aed0/src/lib/features/frontend-api/frontend-api-controller.ts")
+    Component(Unleash.Unleashserver.EdgeAPI, "Edge API", $techn="TypeScript / Node.js", $descr="Validates SDK tokens for Edge and returns authorized token metadata.", $tags="", $link="https://github.com/Unleash/unleash/blob/66d4a45c1d24c4bc8a08d8c75d205bd61dc3aed0/src/lib/routes/edge-api/index.ts")
+    Component(Unleash.Unleashserver.APItokenmanagement, "API-token management", $techn="TypeScript / Node.js", $descr="Creates and validates API tokens and caches their environment and project scopes.", $tags="", $link="https://github.com/Unleash/unleash/blob/66d4a45c1d24c4bc8a08d8c75d205bd61dc3aed0/src/lib/services/api-token-service.ts")
+    Component(Unleash.Unleashserver.Configurationprojectionandcache, "Configuration projection and cache", $techn="TypeScript / Node.js", $descr="Builds scoped client payloads; tracks revisions and caches frontend configuration in memory.", $tags="", $link="https://github.com/Unleash/unleash/tree/66d4a45c1d24c4bc8a08d8c75d205bd61dc3aed0/src/lib/features/client-feature-toggles")
+    Component(Unleash.Unleashserver.Frontendandplaygroundevaluation, "Frontend and playground evaluation", $techn="TypeScript / Node.js", $descr="Evaluates strategy and variant rules using embedded unleash-client and playground logic.", $tags="", $link="https://github.com/Unleash/unleash/blob/66d4a45c1d24c4bc8a08d8c75d205bd61dc3aed0/src/lib/features/frontend-api/frontend-api-service.ts")
+    Component(Unleash.Unleashserver.SDKregistrationandmetrics, "SDK registration and metrics", $techn="TypeScript / Node.js", $descr="Tracks applications and instances; buffers, aggregates and stores flag and variant usage.", $tags="", $link="https://github.com/Unleash/unleash/tree/66d4a45c1d24c4bc8a08d8c75d205bd61dc3aed0/src/lib/features/metrics/instance")
+    Component(Unleash.Unleashserver.Settingsandbackgroundjobs, "Settings and background jobs", $techn="TypeScript / Node.js", $descr="Loads settings and schedules cache refresh, event publication, aggregation and maintenance.", $tags="", $link="https://github.com/Unleash/unleash/tree/66d4a45c1d24c4bc8a08d8c75d205bd61dc3aed0/src/lib/features/settings")
+    Component(Unleash.Unleashserver.Healthandoperationalmetrics, "Health and operational metrics", $techn="TypeScript / Node.js", $descr="Reports process/database readiness and gathers HTTP, database and scheduler measurements.", $tags="", $link="https://github.com/Unleash/unleash/blob/66d4a45c1d24c4bc8a08d8c75d205bd61dc3aed0/src/lib/routes/health-check.ts")
+    Component(Unleash.Unleashserver.Persistenceandmigrations, "Persistence and migrations", $techn="TypeScript / Node.js", $descr="Groups Knex stores, read models, sessions and schema migration access to PostgreSQL.", $tags="", $link="https://github.com/Unleash/unleash/tree/66d4a45c1d24c4bc8a08d8c75d205bd61dc3aed0/src/lib/db")
+  }
+
+  ContainerDb(Unleash.UnleashPostgreSQL, "Unleash PostgreSQL", $techn="PostgreSQL / Knex", $descr="Stores configuration, user/session/token records, audit history, registrations and aggregated usage.", $tags="", $link="https://github.com/Unleash/unleash/tree/66d4a45c1d24c4bc8a08d8c75d205bd61dc3aed0/src/lib/db")
+  Container(Unleash.UnleashEdgeOSSoptional, "Unleash Edge (OSS, optional)", $techn="Rust / Axum / Tokio", $descr="Caches configuration and evaluates frontend requests; online polling or offline file mode.", $tags="", $link="https://github.com/Unleash/unleash-edge/blob/c947878de70214235c79eeb5ebe5f35b77ecc075/crates/oss/unleash-edge/src/lib.rs")
+}
+
+Rel(Unleash.UnleashEdgeOSSoptional, Unleash.Unleashserver.ClientAPI, "Requests full scoped feature definitions", $techn="HTTP(S) / JSON", $tags="", $link="")
+Rel(Unleash.UnleashEdgeOSSoptional, Unleash.Unleashserver.ClientAPI, "Posts registration and aggregated usage", $techn="HTTP(S) / JSON", $tags="", $link="")
+Rel(Unleash.UnleashEdgeOSSoptional, Unleash.Unleashserver.EdgeAPI, "Validates token batches and receives scopes", $techn="HTTP(S) / JSON", $tags="", $link="")
+Rel(Unleash.Unleashserver.APItokenmanagement, Unleash.Unleashserver.Persistenceandmigrations, "Reads and writes token records and scopes", $techn="In-process", $tags="", $link="")
+Rel(Unleash.Unleashserver.Persistenceandmigrations, Unleash.UnleashPostgreSQL, "Executes queries, transactions and migrations", $techn="PostgreSQL wire protocol", $tags="", $link="")
+Rel(Unleash.Unleashserver.ClientAPI, Unleash.Unleashserver.APItokenmanagement, "Checks backend token type and scope", $techn="In-process", $tags="", $link="")
+Rel(Unleash.Unleashserver.FrontendAPI, Unleash.Unleashserver.APItokenmanagement, "Checks frontend token type and scope", $techn="In-process", $tags="", $link="")
+Rel(Unleash.Unleashserver.EdgeAPI, Unleash.Unleashserver.APItokenmanagement, "Resolves valid tokens and authorized metadata", $techn="In-process", $tags="", $link="")
+Rel(Unleash.Unleashserver.ClientAPI, Unleash.Unleashserver.Configurationprojectionandcache, "Builds scoped client configuration responses", $techn="In-process", $tags="", $link="")
+Rel(Unleash.Unleashserver.Configurationprojectionandcache, Unleash.Unleashserver.Persistenceandmigrations, "Reads feature payloads, segments and revisions", $techn="In-process", $tags="", $link="")
+Rel(Unleash.Unleashserver.FrontendAPI, Unleash.Unleashserver.Frontendandplaygroundevaluation, "Evaluates context and returns enabled flags", $techn="In-process", $tags="", $link="")
+Rel(Unleash.Unleashserver.Frontendandplaygroundevaluation, Unleash.Unleashserver.Configurationprojectionandcache, "Reads token-scoped definitions and segments", $techn="In-process", $tags="", $link="")
+Rel(Unleash.Unleashserver.ClientAPI, Unleash.Unleashserver.SDKregistrationandmetrics, "Registers SDKs and accepts usage buckets", $techn="In-process", $tags="", $link="")
+Rel(Unleash.Unleashserver.FrontendAPI, Unleash.Unleashserver.SDKregistrationandmetrics, "Records frontend SDK usage and registration", $techn="In-process", $tags="", $link="")
+Rel(Unleash.Unleashserver.SDKregistrationandmetrics, Unleash.Unleashserver.Persistenceandmigrations, "Persists registrations and aggregated usage", $techn="In-process", $tags="", $link="")
+Rel(Unleash.Unleashserver.Settingsandbackgroundjobs, Unleash.Unleashserver.Configurationprojectionandcache, "Schedules revision checks and cache refresh", $techn="In-process", $tags="", $link="")
+Rel(Unleash.Unleashserver.Settingsandbackgroundjobs, Unleash.Unleashserver.APItokenmanagement, "Refreshes token caches and expires token data", $techn="In-process", $tags="", $link="")
+Rel(Unleash.Unleashserver.Settingsandbackgroundjobs, Unleash.Unleashserver.Frontendandplaygroundevaluation, "Refreshes cached frontend evaluation settings", $techn="In-process", $tags="", $link="")
+Rel(Unleash.Unleashserver.Frontendandplaygroundevaluation, Unleash.Unleashserver.Settingsandbackgroundjobs, "Reads frontend evaluation settings", $techn="In-process", $tags="", $link="")
+Rel(Unleash.Unleashserver.Healthandoperationalmetrics, Unleash.Unleashserver.Frontendandplaygroundevaluation, "Checks frontend configuration-cache readiness", $techn="In-process", $tags="", $link="")
+
+SHOW_LEGEND(true)
+hide stereotypes
+@enduml

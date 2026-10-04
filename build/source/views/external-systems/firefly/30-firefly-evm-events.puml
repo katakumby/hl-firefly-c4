@@ -1,0 +1,58 @@
+@startuml
+title <size:24>Component - FireFly EVMConnect: Block tracking and events</size>\n<size:24>Component - FireFly EVMConnect: Block tracking and events</size>
+
+set separator none
+left to right direction
+
+<style>
+  root {
+    BackgroundColor: #ffffff
+    FontColor: #444444
+  }
+</style>
+
+!include <C4/C4>
+!include <C4/C4_Context>
+!include <C4/C4_Container>
+!include <C4/C4_Component>
+
+System_Boundary("HyperledgerFireFly_boundary", "Hyperledger FireFly", $tags="") {
+  Container_Boundary("HyperledgerFireFly.EVMConnectFFTM_boundary", "EVMConnect + FFTM", $tags="") {
+    Component(HyperledgerFireFly.EVMConnectFFTM.Transactionmanager, "Transaction manager", $techn="Go", $descr="Coordinates durable transaction and stream lifecycles.", $tags="", $link="https://github.com/hyperledger-firefly/transaction-manager/tree/5915cbc4e0e30dea25068b770dadbcc8bdfa9321/pkg/fftm")
+    Component(HyperledgerFireFly.EVMConnectFFTM.EthereumJSONRPCclient, "Ethereum JSON-RPC client", $techn="Go", $descr="Submits calls and transactions through the signing proxy.", $tags="", $link="https://github.com/hyperledger-firefly/evmconnect/tree/6e12bb4c050677780cf5dd975a926923868b0cb8/pkg/ethrpc")
+    Component(HyperledgerFireFly.EVMConnectFFTM.Blocklistener, "Block listener", $techn="Go", $descr="Tracks chain heads and block/filter updates.", $tags="", $link="https://github.com/hyperledger-firefly/evmconnect/tree/6e12bb4c050677780cf5dd975a926923868b0cb8/pkg/ethblocklistener")
+    Component(HyperledgerFireFly.EVMConnectFFTM.Receipttracking, "Receipt tracking", $techn="Go", $descr="Polls receipt status for submitted transactions.", $tags="", $link="https://github.com/hyperledger-firefly/transaction-manager/tree/5915cbc4e0e30dea25068b770dadbcc8bdfa9321/pkg/fftm")
+    Component(HyperledgerFireFly.EVMConnectFFTM.Confirmationmanager, "Confirmation manager", $techn="Go", $descr="Confirms receipts and events against the observed chain.", $tags="", $link="https://github.com/hyperledger-firefly/transaction-manager/tree/5915cbc4e0e30dea25068b770dadbcc8bdfa9321/internal/confirmations")
+    Component(HyperledgerFireFly.EVMConnectFFTM.Eventstreams, "Event streams", $techn="Go", $descr="Orders and batches confirmed listener events.", $tags="", $link="https://github.com/hyperledger-firefly/transaction-manager/tree/5915cbc4e0e30dea25068b770dadbcc8bdfa9321/internal/events")
+    Component(HyperledgerFireFly.EVMConnectFFTM.WebSocketbatchdelivery, "WebSocket batch delivery", $techn="Go", $descr="Delivers WebSocket batches and accepts consumer acknowledgements.", $tags="", $link="https://github.com/hyperledger-firefly/transaction-manager/tree/5915cbc4e0e30dea25068b770dadbcc8bdfa9321/internal/ws")
+    Component(HyperledgerFireFly.EVMConnectFFTM.Persistenceadapter, "Persistence adapter", $techn="Go", $descr="Stores transactions, nonces, streams and checkpoints.", $tags="", $link="https://github.com/hyperledger-firefly/transaction-manager/tree/5915cbc4e0e30dea25068b770dadbcc8bdfa9321/internal/persistence")
+    Component(HyperledgerFireFly.EVMConnectFFTM.Durableblocknotifications, "Durable block notifications", $techn="Go", $descr="Coordinates block updates for listeners and confirmations.", $tags="", $link="https://github.com/hyperledger-firefly/transaction-manager/tree/5915cbc4e0e30dea25068b770dadbcc8bdfa9321/internal/blocklistener")
+    Component(HyperledgerFireFly.EVMConnectFFTM.Transactionandstreammetrics, "Transaction and stream metrics", $techn="Go", $descr="Records transaction and event-processing measurements.", $tags="", $link="https://github.com/hyperledger-firefly/transaction-manager/tree/5915cbc4e0e30dea25068b770dadbcc8bdfa9321/internal/metrics")
+  }
+
+  Container(HyperledgerFireFly.FireFlyCore, "FireFly Core", $techn="Go", $descr="Exposes member APIs, serves Explorer assets and orchestrates multiparty operations.", $tags="", $link="https://github.com/hyperledger-firefly/firefly/tree/9d20f3081c9074d5b012427e5572ebc03da8d95d/internal/orchestrator")
+  ContainerDb(HyperledgerFireFly.FFTMPostgreSQLdatabase, "FFTM PostgreSQL database", $techn="PostgreSQL", $descr="Stores EVMConnect transaction state, nonces and checkpoints in a separate logical database with separate credentials.", $tags="", $link="https://github.com/hyperledger-firefly/transaction-manager/tree/5915cbc4e0e30dea25068b770dadbcc8bdfa9321/internal/persistence/postgres")
+  Container(HyperledgerFireFly.FireFlySigner, "FireFly Signer", $techn="Go", $descr="Signs member transactions and proxies Ethereum RPC calls.", $tags="", $link="https://github.com/hyperledger-firefly/signer/tree/cfafd71fb4d2c3061a946f6466269877c3f04d9d/internal/rpcserver")
+}
+
+Rel(HyperledgerFireFly.EVMConnectFFTM.Receipttracking, HyperledgerFireFly.EVMConnectFFTM.EthereumJSONRPCclient, "Queries transaction receipt status", $techn="In-process calls / Go", $tags="", $link="")
+Rel(HyperledgerFireFly.EVMConnectFFTM.EthereumJSONRPCclient, HyperledgerFireFly.EVMConnectFFTM.Blocklistener, "Returns block and filter responses", $techn="In-process calls / Go", $tags="", $link="")
+Rel(HyperledgerFireFly.EVMConnectFFTM.Blocklistener, HyperledgerFireFly.EVMConnectFFTM.Confirmationmanager, "Publishes chain head updates", $techn="In-process calls / Go", $tags="", $link="")
+Rel(HyperledgerFireFly.EVMConnectFFTM.Receipttracking, HyperledgerFireFly.EVMConnectFFTM.Confirmationmanager, "Submits receipts for confirmation", $techn="In-process calls / Go", $tags="", $link="")
+Rel(HyperledgerFireFly.EVMConnectFFTM.Confirmationmanager, HyperledgerFireFly.EVMConnectFFTM.Eventstreams, "Releases confirmed blockchain events", $techn="In-process calls / Go", $tags="", $link="")
+Rel(HyperledgerFireFly.EVMConnectFFTM.Transactionmanager, HyperledgerFireFly.EVMConnectFFTM.Eventstreams, "Configures listeners and stream lifecycle", $techn="In-process calls / Go", $tags="", $link="")
+Rel(HyperledgerFireFly.EVMConnectFFTM.Eventstreams, HyperledgerFireFly.EVMConnectFFTM.WebSocketbatchdelivery, "Delivers ordered event batches", $techn="In-process calls / Go", $tags="", $link="")
+Rel(HyperledgerFireFly.EVMConnectFFTM.WebSocketbatchdelivery, HyperledgerFireFly.EVMConnectFFTM.Eventstreams, "Acknowledges consumed batches", $techn="In-process calls / Go", $tags="", $link="")
+Rel(HyperledgerFireFly.EVMConnectFFTM.Eventstreams, HyperledgerFireFly.EVMConnectFFTM.Persistenceadapter, "Persists acknowledged checkpoints", $techn="In-process calls / Go", $tags="", $link="")
+Rel(HyperledgerFireFly.EVMConnectFFTM.Transactionmanager, HyperledgerFireFly.EVMConnectFFTM.Persistenceadapter, "Persists transaction lifecycle state", $techn="In-process calls / Go", $tags="", $link="")
+Rel(HyperledgerFireFly.EVMConnectFFTM.WebSocketbatchdelivery, HyperledgerFireFly.FireFlyCore, "Delivers confirmed event batches", $techn="WebSocket / JSON", $tags="", $link="")
+Rel(HyperledgerFireFly.EVMConnectFFTM.Persistenceadapter, HyperledgerFireFly.FFTMPostgreSQLdatabase, "Persists FFTM transactions and checkpoints", $techn="PostgreSQL wire / TLS", $tags="", $link="")
+Rel(HyperledgerFireFly.EVMConnectFFTM.EthereumJSONRPCclient, HyperledgerFireFly.FireFlySigner, "Forwards transactions and read calls", $techn="HTTP JSON-RPC", $tags="", $link="")
+Rel(HyperledgerFireFly.EVMConnectFFTM.Blocklistener, HyperledgerFireFly.EVMConnectFFTM.Durableblocknotifications, "Supplies blockchain head notifications", $techn="In-process calls / Go", $tags="", $link="")
+Rel(HyperledgerFireFly.EVMConnectFFTM.Durableblocknotifications, HyperledgerFireFly.EVMConnectFFTM.Confirmationmanager, "Updates tracked canonical block history", $techn="In-process calls / Go", $tags="", $link="")
+Rel(HyperledgerFireFly.EVMConnectFFTM.Transactionmanager, HyperledgerFireFly.EVMConnectFFTM.Transactionandstreammetrics, "Records transaction processing measurements", $techn="In-process calls / Go", $tags="", $link="")
+Rel(HyperledgerFireFly.EVMConnectFFTM.Eventstreams, HyperledgerFireFly.EVMConnectFFTM.Transactionandstreammetrics, "Records event-processing measurements", $techn="In-process calls / Go", $tags="", $link="")
+
+SHOW_LEGEND(true)
+hide stereotypes
+@enduml

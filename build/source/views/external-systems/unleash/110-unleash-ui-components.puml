@@ -1,0 +1,41 @@
+@startuml
+title <size:24>Component - Unleash Admin UI</size>\n<size:24>Component - Unleash Admin UI</size>
+
+set separator none
+left to right direction
+
+<style>
+  root {
+    BackgroundColor: #ffffff
+    FontColor: #444444
+  }
+</style>
+
+!include <C4/C4>
+!include <C4/C4_Context>
+!include <C4/C4_Container>
+!include <C4/C4_Component>
+
+System_Boundary("Unleash_boundary", "Unleash", $tags="") {
+  Container_Boundary("Unleash.AdminUI_boundary", "Admin UI", $tags="") {
+    Component(Unleash.AdminUI.Applicationshellandsession, "Application shell and session", $techn="React / TypeScript / browser", $descr="Routes screens and shares authenticated user, permissions and UI configuration.", $tags="", $link="https://github.com/Unleash/unleash/blob/66d4a45c1d24c4bc8a08d8c75d205bd61dc3aed0/frontend/src/ApplicationRoot.tsx")
+    Component(Unleash.AdminUI.Flagandprojectscreens, "Flag and project screens", $techn="React / TypeScript / browser", $descr="Edits flags, strategies, variants, segments, context fields, projects and environments.", $tags="", $link="https://github.com/Unleash/unleash/tree/66d4a45c1d24c4bc8a08d8c75d205bd61dc3aed0/frontend/src/component/feature")
+    Component(Unleash.AdminUI.Administrationscreens, "Administration screens", $techn="React / TypeScript / browser", $descr="Manages OSS user, token, settings, import/export and add-on configuration.", $tags="", $link="https://github.com/Unleash/unleash/tree/66d4a45c1d24c4bc8a08d8c75d205bd61dc3aed0/frontend/src/component/admin")
+    Component(Unleash.AdminUI.Reportingandplaygroundscreens, "Reporting and playground screens", $techn="React / TypeScript / browser", $descr="Displays audit history, SDK usage and lifecycle insights; submits evaluation experiments.", $tags="", $link="https://github.com/Unleash/unleash/tree/66d4a45c1d24c4bc8a08d8c75d205bd61dc3aed0/frontend/src/component/events")
+    Component(Unleash.AdminUI.APIclientsandquerycache, "API clients and query cache", $techn="React / TypeScript / browser", $descr="Sends authenticated requests and caches or invalidates resource queries after mutations.", $tags="", $link="https://github.com/Unleash/unleash/tree/66d4a45c1d24c4bc8a08d8c75d205bd61dc3aed0/frontend/src/hooks/api")
+  }
+
+  Container(Unleash.Unleashserver, "Unleash server", $techn="Node.js / TypeScript / Express", $descr="Hosts OSS administration, configuration delivery, evaluation and background services.", $tags="", $link="https://github.com/Unleash/unleash/blob/66d4a45c1d24c4bc8a08d8c75d205bd61dc3aed0/src/lib/server-impl.ts")
+}
+
+Rel(Unleash.AdminUI.Applicationshellandsession, Unleash.AdminUI.APIclientsandquerycache, "Requests session, permissions and UI configuration", $techn="In-process", $tags="", $link="")
+Rel(Unleash.AdminUI.Flagandprojectscreens, Unleash.AdminUI.APIclientsandquerycache, "Queries and edits flag configuration", $techn="In-process", $tags="", $link="")
+Rel(Unleash.AdminUI.Administrationscreens, Unleash.AdminUI.APIclientsandquerycache, "Queries and changes administration resources", $techn="In-process", $tags="", $link="")
+Rel(Unleash.AdminUI.Reportingandplaygroundscreens, Unleash.AdminUI.APIclientsandquerycache, "Requests history, usage and evaluation results", $techn="In-process", $tags="", $link="")
+Rel(Unleash.AdminUI.Applicationshellandsession, Unleash.Unleashserver, "Loads the application document and bundle", $techn="HTTP(S) / HTML, JS, CSS", $tags="", $link="")
+Rel(Unleash.AdminUI.APIclientsandquerycache, Unleash.Unleashserver, "Submits credentials and resolves session state", $techn="HTTP(S) / JSON", $tags="", $link="")
+Rel(Unleash.AdminUI.APIclientsandquerycache, Unleash.Unleashserver, "Calls management, reporting and playground APIs", $techn="HTTP(S) / JSON", $tags="", $link="")
+
+SHOW_LEGEND(true)
+hide stereotypes
+@enduml

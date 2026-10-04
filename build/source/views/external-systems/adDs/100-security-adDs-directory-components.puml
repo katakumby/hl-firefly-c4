@@ -1,0 +1,49 @@
+@startuml
+title <size:24>Component - Domain-controller services: logical responsibilities</size>\n<size:24>Component - Domain-controller services: logical responsibilities</size>
+
+set separator none
+left to right direction
+
+<style>
+  root {
+    BackgroundColor: #ffffff
+    FontColor: #444444
+  }
+</style>
+
+!include <C4/C4>
+!include <C4/C4_Context>
+!include <C4/C4_Container>
+!include <C4/C4_Component>
+
+Person(Businessuser, "Business user", $descr="Submits consortium business actions through a member application.", $tags="", $link="https://hyperledger-firefly.github.io/firefly/head/architecture/node_component_architecture/")
+Person(Securityadministrator, "Security administrator", $descr="Configures identity, privileged access, secret policies and key permissions in these reference examples.", $tags="", $link="https://docs.cyberark.com/pam-self-hosted/latest/en/content/pas%20inst/installationoverview.htm")
+
+System_Boundary("MicrosoftActiveDirectoryDomainServices_boundary", "Microsoft Active Directory Domain Services", $tags="") {
+  Container_Boundary("MicrosoftActiveDirectoryDomainServices.Domaincontrollerservices_boundary", "Domain-controller services", $tags="") {
+    Component(MicrosoftActiveDirectoryDomainServices.Domaincontrollerservices.Directoryaccessandauthorization, "Directory access and authorization", $techn="AD DS logical responsibility", $descr="Logical reference: Applies directory permissions and resolves requested account attributes.", $tags="", $link="https://learn.microsoft.com/en-us/windows-server/identity/ad-ds/get-started/virtual-dc/active-directory-domain-services-overview")
+    Component(MicrosoftActiveDirectoryDomainServices.Domaincontrollerservices.Directorypersistence, "Directory persistence", $techn="AD DS logical responsibility", $descr="Logical reference: Reads and writes directory objects and account records.", $tags="", $link="https://learn.microsoft.com/en-us/windows-server/identity/ad-ds/get-started/virtual-dc/active-directory-domain-services-overview")
+    Component(MicrosoftActiveDirectoryDomainServices.Domaincontrollerservices.Directoryreplicationresponsibility, "Directory replication responsibility", $techn="AD DS logical responsibility", $descr="Logical reference: Processes directory change records; controller topology is deliberately omitted.", $tags="", $link="https://learn.microsoft.com/en-us/windows-server/identity/ad-ds/get-started/virtual-dc/active-directory-domain-services-overview")
+    Component(MicrosoftActiveDirectoryDomainServices.Domaincontrollerservices.GroupPolicyandSYSVOLaccess, "Group Policy and SYSVOL access", $techn="AD DS logical responsibility", $descr="Logical reference: Supplies domain policy metadata and policy-file references.", $tags="", $link="https://learn.microsoft.com/en-us/windows-server/identity/ad-ds/get-started/virtual-dc/active-directory-domain-services-overview")
+    Component(MicrosoftActiveDirectoryDomainServices.Domaincontrollerservices.LDAPdirectoryinterface, "LDAP directory interface", $techn="AD DS logical responsibility", $descr="Logical reference: Accepts directory searches and authenticated binds.", $tags="", $link="https://learn.microsoft.com/en-us/windows-server/identity/ad-ds/get-started/virtual-dc/active-directory-domain-services-overview")
+    Component(MicrosoftActiveDirectoryDomainServices.Domaincontrollerservices.KerberosKDC, "Kerberos KDC", $techn="AD DS logical responsibility", $descr="Logical reference: Validates domain authentication and issues Kerberos tickets.", $tags="", $link="https://learn.microsoft.com/en-us/windows-server/identity/ad-ds/get-started/virtual-dc/active-directory-domain-services-overview")
+  }
+
+  ContainerDb(MicrosoftActiveDirectoryDomainServices.SYSVOLstore, "SYSVOL store", $techn="SYSVOL / owned filesystem", $descr="Domain-controller-owned policy templates and scripts; no filesystem deployment is specified.", $tags="", $link="https://learn.microsoft.com/en-us/windows-server/identity/ad-ds/get-started/virtual-dc/active-directory-domain-services-overview")
+  ContainerDb(MicrosoftActiveDirectoryDomainServices.ADdirectorydatastore, "AD directory data store", $techn="NTDS directory database / owned storage", $descr="Domain-controller-owned directory objects, schema and account records.", $tags="", $link="https://learn.microsoft.com/en-us/windows-server/identity/ad-ds/get-started/virtual-dc/active-directory-domain-services-overview")
+}
+
+Rel(Businessuser, MicrosoftActiveDirectoryDomainServices.Domaincontrollerservices.KerberosKDC, "Requests domain sign-in and service tickets through the domain client", $techn="Kerberos / domain client", $tags="", $link="")
+Rel(Securityadministrator, MicrosoftActiveDirectoryDomainServices.Domaincontrollerservices.LDAPdirectoryinterface, "Submits authorized configuration or access-policy changes", $techn="Protected LDAP / directory administration", $tags="", $link="")
+Rel(MicrosoftActiveDirectoryDomainServices.Domaincontrollerservices.LDAPdirectoryinterface, MicrosoftActiveDirectoryDomainServices.Domaincontrollerservices.Directoryaccessandauthorization, "Passes bind or directory search request", $techn="In-process logical interface", $tags="", $link="")
+Rel(MicrosoftActiveDirectoryDomainServices.Domaincontrollerservices.Directoryaccessandauthorization, MicrosoftActiveDirectoryDomainServices.Domaincontrollerservices.Directorypersistence, "Reads permitted account attributes or updates directory objects", $techn="In-process logical interface", $tags="", $link="")
+Rel(MicrosoftActiveDirectoryDomainServices.Domaincontrollerservices.KerberosKDC, MicrosoftActiveDirectoryDomainServices.Domaincontrollerservices.Directorypersistence, "Reads account authentication and ticket-policy records", $techn="In-process logical interface", $tags="", $link="")
+Rel(MicrosoftActiveDirectoryDomainServices.Domaincontrollerservices.Directoryreplicationresponsibility, MicrosoftActiveDirectoryDomainServices.Domaincontrollerservices.Directorypersistence, "Applies replicated directory change records", $techn="In-process logical interface", $tags="", $link="")
+Rel(MicrosoftActiveDirectoryDomainServices.Domaincontrollerservices.GroupPolicyandSYSVOLaccess, MicrosoftActiveDirectoryDomainServices.Domaincontrollerservices.Directoryaccessandauthorization, "Reads authorized Group Policy object metadata", $techn="In-process logical interface", $tags="", $link="")
+Rel(MicrosoftActiveDirectoryDomainServices.Domaincontrollerservices.Directorypersistence, MicrosoftActiveDirectoryDomainServices.ADdirectorydatastore, "Reads and writes directory objects, account records and change state", $techn="Local directory database interface", $tags="", $link="")
+Rel(MicrosoftActiveDirectoryDomainServices.Domaincontrollerservices.GroupPolicyandSYSVOLaccess, MicrosoftActiveDirectoryDomainServices.SYSVOLstore, "Reads domain policy templates and script references", $techn="Local filesystem access", $tags="", $link="")
+Rel(MicrosoftActiveDirectoryDomainServices.Domaincontrollerservices.KerberosKDC, Businessuser, "Returns Kerberos ticket response to the domain client", $techn="Kerberos / domain client", $tags="", $link="")
+
+SHOW_LEGEND(true)
+hide stereotypes
+@enduml

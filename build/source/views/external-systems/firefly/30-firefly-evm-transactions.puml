@@ -1,0 +1,49 @@
+@startuml
+title <size:24>Component - FireFly EVMConnect: Transaction submission</size>\n<size:24>Component - FireFly EVMConnect: Transaction submission</size>
+
+set separator none
+left to right direction
+
+<style>
+  root {
+    BackgroundColor: #ffffff
+    FontColor: #444444
+  }
+</style>
+
+!include <C4/C4>
+!include <C4/C4_Context>
+!include <C4/C4_Container>
+!include <C4/C4_Component>
+
+System_Boundary("HyperledgerFireFly_boundary", "Hyperledger FireFly", $tags="") {
+  Container_Boundary("HyperledgerFireFly.EVMConnectFFTM_boundary", "EVMConnect + FFTM", $tags="") {
+    Component(HyperledgerFireFly.EVMConnectFFTM.ConnectorRESTAPI, "Connector REST API", $techn="Go", $descr="Accepts transaction, query and event-stream requests.", $tags="", $link="https://github.com/hyperledger-firefly/evmconnect/tree/6e12bb4c050677780cf5dd975a926923868b0cb8/cmd/evmconnect.go")
+    Component(HyperledgerFireFly.EVMConnectFFTM.Transactionmanager, "Transaction manager", $techn="Go", $descr="Coordinates durable transaction and stream lifecycles.", $tags="", $link="https://github.com/hyperledger-firefly/transaction-manager/tree/5915cbc4e0e30dea25068b770dadbcc8bdfa9321/pkg/fftm")
+    Component(HyperledgerFireFly.EVMConnectFFTM.Transactionpolicyhandler, "Transaction policy handler", $techn="Go", $descr="Schedules signing, submission, gas and retry policy.", $tags="", $link="https://github.com/hyperledger-firefly/transaction-manager/tree/5915cbc4e0e30dea25068b770dadbcc8bdfa9321/pkg/txhandler")
+    Component(HyperledgerFireFly.EVMConnectFFTM.Nonceallocation, "Nonce allocation", $techn="Go", $descr="Assigns and persists ordered nonces per signing address.", $tags="", $link="https://github.com/hyperledger-firefly/transaction-manager/tree/5915cbc4e0e30dea25068b770dadbcc8bdfa9321/internal/persistence")
+    Component(HyperledgerFireFly.EVMConnectFFTM.EVMAPIadapter, "EVM API adapter", $techn="Go", $descr="Encodes ABIs and implements the blockchain connector API.", $tags="", $link="https://github.com/hyperledger-firefly/evmconnect/tree/6e12bb4c050677780cf5dd975a926923868b0cb8/internal/ethereum")
+    Component(HyperledgerFireFly.EVMConnectFFTM.EthereumJSONRPCclient, "Ethereum JSON-RPC client", $techn="Go", $descr="Submits calls and transactions through the signing proxy.", $tags="", $link="https://github.com/hyperledger-firefly/evmconnect/tree/6e12bb4c050677780cf5dd975a926923868b0cb8/pkg/ethrpc")
+    Component(HyperledgerFireFly.EVMConnectFFTM.Receipttracking, "Receipt tracking", $techn="Go", $descr="Polls receipt status for submitted transactions.", $tags="", $link="https://github.com/hyperledger-firefly/transaction-manager/tree/5915cbc4e0e30dea25068b770dadbcc8bdfa9321/pkg/fftm")
+    Component(HyperledgerFireFly.EVMConnectFFTM.Persistenceadapter, "Persistence adapter", $techn="Go", $descr="Stores transactions, nonces, streams and checkpoints.", $tags="", $link="https://github.com/hyperledger-firefly/transaction-manager/tree/5915cbc4e0e30dea25068b770dadbcc8bdfa9321/internal/persistence")
+  }
+
+  ContainerDb(HyperledgerFireFly.FFTMPostgreSQLdatabase, "FFTM PostgreSQL database", $techn="PostgreSQL", $descr="Stores EVMConnect transaction state, nonces and checkpoints in a separate logical database with separate credentials.", $tags="", $link="https://github.com/hyperledger-firefly/transaction-manager/tree/5915cbc4e0e30dea25068b770dadbcc8bdfa9321/internal/persistence/postgres")
+  Container(HyperledgerFireFly.FireFlySigner, "FireFly Signer", $techn="Go", $descr="Signs member transactions and proxies Ethereum RPC calls.", $tags="", $link="https://github.com/hyperledger-firefly/signer/tree/cfafd71fb4d2c3061a946f6466269877c3f04d9d/internal/rpcserver")
+}
+
+Rel(HyperledgerFireFly.EVMConnectFFTM.ConnectorRESTAPI, HyperledgerFireFly.EVMConnectFFTM.Transactionmanager, "Submits transaction and stream requests", $techn="In-process calls / Go", $tags="", $link="")
+Rel(HyperledgerFireFly.EVMConnectFFTM.Transactionmanager, HyperledgerFireFly.EVMConnectFFTM.Transactionpolicyhandler, "Schedules managed transaction processing", $techn="In-process calls / Go", $tags="", $link="")
+Rel(HyperledgerFireFly.EVMConnectFFTM.Transactionpolicyhandler, HyperledgerFireFly.EVMConnectFFTM.Nonceallocation, "Allocates the next sender nonce", $techn="In-process calls / Go", $tags="", $link="")
+Rel(HyperledgerFireFly.EVMConnectFFTM.Nonceallocation, HyperledgerFireFly.EVMConnectFFTM.Persistenceadapter, "Persists sender transaction ordering", $techn="In-process calls / Go", $tags="", $link="")
+Rel(HyperledgerFireFly.EVMConnectFFTM.Transactionpolicyhandler, HyperledgerFireFly.EVMConnectFFTM.EVMAPIadapter, "Prepares calls and encoded transactions", $techn="In-process calls / Go", $tags="", $link="")
+Rel(HyperledgerFireFly.EVMConnectFFTM.EVMAPIadapter, HyperledgerFireFly.EVMConnectFFTM.EthereumJSONRPCclient, "Issues Ethereum JSON-RPC requests", $techn="In-process calls / Go", $tags="", $link="")
+Rel(HyperledgerFireFly.EVMConnectFFTM.Transactionpolicyhandler, HyperledgerFireFly.EVMConnectFFTM.Receipttracking, "Tracks submitted transaction receipts", $techn="In-process calls / Go", $tags="", $link="")
+Rel(HyperledgerFireFly.EVMConnectFFTM.Receipttracking, HyperledgerFireFly.EVMConnectFFTM.EthereumJSONRPCclient, "Queries transaction receipt status", $techn="In-process calls / Go", $tags="", $link="")
+Rel(HyperledgerFireFly.EVMConnectFFTM.Transactionmanager, HyperledgerFireFly.EVMConnectFFTM.Persistenceadapter, "Persists transaction lifecycle state", $techn="In-process calls / Go", $tags="", $link="")
+Rel(HyperledgerFireFly.EVMConnectFFTM.Persistenceadapter, HyperledgerFireFly.FFTMPostgreSQLdatabase, "Persists FFTM transactions and checkpoints", $techn="PostgreSQL wire / TLS", $tags="", $link="")
+Rel(HyperledgerFireFly.EVMConnectFFTM.EthereumJSONRPCclient, HyperledgerFireFly.FireFlySigner, "Forwards transactions and read calls", $techn="HTTP JSON-RPC", $tags="", $link="")
+
+SHOW_LEGEND(true)
+hide stereotypes
+@enduml

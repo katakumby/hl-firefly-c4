@@ -1,0 +1,44 @@
+@startuml
+title <size:24>Container - CyberArk Conjur Enterprise logical reference</size>\n<size:24>Container - CyberArk Conjur Enterprise logical reference</size>
+
+set separator none
+left to right direction
+
+<style>
+  root {
+    BackgroundColor: #ffffff
+    FontColor: #444444
+  }
+</style>
+
+!include <C4/C4>
+!include <C4/C4_Context>
+!include <C4/C4_Container>
+
+Person(Securityadministrator, "Security administrator", $descr="Configures identity, privileged access, secret policies and key permissions in these reference examples.", $tags="", $link="https://docs.cyberark.com/pam-self-hosted/latest/en/content/pas%20inst/installationoverview.htm")
+
+System_Boundary("CyberArkConjurEnterprise_boundary", "CyberArk Conjur Enterprise", $tags="") {
+  Container(CyberArkConjurEnterprise.Conjurservice, "Conjur service", $techn="Conjur Enterprise / HTTPS API", $descr="Logical enterprise runtime for policy, workload authentication and secret APIs; no leader/follower placement is specified.", $tags="", $link="https://docs.cyberark.com/secrets-manager-sh/latest/en/content/resources/_topnav/cc_home.htm")
+  ContainerDb(CyberArkConjurEnterprise.Conjurencryptedpersistence, "Conjur encrypted persistence", $techn="Service-owned encrypted persistence (logical)", $descr="Logical service-owned storage for encrypted secrets, identity and policy state; not an independently provisioned database claim.", $tags="", $link="https://docs.cyberark.com/secrets-manager-sh/latest/en/content/resources/_topnav/cc_home.htm")
+  Container(CyberArkConjurEnterprise.VaultSynchronizer, "Vault Synchronizer", $techn="CyberArk Vault Synchronizer", $descr="Reads selected PAM Vault accounts and synchronizes their secret values into Conjur Enterprise.", $tags="", $link="https://docs.cyberark.com/secrets-manager-sh/latest/en/content/conjur/cv_synchronizer-lp.htm")
+}
+
+System_Boundary("CyberArkPAMSelfHosted_boundary", "CyberArk PAM Self-Hosted", $tags="") {
+  Container(CyberArkPAMSelfHosted.DigitalVault, "Digital Vault", $techn="CyberArk PAM / proprietary service", $descr="Protects privileged credentials, Safe permissions and audit/session records.", $tags="", $link="https://docs.cyberark.com/pam-self-hosted/latest/en/content/pas%20inst/installationoverview.htm")
+}
+
+System_Boundary("Memberapplicationreference_boundary", "Member application reference", $tags="") {
+  Container(Memberapplicationreference.Memberbusinessapplication, "Member business application", $techn="Example application / REST client", $descr="Submits requests and consumes acknowledged FireFly events.", $tags="", $link="https://hyperledger-firefly.github.io/firefly/head/architecture/node_component_architecture/")
+}
+
+Rel(Securityadministrator, CyberArkConjurEnterprise.Conjurservice, "Submits authorized configuration or access-policy changes", $techn="HTTPS / product administration API", $tags="", $link="")
+Rel(CyberArkConjurEnterprise.Conjurservice, CyberArkConjurEnterprise.Conjurencryptedpersistence, "Reads or writes encrypted secret records and versions", $techn="Service-owned persistence interface (logical)", $tags="", $link="")
+Rel(CyberArkConjurEnterprise.VaultSynchronizer, CyberArkConjurEnterprise.Conjurservice, "Authenticates and writes mapped secret variable values", $techn="HTTPS / Conjur API", $tags="", $link="")
+Rel(Memberapplicationreference.Memberbusinessapplication, CyberArkConjurEnterprise.Conjurservice, "Authenticates workload and requests permitted secret variable", $techn="HTTPS / Conjur authentication and secrets APIs", $tags="", $link="")
+Rel(CyberArkConjurEnterprise.VaultSynchronizer, CyberArkPAMSelfHosted.DigitalVault, "Reads configured Vault accounts and changed credential versions", $techn="CyberArk Vault protocol / encrypted channel", $tags="", $link="")
+Rel(CyberArkConjurEnterprise.Conjurservice, Memberapplicationreference.Memberbusinessapplication, "Returns short-lived access token or authorized application secret", $techn="HTTPS / Conjur API response", $tags="", $link="")
+Rel(CyberArkPAMSelfHosted.DigitalVault, CyberArkConjurEnterprise.VaultSynchronizer, "Returns selected account metadata and credentials", $techn="CyberArk Vault protocol / encrypted channel", $tags="", $link="")
+
+SHOW_LEGEND(true)
+hide stereotypes
+@enduml

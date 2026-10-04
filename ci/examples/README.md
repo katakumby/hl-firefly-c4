@@ -1,136 +1,124 @@
 # Architecture CI examples
 
-These examples remain inactive until configured. They target GitHub.com and Azure
-DevOps Services on approved Linux runners with Docker, a POSIX shell and standard
-runner utilities. No host Python, Java, Node, npm or diagram software is required.
-Use a non-root runner account with Docker access and writable artifact directories.
+These examples are inactive until configured. Use an approved Linux Docker runner;
+no host Python, Java, npm or diagram software is required. The toolchain images are
+acquired explicitly and generation runs offline. Provider lookup and artifact transfer
+are separate network-enabled operations.
 
-## Two stages and image names
+## Stages and artifacts
 
-Configure two distinct project images without explicit tags or versions:
+- Push/PR: regressions and `build-source`, publishing `architecture-source`.
+- Daily **02:00 UTC**: independent PlantUML and Mermaid preview jobs.
+- Manual: `source`, `plantuml`, `mermaid` or `previews` (default: both previews).
+- Preview jobs restore the newest successful, available source artifact for the exact
+  commit and branch. Missing/expired artifacts fail; run the source job first.
 
-- `ARCHITECTURE_TOOLS_IMAGE`: `registry.example.com/architecture/dlt-architecture-tools-light`.
-- `ARCHITECTURE_BROWSER_IMAGE`: `registry.example.com/architecture/dlt-architecture-tools-browser`.
+Each job cleans before generating or restoring sources, never after restoration.
+Preview jobs do not depend on one another or regenerate source text. Their artifacts
+are `architecture-preview-plantuml` and `architecture-preview-mermaid`; unique inventories
+and reports allow packages from the same source handoff to be combined. Output filenames
+remain stable and mirror the source tree. Run IDs belong in provider metadata, not paths.
 
-Docker resolves implicit `latest`; the platform team controls image publication.
-Upstream bases, libraries and package versions remain pinned inside the toolchain.
-Each job acquires only its selected image. Preloaded images are the default; an
-explicit acquisition option enables registry authentication and pulling. Generation
-and regression containers always have networking disabled. Provider artifact/API
-access and explicit image acquisition use separate network-enabled steps; the
-Azure lookup step uses Node already installed in the browser image.
+Use a **30-day retention target**. An unchanged commit may outlive its source artifact;
+rerun source generation to renew availability. Native repository exports remain manual.
+Browser tests render temporary native fixtures without changing repository layouts.
+CI never commits generated files. Failures publish diagnostics only, not old diagrams.
 
-Push/PR runs execute the lightweight suite and `build`, then publish
-`architecture-light`. This includes C4-PlantUML, C4/authored PlantUML SVG/PNG and the
-lightweight handoff metadata. Mermaid images and syntax validation are deferred.
-Browser-specific integration tests are explicitly skipped in the light image and
-run in the browser image.
+## Required configuration
 
-The daily **02:00 UTC** schedule runs only browser completion. Manual runs select
-`light` or `browser` (default `browser`). Browser runs retrieve an earlier successful
-light artifact for the exact checked-out commit and branch, then run `build-browser`
-and publish `architecture-full`. They never repeat C4/PlantUML rendering or create
-a replacement light build. Missing, expired, incorrect or damaged handoffs fail;
-run the light job for the same commit first, then retry. Native Structurizr exports
-and local layout snapshots are outside these scheduled architecture outputs.
+Set approved image references with distinct names and no explicit tag:
 
-Both stages report inspections without blocking publication. Add an explicit
-`validate` step only if your CI policy requires strict inspection gates. Browser
-integration tests may render temporary native fixture diagrams; they do not export
-the repository's native diagrams or require its manual snapshots.
+- `ARCHITECTURE_TOOLS_IMAGE`: `registry.example.com/architecture/dlt-architecture-tools-light`
+- `ARCHITECTURE_BROWSER_IMAGE`: `registry.example.com/architecture/dlt-architecture-tools-browser`
+
+Source and PlantUML jobs acquire only the light image. Mermaid jobs acquire only the
+browser image. Azure's separate provider lookup job also needs the browser image for
+its installed Node runtime. Installed toolchain identities must match repository pins;
+matching image names alone are insufficient. See the [Docker guide](../../documentation/build.md).
+
+Runners need Docker access, writable checkout/build directories, compatible Linux images,
+registry trust, and approved network access for acquisition and provider APIs. The wrapper
+uses runner UID/GID for generated files. Credentials come from provider secrets or service
+connections. Package staging directories must be fresh and empty.
 
 ## GitHub Actions
 
 Copy [github-actions.yaml](github-actions.yaml) to `.github/workflows/architecture.yaml`.
-Configure repository/organization variables:
+Set `ARCHITECTURE_RUNNER_LABELS` to a JSON label array for an approved runner, for example
+`["self-hosted","linux","architecture"]`. Set both image variables above and
+`ARCHITECTURE_IMAGE_ACQUISITION` to `preloaded` or `pull`. For pull mode configure
+`ARCHITECTURE_REGISTRY`, plus `ARCHITECTURE_REGISTRY_USER` and
+`ARCHITECTURE_REGISTRY_PASSWORD` secrets. Preloaded mode needs no registry credentials.
 
-- `ARCHITECTURE_RUNNER_LABELS`: e.g. `["self-hosted","linux","architecture"]`.
-- Both image variables above.
-- `ARCHITECTURE_IMAGE_ACQUISITION`: `preloaded` or unset, or `pull`.
-- `ARCHITECTURE_REGISTRY`: hostname when pulling.
+The workflow has `contents: read` and `actions: read`. Its lookup script
+[select-source-run.cjs](../select-source-run.cjs) paginates completed successful runs
+of the configured workflow and selects an unexpired `architecture-source` artifact
+with the exact SHA and branch. Preview-only and failed runs cannot substitute for a
+source artifact. Cross-run download uses the selected run and artifact IDs.
 
-For pulling, provide provider-managed `ARCHITECTURE_REGISTRY_USER` and
-`ARCHITECTURE_REGISTRY_PASSWORD` secrets. Credentials use an isolated Docker
-configuration directory removed after the job. Preloaded images need no credentials.
+PR merge commits differ from branch-head commits: a scheduled or manual preview of
+the branch head needs a matching push or manual source artifact. No fallback to the
+PR merge artifact occurs. Scheduled workflows use the default branch. Configure repository
+artifact retention to permit the requested 30 days, and runners compatible with the
+pinned action versions. [Cross-run artifact download](https://github.com/actions/download-artifact#download-artifacts-from-other-workflow-runs-or-repositories)
+requires the supplied token and run identity.
 
-The workflow token requires `contents: read` and `actions: read`. The repository's
-lookup helper selects the newest successful push/manual run of this workflow for
-the exact commit/branch with an unexpired `architecture-light` artifact. It does
-not accept a browser-only run or an artifact from another commit. PR merge-checkout
-artifacts may differ from the branch-head commit; run a manual light job for that
-branch before manual browser completion. Provider hashes and container source/file
-fingerprints independently validate the downloaded package.
+## Azure DevOps Services
 
-Artifact retention is 30 days. A long-unchanged commit can outlive its light artifact;
-rerun light to refresh availability. Configure the scheduled workflow on the default
-branch, and adapt `main` if necessary. Use approved runner/secret policies for PRs;
-fork PRs should use preloaded images and suitably isolated runners. Review and pin
-provider action revisions according to organizational policy.
+Activate [azure-pipelines.yaml](azure-pipelines.yaml) with the adjacent
+[azure-stage.yaml](azure-stage.yaml) job template. Keep their relative paths together.
+Set `ARCHITECTURE_AGENT_POOL` and both image variables. Use `acquireImage: false` for
+preloaded images or configure the `registryServiceConnection` parameter for explicit
+pulls. Set pipeline retention to retain builds and artifacts for at least 30 days.
 
-## Azure DevOps
+Successful source runs publish `architecture-source` and add the CI build tag
+`architecture-source-<commit>`. These are provider build tags, not Docker image tags.
+The separate lookup job runs [select-azure-source-run.cjs](../select-azure-source-run.cjs)
+with the approved browser image and networking enabled. It validates pipeline, exact
+commit, branch, successful completion, build tag and artifact availability across pages.
+Unavailable artifacts are skipped; authentication/API errors fail explicitly.
 
-Create a pipeline from [azure-pipelines.yaml](azure-pipelines.yaml). Configure
-`ARCHITECTURE_AGENT_POOL` and both image variables. The `acquireImage` parameter
-(default false) controls explicit acquisition through `registryServiceConnection`.
-Docker login/logout tasks use that provider-managed connection.
+The job token requires read access to prior builds and pipeline artifacts. Lookup exposes
+the selected build ID as a job output; both offline preview jobs download that specific
+build using `DownloadPipelineArtifact@2`. The containers independently verify commit,
+source fingerprints, toolchain and output hashes. Provider variable wiring follows
+[Azure output-variable guidance](https://learn.microsoft.com/en-us/azure/devops/pipelines/process/set-variables-scripts?view=azure-devops&tabs=bash).
 
-Successful light runs publish `architecture-light` and receive the CI build tag
-`architecture-light-<commit>`. Browser runs first execute the repository's Azure
-REST lookup with the browser image's Node runtime in a separate, explicitly
-network-enabled container. `SYSTEM_ACCESSTOKEN` supplies the pipeline identity;
-it is used only for that lookup and is not passed to diagram generation.
+Azure Repos PR validation requires a branch build-validation policy; YAML `pr` supports
+applicable external repository providers. The UTC schedule uses `always: true` so it
+can render an unchanged commit from an existing source artifact.
 
-The lookup selects the newest successful tagged build on the same pipeline,
-branch and exact commit that still has an available `architecture-light` artifact.
-Failed/partial builds and unavailable artifacts are skipped. `DownloadPipelineArtifact@2`
-then downloads from that specific build; the offline container independently
-verifies revision, source fingerprints, installed toolchain compatibility and
-output hashes. If no matching artifact exists, run light for the same commit
-first. These are CI build tags, not Docker image tags. Keep artifact retention
-with its successful run and configure a minimum 30-day retention target in
-project/pipeline policy.
-
-Azure Repos PR validation needs a branch build-validation policy; YAML `pr` applies
-to supported external providers. The schedule uses `always: true` so a browser run
-can complete existing lightweight artifacts even when no code changed. Set the
-scheduled branch explicitly if it differs from `main`. Pipeline identity permissions
-must permit reading prior builds and pipeline artifacts through the REST API and
-download task. The lookup container needs approved access to the Azure DevOps
-service and its TLS trust configuration; generation still uses disabled networking.
-
-## Packaging, local verification and server editions
-
-`package --stage light` is the default. It includes only light outputs and matching
-reports. `package --stage full` additionally requires current successful browser
-completion and includes the combined ordinary outputs. The inventory inside each
-package lists only its included diagrams. Settings, layout snapshots, optional native
-exports, locks, staging and unrelated historical files are excluded. Failure packages
-contain reports/logs only; provider logs remain available if image acquisition fails.
+## Packaging and local verification
 
 ```sh
-docker/run.sh test
-docker/run.sh build
-mkdir -p /tmp/architecture-light-artifacts
-ARCHITECTURE_ARTIFACT_DIR=/tmp/architecture-light-artifacts docker/run.sh package --stage light
-# In a second clean checkout of the same sources, restore that package into build/.
-docker/run.sh build-browser
-mkdir -p /tmp/architecture-full-artifacts
-ARCHITECTURE_ARTIFACT_DIR=/tmp/architecture-full-artifacts docker/run.sh --browser package --stage full
+docker/run.sh clean
+docker/run.sh build-source
+mkdir -p /tmp/architecture-source-artifacts
+ARCHITECTURE_ARTIFACT_DIR=/tmp/architecture-source-artifacts docker/run.sh package --stage source
+# In a second checkout: clean first, then restore that package into build/.
+docker/run.sh build-preview --renderer plantuml
+mkdir -p /tmp/architecture-plantuml-artifacts
+ARCHITECTURE_ARTIFACT_DIR=/tmp/architecture-plantuml-artifacts docker/run.sh package --stage preview --renderer plantuml
 ```
 
-Package destinations must be empty. Run `docker/run.sh --browser test` for the
-complete regression suite, before restoring the handoff in a fresh CI checkout.
-Use `--browser package --diagnostics` after a browser failure. Provider run/commit
-provenance is metadata; generated paths and filenames remain stable.
+A separate checkout can restore the same source package and render/package Mermaid.
+Source packaging is the default and contains text, dependencies, a filtered inventory,
+frozen parsed workspace/validation evidence, renderer identity and CI provenance.
+Previews require that complete handoff; committed text alone is insufficient.
+Set `ARCHITECTURE_SOURCE_REVISION` and `ARCHITECTURE_CI_RUN` to reproduce CI provenance
+checks locally, or omit both for fingerprint-based operation without Git metadata.
 
-GitHub Enterprise Server requires server-compatible actions/artifact APIs; the
-v4+ artifact backend in this example is unsupported on GHES. Azure DevOps Server
-requires build-artifact publish/download tasks instead of pipeline-artifact tasks.
-Adapt cross-run selection and retain the exact-commit checks. See
-[GitHub artifact downloads](https://github.com/actions/download-artifact) and
-[Azure artifact downloads](https://learn.microsoft.com/en-us/azure/devops/pipelines/tasks/reference/download-pipeline-artifact-v2?view=azure-pipelines).
+Successful packages exclude native exports, saved layouts, local overrides, locks,
+staging and unrelated build contents. `package --diagnostics` includes only reports/logs.
+Never upload the entire checkout or unfiltered build directory. The preview packages
+contain only the requested renderer's successful selection; a partial selection does
+not certify all diagrams.
 
-Local tests cover stage behavior and provider lookup fixtures. Actual runner
-registration, credentials, retention and service permissions require verification
-in your configured CI service. Toolchain image publication stays a separate
-platform-team maintenance operation.
+## Server editions
+
+Examples target GitHub.com and Azure DevOps Services. GitHub Enterprise Server needs
+supported artifact actions/API behavior for that server release; current v4+ artifact
+actions are not supported there. Azure DevOps Server requires supported Build Artifact
+publish/download tasks rather than Pipeline Artifact tasks, with corresponding lookup
+resource-type changes. Preserve exact-commit selection, availability checks and offline
+container verification when adapting either example.

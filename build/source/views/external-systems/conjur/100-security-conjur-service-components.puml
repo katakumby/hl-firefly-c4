@@ -1,0 +1,47 @@
+@startuml
+title <size:24>Component - Conjur service: logical responsibilities</size>\n<size:24>Component - Conjur service: logical responsibilities</size>
+
+set separator none
+left to right direction
+
+<style>
+  root {
+    BackgroundColor: #ffffff
+    FontColor: #444444
+  }
+</style>
+
+!include <C4/C4>
+!include <C4/C4_Context>
+!include <C4/C4_Container>
+!include <C4/C4_Component>
+
+Person(Securityadministrator, "Security administrator", $descr="Configures identity, privileged access, secret policies and key permissions in these reference examples.", $tags="", $link="https://docs.cyberark.com/pam-self-hosted/latest/en/content/pas%20inst/installationoverview.htm")
+
+System_Boundary("CyberArkConjurEnterprise_boundary", "CyberArk Conjur Enterprise", $tags="") {
+  Container_Boundary("CyberArkConjurEnterprise.Conjurservice_boundary", "Conjur service", $tags="") {
+    Component(CyberArkConjurEnterprise.Conjurservice.SecretandpolicyAPI, "Secret and policy API", $techn="Conjur responsibility / logical reference", $descr="Logical reference: Accepts authenticated secret and policy operations.", $tags="", $link="https://docs.cyberark.com/secrets-manager-sh/latest/en/content/resources/_topnav/cc_home.htm")
+    Component(CyberArkConjurEnterprise.Conjurservice.Workloadauthentication, "Workload authentication", $techn="Conjur responsibility / logical reference", $descr="Logical reference: Validates the configured workload identity proof and issues a short-lived Conjur access token.", $tags="", $link="https://docs.cyberark.com/secrets-manager-sh/latest/en/content/resources/_topnav/cc_home.htm")
+    Component(CyberArkConjurEnterprise.Conjurservice.Policyauthorization, "Policy authorization", $techn="Conjur responsibility / logical reference", $descr="Logical reference: Evaluates workload permissions for the requested secret variable or policy resource.", $tags="", $link="https://docs.cyberark.com/secrets-manager-sh/latest/en/content/resources/_topnav/cc_home.htm")
+    Component(CyberArkConjurEnterprise.Conjurservice.Secretaccess, "Secret access", $techn="Conjur responsibility / logical reference", $descr="Logical reference: Returns only authorized secret values and accepts permitted updates.", $tags="", $link="https://docs.cyberark.com/secrets-manager-sh/latest/en/content/resources/_topnav/cc_home.htm")
+    Component(CyberArkConjurEnterprise.Conjurservice.Accessauditing, "Access auditing", $techn="Conjur responsibility / logical reference", $descr="Logical reference: Records workload, variable identifier and operation outcome without secret values.", $tags="", $link="https://docs.cyberark.com/secrets-manager-sh/latest/en/content/resources/_topnav/cc_home.htm")
+  }
+
+  ContainerDb(CyberArkConjurEnterprise.Conjurencryptedpersistence, "Conjur encrypted persistence", $techn="Service-owned encrypted persistence (logical)", $descr="Logical service-owned storage for encrypted secrets, identity and policy state; not an independently provisioned database claim.", $tags="", $link="https://docs.cyberark.com/secrets-manager-sh/latest/en/content/resources/_topnav/cc_home.htm")
+}
+
+Rel(CyberArkConjurEnterprise.Conjurservice.SecretandpolicyAPI, CyberArkConjurEnterprise.Conjurservice.Workloadauthentication, "Submits configured workload authentication proof", $techn="In-process logical interface", $tags="", $link="")
+Rel(CyberArkConjurEnterprise.Conjurservice.Workloadauthentication, CyberArkConjurEnterprise.Conjurservice.SecretandpolicyAPI, "Returns short-lived Conjur access token", $techn="In-process logical interface", $tags="", $link="")
+Rel(CyberArkConjurEnterprise.Conjurservice.SecretandpolicyAPI, CyberArkConjurEnterprise.Conjurservice.Policyauthorization, "Passes token identity, variable path and requested operation", $techn="In-process logical interface", $tags="", $link="")
+Rel(CyberArkConjurEnterprise.Conjurservice.Policyauthorization, CyberArkConjurEnterprise.Conjurservice.Secretaccess, "Authorizes secret variable read or update", $techn="In-process logical interface", $tags="", $link="")
+Rel(Securityadministrator, CyberArkConjurEnterprise.Conjurservice.SecretandpolicyAPI, "Submits authorized configuration or access-policy changes", $techn="HTTPS / product administration API", $tags="", $link="")
+Rel(CyberArkConjurEnterprise.Conjurservice.Secretaccess, CyberArkConjurEnterprise.Conjurservice.SecretandpolicyAPI, "Returns authorized secret value or update status", $techn="In-process logical interface", $tags="", $link="")
+Rel(CyberArkConjurEnterprise.Conjurservice.SecretandpolicyAPI, CyberArkConjurEnterprise.Conjurservice.Accessauditing, "Records workload, variable identifier and operation outcome", $techn="In-process logical interface", $tags="", $link="")
+Rel(CyberArkConjurEnterprise.Conjurservice.Secretaccess, CyberArkConjurEnterprise.Conjurencryptedpersistence, "Reads or writes encrypted secret records and versions", $techn="Service-owned persistence interface (logical)", $tags="", $link="")
+Rel(CyberArkConjurEnterprise.Conjurservice.Policyauthorization, CyberArkConjurEnterprise.Conjurencryptedpersistence, "Reads workload permissions and variable policy records", $techn="Service-owned persistence interface (logical)", $tags="", $link="")
+Rel(Memberapplicationreference.Memberbusinessapplication, CyberArkConjurEnterprise.Conjurservice.SecretandpolicyAPI, "Authenticates workload and requests permitted secret variable", $techn="HTTPS / Conjur authentication and secrets APIs", $tags="", $link="")
+Rel(CyberArkConjurEnterprise.Conjurservice.SecretandpolicyAPI, Memberapplicationreference.Memberbusinessapplication, "Returns short-lived access token or authorized application secret", $techn="HTTPS / Conjur API response", $tags="", $link="")
+
+SHOW_LEGEND(true)
+hide stereotypes
+@enduml

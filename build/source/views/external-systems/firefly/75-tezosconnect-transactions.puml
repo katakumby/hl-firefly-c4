@@ -1,0 +1,46 @@
+@startuml
+title <size:24>Component - TezosConnect + FFTM: transactions</size>\n<size:24>Component - TezosConnect + FFTM: transactions</size>
+
+set separator none
+left to right direction
+
+<style>
+  root {
+    BackgroundColor: #ffffff
+    FontColor: #444444
+  }
+</style>
+
+!include <C4/C4>
+!include <C4/C4_Context>
+!include <C4/C4_Container>
+!include <C4/C4_Component>
+
+System(Signatory, "Signatory", $descr="Remote Tezos signing service; backend key management is external.", $tags="", $link="https://github.com/hyperledger-firefly/tezosconnect/tree/508ec1e8bb8b671c1eb6e9c090a1d219043dbd8b/README.md")
+System(Tezosnetwork, "Tezos network", $descr="External Tezos node RPC and chain-monitoring endpoints.", $tags="", $link="https://github.com/hyperledger-firefly/tezosconnect/tree/508ec1e8bb8b671c1eb6e9c090a1d219043dbd8b/README.md")
+
+System_Boundary("HyperledgerFireFly_boundary", "Hyperledger FireFly", $tags="") {
+  Container_Boundary("HyperledgerFireFly.TezosConnectFFTM_boundary", "TezosConnect + FFTM", $tags="") {
+    Component(HyperledgerFireFly.TezosConnectFFTM.ConnectorAPIandtransactionmanager, "Connector API and transaction manager", $techn="Go", $descr="Accepts and manages durable transaction and stream requests.", $tags="", $link="https://github.com/hyperledger-firefly/transaction-manager/tree/7a882ddaeaf2e7b9b2203a053402576e436debd9/pkg/fftm")
+    Component(HyperledgerFireFly.TezosConnectFFTM.Transactionpolicyandnoncemanagement, "Transaction policy and nonce management", $techn="Go", $descr="Schedules Tezos operation submission, retries and counter allocation.", $tags="", $link="https://github.com/hyperledger-firefly/transaction-manager/tree/7a882ddaeaf2e7b9b2203a053402576e436debd9/pkg/txhandler")
+    Component(HyperledgerFireFly.TezosConnectFFTM.Tezosoperationadapter, "Tezos operation adapter", $techn="Go", $descr="Prepares, queries, estimates and submits Tezos operations.", $tags="", $link="https://github.com/hyperledger-firefly/tezosconnect/tree/508ec1e8bb8b671c1eb6e9c090a1d219043dbd8b/internal/tezos")
+    Component(HyperledgerFireFly.TezosConnectFFTM.Remotesigningclient, "Remote signing client", $techn="Go", $descr="Requests operation signatures from Signatory.", $tags="", $link="https://github.com/hyperledger-firefly/tezosconnect/tree/508ec1e8bb8b671c1eb6e9c090a1d219043dbd8b/internal/tezos/send_transaction.go")
+    Component(HyperledgerFireFly.TezosConnectFFTM.FFTMpersistence, "FFTM persistence", $techn="Go", $descr="Stores managed transactions and event checkpoints.", $tags="", $link="https://github.com/hyperledger-firefly/transaction-manager/tree/7a882ddaeaf2e7b9b2203a053402576e436debd9/internal/persistence")
+  }
+
+  Container(HyperledgerFireFly.FireFlyCore, "FireFly Core", $techn="Go", $descr="Exposes member APIs, serves Explorer assets and orchestrates multiparty operations.", $tags="", $link="https://github.com/hyperledger-firefly/firefly/tree/9d20f3081c9074d5b012427e5572ebc03da8d95d/internal/orchestrator")
+  ContainerDb(HyperledgerFireFly.TezosConnectstate, "TezosConnect state", $techn="PostgreSQL or LevelDB", $descr="Optional PostgreSQL or LevelDB persistence for the embedded FFTM.", $tags="", $link="https://github.com/hyperledger-firefly/transaction-manager/tree/7a882ddaeaf2e7b9b2203a053402576e436debd9/internal/persistence")
+}
+
+Rel(HyperledgerFireFly.TezosConnectFFTM.Tezosoperationadapter, Tezosnetwork, "Queries state and injects signed operations", $techn="Tezos HTTP RPC", $tags="", $link="")
+Rel(HyperledgerFireFly.TezosConnectFFTM.Remotesigningclient, Signatory, "Requests an operation signature for a Tezos address", $techn="HTTP / Signatory API", $tags="", $link="")
+Rel(HyperledgerFireFly.FireFlyCore, HyperledgerFireFly.TezosConnectFFTM.ConnectorAPIandtransactionmanager, "Submits configured ledger requests", $techn="HTTP REST / JSON", $tags="", $link="")
+Rel(HyperledgerFireFly.TezosConnectFFTM.ConnectorAPIandtransactionmanager, HyperledgerFireFly.TezosConnectFFTM.Transactionpolicyandnoncemanagement, "Schedules durable operation submission", $techn="In-process calls / Go", $tags="", $link="")
+Rel(HyperledgerFireFly.TezosConnectFFTM.Transactionpolicyandnoncemanagement, HyperledgerFireFly.TezosConnectFFTM.Tezosoperationadapter, "Prepares and submits Tezos operations", $techn="In-process calls / Go", $tags="", $link="")
+Rel(HyperledgerFireFly.TezosConnectFFTM.Tezosoperationadapter, HyperledgerFireFly.TezosConnectFFTM.Remotesigningclient, "Requests a signature for encoded operations", $techn="In-process calls / Go", $tags="", $link="")
+Rel(HyperledgerFireFly.TezosConnectFFTM.ConnectorAPIandtransactionmanager, HyperledgerFireFly.TezosConnectFFTM.FFTMpersistence, "Persists managed transaction state", $techn="In-process calls / Go", $tags="", $link="")
+Rel(HyperledgerFireFly.TezosConnectFFTM.FFTMpersistence, HyperledgerFireFly.TezosConnectstate, "Reads and writes managed state", $techn="PostgreSQL wire or LevelDB API", $tags="", $link="")
+
+SHOW_LEGEND(true)
+hide stereotypes
+@enduml

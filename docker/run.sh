@@ -7,7 +7,15 @@ if [ "${1:-}" = --browser ]; then
     architecture_browser=true
     shift
 fi
-case "${1:-}" in build-browser|export-native) architecture_browser=true ;; esac
+case "${1:-}" in export-native) architecture_browser=true ;; esac
+architecture_previous=
+for architecture_argument in "$@"; do
+    if [ "$architecture_argument" = --renderer=mermaid ] ||
+       { [ "$architecture_previous" = --renderer ] && [ "$architecture_argument" = mermaid ]; }; then
+        architecture_browser=true
+    fi
+    architecture_previous=$architecture_argument
+done
 if [ "$architecture_browser" = true ]; then
     architecture_image=${ARCHITECTURE_BROWSER_IMAGE:-dlt-architecture-tools-browser}
 else

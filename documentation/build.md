@@ -14,11 +14,11 @@ need Java/Graphviz; Mermaid images and native Structurizr exports need Chromium.
 Installed capabilities and versions are recorded in each image. Unsupported
 operations fail with the required service name, without installing dependencies.
 
-`build` generates C4 and authored PlantUML resources; `build-browser` completes
-Mermaid images from a matching successful lightweight handoff. Neither invokes
-native exports. Inspection findings remain nonblocking; `validate` is the strict
-quality check. The [Dockerfile](../docker/Dockerfile), upstream version pins, npm
-lockfile and PlantUML checksum remain the platform team's toolchain controls.
+`build-source` generates C4 text and copies authored PlantUML/Mermaid. Independent
+`build-preview --renderer plantuml|mermaid` commands render that generated text.
+Native exports remain explicit. Inspection findings are reported without blocking
+generation; `validate` is the strict quality check. The [Dockerfile](../docker/Dockerfile),
+upstream pins, npm lockfile and artifact checksums remain toolchain controls.
 
 ## Acquire approved images explicitly
 
@@ -77,201 +77,158 @@ with `--network none`. Public dependencies are never downloaded at runtime.
 
 ## Run with Compose
 
-Create `build/` before execution and ensure your chosen non-root UID/GID can write
-it. On Linux/macOS with a POSIX shell:
+Create build and choose a non-root UID/GID with write access. Tools mount authoring
+sources read-only and build writable. Runtime networking is disabled, the container
+filesystem is read-only, capabilities are dropped, and scratch space is temporary.
+The normal Compose file contains no image-build instructions and never pulls images.
 
 ```sh
 mkdir -p build
 export ARCHITECTURE_UID=$(id -u)
 export ARCHITECTURE_GID=$(id -g)
-docker compose run --rm --pull never tools validate
-docker compose run --rm --pull never --entrypoint python3 tools -B -m unittest discover -s tests -v
-docker compose run --rm --pull never tools export --workspace workspaces/ignition/workspace.dsl --view ignition-dapp-platform-context
-docker compose run --rm --pull never tools build
-docker compose run --rm --pull never tools-browser build-browser
+docker compose config --quiet
+docker compose run --rm --pull never tools clean
+docker compose run --rm --pull never tools build-source
+docker compose run --rm --pull never tools build-preview --renderer plantuml
+docker compose run --rm --pull never tools-browser build-preview --renderer mermaid
 ```
 
-Use an approved nonzero UID; defaults are `1000:1000`. Do not use `sudo` to run
-these commands as UID 0. Windows users can use Compose with Docker Desktop and
-its bind-mount permissions, keeping the default container UID/GID. A missing
-image fails rather than pulling or building it: acquire it explicitly above.
-The optional `docker/run.sh` wrapper also prints acquisition instructions.
+The two preview commands can run in either order. Clean only before generating or
+restoring sources; cleaning afterward deletes their input. Preview commands never
+rebuild missing text. Use `validate` for strict standalone validation, or select a
+workspace/view with `build-source` and PlantUML previews:
 
-Normal `compose.yaml` has `pull_policy: never` and no `build` section. Source mounts
-are read-only for tools; only `build/` is writable. The container filesystem is
-read-only, capabilities are dropped, and networking is disabled. Temporary
-storage permits browser execution. Viewers use the same preloaded-image policy;
-`docker compose up -d` preserves the existing three service names and localhost
-ports. Viewer source mounts remain writable for Structurizr's native ignored cache.
+```sh
+docker compose run --rm --pull never tools build-source --workspace workspaces/ignition/workspace.dsl --view ignition-dapp-platform-context
+docker compose run --rm --pull never tools build-preview --renderer plantuml --workspace workspaces/ignition/workspace.dsl --view ignition-dapp-platform-context
+```
 
-For persistent local settings, put image references, UID/GID and optional ports
-in ignored `build/local.env`. Invoke Compose with
-`--env-file .env --env-file build/local.env`. Do not commit credentials.
-For example:
+Inspection findings remain nonblocking during generation. Parsing/model validation,
+inspector failures, collisions and renderer errors remain failures. Selection defaults
+and native exports are described in the [README](../README.md#build-diagram-sources).
+
+Use exported environment variables or ignored `docker/local.env` for machine-specific
+image names, UID/GID and port overrides. Do not place credentials in committed files.
+Move an existing `build/local.env` outside build before invoking clean.
+
+```sh
+docker compose --env-file .env --env-file docker/local.env run --rm --pull never tools build-source
+```
+
+The launcher below uses exported variables, not Compose env files. From a parent
+codebase, pass this checkout's project directory, env file and Compose file explicitly:
 
 ```text
-docker compose --env-file .env --env-file build/local.env run --rm --pull never tools build
+docker compose --project-directory <checkout> --env-file <checkout>/.env -f <checkout>/compose.yaml run --rm --pull never tools build-source
 ```
 
-For a checkout nested beneath another repository, use its explicit paths:
-
-```text
-docker compose --project-directory <architecture-checkout> --env-file <architecture-checkout>/.env -f <architecture-checkout>/compose.yaml run --rm --pull never tools build
-```
-
-This does not depend on the parent repository's `.env`, Compose configuration,
-current directory or Git metadata.
+Repository-relative paths and freshness do not require parent configuration or Git metadata.
 
 ## Run with plain Docker
 
-The following commands use POSIX shell expansion and the same isolation controls
-as Compose. Set `ARCHITECTURE_TOOLS_IMAGE` above and run from this checkout.
-The image already supplies the architecture entrypoint and `/workspace` working
-directory. Only the tests override the entrypoint.
+No host Python, Java or Node is needed. The optional POSIX wrapper provides the same
+mounts and restrictions as Compose, finds this repository from its own location, and
+checks that the image is already loaded:
 
 ```sh
-mkdir -p build
-docker run --rm --pull never --network none --read-only --init --user "$(id -u):$(id -g)" --cap-drop ALL --security-opt no-new-privileges:true --shm-size 256m --tmpfs /tmp:rw,exec,nosuid,nodev,size=1g,mode=1777 --mount "type=bind,src=$PWD,dst=/workspace,readonly" --mount "type=bind,src=$PWD/build,dst=/workspace/build" "$ARCHITECTURE_TOOLS_IMAGE" validate
-docker run --rm --pull never --network none --read-only --init --user "$(id -u):$(id -g)" --cap-drop ALL --security-opt no-new-privileges:true --shm-size 256m --tmpfs /tmp:rw,exec,nosuid,nodev,size=1g,mode=1777 --mount "type=bind,src=$PWD,dst=/workspace,readonly" --mount "type=bind,src=$PWD/build,dst=/workspace/build" --entrypoint python3 "$ARCHITECTURE_TOOLS_IMAGE" -B -m unittest discover -s tests -v
-docker run --rm --pull never --network none --read-only --init --user "$(id -u):$(id -g)" --cap-drop ALL --security-opt no-new-privileges:true --shm-size 256m --tmpfs /tmp:rw,exec,nosuid,nodev,size=1g,mode=1777 --mount "type=bind,src=$PWD,dst=/workspace,readonly" --mount "type=bind,src=$PWD/build,dst=/workspace/build" "$ARCHITECTURE_TOOLS_IMAGE" export --view 01-landscape
-docker run --rm --pull never --network none --read-only --init --user "$(id -u):$(id -g)" --cap-drop ALL --security-opt no-new-privileges:true --shm-size 256m --tmpfs /tmp:rw,exec,nosuid,nodev,size=1g,mode=1777 --mount "type=bind,src=$PWD,dst=/workspace,readonly" --mount "type=bind,src=$PWD/build,dst=/workspace/build" "$ARCHITECTURE_TOOLS_IMAGE" build
-```
-
-On an approved Linux/macOS shell the optional convenience wrapper supplies those
-same flags, resolves paths relative to itself, and checks that the image is loaded:
-
-```sh
-docker/run.sh validate
+docker/run.sh clean
+docker/run.sh build-source
+docker/run.sh build-source --workspace workspace.dsl --view 01-landscape
+docker/run.sh build-preview --renderer plantuml
+docker/run.sh build-preview --renderer mermaid
+docker/run.sh export-native --workspace workspaces/ignition/workspace.dsl --view example-container-animation --format gif
 docker/run.sh test
 docker/run.sh --browser test
-docker/run.sh export --view 01-landscape
-docker/run.sh export --all-workspaces
-docker/run.sh export-native --workspace workspaces/ignition/workspace.dsl --view example-container-animation --view stable_key_name --format gif
-docker/run.sh build
-docker/run.sh build-browser
 ```
 
-The wrapper reads exported environment variables; it does not load `.env` or
-`build/local.env` as shell settings. Export the required image variable and any UID/GID overrides before using it.
-`build-browser` and `export-native` automatically choose the browser image; use
-`--browser` before `test` or `package` to select it explicitly. The Python tooling still reads the committed
-version pins from `.env` inside the mounted checkout.
+Mermaid previews/packages and native exports automatically select the browser image.
+Use `--browser` for browser-image tests or cleanup when only that image is preloaded.
+The default image is lightweight; missing images fail with acquisition instructions.
 
-## Lightweight handoffs and completion
-
-`build` now produces only C4/PlantUML outputs. This is a deliberate change from
-the previous single-image full build. Run `build-browser` afterward to complete
-Mermaid previews. The browser stage reads current Mermaid sources and verifies
-the previous light build; it does not repeat DSL parsing or C4 rendering.
-
-Reports use `build/.reports/build-light.json` and `build-browser.json`, with
-adjacent logs. The root `build.json` describes the latest stage attempt.
-Light success is `passed: true`, `stage: light`, `complete: false`; ordinary build
-completion is recorded only after a successful browser stage. Existing deferred
-Mermaid files retain their previous freshness. Deleted/moved Mermaid outputs are
-pruned only after browser completion succeeds.
-
-To transfer the light result to another checkout of the same sources:
+For environments that prefer direct Docker calls, this is the complete source command:
 
 ```sh
-mkdir -p /tmp/architecture-light-artifacts
-ARCHITECTURE_ARTIFACT_DIR=/tmp/architecture-light-artifacts docker/run.sh package --stage light
+docker run --rm --pull never --network none --read-only --init \
+  --user "$(id -u):$(id -g)" --cap-drop ALL --security-opt no-new-privileges:true \
+  --shm-size 256m --tmpfs /tmp:rw,exec,nosuid,nodev,size=1g,mode=1777 \
+  --mount "type=bind,src=$PWD,dst=/workspace,readonly" \
+  --mount "type=bind,src=$PWD/build,dst=/workspace/build" \
+  "$ARCHITECTURE_TOOLS_IMAGE" build-source
 ```
 
-Use an empty destination. Copy that package's contents into the other checkout's
-`build/` directory, then run `docker/run.sh build-browser`. CI performs this restore
-in an isolated checkout. Do not mix packages from different runs. The package
-contains generated light files, filtered inventory, parsed workspace reports,
-source fingerprints, deferred paths and provenance. It excludes old browser/native
-images, snapshots, local settings, locks and staging. Missing/changed inputs,
-required reports or output hashes fail before rendering; no automatic rebuild or
-fallback to an older commit occurs.
+Keep the same runtime options and substitute `clean`, `validate`,
+`build-source --workspace workspace.dsl --view 01-landscape`, or
+`build-preview --renderer plantuml`. For `build-preview --renderer mermaid` and
+`export-native`, substitute `$ARCHITECTURE_BROWSER_IMAGE`.
+For tests, add `--entrypoint python3` before the image name and pass
+`-B -m unittest discover -s tests -v` after it.
 
-Compatibility checks use installed toolchain evidence, not image names alone.
-The browser image must match the lightweight stage's shared Structurizr/PlantUML,
-Graphviz and font dependencies, and its browser renderers must match the committed
-pins and lockfile. Reacquire approved images under the same two names when an
-installed toolchain is incompatible, then rerun light. Project image tags or
-versions do not need to be introduced.
+## Source handoffs and independent previews
 
-CI supplies `ARCHITECTURE_SOURCE_REVISION` (the exact checked-out commit) and
-`ARCHITECTURE_CI_RUN`; these are metadata, never directory names. Browser completion
-checks the expected revision in addition to source fingerprints. Local operation
-needs no Git metadata. Full packages require both stages:
+`build-source` produces text, a deterministic `build/source.json` inventory, and
+ignored `.reports/source.json` / `.log` with frozen per-workspace validation evidence
+under `.reports/source/`. Neither preview stage requires the other renderer's output.
+A source artifact must include that evidence, not merely the committed diagrams.
 
 ```sh
-mkdir -p /tmp/architecture-full-artifacts
-ARCHITECTURE_ARTIFACT_DIR=/tmp/architecture-full-artifacts docker/run.sh --browser package --stage full
+mkdir -p /tmp/architecture-source-artifacts
+ARCHITECTURE_ARTIFACT_DIR=/tmp/architecture-source-artifacts docker/run.sh package --stage source
+# In another checkout of the same sources: clean, then restore the package into build/.
+docker/run.sh build-preview --renderer plantuml
+mkdir -p /tmp/architecture-plantuml-artifacts
+ARCHITECTURE_ARTIFACT_DIR=/tmp/architecture-plantuml-artifacts docker/run.sh package --stage preview --renderer plantuml
 ```
 
-`package --diagnostics` excludes diagram files. Light packages remain available
-when browser completion fails; full packaging refuses failed or stale completion.
-Changing sources or lightweight artifacts requires a new lightweight build.
-Frozen validation evidence under `build/.reports/light/` stays independent of
-the latest ad-hoc export diagnostics, so native exports do not invalidate it.
-Fingerprints cover architecture sources, documentation and tooling, including
-accepted hidden source folders and local includes. Generated output, Git and agent
-configuration, and known caches are excluded; hidden authoring inputs are not
-automatically excluded.
+Package destinations must be empty. Use another checkout restored from the same
+source package to run `build-preview --renderer mermaid` and
+`package --stage preview --renderer mermaid`. Their inventories and report names are
+distinct, so same-handoff preview packages can be combined without overwriting evidence.
+Native files, local settings, saved layouts, locks and staging are excluded. Use
+`package --diagnostics` after failure; it includes reports and logs, never diagrams.
 
-When migrating, acquire the two new images, update image variables and rerun the
-light stage. Older single-image manifests cannot serve as lightweight handoffs.
-The old image and historical output are not automatically deleted.
+The receiver checks source fingerprints, output/report hashes, selection coverage,
+installed toolchain compatibility, and `ARCHITECTURE_SOURCE_REVISION` when set by CI.
+`ARCHITECTURE_CI_RUN` records provenance without changing output names. Wrong commits,
+partial or stale handoffs, corrupted files and incompatible images fail before rendering.
+There is no fallback to another commit or automatic source regeneration.
 
-## Manual layout snapshots
+Shared toolchain components must match across images; browser capabilities may be
+additional. Image names alone do not establish compatibility. Reacquire approved
+images under the same names when needed, then create a fresh source handoff. Older
+light/full handoffs are intentionally unsupported.
 
-Manual positions belong to saved Structurizr JSON. In the viewer, arrange views
-that have no `autoLayout` and explicitly save; then capture the result:
+Source, PlantUML, Mermaid and native inventories are versioned. Operational reports
+and timestamps remain ignored. Files from a failed stage remain available as previous
+artifacts but cannot be packaged as current success. Publishing uses one writer lock,
+bounded staging and a rollback journal; another command recovers interrupted publication.
+
+## Saved layouts
+
+Explicitly save manual diagrams in the viewer. The adjacent `workspace.json` is the
+versioned golden source for coordinates and routing; DSL supplies current model,
+views and animation definitions. Automatic layouts do not require saved coordinates.
+There is no capture command or persistent `.layouts` copy.
 
 ```text
-docker compose run --rm --pull never tools capture-layout --workspace workspaces/ignition/workspace.dsl
 docker compose run --rm --pull never tools-browser export-native --workspace workspaces/ignition/workspace.dsl --format png
 ```
 
-The equivalent plain-Docker launcher is `docker/run.sh capture-layout ...` or
-`docker/run.sh export-native ...`. Both export commands accept `--all-workspaces`,
-one `--workspace`, and repeatable `--view` within a selected workspace. See the
-[selection examples](../README.md#export-c4-plantuml-default-mermaid-svg-or-png).
+The native merge reads saved JSON into temporary staging, checks that the original
+has not changed before publication, and leaves it unmodified. Export needs no running
+viewer. Temporary static pages and animation frames use container-local storage and
+are discarded. An internal loopback server works with Docker networking disabled.
+External browser resources are rejected; use available embedded/local themes, icons
+and fonts. SVG/PNG/GIF outputs live directly under mirrored `build/preview/` paths.
 
-The captured file is
-`build/.layouts/workspaces/ignition/workspace.dsl/workspace.json`, with adjacent
-`capture.json` metadata. Root-workspace snapshots use
-`build/.layouts/workspace.dsl/workspace.json`. The snapshot is a full saved JSON
-workspace for compatibility with native merging, but only its layout is reused;
-current DSL supplies architecture and animation content.
+To restore an earlier layout, stop the relevant viewer, review and restore the desired
+version of its adjacent JSON using Git, then restart the viewer. Keep newer local
+changes safe before restoring. Native parsing merges that saved layout with current DSL.
+View-key or model changes may require adjusting and saving positions again.
 
-Snapshots stay ignored by Git and survive ordinary builds and `--clean`. Copy the
-snapshot directory to back it up or transfer it to another checkout at the same
-relative path. A fresh clone cannot reproduce a manual layout without this state.
-Deleting all of `build/` deletes it too.
-
-To restore a captured layout to the viewer, stop that viewer, back up any newer
-local `workspace.json`, then copy the captured file beside its `workspace.dsl`.
-For Ignition on a POSIX shell:
-
-```sh
-docker compose stop ignition
-cp build/.layouts/workspaces/ignition/workspace.dsl/workspace.json workspaces/ignition/workspace.json
-docker compose up -d ignition
-```
-
-Refresh the browser. The viewer reparses DSL and merges saved layout information.
-Keep explicit view keys stable; renames and substantial model changes can require
-manual adjustment. Capture again after saving those adjustments.
-
-Native export needs no running viewer: it serves temporary static assets on
-container loopback, with Docker networking still disabled. External browser
-resources are rejected; supply local/embedded icons, themes and fonts. Temporary
-pages and animation frames are removed afterward. Sources remain read-only and
-only `build/` is writable. The entire selected batch publishes atomically, using
-the existing writer lock and recovery journal.
-
-Use `--format svg|png|gif` and optional GIF `--frame-duration <seconds>`.
-Native images have `.structurizr` filename suffixes; they coexist with ordinary
-exports. Inspection findings remain report-only. Rendering errors or missing
-required layouts fail the batch while retaining earlier successful artifacts.
-Normal CI builds do not generate or package these optional native images; export
-and collect them explicitly when needed.
+Clean removes generated previews and old snapshots, not these adjacent saved JSON files.
+Both ordinary preview stages preserve native outputs and their freshness metadata;
+only another explicit native export refreshes them. CI does not export repository
+native images, although browser regression tests render isolated temporary fixtures.
 
 ## Platform-team image maintenance
 

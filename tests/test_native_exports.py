@@ -61,7 +61,6 @@ def save_layout(workspace):
         for relation in view.get('relationships', []):
             relation.update(vertices=[{'x': 400, 'y': 250}], position=65)
     workspace.with_suffix('.json').write_text(json.dumps(raw))
-    cli.capture_layout(workspace)
     return raw
 
 
@@ -73,13 +72,13 @@ class Selection(unittest.TestCase):
     def test_cli_defaults_and_multiple_view_keys_validate_once(self):
         with checkout():
             paths.REFERENCE.write_text(BASE)
-            arguments = ['architecture.py', 'export', '--view', 'flow', '--view', 'unprefixed', '--view', 'flow']
+            arguments = ['architecture.py', 'build-source', '--view', 'flow', '--view', 'unprefixed', '--view', 'flow']
             with patch.object(sys, 'argv', arguments), patch.object(cli, 'validate', wraps=cli.validate) as validate:
                 self.assertEqual(0, cli.main())
             self.assertEqual(1, validate.call_count)
-            self.assertEqual({'flow.puml', 'unprefixed.puml'}, set(managed_contents()))
-            status = json.loads((paths.output_directory(paths.REFERENCE) / 'export-status.json').read_text())
-            self.assertEqual(['flow', 'unprefixed'], status['views'])
+            self.assertEqual({'source/flow.puml', 'source/unprefixed.puml'}, set(managed_contents()))
+            status = json.loads((cli.BUILD / '.reports/source.json').read_text())
+            self.assertEqual(['flow', 'unprefixed'], status['selection']['views'])
 
     def test_all_workspaces_include_nested_variants_with_isolated_keys(self):
         with checkout() as root:
@@ -89,16 +88,16 @@ class Selection(unittest.TestCase):
             variant.parent.mkdir(parents=True)
             child.write_text('workspace extends ../../workspace.dsl {\n}')
             variant.write_text('workspace extends ../../workspace.dsl {\n}')
-            with patch.object(sys, 'argv', ['architecture.py', 'export', '--all-workspaces']):
+            with patch.object(sys, 'argv', ['architecture.py', 'build-source', '--all-workspaces']):
                 self.assertEqual(0, cli.main())
             self.assertEqual(9, len(cli.inventory()))
             for prefix in ('', 'workspaces/team/', 'workspaces/team/variants/future/'):
-                self.assertIn(prefix + 'flow.puml', managed_contents())
+                self.assertIn('source/' + prefix + 'flow.puml', managed_contents())
 
     def test_invalid_cli_combinations_and_gif_timing(self):
         cases = [
-            ['export', '--all-workspaces', '--workspace', 'workspace.dsl'],
-            ['export', '--all-workspaces', '--view', 'one'],
+            ['build-source', '--all-workspaces', '--workspace', 'workspace.dsl'],
+            ['build-source', '--all-workspaces', '--view', 'one'],
             ['export-native', '--all-workspaces', '--view', 'one'],
             ['export-native', '--format', 'svg', '--frame-duration', '2'],
             *[['export-native', '--format', 'gif', '--frame-duration', value]
@@ -113,13 +112,13 @@ class Selection(unittest.TestCase):
     def test_unknown_keys_are_reported_together_before_rendering(self):
         with checkout():
             paths.REFERENCE.write_text(BASE)
-            for is_native in (False, True):
-                if is_native and not has_capability('native'):
-                    continue
-                with self.subTest(native=is_native), patch.object(cli, 'stage_c4') as c4, \
-                     patch.object(native, 'render_native') as renderer:
+            operations = [lambda: cli.build_source([paths.REFERENCE], ['missing-one', 'flow', 'missing-two'])]
+            if has_capability('native'):
+                operations.append(lambda: cli.export_native([paths.REFERENCE], 'svg', ['missing-one', 'flow', 'missing-two']))
+            for operation in operations:
+                with patch.object(cli, 'stage_c4') as c4, patch.object(native, 'render_native') as renderer:
                     with self.assertRaisesRegex(ValueError, "missing-one.*missing-two"):
-                        cli.export_batch([paths.REFERENCE], 'svg', ['missing-one', 'flow', 'missing-two'], native=is_native)
+                        operation()
                     c4.assert_not_called()
                     renderer.assert_not_called()
 
@@ -130,20 +129,20 @@ class Selection(unittest.TestCase):
             other.parent.mkdir(parents=True)
             other.write_text(BASE)
             selected = [paths.REFERENCE, other]
-            cli.export_batch(selected, 'plantuml')
+            cli.build_source(selected)
             before = managed_contents()
-            inventory = (cli.BUILD / 'artifacts.json').read_bytes()
+            inventory = (cli.BUILD / 'source.json').read_bytes()
             stage = cli.stage_c4
             def fail_later(workspace, *args):
                 if workspace == other:
                     raise RuntimeError('Second workspace failed')
                 return stage(workspace, *args)
             with patch.object(cli, 'stage_c4', side_effect=fail_later), self.assertRaisesRegex(RuntimeError, 'Second workspace'):
-                cli.export_batch(selected, 'plantuml')
+                cli.build_source(selected)
             self.assertEqual(before, managed_contents())
-            self.assertEqual(inventory, (cli.BUILD / 'artifacts.json').read_bytes())
+            self.assertEqual(inventory, (cli.BUILD / 'source.json').read_bytes())
             for workspace in selected:
-                report = json.loads((paths.output_directory(workspace) / 'export-status.json').read_text())
+                report = json.loads((cli.BUILD / '.reports/source.json').read_text())
                 self.assertFalse(report['passed'])
                 self.assertEqual([], report['outputs'])
             self.assertFalse((cli.BUILD / '.staging').exists())
@@ -180,24 +179,21 @@ class NativeLayouts(unittest.TestCase):
                     self.assertEqual(65, resulting['relationships'][0]['position'])
             self.assertEqual(original, snapshot.read_bytes())
 
-    def test_missing_invalid_and_incomplete_layouts_preserve_previous_snapshot(self):
+    def test_missing_invalid_and_incomplete_saved_layouts_fail(self):
         with checkout() as root:
             paths.REFERENCE.write_text(NATIVE)
-            with self.assertRaisesRegex(ValueError, 'viewer first'):
-                cli.capture_layout(paths.REFERENCE)
             with self.assertRaisesRegex(ValueError, 'Saved manual layout is missing'):
-                cli.export_batch([paths.REFERENCE], 'svg', ['manual'], native=True)
+                cli.export_native([paths.REFERENCE], 'svg', ['manual'])
             saved = save_layout(paths.REFERENCE)
-            snapshot = native.layout_path(paths.REFERENCE, root, cli.BUILD)
-            previous = snapshot.read_bytes()
-            paths.REFERENCE.with_suffix('.json').write_text('{ broken')
+            file = paths.REFERENCE.with_suffix('.json')
+            file.write_text('{ broken')
             with self.assertRaises(ValueError):
-                cli.capture_layout(paths.REFERENCE)
-            self.assertEqual(previous, snapshot.read_bytes())
+                cli.export_native([paths.REFERENCE], 'svg', ['manual'])
+            self.assertEqual('{ broken', file.read_text())
             native.views(saved)['manual'][1].pop('dimensions')
-            snapshot.write_text(json.dumps(saved))
+            file.write_text(json.dumps(saved))
             with self.assertRaisesRegex(ValueError, 'manual'):
-                cli.export_batch([paths.REFERENCE], 'svg', ['manual'], native=True)
+                cli.export_native([paths.REFERENCE], 'svg', ['manual'])
 
     def test_real_svg_png_and_both_animation_types_then_cleanup(self):
         with checkout() as root:
@@ -206,30 +202,30 @@ class NativeLayouts(unittest.TestCase):
             snapshot = native.layout_path(paths.REFERENCE, root, cli.BUILD)
             saved = snapshot.read_bytes()
             for format in ('svg', 'png'):
-                cli.export_batch([paths.REFERENCE], format, ['manual'], native=True)
+                cli.export_native([paths.REFERENCE], format, ['manual'])
                 for suffix in ('structurizr', 'structurizr-key'):
-                    check_image(cli.BUILD / f'manual.{suffix}.{format}')
-            width, height = struct.unpack('>II', (cli.BUILD / 'manual.structurizr.png').read_bytes()[16:24])
+                    check_image(cli.BUILD / f'preview/manual.{suffix}.{format}')
+            width, height = struct.unpack('>II', (cli.BUILD / 'preview/manual.structurizr.png').read_bytes()[16:24])
             self.assertEqual((1000, 750), (width, height))
-            cli.export_batch([paths.REFERENCE], 'gif', ['reveal', 'flow'], native=True, frame_duration=0.25)
+            cli.export_native([paths.REFERENCE], 'gif', ['reveal', 'flow'], frame_duration=0.25)
             for key, count in [('reveal', 2), ('flow', 4)]:
-                gif = check_gif(cli.BUILD / f'{key}.structurizr.gif')
+                gif = check_gif(cli.BUILD / f'preview/{key}.structurizr.gif')
                 self.assertEqual(count, gif['frames'])
                 self.assertEqual([25] * count, gif['delays_centiseconds'])
             original_entries = deepcopy(cli.inventory())
             with patch.object(cli, 'render', side_effect=quick_render), patch.object(native, 'render_native') as renderer:
-                cli.build()
+                cli.build_source()
                 renderer.assert_not_called()
             self.assertEqual(original_entries, [item for item in cli.inventory() if item.get('renderer') == 'structurizr'])
             self.assertEqual(saved, snapshot.read_bytes())
             # An ordinary selected SVG export does not replace native SVGs or their metadata.
             with patch.object(cli, 'render', side_effect=quick_render):
-                cli.export(paths.REFERENCE, 'svg', 'manual')
+                cli.build_preview('plantuml', [paths.REFERENCE], ['manual'])
             self.assertEqual(original_entries, [item for item in cli.inventory() if item.get('renderer') == 'structurizr'])
             cli.clean_build()
             self.assertEqual(saved, snapshot.read_bytes())
-            self.assertTrue(snapshot.with_name('capture.json').exists())
-            self.assertFalse((cli.BUILD / 'manual.structurizr.svg').exists())
+            self.assertFalse((cli.BUILD / '.layouts').exists())
+            self.assertFalse((cli.BUILD / 'preview/manual.structurizr.svg').exists())
 
     def test_nonanimated_gif_selection_and_workspace_skip(self):
         with checkout():
@@ -237,11 +233,11 @@ class NativeLayouts(unittest.TestCase):
             # No layout is needed for skipped views; no renderer starts on an invalid selection.
             with patch.object(native, 'render_native') as renderer:
                 with self.assertRaisesRegex(ValueError, 'no animation: manual'):
-                    cli.export_batch([paths.REFERENCE], 'gif', ['manual', 'reveal'], native=True)
+                    cli.export_native([paths.REFERENCE], 'gif', ['manual', 'reveal'])
                 renderer.assert_not_called()
             save_layout(paths.REFERENCE)
-            cli.export_batch([paths.REFERENCE], 'gif', native=True)
-            self.assertEqual({'reveal.structurizr.gif', 'flow.structurizr.gif'}, set(managed_contents()))
+            cli.export_native([paths.REFERENCE], 'gif')
+            self.assertEqual({'preview/reveal.structurizr.gif', 'preview/flow.structurizr.gif'}, set(managed_contents()))
             report = json.loads((paths.output_directory(paths.REFERENCE) / 'export-native-status.json').read_text())
             self.assertEqual(['manual'], report['skipped_views'])
 
@@ -252,28 +248,28 @@ class NativeLayouts(unittest.TestCase):
             other.parent.mkdir(parents=True)
             other.write_text(BASE)
             selected = [paths.REFERENCE, other]
-            cli.export_batch(selected, 'svg', native=True)
-            before, previous = managed_contents(), (cli.BUILD / 'artifacts.json').read_bytes()
+            cli.export_native(selected, 'svg')
+            before, previous = managed_contents(), (cli.BUILD / 'preview-native.json').read_bytes()
             real_render = native.render_native
             def fail_other(request, stage, *args):
                 if 'other' in stage.parts:
                     raise RuntimeError('Later native workspace failed')
                 return real_render(request, stage, *args)
             with patch.object(native, 'render_native', side_effect=fail_other), self.assertRaisesRegex(RuntimeError, 'Later native'):
-                cli.export_batch(selected, 'svg', native=True)
+                cli.export_native(selected, 'svg')
             self.assertEqual(before, managed_contents())
-            self.assertEqual(previous, (cli.BUILD / 'artifacts.json').read_bytes())
+            self.assertEqual(previous, (cli.BUILD / 'preview-native.json').read_bytes())
             rename = Path.rename
             def fail_inventory(source, target):
-                if source.name == 'artifacts.json':
+                if source.name == 'preview-native.json':
                     raise OSError('Inventory publication failed')
                 return rename(source, target)
             with patch.object(Path, 'rename', fail_inventory), self.assertRaisesRegex(OSError, 'Inventory publication'):
-                cli.export_batch([paths.REFERENCE], 'svg', ['flow'], native=True)
+                cli.export_native([paths.REFERENCE], 'svg', ['flow'])
             self.assertEqual(before, managed_contents())
-            self.assertEqual(previous, (cli.BUILD / 'artifacts.json').read_bytes())
+            self.assertEqual(previous, (cli.BUILD / 'preview-native.json').read_bytes())
             with patch.object(native, 'layout_fingerprint', side_effect=[None, 'changed']), self.assertRaisesRegex(ValueError, 'layout changed'):
-                cli.export_batch([paths.REFERENCE], 'svg', ['flow'], native=True)
+                cli.export_native([paths.REFERENCE], 'svg', ['flow'])
             self.assertEqual(before, managed_contents())
 
     def test_gif_validation_rejects_truncated_or_fake_files(self):
@@ -300,29 +296,30 @@ class NativeLayouts(unittest.TestCase):
             old.write_text(fragments)
             entry = BASE.split(' views {', 1)[0] + '\n views {\n !include views/old/main.dsl\n }\n}'
             paths.REFERENCE.write_text(entry)
-            cli.export_batch([paths.REFERENCE], 'svg', native=True)
+            cli.export_native([paths.REFERENCE], 'svg')
             moved = root / 'views/new/nested/main.dsl'
             moved.parent.mkdir(parents=True)
             old.rename(moved)
             paths.REFERENCE.write_text(entry.replace('views/old/main.dsl', 'views/new/nested/main.dsl'))
-            cli.export_batch([paths.REFERENCE], 'svg', ['flow'], native=True)
-            self.assertFalse((cli.BUILD / 'views/old/flow.structurizr.svg').exists())
-            self.assertTrue((cli.BUILD / 'views/old/unprefixed.structurizr.svg').exists())
+            cli.export_native([paths.REFERENCE], 'svg', ['flow'])
+            self.assertFalse((cli.BUILD / 'preview/views/old/flow.structurizr.svg').exists())
+            self.assertTrue((cli.BUILD / 'preview/views/old/unprefixed.structurizr.svg').exists())
             before = managed_contents()
             with patch.object(native, 'render_native', side_effect=RuntimeError('failed')), self.assertRaises(RuntimeError):
-                cli.export_batch([paths.REFERENCE], 'svg', native=True)
+                cli.export_native([paths.REFERENCE], 'svg')
             self.assertEqual(before, managed_contents())
-            cli.export_batch([paths.REFERENCE], 'svg', native=True)
-            self.assertFalse((cli.BUILD / 'views/old').exists())
+            cli.export_native([paths.REFERENCE], 'svg')
+            self.assertFalse((cli.BUILD / 'preview/views/old').exists())
             before = managed_contents()
-            cli.export_batch([paths.REFERENCE], 'svg', native=True)
+            cli.export_native([paths.REFERENCE], 'svg')
             self.assertEqual(before, managed_contents())
             moved.write_text(fragments.split('  dynamic *', 1)[0])
             with patch.object(cli, 'render', side_effect=quick_render), patch.object(native, 'render_native') as renderer:
-                cli.build()
+                cli.build_source()
                 renderer.assert_not_called()
-            self.assertFalse((cli.BUILD / 'views/new/nested/flow.structurizr.svg').exists())
-            self.assertTrue((cli.BUILD / 'views/new/nested/unprefixed.structurizr.svg').exists())
+            cli.export_native([paths.REFERENCE], 'svg')
+            self.assertFalse((cli.BUILD / 'preview/views/new/nested/flow.structurizr.svg').exists())
+            self.assertTrue((cli.BUILD / 'preview/views/new/nested/unprefixed.structurizr.svg').exists())
 
 
 if __name__ == '__main__':

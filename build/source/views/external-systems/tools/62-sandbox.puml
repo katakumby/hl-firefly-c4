@@ -1,0 +1,40 @@
+@startuml
+title <size:24>Component - Sandbox server</size>\n<size:24>Component - Sandbox server</size>
+
+set separator none
+left to right direction
+
+<style>
+  root {
+    BackgroundColor: #ffffff
+    FontColor: #444444
+  }
+</style>
+
+!include <C4/C4>
+!include <C4/C4_Context>
+!include <C4/C4_Container>
+!include <C4/C4_Component>
+
+System_Boundary("FireFlydevelopertools_boundary", "FireFly developer tools", $tags="") {
+  Container_Boundary("FireFlydevelopertools.Sandboxserver_boundary", "Sandbox server", $tags="") {
+    Component(FireFlydevelopertools.Sandboxserver.Sandboxbackend, "Sandbox backend", $techn="Node.js / TypeScript", $descr="Maps UI actions into SDK requests.", $tags="", $link="https://github.com/hyperledger-firefly/sandbox/tree/ef7f240b8acf9c79c8fdf5a8bccb73e9de482069/server/src")
+    Component(FireFlydevelopertools.Sandboxserver.FireFlyNodejsSDK, "FireFly Node.js SDK", $techn="TypeScript library", $descr="Calls the selected API and consumes events.", $tags="", $link="https://github.com/hyperledger-firefly/sdk-nodejs/tree/c4e813bc611ff2c6222ff84adf1cceabfd929172/lib/firefly.ts")
+    Component(FireFlydevelopertools.Sandboxserver.SDKHTTPclient, "SDK HTTP client", $techn="TypeScript", $descr="Embedded SDK transport for member requests and events.", $tags="", $link="https://github.com/hyperledger-firefly/sdk-nodejs/tree/c4e813bc611ff2c6222ff84adf1cceabfd929172/lib/http.ts")
+    Component(FireFlydevelopertools.Sandboxserver.SDKWebSocketclient, "SDK WebSocket client", $techn="TypeScript", $descr="Embedded SDK transport for member requests and events.", $tags="", $link="https://github.com/hyperledger-firefly/sdk-nodejs/tree/c4e813bc611ff2c6222ff84adf1cceabfd929172/lib/websocket.ts")
+  }
+
+  Container(FireFlydevelopertools.Sandboxbrowserapplication, "Sandbox browser application", $techn="React / TypeScript / browser", $descr="Runs the sample interface in the developer's browser and calls the Sandbox server.", $tags="", $link="https://github.com/hyperledger-firefly/sandbox/tree/ef7f240b8acf9c79c8fdf5a8bccb73e9de482069/ui/src")
+}
+
+Rel(FireFlydevelopertools.Sandboxserver.FireFlyNodejsSDK, HyperledgerFireFly.FireFlyCore, "Invokes member APIs and consumes events", $techn="HTTPS + WebSocket", $tags="", $link="")
+Rel(FireFlydevelopertools.Sandboxserver.SDKHTTPclient, HyperledgerFireFly.FireFlyCore, "Sends namespace-scoped API requests", $techn="HTTP REST / JSON", $tags="", $link="")
+Rel(FireFlydevelopertools.Sandboxserver.SDKWebSocketclient, HyperledgerFireFly.FireFlyCore, "Subscribes to events and sends acknowledgements", $techn="WebSocket / JSON", $tags="", $link="")
+Rel(FireFlydevelopertools.Sandboxbrowserapplication, FireFlydevelopertools.Sandboxserver.Sandboxbackend, "Submits selected sample actions", $techn="HTTP(S) / JSON", $tags="", $link="")
+Rel(FireFlydevelopertools.Sandboxserver.Sandboxbackend, FireFlydevelopertools.Sandboxserver.FireFlyNodejsSDK, "Submits SDK requests", $techn="In-process calls / TypeScript", $tags="", $link="")
+Rel(FireFlydevelopertools.Sandboxserver.FireFlyNodejsSDK, FireFlydevelopertools.Sandboxserver.SDKHTTPclient, "Dispatches SDK transport operations", $techn="In-process calls / TypeScript", $tags="", $link="")
+Rel(FireFlydevelopertools.Sandboxserver.FireFlyNodejsSDK, FireFlydevelopertools.Sandboxserver.SDKWebSocketclient, "Dispatches SDK transport operations", $techn="In-process calls / TypeScript", $tags="", $link="")
+
+SHOW_LEGEND(true)
+hide stereotypes
+@enduml

@@ -29,9 +29,9 @@ class Provenance(unittest.TestCase):
             parent.write_text('workspace extends ../../workspace.dsl {\n}')
             variant.write_text('workspace extends ../../workspace.dsl {\n}')
             for workspace in (paths.REFERENCE, parent, variant):
-                cli.export(workspace, 'plantuml')
+                cli.build_source([workspace])
                 for key in ('unprefixed', 'duplicate-selection', 'flow'):
-                    output = cli.BUILD / workspace.relative_to(root).parent / 'views/nested' / (key + '.puml')
+                    output = cli.BUILD / 'source' / workspace.relative_to(root).parent / 'views/nested' / (key + '.puml')
                     self.assertTrue(output.is_file(), output)
             self.assertEqual(9, len(cli.inventory()))
 
@@ -68,7 +68,7 @@ class Provenance(unittest.TestCase):
         with checkout():
             paths.REFERENCE.write_text(BASE.replace('duplicate-selection', 'UNPREFIXED'))
             with self.assertRaisesRegex(ValueError, 'output collision'):
-                cli.export(paths.REFERENCE, 'plantuml')
+                cli.build_source([paths.REFERENCE])
             self.assertFalse(list(cli.BUILD.glob('*.puml')))
 
 
@@ -80,101 +80,83 @@ class Inventory(unittest.TestCase):
             source = root / 'workspaces/team/uml/nested/sequence.puml'
             source.parent.mkdir(parents=True)
             source.write_text('@startuml\nA -> B\n@enduml')
-            cli.build()
+            cli.build_source(); cli.build_preview('plantuml')
             first = {p.relative_to(cli.BUILD) for p in cli.BUILD.rglob('*') if p.is_file()}
-            cli.build()
+            cli.build_source(); cli.build_preview('plantuml')
             self.assertEqual(first, {p.relative_to(cli.BUILD) for p in cli.BUILD.rglob('*') if p.is_file()})
-            previous = cli.BUILD / source.relative_to(root).with_suffix('.svg')
+            previous = cli.BUILD / 'preview' / source.relative_to(root).with_suffix('.svg')
             moved = root / 'workspaces/team/uml/new/path/request.puml'
-            moved.parent.mkdir(parents=True)
-            source.rename(moved)
+            moved.parent.mkdir(parents=True); source.rename(moved)
+            cli.build_source()
+            self.assertFalse((cli.BUILD / 'source' / source.relative_to(root)).exists())
             with patch.object(cli, 'render', side_effect=RuntimeError('renderer unavailable')):
                 with self.assertRaisesRegex(RuntimeError, 'unavailable'):
-                    cli.build()
+                    cli.build_preview('plantuml')
             self.assertTrue(previous.exists())
-            cli.build()
+            cli.build_preview('plantuml')
             self.assertFalse(previous.exists())
-            self.assertTrue((cli.BUILD / moved.relative_to(root).with_suffix('.png')).exists())
-            moved.unlink()
-            cli.build()
-            self.assertFalse((cli.BUILD / 'workspaces').exists())
+            self.assertTrue((cli.BUILD / 'preview' / moved.relative_to(root).with_suffix('.png')).exists())
+            moved.unlink(); cli.build_source(); cli.build_preview('plantuml')
+            self.assertFalse((cli.BUILD / 'preview/workspaces').exists())
             self.assertFalse((cli.BUILD / '.staging').exists())
             self.assertEqual(9, len(cli.inventory()))
 
     @patch.object(cli, 'render', side_effect=quick_render)
-    def test_workspace_c4_and_uml_siblings_survive_and_formats_keep_freshness(self, _):
+    def test_workspace_c4_and_uml_siblings_survive_selected_source_and_preview(self, _):
         with checkout() as root:
             paths.REFERENCE.write_text(BASE)
             workspace = root / 'workspaces/team/workspace.dsl'
-            workspace.parent.mkdir(parents=True)
-            workspace.write_text(BASE)
-            source = workspace.parent / 'uml/nested/message.mmd'
-            source.parent.mkdir(parents=True)
-            source.write_text('sequenceDiagram\nA->>B: Hello')
-            cli.build()
-            old = {p: p.read_bytes() for p in (cli.BUILD / 'workspaces/team').rglob('*') if p.is_file()}
-            inventory = cli.inventory()
-            cli.export(workspace, 'plantuml', 'flow')
+            workspace.parent.mkdir(parents=True); workspace.write_text(BASE)
+            source = workspace.parent / 'uml/nested/message.puml'
+            source.parent.mkdir(parents=True); source.write_text('@startuml\nA -> B: Hello\n@enduml')
+            cli.build_source(); cli.build_preview('plantuml')
+            old = {p: p.read_bytes() for p in (cli.BUILD / 'preview/workspaces/team').rglob('*') if p.is_file()}
+            metadata = cli.inventory('preview-plantuml')
+            cli.build_source([workspace], ['flow'])
+            self.assertEqual(metadata, cli.inventory('preview-plantuml'))
+            cli.build_preview('plantuml', [workspace], ['flow'])
             self.assertEqual(old, {p: p.read_bytes() for p in old})
-            self.assertEqual([i for i in inventory if i['format'] != 'plantuml'],
-                             [i for i in cli.inventory() if i['format'] != 'plantuml'])
-            cli.export(paths.REFERENCE, 'mermaid')
-            mermaid = [i for i in cli.inventory() if i['format'] == 'mermaid']
-            paths.REFERENCE.write_text(BASE + '\n// changed')
-            cli.build()
-            self.assertEqual(mermaid, [i for i in cli.inventory() if i['format'] == 'mermaid'])
-            self.assertNotEqual(cli.source_fingerprint(), mermaid[0]['source_sha256'])
+            self.assertTrue((cli.BUILD / 'source/workspaces/team/uml/nested/message.puml').exists())
 
-    @patch.object(cli, 'render', side_effect=quick_render)
-    def test_old_layout_migration_preserves_unmanaged_settings_and_history(self, _):
+    def test_explicit_clean_removes_previous_layout_without_migrating_artifacts(self):
         with checkout():
             paths.REFERENCE.write_text(BASE)
-            legacy = cli.BUILD / 'c4/reference/exports/view-deadbeef/plantuml'
-            legacy.mkdir(parents=True)
-            (legacy / 'structurizr-one.puml').write_text('old')
-            cli.atomic_json(legacy / 'export.json', {'outputs': ['structurizr-one.puml']})
-            (cli.BUILD / 'local.env').write_text('LOCAL=1')
-            history = cli.BUILD / 'c4/history.txt'
-            history.write_text('preserve')
-            (cli.BUILD / 'unrelated-empty').mkdir()
-            with patch.object(cli, 'render', side_effect=RuntimeError('failed')):
-                with self.assertRaises(RuntimeError):
-                    cli.build()
-            self.assertTrue(legacy.exists())
-            cli.build()
-            self.assertFalse(legacy.exists())
-            self.assertTrue(history.exists())
-            self.assertTrue((cli.BUILD / 'unrelated-empty').exists())
-            self.assertEqual('LOCAL=1', (cli.BUILD / 'local.env').read_text())
+            old = cli.BUILD / 'c4/reference/exports/view-deadbeef/plantuml/old.puml'
+            old.parent.mkdir(parents=True); old.write_text('old')
+            cli.build_source()
+            self.assertTrue(old.exists())
+            with cli.command_lock(): cli.clean_build()
+            self.assertFalse(old.exists())
+            cli.build_source()
+            self.assertEqual(3, len(cli.inventory('source')))
 
     @patch.object(cli, 'render', side_effect=quick_render)
-    def test_moved_and_removed_c4_views_prune_only_after_success(self, _):
+    def test_moved_and_removed_c4_views_prune_only_after_successful_stage(self, _):
         with checkout() as root:
             views = root / 'views/old/main.dsl'
             views.parent.mkdir(parents=True)
-            views.write_text(BASE.split(' views {', 1)[1].rsplit('}', 1)[0].rsplit('}', 1)[0])
+            fragments = BASE.split(' views {', 1)[1].rsplit('}', 1)[0].rsplit('}', 1)[0]
+            views.write_text(fragments)
             entry = BASE.split(' views {', 1)[0] + '\n views {\n !include views/old/main.dsl\n }\n}'
             paths.REFERENCE.write_text(entry)
-            cli.build()
-            cli.export(paths.REFERENCE, 'mermaid')
-            old = cli.BUILD / 'views/old/flow.svg'
+            cli.build_source(); cli.build_preview('plantuml')
+            old = cli.BUILD / 'preview/views/old/flow.svg'
             moved = root / 'views/new/nested/main.dsl'
-            moved.parent.mkdir(parents=True)
-            views.rename(moved)
+            moved.parent.mkdir(parents=True); views.rename(moved)
             paths.REFERENCE.write_text(entry.replace('views/old/main.dsl', 'views/new/nested/main.dsl'))
-            with patch.object(cli, 'render', side_effect=RuntimeError('failed')):
-                with self.assertRaises(RuntimeError):
-                    cli.build()
+            with patch.object(cli, 'stage_c4', side_effect=RuntimeError('failed')), self.assertRaises(RuntimeError):
+                cli.build_source()
+            self.assertTrue((cli.BUILD / 'source/views/old/flow.puml').exists())
+            cli.build_source()
+            self.assertFalse((cli.BUILD / 'source/views/old').exists())
             self.assertTrue(old.exists())
-            cli.build()
-            self.assertFalse((cli.BUILD / 'views/old').exists())
-            self.assertTrue((cli.BUILD / 'views/new/nested/flow.svg').exists())
-            self.assertFalse(any(i['format'] == 'mermaid' for i in cli.inventory()))
-            moved.write_text(moved.read_text().split('  dynamic *', 1)[0])
-            cli.build()
-            self.assertFalse((cli.BUILD / 'views/new/nested/flow.svg').exists())
+            cli.build_preview('plantuml')
+            self.assertFalse(old.exists())
+            self.assertTrue((cli.BUILD / 'preview/views/new/nested/flow.svg').exists())
+            moved.write_text(fragments.split('  dynamic *', 1)[0])
+            cli.build_source(); cli.build_preview('plantuml')
+            self.assertFalse((cli.BUILD / 'preview/views/new/nested/flow.svg').exists())
             self.assertEqual(6, len(cli.inventory()))
-
 
 
 class Recovery(unittest.TestCase):
@@ -226,30 +208,25 @@ class Recovery(unittest.TestCase):
                     store.confined(cli.BUILD, relative)
 
 class Packaging(unittest.TestCase):
-    @patch.object(cli, 'render', side_effect=quick_render)
-    def test_package_excludes_settings_staging_and_stale_formats(self, _):
+    def test_package_excludes_local_state_previews_and_failed_outputs(self):
         import ci_artifacts
-        with checkout() as root, patch.object(ci_artifacts, 'BUILD', cli.BUILD):
+        with checkout() as root:
             paths.REFERENCE.write_text(BASE)
-            cli.export(paths.REFERENCE, 'mermaid')
-            paths.REFERENCE.write_text(BASE + '\n// Changed\n')
-            cli.build()
+            cli.build_source()
             (cli.BUILD / 'local.env').write_text('SECRET=keep-local')
-            output = root / 'package'
-            output.mkdir()
+            output = root / 'package'; output.mkdir()
             ci_artifacts.package(output)
-            self.assertTrue((output / 'unprefixed.svg').exists())
-            self.assertFalse(list(output.glob('*.mmd')))
+            self.assertTrue((output / 'source/unprefixed.puml').exists())
+            self.assertFalse((output / 'preview').exists())
             self.assertFalse((output / 'local.env').exists())
             self.assertFalse((output / '.tools.lock').exists())
             self.assertFalse((output / '.staging').exists())
-            failed = root / 'failure'
-            failed.mkdir()
-            cli.atomic_json(cli.BUILD / '.reports/build-light.json', {'passed': False})
+            failed = root / 'failure'; failed.mkdir()
+            cli.atomic_json(cli.BUILD / '.reports/source.json', {'passed': False})
             with self.assertRaisesRegex(ValueError, 'failed or stale'):
                 ci_artifacts.package(failed)
             ci_artifacts.package(failed, diagnostics=True)
-            self.assertFalse(list(failed.glob('*.svg')))
+            self.assertFalse((failed / 'source').exists())
             self.assertTrue((failed / '.reports/workspace.dsl/validation.json').exists())
 
 

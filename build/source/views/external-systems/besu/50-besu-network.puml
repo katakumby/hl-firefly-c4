@@ -1,0 +1,36 @@
+@startuml
+title <size:24>Container - reusable Besu node and RPC integration</size>\n<size:24>Container - reusable Besu node and RPC integration</size>
+
+set separator none
+left to right direction
+
+<style>
+  root {
+    BackgroundColor: #ffffff
+    FontColor: #444444
+  }
+</style>
+
+!include <C4/C4>
+!include <C4/C4_Context>
+!include <C4/C4_Container>
+
+System_Boundary("HyperledgerFireFly_boundary", "Hyperledger FireFly", $tags="") {
+  Container(HyperledgerFireFly.FireFlySigner, "FireFly Signer", $techn="Go", $descr="Signs member transactions and proxies Ethereum RPC calls.", $tags="", $link="https://github.com/hyperledger-firefly/signer/tree/cfafd71fb4d2c3061a946f6466269877c3f04d9d/internal/rpcserver")
+}
+
+System_Boundary("PrivateBesunetwork_boundary", "Private Besu network", $tags="") {
+  Container(PrivateBesunetwork.Besunode, "Besu node", $techn="Java / Besu / RocksDB", $descr="Runs the selected validator or non-validator RPC/discovery role; each instance owns its key and ledger.", $tags="", $link="https://github.com/besu-eth/besu/tree/7e05c2342404d27bd06a992e336c5e0c86a5d8d1")
+}
+
+System_Boundary("Platformoperationsreference_boundary", "Platform operations reference", $tags="") {
+  Container(Platformoperationsreference.Metricscollector, "Metrics collector", $techn="Prometheus", $descr="Scrapes runtime metrics and evaluates availability alerts.", $tags="", $link="https://hyperledger-firefly.github.io/firefly/head/architecture/node_component_architecture/")
+}
+
+Rel(HyperledgerFireFly.FireFlySigner, PrivateBesunetwork.Besunode, "Submits signed transactions and queries RPC nodes", $techn="HTTP JSON-RPC", $tags="", $link="")
+Rel(Platformoperationsreference.Metricscollector, PrivateBesunetwork.Besunode, "Scrapes peer, block and consensus measurements", $techn="HTTP / Prometheus metrics", $tags="", $link="")
+Rel(PrivateBesunetwork.Besunode, PrivateBesunetwork.Besunode, "Gossips transactions, blocks and QBFT peer messages", $techn="DevP2P / TCP", $tags="", $link="")
+
+SHOW_LEGEND(true)
+hide stereotypes
+@enduml

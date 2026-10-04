@@ -1,0 +1,38 @@
+@startuml
+title <size:24>System Context - Platform operations reference</size>\n<size:24>System Context - Platform operations reference</size>
+
+set separator none
+left to right direction
+
+<style>
+  root {
+    BackgroundColor: #ffffff
+    FontColor: #444444
+  }
+</style>
+
+!include <C4/C4>
+!include <C4/C4_Context>
+
+AddBoundaryTag("EVM ledger networks", $borderColor="#444444", $fontColor="#444444", $borderStyle="dashed")
+Boundary(group_1, "EVM ledger networks", $tags="EVM ledger networks") {
+  System(PrivateBesunetwork, "Private Besu network", $descr="Permissioned Ethereum network with QBFT validators, private RPC and contracts.", $tags="", $link="https://github.com/besu-eth/besu/tree/7e05c2342404d27bd06a992e336c5e0c86a5d8d1")
+}
+
+AddBoundaryTag("FireFly ecosystem", $borderColor="#444444", $fontColor="#444444", $borderStyle="dashed")
+Boundary(group_2, "FireFly ecosystem", $tags="FireFly ecosystem") {
+  System(HyperledgerFireFly, "Hyperledger FireFly", $descr="Reusable supernode architecture; each consortium member deploys an isolated instance.", $tags="", $link="https://github.com/hyperledger-firefly/firefly/tree/9d20f3081c9074d5b012427e5572ebc03da8d95d")
+}
+
+Person(Consortiumoperator, "Consortium operator", $descr="Operates member namespaces, recovery and the Besu network.", $tags="", $link="https://hyperledger-firefly.github.io/firefly/head/architecture/node_component_architecture/")
+System(Platformoperationsreference, "Platform operations reference", $descr="Reference platform boundary for API routing, database lifecycle and metrics; environment placement is deferred.", $tags="", $link="https://hyperledger-firefly.github.io/firefly/head/architecture/node_component_architecture/")
+
+Rel(HyperledgerFireFly, PrivateBesunetwork, "Submits transactions and consumes finalized events", $techn="Ethereum JSON-RPC + events", $tags="", $link="")
+Rel(Platformoperationsreference, HyperledgerFireFly, "Routes API requests and observes health", $techn="HTTPS + metrics", $tags="", $link="")
+Rel(Platformoperationsreference, PrivateBesunetwork, "Observes peer and quorum health", $techn="HTTP / metrics", $tags="", $link="")
+Rel(Consortiumoperator, HyperledgerFireFly, "Inspects and administers member state", $techn="HTTPS / Explorer + Admin API", $tags="", $link="")
+Rel(Consortiumoperator, Platformoperationsreference, "Monitors availability and coordinates recovery", $techn="HTTPS", $tags="", $link="")
+
+SHOW_LEGEND(true)
+hide stereotypes
+@enduml

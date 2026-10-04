@@ -1,0 +1,43 @@
+@startuml
+title <size:24>Component - FireFly transaction signing</size>\n<size:24>Component - FireFly transaction signing</size>
+
+set separator none
+left to right direction
+
+<style>
+  root {
+    BackgroundColor: #ffffff
+    FontColor: #444444
+  }
+</style>
+
+!include <C4/C4>
+!include <C4/C4_Context>
+!include <C4/C4_Container>
+!include <C4/C4_Component>
+
+System_Boundary("HyperledgerFireFly_boundary", "Hyperledger FireFly", $tags="") {
+  Container_Boundary("HyperledgerFireFly.FireFlySigner_boundary", "FireFly Signer", $tags="") {
+    Component(HyperledgerFireFly.FireFlySigner.JSONRPCproxy, "JSON-RPC proxy", $techn="Go", $descr="Intercepts transaction requests and forwards read calls.", $tags="", $link="https://github.com/hyperledger-firefly/signer/tree/cfafd71fb4d2c3061a946f6466269877c3f04d9d/internal/rpcserver")
+    Component(HyperledgerFireFly.FireFlySigner.Filesystemwallet, "Filesystem wallet", $techn="Go", $descr="Loads member keystore files and resolves signing accounts.", $tags="", $link="https://github.com/hyperledger-firefly/signer/tree/cfafd71fb4d2c3061a946f6466269877c3f04d9d/pkg/fswallet")
+    Component(HyperledgerFireFly.FireFlySigner.KeystoreV3decoder, "Keystore V3 decoder", $techn="Go", $descr="Decrypts encrypted account key files.", $tags="", $link="https://github.com/hyperledger-firefly/signer/tree/cfafd71fb4d2c3061a946f6466269877c3f04d9d/pkg/keystorev3")
+    Component(HyperledgerFireFly.FireFlySigner.Ethereumsigning, "Ethereum signing", $techn="Go", $descr="Encodes and signs EIP-155 and EIP-1559 transactions.", $tags="", $link="https://github.com/hyperledger-firefly/signer/tree/cfafd71fb4d2c3061a946f6466269877c3f04d9d/pkg/ethsigner")
+    Component(HyperledgerFireFly.FireFlySigner.RPCbackend, "RPC backend", $techn="Go", $descr="Forwards signed raw transactions to Besu.", $tags="", $link="https://github.com/hyperledger-firefly/signer/tree/cfafd71fb4d2c3061a946f6466269877c3f04d9d/pkg/rpcbackend")
+  }
+
+  ContainerDb(HyperledgerFireFly.Memberkeysandconfiguration, "Member keys and configuration", $techn="Configuration and key files", $descr="Stores signing keystores, mTLS material and configuration; Kubernetes projection belongs to the deferred deployment reference.", $tags="", $link="https://github.com/hyperledger-firefly/signer/tree/cfafd71fb4d2c3061a946f6466269877c3f04d9d/pkg/fswallet")
+}
+
+Rel(HyperledgerFireFly.FireFlySigner.RPCbackend, PrivateBesunetwork.Besunode, "Submits raw transactions and reads to RPC nodes", $techn="HTTP JSON-RPC", $tags="", $link="")
+Rel(HyperledgerFireFly.FireFlySigner.JSONRPCproxy, HyperledgerFireFly.FireFlySigner.Filesystemwallet, "Resolves requested signing accounts", $techn="In-process calls / Go", $tags="", $link="")
+Rel(HyperledgerFireFly.FireFlySigner.Filesystemwallet, HyperledgerFireFly.FireFlySigner.KeystoreV3decoder, "Decrypts selected key material", $techn="In-process calls / Go", $tags="", $link="")
+Rel(HyperledgerFireFly.FireFlySigner.JSONRPCproxy, HyperledgerFireFly.FireFlySigner.Ethereumsigning, "Submits transactions for signing", $techn="In-process calls / Go", $tags="", $link="")
+Rel(HyperledgerFireFly.FireFlySigner.Ethereumsigning, HyperledgerFireFly.FireFlySigner.Filesystemwallet, "Retrieves the selected signing key", $techn="In-process calls / Go", $tags="", $link="")
+Rel(HyperledgerFireFly.FireFlySigner.Ethereumsigning, HyperledgerFireFly.FireFlySigner.RPCbackend, "Submits signed raw transactions", $techn="In-process calls / Go", $tags="", $link="")
+Rel(HyperledgerFireFly.FireFlySigner.JSONRPCproxy, HyperledgerFireFly.FireFlySigner.RPCbackend, "Forwards unmodified RPC read requests", $techn="In-process calls / Go", $tags="", $link="")
+Rel(HyperledgerFireFly.FireFlySigner.Filesystemwallet, HyperledgerFireFly.Memberkeysandconfiguration, "Loads encrypted account keystores", $techn="Read-only projected files", $tags="", $link="")
+Rel(PrivateBesunetwork.Besunode, PrivateBesunetwork.Besunode, "Gossips transactions, blocks and QBFT peer messages", $techn="DevP2P / TCP", $tags="", $link="")
+
+SHOW_LEGEND(true)
+hide stereotypes
+@enduml

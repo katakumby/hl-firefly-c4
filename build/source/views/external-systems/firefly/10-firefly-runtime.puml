@@ -1,0 +1,70 @@
+@startuml
+title <size:24>Container - FireFly orchestration and connectors</size>\n<size:24>Container - FireFly orchestration and connectors</size>
+
+set separator none
+left to right direction
+
+<style>
+  root {
+    BackgroundColor: #ffffff
+    FontColor: #444444
+  }
+</style>
+
+!include <C4/C4>
+!include <C4/C4_Context>
+!include <C4/C4_Container>
+
+Person(Consortiumoperator, "Consortium operator", $descr="Operates member namespaces, recovery and the Besu network.", $tags="", $link="https://hyperledger-firefly.github.io/firefly/head/architecture/node_component_architecture/")
+System(OtherFireFlymembers, "Other FireFly members", $descr="Peer supernodes exchanging private envelopes and shared content.", $tags="", $link="https://github.com/hyperledger-firefly/firefly/tree/9d20f3081c9074d5b012427e5572ebc03da8d95d/doc-site/docs/overview/multiparty/multiparty_flow.md")
+
+System_Boundary("HyperledgerFireFly_boundary", "Hyperledger FireFly", $tags="") {
+  Container(HyperledgerFireFly.FireFlyCore, "FireFly Core", $techn="Go", $descr="Exposes member APIs, serves Explorer assets and orchestrates multiparty operations.", $tags="", $link="https://github.com/hyperledger-firefly/firefly/tree/9d20f3081c9074d5b012427e5572ebc03da8d95d/internal/orchestrator")
+  Container(HyperledgerFireFly.HTTPSDataExchange, "HTTPS Data Exchange", $techn="TypeScript / Node.js", $descr="Exchanges private envelopes and blobs with authenticated members.", $tags="", $link="https://github.com/hyperledger-firefly/dataexchange-https/tree/b6a212d531da1ff1c24e762e7156e2593c73d052/src")
+  Container(HyperledgerFireFly.ERC1155connector, "ERC-1155 connector", $techn="TypeScript / NestJS", $descr="Maps multi-token operations and events to FireFly.", $tags="", $link="https://github.com/hyperledger-firefly/tokens-erc1155/tree/0355a0eb11fd12e311829a41bcbfea6148e52469/src")
+  Container(HyperledgerFireFly.ERC20ERC721connector, "ERC-20 / ERC-721 connector", $techn="TypeScript / NestJS", $descr="Maps fungible and non-fungible token APIs to EVM contracts.", $tags="", $link="https://github.com/hyperledger-firefly/tokens-erc20-erc721/tree/7993b308284a396950587b5206370f7f254073d9/src")
+  Container(HyperledgerFireFly.EVMConnectFFTM, "EVMConnect + FFTM", $techn="Go", $descr="Submits Ethereum transactions and streams confirmed events; one nonce writer.", $tags="", $link="https://github.com/hyperledger-firefly/evmconnect/tree/6e12bb4c050677780cf5dd975a926923868b0cb8/cmd/evmconnect.go")
+  Container(HyperledgerFireFly.FireFlyExplorer, "FireFly Explorer", $techn="React / TypeScript / browser", $descr="Browser application served by Core; queries member state through the Core API.", $tags="", $link="https://github.com/hyperledger-firefly/ui/tree/658bae40220f124e0e20182cc48b231473e754c5/src")
+  ContainerDb(HyperledgerFireFly.FFTMPostgreSQLdatabase, "FFTM PostgreSQL database", $techn="PostgreSQL", $descr="Stores EVMConnect transaction state, nonces and checkpoints in a separate logical database with separate credentials.", $tags="", $link="https://github.com/hyperledger-firefly/transaction-manager/tree/5915cbc4e0e30dea25068b770dadbcc8bdfa9321/internal/persistence/postgres")
+  Container(HyperledgerFireFly.IPFSKubo, "IPFS Kubo", $techn="Go / Kubo", $descr="Publishes and retrieves consortium-shared content.", $tags="", $link="https://docs.ipfs.tech/concepts/how-ipfs-works/")
+  ContainerDb(HyperledgerFireFly.CorePostgreSQLdatabase, "Core PostgreSQL database", $techn="PostgreSQL", $descr="Stores Core resources and offsets in its own logical database; server placement and replication are outside this model.", $tags="", $link="https://github.com/hyperledger-firefly/firefly/tree/9d20f3081c9074d5b012427e5572ebc03da8d95d/internal/database/postgres")
+  Container(HyperledgerFireFly.FireFlySigner, "FireFly Signer", $techn="Go", $descr="Signs member transactions and proxies Ethereum RPC calls.", $tags="", $link="https://github.com/hyperledger-firefly/signer/tree/cfafd71fb4d2c3061a946f6466269877c3f04d9d/internal/rpcserver")
+}
+
+System_Boundary("Memberapplicationreference_boundary", "Member application reference", $tags="") {
+  Container(Memberapplicationreference.Memberbusinessapplication, "Member business application", $techn="Example application / REST client", $descr="Submits requests and consumes acknowledged FireFly events.", $tags="", $link="https://hyperledger-firefly.github.io/firefly/head/architecture/node_component_architecture/")
+}
+
+System_Boundary("PrivateBesunetwork_boundary", "Private Besu network", $tags="") {
+  Container(PrivateBesunetwork.Besunode, "Besu node", $techn="Java / Besu / RocksDB", $descr="Runs the selected validator or non-validator RPC/discovery role; each instance owns its key and ledger.", $tags="", $link="https://github.com/besu-eth/besu/tree/7e05c2342404d27bd06a992e336c5e0c86a5d8d1")
+}
+
+Rel(HyperledgerFireFly.FireFlySigner, PrivateBesunetwork.Besunode, "Submits signed transactions and queries RPC nodes", $techn="HTTP JSON-RPC", $tags="", $link="")
+Rel(HyperledgerFireFly.FireFlyCore, Memberapplicationreference.Memberbusinessapplication, "Delivers subscribed events and accepts ACKs", $techn="WebSocket / webhook / HTTPS", $tags="", $link="")
+Rel(HyperledgerFireFly.HTTPSDataExchange, OtherFireFlymembers, "Sends private envelopes and blobs to selected peers", $techn="HTTPS / mTLS", $tags="", $link="")
+Rel(HyperledgerFireFly.IPFSKubo, OtherFireFlymembers, "Fetches and serves shared content blocks by CID", $techn="IPFS / libp2p", $tags="", $link="")
+Rel(OtherFireFlymembers, HyperledgerFireFly.HTTPSDataExchange, "Delivers private envelopes, blobs and transfer results", $techn="HTTPS / mTLS", $tags="", $link="")
+Rel(Consortiumoperator, HyperledgerFireFly.FireFlyExplorer, "Inspects member messages, operations and network state", $techn="Browser interaction", $tags="", $link="")
+Rel(HyperledgerFireFly.FireFlyCore, HyperledgerFireFly.EVMConnectFFTM, "Submits contract calls, pins and listeners", $techn="HTTP REST / JSON", $tags="", $link="")
+Rel(HyperledgerFireFly.FireFlyCore, HyperledgerFireFly.HTTPSDataExchange, "Submits private messages, blobs and peer configuration", $techn="HTTP REST / JSON + binary", $tags="", $link="")
+Rel(HyperledgerFireFly.FireFlyCore, HyperledgerFireFly.ERC20ERC721connector, "Submits ERC-20 and ERC-721 operations", $techn="HTTP REST / JSON", $tags="", $link="")
+Rel(HyperledgerFireFly.FireFlyCore, HyperledgerFireFly.ERC1155connector, "Submits ERC-1155 operations", $techn="HTTP REST / JSON", $tags="", $link="")
+Rel(HyperledgerFireFly.FireFlyCore, HyperledgerFireFly.CorePostgreSQLdatabase, "Reads and writes the private Core database", $techn="PostgreSQL wire / TLS", $tags="", $link="")
+Rel(HyperledgerFireFly.FireFlyCore, HyperledgerFireFly.IPFSKubo, "Adds shared content and retrieves CIDs", $techn="IPFS HTTP RPC / gateway", $tags="", $link="")
+Rel(HyperledgerFireFly.HTTPSDataExchange, HyperledgerFireFly.FireFlyCore, "Delivers transfer notifications and awaits ACKs", $techn="WebSocket / JSON", $tags="", $link="")
+Rel(HyperledgerFireFly.HTTPSDataExchange, HyperledgerFireFly.HTTPSDataExchange, "Transfers private envelopes and blobs to peers; receives ACKs", $techn="HTTPS / mutual TLS", $tags="", $link="")
+Rel(HyperledgerFireFly.ERC1155connector, HyperledgerFireFly.FireFlyCore, "Delivers normalized token events", $techn="WebSocket / JSON", $tags="", $link="")
+Rel(HyperledgerFireFly.ERC1155connector, HyperledgerFireFly.EVMConnectFFTM, "Submits contract calls and consumes event streams", $techn="HTTP REST + WebSocket", $tags="", $link="")
+Rel(HyperledgerFireFly.ERC20ERC721connector, HyperledgerFireFly.FireFlyCore, "Delivers normalized token events", $techn="WebSocket / JSON", $tags="", $link="")
+Rel(HyperledgerFireFly.ERC20ERC721connector, HyperledgerFireFly.EVMConnectFFTM, "Submits contract calls and consumes event streams", $techn="HTTP REST + WebSocket", $tags="", $link="")
+Rel(HyperledgerFireFly.EVMConnectFFTM, HyperledgerFireFly.FireFlyCore, "Streams confirmed events and transaction results", $techn="WebSocket / JSON", $tags="", $link="")
+Rel(HyperledgerFireFly.EVMConnectFFTM, HyperledgerFireFly.FireFlySigner, "Submits Ethereum calls and unsigned transactions", $techn="HTTP JSON-RPC", $tags="", $link="")
+Rel(HyperledgerFireFly.EVMConnectFFTM, HyperledgerFireFly.FFTMPostgreSQLdatabase, "Reads and writes the separate FFTM database", $techn="PostgreSQL wire / TLS", $tags="", $link="")
+Rel(HyperledgerFireFly.FireFlyExplorer, HyperledgerFireFly.FireFlyCore, "Requests Explorer assets and queries member resources", $techn="HTTP(S) / REST + static assets", $tags="", $link="")
+Rel(HyperledgerFireFly.IPFSKubo, HyperledgerFireFly.IPFSKubo, "Retrieves shared content blocks from peers by CID", $techn="IPFS / libp2p", $tags="", $link="")
+Rel(Memberapplicationreference.Memberbusinessapplication, HyperledgerFireFly.FireFlyCore, "Submits member-scoped commands and queries", $techn="HTTPS / REST", $tags="", $link="")
+Rel(PrivateBesunetwork.Besunode, PrivateBesunetwork.Besunode, "Gossips transactions, blocks and QBFT peer messages", $techn="DevP2P / TCP", $tags="", $link="")
+
+SHOW_LEGEND(true)
+hide stereotypes
+@enduml

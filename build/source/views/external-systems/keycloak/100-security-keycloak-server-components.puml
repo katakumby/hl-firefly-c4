@@ -1,0 +1,72 @@
+@startuml
+title <size:24>Component - Keycloak server: logical responsibilities</size>\n<size:24>Component - Keycloak server: logical responsibilities</size>
+
+set separator none
+left to right direction
+
+<style>
+  root {
+    BackgroundColor: #ffffff
+    FontColor: #444444
+  }
+</style>
+
+!include <C4/C4>
+!include <C4/C4_Context>
+!include <C4/C4_Container>
+!include <C4/C4_Component>
+
+Person(Securityadministrator, "Security administrator", $descr="Configures identity, privileged access, secret policies and key permissions in these reference examples.", $tags="", $link="https://docs.cyberark.com/pam-self-hosted/latest/en/content/pas%20inst/installationoverview.htm")
+
+System_Boundary("Keycloak_boundary", "Keycloak", $tags="") {
+  Container_Boundary("Keycloak.Keycloakserver_boundary", "Keycloak server", $tags="") {
+    Component(Keycloak.Keycloakserver.OIDCandSAMLendpoints, "OIDC and SAML endpoints", $techn="Java / Keycloak", $descr="Accepts authorization, token and federation requests and returns protocol responses.", $tags="", $link="https://www.keycloak.org/docs/latest/server_admin/index.html")
+    Component(Keycloak.Keycloakserver.Authenticationflows, "Authentication flows", $techn="Java / Keycloak", $descr="Evaluates configured authenticators and required authentication steps.", $tags="", $link="https://www.keycloak.org/docs/latest/server_admin/index.html")
+    Component(Keycloak.Keycloakserver.Identitybroker, "Identity broker", $techn="Java / Keycloak", $descr="Delegates login to an external OIDC or SAML identity provider through the browser.", $tags="", $link="https://www.keycloak.org/docs/latest/server_admin/index.html")
+    Component(Keycloak.Keycloakserver.LDAPuserfederation, "LDAP user federation", $techn="Java / Keycloak", $descr="Queries AD user attributes and validates credentials by LDAP bind; never imports AD passwords.", $tags="", $link="https://www.keycloak.org/docs/latest/server_admin/index.html")
+    Component(Keycloak.Keycloakserver.Tokenandclaimmapping, "Token and claim mapping", $techn="Java / Keycloak", $descr="Builds and signs tokens or assertions with mapped roles and attributes.", $tags="", $link="https://www.keycloak.org/docs/latest/server_admin/index.html")
+    Component(Keycloak.Keycloakserver.Administration, "Administration", $techn="Java / Keycloak", $descr="Manages realms, clients, users, roles and identity-provider configuration.", $tags="", $link="https://www.keycloak.org/docs/latest/server_admin/index.html")
+    Component(Keycloak.Keycloakserver.Sessionandembeddedcachemanagement, "Session and embedded cache management", $techn="Java / Keycloak", $descr="Tracks login sessions and cached realm or user data in the server runtime.", $tags="", $link="https://www.keycloak.org/docs/latest/server_admin/index.html")
+    Component(Keycloak.Keycloakserver.Persistenceadapter, "Persistence adapter", $techn="Java / Keycloak", $descr="Reads and writes realm, user and persistent session records.", $tags="", $link="https://www.keycloak.org/docs/latest/server_admin/index.html")
+  }
+
+  ContainerDb(Keycloak.Keycloakdatabase, "Keycloak database", $techn="PostgreSQL (reference choice)", $descr="Persists realm configuration, users, credentials and persistent session state.", $tags="", $link="https://www.keycloak.org/server/db")
+}
+
+Rel(MicrosoftEntraID.Authenticationandtokenservice, Memberapplicationreference.Memberbusinessapplication, "Returns authenticated identity tokens or assertions through the selected protocol flow", $techn="HTTPS / OIDC reference client", $tags="", $link="")
+Rel(MicrosoftEntraID.Authenticationandtokenservice, Keycloak.Keycloakserver.Identitybroker, "Returns authorization code through browser redirect", $techn="HTTPS / OIDC redirect", $tags="", $link="")
+Rel(MicrosoftEntraID.Authenticationandtokenservice, Keycloak.Keycloakserver.Identitybroker, "Returns signed ID token and token endpoint response", $techn="HTTPS / OAuth token response", $tags="", $link="")
+Rel(MicrosoftEntraID.Authenticationandtokenservice, Memberapplicationreference.Memberbusinessapplication, "Returns HSM-audience workload access token", $techn="HTTPS / OAuth 2.0 token response", $tags="", $link="")
+Rel(Keycloak.Keycloakserver.LDAPuserfederation, MicrosoftActiveDirectoryDomainServices.Domaincontrollerservices, "Queries user attributes and validates supplied credentials by LDAP bind", $techn="LDAPS", $tags="", $link="")
+Rel(Keycloak.Keycloakserver.OIDCandSAMLendpoints, Memberapplicationreference.Memberbusinessapplication, "Returns signed identity response through the configured browser/client flow", $techn="HTTPS / OIDC or SAML as configured", $tags="", $link="")
+Rel(Keycloak.Keycloakserver.Identitybroker, MicrosoftEntraID.Authenticationandtokenservice, "Redirects browser with OIDC authorization request", $techn="HTTPS / browser-mediated OIDC", $tags="", $link="")
+Rel(Keycloak.Keycloakserver.Identitybroker, MicrosoftEntraID.Authenticationandtokenservice, "Exchanges authorization code with client authentication for tokens", $techn="HTTPS / OAuth token endpoint", $tags="", $link="")
+Rel(Keycloak.Keycloakserver.Identitybroker, MicrosoftActiveDirectoryFederationServices.ADFSfederationservice, "Redirects browser with SAML authentication request", $techn="HTTPS / browser-mediated SAML 2.0", $tags="", $link="")
+Rel(Securityadministrator, Keycloak.Keycloakserver.Administration, "Submits authorized configuration or access-policy changes", $techn="HTTPS / product administration API", $tags="", $link="")
+Rel(Securityadministrator, MicrosoftActiveDirectoryDomainServices.Domaincontrollerservices, "Submits authorized configuration or access-policy changes", $techn="Protected LDAP / directory administration", $tags="", $link="")
+Rel(Securityadministrator, MicrosoftActiveDirectoryFederationServices.ADFSfederationservice, "Submits authorized configuration or access-policy changes", $techn="AD FS administration / PowerShell configuration interface", $tags="", $link="")
+Rel(Keycloak.Keycloakserver.OIDCandSAMLendpoints, Keycloak.Keycloakserver.Authenticationflows, "Passes authorization request and authentication context", $techn="In-process logical interface", $tags="", $link="")
+Rel(Keycloak.Keycloakserver.Authenticationflows, Keycloak.Keycloakserver.Identitybroker, "Delegates selected external-provider login", $techn="In-process logical interface", $tags="", $link="")
+Rel(Keycloak.Keycloakserver.Authenticationflows, Keycloak.Keycloakserver.LDAPuserfederation, "Passes directory lookup and credential validation requests", $techn="In-process logical interface", $tags="", $link="")
+Rel(Keycloak.Keycloakserver.LDAPuserfederation, Keycloak.Keycloakserver.Authenticationflows, "Returns user attributes and credential validation outcome", $techn="In-process logical interface", $tags="", $link="")
+Rel(Keycloak.Keycloakserver.Identitybroker, Keycloak.Keycloakserver.Authenticationflows, "Returns verified external identity claims", $techn="In-process logical interface", $tags="", $link="")
+Rel(Keycloak.Keycloakserver.Authenticationflows, Keycloak.Keycloakserver.Sessionandembeddedcachemanagement, "Creates or resolves authenticated user session", $techn="In-process logical interface", $tags="", $link="")
+Rel(Keycloak.Keycloakserver.Sessionandembeddedcachemanagement, Keycloak.Keycloakserver.Tokenandclaimmapping, "Supplies session identity and client scope", $techn="In-process logical interface", $tags="", $link="")
+Rel(Keycloak.Keycloakserver.Tokenandclaimmapping, Keycloak.Keycloakserver.OIDCandSAMLendpoints, "Returns signed tokens or SAML assertions", $techn="In-process logical interface", $tags="", $link="")
+Rel(Keycloak.Keycloakserver.Administration, Keycloak.Keycloakserver.Persistenceadapter, "Writes realm, client and federation settings", $techn="In-process logical interface", $tags="", $link="")
+Rel(Keycloak.Keycloakserver.Authenticationflows, Keycloak.Keycloakserver.Persistenceadapter, "Reads local credentials and realm authentication settings", $techn="In-process logical interface", $tags="", $link="")
+Rel(Keycloak.Keycloakserver.Sessionandembeddedcachemanagement, Keycloak.Keycloakserver.Persistenceadapter, "Reads and writes persistent session records", $techn="In-process logical interface", $tags="", $link="")
+Rel(Keycloak.Keycloakserver.Persistenceadapter, Keycloak.Keycloakdatabase, "Reads and writes realm, user and session records", $techn="PostgreSQL / TLS", $tags="", $link="")
+Rel(MicrosoftActiveDirectoryDomainServices.Domaincontrollerservices, Keycloak.Keycloakserver.LDAPuserfederation, "Returns user attributes and bind result; does not export passwords", $techn="LDAPS", $tags="", $link="")
+Rel(MicrosoftActiveDirectoryDomainServices.Domaincontrollerservices, MicrosoftActiveDirectoryFederationServices.ADFSfederationservice, "Returns domain authentication result and requested attributes", $techn="Kerberos / protected directory interfaces", $tags="", $link="")
+Rel(MicrosoftActiveDirectoryFederationServices.ADFSfederationservice, MicrosoftActiveDirectoryDomainServices.Domaincontrollerservices, "Validates domain authentication and resolves account attributes", $techn="Kerberos / protected directory interfaces", $tags="", $link="")
+Rel(MicrosoftActiveDirectoryFederationServices.ADFSfederationservice, Memberapplicationreference.Memberbusinessapplication, "Returns authenticated identity tokens or assertions through the selected protocol flow", $techn="HTTPS / SAML 2.0 reference client", $tags="", $link="")
+Rel(MicrosoftActiveDirectoryFederationServices.ADFSfederationservice, Keycloak.Keycloakserver.Identitybroker, "Returns signed SAML assertion through browser POST", $techn="HTTPS / browser-mediated SAML 2.0", $tags="", $link="")
+Rel(Memberapplicationreference.Memberbusinessapplication, MicrosoftEntraID.Authenticationandtokenservice, "Submits authorization request via browser and configured protocol client", $techn="HTTPS / OIDC reference client", $tags="", $link="")
+Rel(Memberapplicationreference.Memberbusinessapplication, MicrosoftActiveDirectoryFederationServices.ADFSfederationservice, "Submits authorization request via browser and configured protocol client", $techn="HTTPS / SAML 2.0 reference client", $tags="", $link="")
+Rel(Memberapplicationreference.Memberbusinessapplication, Keycloak.Keycloakserver.OIDCandSAMLendpoints, "Submits relying-party authorization request using the reference client", $techn="HTTPS / OIDC or SAML as configured", $tags="", $link="")
+Rel(Memberapplicationreference.Memberbusinessapplication, MicrosoftEntraID.Authenticationandtokenservice, "Authenticates workload identity and requests HSM-audience access token", $techn="HTTPS / OAuth 2.0 client credentials", $tags="", $link="")
+
+SHOW_LEGEND(true)
+hide stereotypes
+@enduml

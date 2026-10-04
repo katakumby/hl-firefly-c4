@@ -1,0 +1,21 @@
+@startuml
+title <size:24>System Context - DApp Platform (proposed boundary)</size>\n<size:24>Initial system boundary only; actors, dependencies and internal design are deferred.</size>
+
+set separator none
+left to right direction
+
+<style>
+  root {
+    BackgroundColor: #ffffff
+    FontColor: #444444
+  }
+</style>
+
+!include <C4/C4>
+!include <C4/C4_Context>
+
+System(DAppPlatform, "DApp Platform", $descr="Proposed decentralized application software system; the first system of the new platform. Responsibilities and integrations are to be defined.", $tags="", $link="")
+
+SHOW_LEGEND(true)
+hide stereotypes
+@enduml

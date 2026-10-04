@@ -1,0 +1,36 @@
+@startuml
+title <size:24>Container - Example: AD identity synchronization through Cloud Sync</size>\n<size:24>Container - Example: AD identity synchronization through Cloud Sync</size>
+
+set separator none
+left to right direction
+
+<style>
+  root {
+    BackgroundColor: #ffffff
+    FontColor: #444444
+  }
+</style>
+
+!include <C4/C4>
+!include <C4/C4_Context>
+!include <C4/C4_Container>
+
+System_Boundary("MicrosoftEntraID_boundary", "Microsoft Entra ID", $tags="") {
+  Container(MicrosoftEntraID.CloudSyncprovisioningagent, "Cloud Sync provisioning agent", $techn="Microsoft Entra provisioning agent / Windows service", $descr="Customer-managed runtime that queries AD DS through outbound-established communication with the provisioning service.", $tags="", $link="https://learn.microsoft.com/en-us/entra/identity/hybrid/cloud-sync/what-is-cloud-sync")
+  Container(MicrosoftEntraID.DirectoryandadministrationAPI, "Directory and administration API", $techn="Microsoft Entra managed service (logical)", $descr="Logical directory and Microsoft Graph-facing boundary for users, groups, applications and policies.", $tags="", $link="https://learn.microsoft.com/en-us/entra/architecture/architecture")
+  Container(MicrosoftEntraID.CloudSyncprovisioningservice, "Cloud Sync provisioning service", $techn="Microsoft Entra managed service (logical)", $descr="Orchestrates selected AD object synchronization and commits directory changes.", $tags="", $link="https://learn.microsoft.com/en-us/entra/identity/hybrid/cloud-sync/what-is-cloud-sync")
+}
+
+System_Boundary("MicrosoftActiveDirectoryDomainServices_boundary", "Microsoft Active Directory Domain Services", $tags="") {
+  Container(MicrosoftActiveDirectoryDomainServices.Domaincontrollerservices, "Domain-controller services", $techn="Windows Server / AD DS", $descr="Logical AD DS runtime; no server instances, sites or replication topology are modeled.", $tags="", $link="https://learn.microsoft.com/en-us/windows-server/identity/ad-ds/get-started/virtual-dc/active-directory-domain-services-overview")
+}
+
+Rel(MicrosoftEntraID.CloudSyncprovisioningagent, MicrosoftActiveDirectoryDomainServices.Domaincontrollerservices, "Queries selected users, groups, contacts and requested attributes", $techn="LDAP / protected domain connection", $tags="", $link="")
+Rel(MicrosoftEntraID.CloudSyncprovisioningservice, MicrosoftEntraID.DirectoryandadministrationAPI, "Commits scoped user, group and contact changes", $techn="Microsoft internal directory interface (logical)", $tags="", $link="")
+Rel(MicrosoftEntraID.CloudSyncprovisioningagent, MicrosoftEntraID.CloudSyncprovisioningservice, "Establishes outbound channel and returns requested directory attributes", $techn="TLS / Cloud Sync service channel via Azure Service Bus", $tags="", $link="")
+Rel(MicrosoftEntraID.CloudSyncprovisioningservice, MicrosoftEntraID.CloudSyncprovisioningagent, "Delivers scoped synchronization requests over the agent-established channel", $techn="SCIM / established Cloud Sync channel", $tags="", $link="")
+Rel(MicrosoftActiveDirectoryDomainServices.Domaincontrollerservices, MicrosoftEntraID.CloudSyncprovisioningagent, "Returns scoped directory object attributes and change information", $techn="LDAP / protected domain connection", $tags="", $link="")
+
+SHOW_LEGEND(true)
+hide stereotypes
+@enduml

@@ -1,7 +1,9 @@
 .cache/
-build/
+build/.reports/
+build/.staging/
+build/.tools.lock
+docker/local.env
 __pycache__/
 *.pyc
 .structurizr/
 workspace.json.bak
-**/workspace.json

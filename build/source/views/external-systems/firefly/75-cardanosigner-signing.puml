@@ -1,0 +1,40 @@
+@startuml
+title <size:24>Component - Cardano Signer: signing</size>\n<size:24>Component - Cardano Signer: signing</size>
+
+set separator none
+left to right direction
+
+<style>
+  root {
+    BackgroundColor: #ffffff
+    FontColor: #444444
+  }
+</style>
+
+!include <C4/C4>
+!include <C4/C4_Context>
+!include <C4/C4_Container>
+!include <C4/C4_Component>
+
+System_Boundary("HyperledgerFireFly_boundary", "Hyperledger FireFly", $tags="") {
+  Container_Boundary("HyperledgerFireFly.CardanoSigner_boundary", "Cardano Signer", $tags="") {
+    Component(HyperledgerFireFly.CardanoSigner.SigningHTTPAPI, "Signing HTTP API", $techn="Rust", $descr="Accepts signing requests and returns CBOR witness sets.", $tags="", $link="https://github.com/hyperledger-firefly/cardano/tree/0300bca6b0b99d2a16a81b94f65496934999346e/firefly-cardanosigner/src/routes.rs")
+    Component(HyperledgerFireFly.CardanoSigner.Addressindexedkeystore, "Address-indexed key store", $techn="Rust", $descr="Loads configured key files and resolves signing addresses.", $tags="", $link="https://github.com/hyperledger-firefly/cardano/tree/0300bca6b0b99d2a16a81b94f65496934999346e/firefly-cardanosigner/src/keys.rs")
+    Component(HyperledgerFireFly.CardanoSigner.Ed25519signing, "Ed25519 signing", $techn="Rust", $descr="Signs Cardano transaction-body hashes.", $tags="", $link="https://github.com/hyperledger-firefly/cardano/tree/0300bca6b0b99d2a16a81b94f65496934999346e/firefly-cardanosigner/src/private_key.rs")
+    Component(HyperledgerFireFly.CardanoSigner.SharedHTTPserver, "Shared HTTP server", $techn="Rust", $descr="Hosts signer routes and instrumentation.", $tags="", $link="https://github.com/hyperledger-firefly/cardano/tree/0300bca6b0b99d2a16a81b94f65496934999346e/firefly-server/src")
+  }
+
+  ContainerDb(HyperledgerFireFly.Cardanosigningkeys, "Cardano signing keys", $techn="Filesystem keystore", $descr="Address-indexed signing key files held by the Cardano Signer.", $tags="", $link="https://github.com/hyperledger-firefly/cardano/tree/0300bca6b0b99d2a16a81b94f65496934999346e/firefly-cardanosigner/src/keys.rs")
+  Container(HyperledgerFireFly.CardanoConnect, "CardanoConnect", $techn="Rust / Axum", $descr="Native Cardano connector with operation, contract and event managers.", $tags="", $link="https://github.com/hyperledger-firefly/cardano/tree/0300bca6b0b99d2a16a81b94f65496934999346e/firefly-cardanoconnect")
+}
+
+Rel(HyperledgerFireFly.CardanoConnect, HyperledgerFireFly.CardanoSigner.SigningHTTPAPI, "Requests a CBOR transaction witness set", $techn="HTTP / JSON", $tags="", $link="")
+Rel(HyperledgerFireFly.CardanoSigner.SharedHTTPserver, HyperledgerFireFly.CardanoSigner.SigningHTTPAPI, "Hosts signing API requests", $techn="In-process calls / Rust", $tags="", $link="")
+Rel(HyperledgerFireFly.CardanoSigner.SigningHTTPAPI, HyperledgerFireFly.CardanoSigner.Addressindexedkeystore, "Looks up the requested address key", $techn="In-process calls / Rust", $tags="", $link="")
+Rel(HyperledgerFireFly.CardanoSigner.SigningHTTPAPI, HyperledgerFireFly.CardanoSigner.Ed25519signing, "Signs the transaction-body hash", $techn="In-process calls / Rust", $tags="", $link="")
+Rel(HyperledgerFireFly.CardanoSigner.Addressindexedkeystore, HyperledgerFireFly.CardanoSigner.Ed25519signing, "Supplies the resolved private key", $techn="In-process calls / Rust", $tags="", $link="")
+Rel(HyperledgerFireFly.CardanoSigner.Addressindexedkeystore, HyperledgerFireFly.Cardanosigningkeys, "Loads address-indexed signing key files", $techn="Filesystem I/O", $tags="", $link="")
+
+SHOW_LEGEND(true)
+hide stereotypes
+@enduml

@@ -1,0 +1,48 @@
+@startuml
+title <size:24>Component - Besu node: Consensus and block processing</size>\n<size:24>Component - Besu node: Consensus and block processing</size>
+
+set separator none
+left to right direction
+
+<style>
+  root {
+    BackgroundColor: #ffffff
+    FontColor: #444444
+  }
+</style>
+
+!include <C4/C4>
+!include <C4/C4_Context>
+!include <C4/C4_Component>
+
+System_Boundary("PrivateBesunetwork_boundary", "Private Besu network", $tags="") {
+  Container_Boundary("PrivateBesunetwork.Besunode_boundary", "Besu node", $tags="") {
+    AddBoundaryTag("Besu client implementation", $borderColor="#444444", $fontColor="#444444", $borderStyle="dashed")
+    Boundary(group_1, "Besu client implementation", $tags="Besu client implementation") {
+      Component(PrivateBesunetwork.Besunode.DevP2Ptransport, "DevP2P transport", $techn="Java", $descr="Exchanges transactions, blocks and consensus messages.", $tags="", $link="https://github.com/besu-eth/besu/tree/7e05c2342404d27bd06a992e336c5e0c86a5d8d1/ethereum/p2p")
+      Component(PrivateBesunetwork.Besunode.Transactionpool, "Transaction pool", $techn="Java", $descr="Validates and queues pending transactions.", $tags="", $link="https://github.com/besu-eth/besu/tree/7e05c2342404d27bd06a992e336c5e0c86a5d8d1/ethereum/eth")
+      Component(PrivateBesunetwork.Besunode.Chainsynchronization, "Chain synchronization", $techn="Java", $descr="Downloads and validates missing blocks and state.", $tags="", $link="https://github.com/besu-eth/besu/tree/7e05c2342404d27bd06a992e336c5e0c86a5d8d1/ethereum/eth")
+      Component(PrivateBesunetwork.Besunode.Blockprocessor, "Block processor", $techn="Java", $descr="Validates blocks and applies state transitions.", $tags="", $link="https://github.com/besu-eth/besu/tree/7e05c2342404d27bd06a992e336c5e0c86a5d8d1/ethereum/core")
+      Component(PrivateBesunetwork.Besunode.QBFTconsensus, "QBFT consensus", $techn="Java", $descr="Proposes blocks and verifies validator votes. Active only on validator instances.", $tags="", $link="https://github.com/besu-eth/besu/tree/7e05c2342404d27bd06a992e336c5e0c86a5d8d1/consensus/qbft")
+      Component(PrivateBesunetwork.Besunode.Nodekeyandsecuritymodule, "Node key and security module", $techn="Java", $descr="Signs node identity and validator consensus messages.", $tags="", $link="https://github.com/besu-eth/besu/tree/7e05c2342404d27bd06a992e336c5e0c86a5d8d1/crypto/plugin-api/src/main/java/org/hyperledger/besu/plugin/services/securitymodule")
+      Component(PrivateBesunetwork.Besunode.Metricsandhealth, "Metrics and health", $techn="Java", $descr="Exposes node, peer and consensus measurements.", $tags="", $link="https://github.com/besu-eth/besu/tree/7e05c2342404d27bd06a992e336c5e0c86a5d8d1/metrics")
+    }
+
+  }
+
+}
+
+Rel(PrivateBesunetwork.Besunode.DevP2Ptransport, PrivateBesunetwork.Besunode.Transactionpool, "Gossips pending transactions", $techn="In-process calls / Java", $tags="", $link="")
+Rel(PrivateBesunetwork.Besunode.DevP2Ptransport, PrivateBesunetwork.Besunode.Chainsynchronization, "Delivers requested blocks and state", $techn="In-process calls / Java", $tags="", $link="")
+Rel(PrivateBesunetwork.Besunode.DevP2Ptransport, PrivateBesunetwork.Besunode.QBFTconsensus, "Delivers consensus protocol messages", $techn="In-process calls / Java", $tags="", $link="")
+Rel(PrivateBesunetwork.Besunode.Chainsynchronization, PrivateBesunetwork.Besunode.Blockprocessor, "Submits downloaded blocks for validation", $techn="In-process calls / Java", $tags="", $link="")
+Rel(PrivateBesunetwork.Besunode.Transactionpool, PrivateBesunetwork.Besunode.QBFTconsensus, "Supplies transactions for proposed blocks", $techn="In-process calls / Java", $tags="", $link="")
+Rel(PrivateBesunetwork.Besunode.QBFTconsensus, PrivateBesunetwork.Besunode.Nodekeyandsecuritymodule, "Signs proposals and consensus votes", $techn="In-process calls / Java", $tags="", $link="")
+Rel(PrivateBesunetwork.Besunode.QBFTconsensus, PrivateBesunetwork.Besunode.Blockprocessor, "Commits quorum-approved blocks", $techn="In-process calls / Java", $tags="", $link="")
+Rel(PrivateBesunetwork.Besunode.QBFTconsensus, PrivateBesunetwork.Besunode.Metricsandhealth, "Records rounds and committed block measurements", $techn="In-process calls / Java", $tags="", $link="")
+Rel(PrivateBesunetwork.Besunode.DevP2Ptransport, PrivateBesunetwork.Besunode.Metricsandhealth, "Records peer connectivity measurements", $techn="In-process calls / Java", $tags="", $link="")
+Rel(PrivateBesunetwork.Besunode.DevP2Ptransport, PrivateBesunetwork.Besunode.Nodekeyandsecuritymodule, "Authenticates node transport identity", $techn="In-process calls / Java", $tags="", $link="")
+
+SHOW_LEGEND(true)
+hide stereotypes
+@enduml

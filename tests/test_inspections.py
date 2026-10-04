@@ -36,19 +36,19 @@ class InspectionPolicy(unittest.TestCase):
     def test_build_and_export_succeed_and_record_quality_findings(self, _):
         with checkout():
             paths.REFERENCE.write_text(BASE.replace('"info"', '"error"'))
-            cli.build()
-            status = json.loads((cli.BUILD / 'build.json').read_text())
+            cli.build_source()
+            status = json.loads((cli.BUILD / '.reports/source.json').read_text())
             self.assertTrue(status['passed'])
             findings = status['inspection_findings']
             self.assertTrue(findings)
             self.assertEqual({'workspace.dsl'}, {f['workspace'] for f in findings})
-            self.assertIn(findings[0]['message'], (cli.BUILD / 'build.log').read_text())
-            self.assertTrue((cli.BUILD / 'flow.svg').is_file())
-            cli.export(paths.REFERENCE, 'plantuml', 'flow')
-            exported = json.loads((paths.output_directory(paths.REFERENCE) / 'export-status.json').read_text())
+            self.assertIn(findings[0]['message'], (cli.BUILD / '.reports/source.log').read_text())
+            self.assertTrue((cli.BUILD / 'source/flow.puml').is_file())
+            cli.build_source([paths.REFERENCE], ['flow'])
+            exported = json.loads((cli.BUILD / '.reports/source.json').read_text())
             self.assertTrue(exported['passed'])
             self.assertTrue(exported['inspection_findings'])
-            self.assertTrue((cli.BUILD / 'flow.puml').is_file())
+            self.assertTrue((cli.BUILD / 'source/flow.puml').is_file())
 
     def test_malformed_dsl_still_blocks_build_and_preserves_previous_files(self):
         with checkout():
@@ -57,9 +57,9 @@ class InspectionPolicy(unittest.TestCase):
             previous = cli.BUILD / 'previous.svg'
             previous.write_text('previous success')
             with self.assertRaisesRegex(ValueError, 'Validation failed'):
-                cli.build()
+                cli.build_source()
             self.assertEqual('previous success', previous.read_text())
-            status = json.loads((cli.BUILD / 'build.json').read_text())
+            status = json.loads((cli.BUILD / '.reports/source.json').read_text())
             self.assertFalse(status['passed'])
             self.assertEqual([], status['outputs'])
 

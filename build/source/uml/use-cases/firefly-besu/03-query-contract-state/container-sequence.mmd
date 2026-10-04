@@ -1,0 +1,39 @@
+---
+title: UC3 - Query contract state - containers
+config:
+  theme: default
+  sequence:
+    mirrorActors: false
+    wrap: true
+---
+sequenceDiagram
+    autonumber
+box rgb(235,245,255) Member application reference
+        %% C4: App=apps.client
+        participant App as Member business<br/>application<br/>[Container]<br/>REST client
+    end
+    box rgb(235,250,240) Hyperledger FireFly
+        %% C4: Core=firefly.core
+        participant Core as FireFly Core<br/>[Container]<br/>Go
+        %% C4: EVM=firefly.evm
+        participant EVM as EVMConnect<br/>+ FFTM<br/>[Container]<br/>Go
+        %% C4: Signer=firefly.signer
+        participant Signer as FireFly Signer<br/>[Container]<br/>Go
+    end
+
+    box rgb(255,247,224) Private Besu network
+        %% C4: Besu=besu.node
+        participant Besu as Besu node<br/>[Container]<br/>Java / Besu<br/>RocksDB
+    end
+
+    App->>Core: POST /apis/simple-storage/query/get [HTTPS REST / JSON]
+    Note over Core: Resolve the registered API and FFI from local metadata
+    Core->>EVM: Query contract address and method [HTTP REST / JSON]
+    EVM->>Signer: eth_call, ABI-encoded input [Ethereum JSON-RPC / HTTP]
+    Signer->>Besu: Forward eth_call unchanged [Ethereum JSON-RPC / HTTP]
+    Note over Signer: No transaction signature or nonce allocation
+    Note over Besu: Execute get in the EVM without committing state
+    Besu-->>Signer: ABI-encoded result [Ethereum JSON-RPC / HTTP]
+    Signer-->>EVM: ABI-encoded result [Ethereum JSON-RPC / HTTP]
+    EVM-->>Core: Decoded output [HTTP REST / JSON]
+    Core-->>App: JSON output value [HTTPS REST / JSON]

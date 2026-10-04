@@ -1,0 +1,43 @@
+@startuml
+title <size:24>Component - Unleash Edge: request processing</size>\n<size:24>Component - Unleash Edge: request processing</size>
+
+set separator none
+left to right direction
+
+<style>
+  root {
+    BackgroundColor: #ffffff
+    FontColor: #444444
+  }
+</style>
+
+!include <C4/C4>
+!include <C4/C4_Context>
+!include <C4/C4_Component>
+
+System_Boundary("Unleash_boundary", "Unleash", $tags="") {
+  Container_Boundary("Unleash.UnleashEdgeOSSoptional_boundary", "Unleash Edge (OSS, optional)", $tags="") {
+    Component(Unleash.UnleashEdgeOSSoptional.HTTPendpoints, "HTTP endpoints", $techn="Rust / Axum", $descr="Exposes Client, Frontend, Edge validation and operational routes with request middleware.", $tags="", $link="https://github.com/Unleash/unleash-edge/blob/c947878de70214235c79eeb5ebe5f35b77ecc075/crates/oss/unleash-edge/src/lib.rs")
+    Component(Unleash.UnleashEdgeOSSoptional.Tokenvalidationandcache, "Token validation and cache", $techn="Rust / Tokio", $descr="Validates tokens upstream or against offline configuration and caches authorized scopes.", $tags="", $link="https://github.com/Unleash/unleash-edge/blob/c947878de70214235c79eeb5ebe5f35b77ecc075/crates/oss/unleash-edge-auth/src/token_validator.rs")
+    Component(Unleash.UnleashEdgeOSSoptional.Featurecacheandfiltering, "Feature cache and filtering", $techn="Rust / Tokio", $descr="Stores in-memory feature payloads and applies token, environment and request filters.", $tags="", $link="https://github.com/Unleash/unleash-edge/blob/c947878de70214235c79eeb5ebe5f35b77ecc075/crates/oss/unleash-edge-feature-cache/src/lib.rs")
+    Component(Unleash.UnleashEdgeOSSoptional.Evaluationengine, "Evaluation engine", $techn="Rust / unleash-yggdrasil", $descr="Evaluates context against compiled strategies and returns enabled flags and variants.", $tags="", $link="https://github.com/Unleash/unleash-edge/blob/c947878de70214235c79eeb5ebe5f35b77ecc075/crates/oss/unleash-edge-frontend-api/src/frontend.rs")
+    Component(Unleash.UnleashEdgeOSSoptional.Registrationandmetricsaggregation, "Registration and metrics aggregation", $techn="Rust / Tokio", $descr="Buffers SDK registrations and flag/variant counts, batches them and forwards usage upstream.", $tags="", $link="https://github.com/Unleash/unleash-edge/blob/c947878de70214235c79eeb5ebe5f35b77ecc075/crates/oss/unleash-edge-client-api/src/register.rs")
+    Component(Unleash.UnleashEdgeOSSoptional.Healthandoperationalmetrics, "Health and operational metrics", $techn="Rust / Tokio", $descr="Exposes readiness and health, and measures requests, refresh and metric delivery.", $tags="", $link="https://github.com/Unleash/unleash-edge/blob/c947878de70214235c79eeb5ebe5f35b77ecc075/crates/oss/unleash-edge-backstage/src/lib.rs")
+  }
+
+}
+
+Rel(Unleash.UnleashEdgeOSSoptional.HTTPendpoints, Unleash.UnleashEdgeOSSoptional.Tokenvalidationandcache, "Checks request token and resolves authorized scope", $techn="In-process", $tags="", $link="")
+Rel(Unleash.UnleashEdgeOSSoptional.HTTPendpoints, Unleash.UnleashEdgeOSSoptional.Featurecacheandfiltering, "Reads and filters full feature configurations", $techn="In-process", $tags="", $link="")
+Rel(Unleash.UnleashEdgeOSSoptional.HTTPendpoints, Unleash.UnleashEdgeOSSoptional.Evaluationengine, "Evaluates frontend context and returns results", $techn="In-process", $tags="", $link="")
+Rel(Unleash.UnleashEdgeOSSoptional.HTTPendpoints, Unleash.UnleashEdgeOSSoptional.Registrationandmetricsaggregation, "Buffers SDK registrations and usage counts", $techn="In-process", $tags="", $link="")
+Rel(Unleash.UnleashEdgeOSSoptional.HTTPendpoints, Unleash.UnleashEdgeOSSoptional.Healthandoperationalmetrics, "Returns health, readiness and operational metrics", $techn="In-process", $tags="", $link="")
+Rel(Unleash.UnleashEdgeOSSoptional.Featurecacheandfiltering, Unleash.UnleashEdgeOSSoptional.Tokenvalidationandcache, "Reads authorized projects and environment", $techn="In-process", $tags="", $link="")
+Rel(Unleash.UnleashEdgeOSSoptional.Evaluationengine, Unleash.UnleashEdgeOSSoptional.Tokenvalidationandcache, "Reads token scope for engine selection", $techn="In-process", $tags="", $link="")
+Rel(Unleash.UnleashEdgeOSSoptional.Healthandoperationalmetrics, Unleash.UnleashEdgeOSSoptional.Featurecacheandfiltering, "Inspects cache state for readiness", $techn="In-process", $tags="", $link="")
+Rel(Unleash.UnleashEdgeOSSoptional.Healthandoperationalmetrics, Unleash.UnleashEdgeOSSoptional.Tokenvalidationandcache, "Inspects token state for readiness and diagnostics", $techn="In-process", $tags="", $link="")
+Rel(Unleash.UnleashEdgeOSSoptional.Healthandoperationalmetrics, Unleash.UnleashEdgeOSSoptional.Registrationandmetricsaggregation, "Reads buffered usage diagnostics", $techn="In-process", $tags="", $link="")
+
+SHOW_LEGEND(true)
+hide stereotypes
+@enduml

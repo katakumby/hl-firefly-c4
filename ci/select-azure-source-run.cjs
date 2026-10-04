@@ -1,12 +1,12 @@
 // CI acquisition only. Run with provider credentials before offline diagram generation.
-async function selectAzureLightRun({collection, project, definition, sha, branch, token}, request = fetch) {
+async function selectAzureSourceRun({collection, project, definition, sha, branch, token}, request = fetch) {
   if (![collection, project, definition, sha, branch, token].every(Boolean)) {
     throw new Error('Azure artifact lookup requires collection, project, pipeline, commit, branch and job token.');
   }
   const base = new URL(collection.endsWith('/') ? collection : collection + '/');
   if (base.protocol !== 'https:') throw new Error('Azure artifact lookup requires HTTPS.');
   const endpoint = new URL(encodeURIComponent(project) + '/_apis/build/builds', base);
-  const tag = 'architecture-light-' + sha;
+  const tag = 'architecture-source-' + sha;
   const params = {'api-version': '7.1', definitions: String(definition), branchName: branch,
     tagFilters: tag, statusFilter: 'completed', resultFilter: 'succeeded',
     deletedFilter: 'excludeDeleted', queryOrder: 'finishTimeDescending', '$top': '100'};
@@ -33,7 +33,7 @@ async function selectAzureLightRun({collection, project, definition, sha, branch
       const url = new URL(endpoint.pathname + '/' + build.id + '/artifacts', base);
       url.search = new URLSearchParams({'api-version': '7.1'});
       const artifacts = await get(url, true);
-      if (artifacts?.items.some(item => item.name === 'architecture-light' && item.resource?.type === 'PipelineArtifact')) {
+      if (artifacts?.items.some(item => item.name === 'architecture-source' && item.resource?.type === 'PipelineArtifact')) {
         return build.id;
       }
     }
@@ -41,15 +41,15 @@ async function selectAzureLightRun({collection, project, definition, sha, branch
     if (continuation && seen.has(continuation)) throw new Error('Azure artifact lookup repeated a continuation token.');
     seen.add(continuation);
   } while (continuation);
-  throw new Error('No successful, available architecture-light artifact for this commit and branch. ' +
-    'Run the light job for this commit first, then retry browser completion.');
+  throw new Error('No successful, available architecture-source artifact for this commit and branch. ' +
+    'Run the source job for this commit first, then retry preview generation.');
 }
 
-module.exports = selectAzureLightRun;
+module.exports = selectAzureSourceRun;
 if (require.main === module) {
-  selectAzureLightRun({collection: process.env.AZURE_COLLECTION_URI, project: process.env.AZURE_PROJECT_ID,
+  selectAzureSourceRun({collection: process.env.AZURE_COLLECTION_URI, project: process.env.AZURE_PROJECT_ID,
     definition: process.env.AZURE_DEFINITION_ID, sha: process.env.ARCHITECTURE_SOURCE_REVISION,
     branch: process.env.AZURE_SOURCE_BRANCH, token: process.env.SYSTEM_ACCESSTOKEN})
-    .then(id => console.log(`##vso[task.setvariable variable=architectureLightBuildId]${id}`))
+    .then(id => console.log(`##vso[task.setvariable variable=architectureSourceBuildId;isOutput=true]${id}`))
     .catch(error => { console.error(error.message); process.exitCode = 1; });
 }

@@ -1,0 +1,46 @@
+@startuml
+title <size:24>Component - Privileged Session Manager: logical responsibilities</size>\n<size:24>Component - Privileged Session Manager: logical responsibilities</size>
+
+set separator none
+left to right direction
+
+<style>
+  root {
+    BackgroundColor: #ffffff
+    FontColor: #444444
+  }
+</style>
+
+!include <C4/C4>
+!include <C4/C4_Context>
+!include <C4/C4_Container>
+!include <C4/C4_Component>
+
+Person(Consortiumoperator, "Consortium operator", $descr="Operates member namespaces, recovery and the Besu network.", $tags="", $link="https://hyperledger-firefly.github.io/firefly/head/architecture/node_component_architecture/")
+
+System(Managedtargetsystem, "Managed target system", $descr="Example SSH-accessible administrative target whose privileged account is rotated and sessions are controlled by PAM.", $tags="", $link="https://docs.cyberark.com/pam-self-hosted/latest/en/content/pas%20inst/installationoverview.htm")
+
+System_Boundary("CyberArkPAMSelfHosted_boundary", "CyberArk PAM Self-Hosted", $tags="") {
+  Container_Boundary("CyberArkPAMSelfHosted.PrivilegedSessionManager_boundary", "Privileged Session Manager", $tags="") {
+    Component(CyberArkPAMSelfHosted.PrivilegedSessionManager.Sessionbroker, "Session broker", $techn="PSM responsibility / proprietary implementation", $descr="Logical reference: Accepts authorized session requests and retrieves target credentials.", $tags="", $link="https://docs.cyberark.com/pam-self-hosted/latest/en/content/pas%20inst/installationoverview.htm")
+    Component(CyberArkPAMSelfHosted.PrivilegedSessionManager.Targetsessionconnector, "Target session connector", $techn="PSM responsibility / proprietary implementation", $descr="Logical reference: Establishes the example SSH session using the vaulted privileged account.", $tags="", $link="https://docs.cyberark.com/pam-self-hosted/latest/en/content/pas%20inst/installationoverview.htm")
+    Component(CyberArkPAMSelfHosted.PrivilegedSessionManager.Sessionrecorder, "Session recorder", $techn="PSM responsibility / proprietary implementation", $descr="Logical reference: Captures session activity and uploads recordings to the Vault.", $tags="", $link="https://docs.cyberark.com/pam-self-hosted/latest/en/content/pas%20inst/installationoverview.htm")
+  }
+
+  Container(CyberArkPAMSelfHosted.DigitalVault, "Digital Vault", $techn="CyberArk PAM / proprietary service", $descr="Protects privileged credentials, Safe permissions and audit/session records.", $tags="", $link="https://docs.cyberark.com/pam-self-hosted/latest/en/content/pas%20inst/installationoverview.htm")
+}
+
+Rel(CyberArkPAMSelfHosted.PrivilegedSessionManager.Sessionbroker, Consortiumoperator, "Returns brokered session output and completion status", $techn="PSM-supported session client / encrypted connection", $tags="", $link="")
+Rel(Managedtargetsystem, CyberArkPAMSelfHosted.PrivilegedSessionManager.Targetsessionconnector, "Returns command output and session state", $techn="SSH", $tags="", $link="")
+Rel(Consortiumoperator, CyberArkPAMSelfHosted.PrivilegedSessionManager.Sessionbroker, "Connects authorized session client and submits administrative input", $techn="PSM-supported session client / encrypted connection", $tags="", $link="")
+Rel(CyberArkPAMSelfHosted.PrivilegedSessionManager.Sessionbroker, CyberArkPAMSelfHosted.PrivilegedSessionManager.Targetsessionconnector, "Passes authorized target and privileged credential", $techn="In-process logical interface", $tags="", $link="")
+Rel(CyberArkPAMSelfHosted.PrivilegedSessionManager.Targetsessionconnector, CyberArkPAMSelfHosted.PrivilegedSessionManager.Sessionrecorder, "Supplies session activity for recording", $techn="In-process logical interface", $tags="", $link="")
+Rel(CyberArkPAMSelfHosted.PrivilegedSessionManager.Targetsessionconnector, CyberArkPAMSelfHosted.PrivilegedSessionManager.Sessionbroker, "Returns session output and completion status", $techn="In-process logical interface", $tags="", $link="")
+Rel(CyberArkPAMSelfHosted.PrivilegedSessionManager.Sessionbroker, CyberArkPAMSelfHosted.DigitalVault, "Submits permitted Safe credential or metadata operations", $techn="CyberArk Vault protocol / encrypted channel", $tags="", $link="")
+Rel(CyberArkPAMSelfHosted.DigitalVault, CyberArkPAMSelfHosted.PrivilegedSessionManager.Sessionbroker, "Returns authorized credential or account metadata", $techn="CyberArk Vault protocol / encrypted channel", $tags="", $link="")
+Rel(CyberArkPAMSelfHosted.PrivilegedSessionManager.Sessionrecorder, CyberArkPAMSelfHosted.DigitalVault, "Uploads session recordings and audit metadata", $techn="CyberArk Vault protocol / encrypted channel", $tags="", $link="")
+Rel(CyberArkPAMSelfHosted.PrivilegedSessionManager.Targetsessionconnector, Managedtargetsystem, "Opens privileged SSH session and relays administrator commands", $techn="SSH", $tags="", $link="")
+
+SHOW_LEGEND(true)
+hide stereotypes
+@enduml

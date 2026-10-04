@@ -1,0 +1,111 @@
+@startuml
+title <size:24>02 - Besu deployment - six validators and three RPC nodes</size>\n<size:24>Two validators per AZ; quorum 4 of 6. All six validators peer directly; only representative consensus links are drawn. HSM service placement requires qualification.</size>
+
+set separator none
+top to bottom direction
+
+<style>
+  root {
+    BackgroundColor: #ffffff
+    FontColor: #444444
+  }
+</style>
+
+!include <C4/C4>
+!include <C4/C4_Context>
+!include <C4/C4_Container>
+!include <C4/C4_Deployment>
+
+Deployment_Node(ProductionthreeAZ.Azureregionselectionpending, "Azure region - selection pending", $type="Microsoft Azure", $descr="One region with three AZs and qualified service SKUs. HSM zone resilience remains admission gate H1.", $tags="", $link="") {
+  Deployment_Node(ProductionthreeAZ.Azureregionselectionpending.RegionalnetworkingandAKScontrol, "Regional networking and AKS control", $type="Azure VNet / private AKS Standard", $descr="VNet and subnets span zones; Azure subnets are not zonal.", $tags="", $link="") {
+    Deployment_Node(ProductionthreeAZ.Azureregionselectionpending.RegionalnetworkingandAKScontrol.BesuRPCroutingservice, "Besu RPC routing service", $type="ClusterIP / session-aware JSON-RPC proxy", $descr="Three proxy replicas, one per AZ. Pin connector filter sessions to one healthy backend; rebuild filters after failover.", $tags="", $link="")
+  }
+
+  Deployment_Node(ProductionthreeAZ.Azureregionselectionpending.PrivateAKSclusteronemember, "Private AKS cluster - one member", $type="AKS Standard / Azure CNI Overlay + Cilium", $descr="System, ledger and middleware pools; explicit zonal capacity and separate Kubernetes namespaces.", $tags="", $link="") {
+    Deployment_Node(ProductionthreeAZ.Azureregionselectionpending.PrivateAKSclusteronemember.AvailabilityZone1, "Availability Zone 1", $type="Azure AZ 1", $descr="Independent power, cooling and network failure domain.", $tags="", $link="") {
+      Deployment_Node(ProductionthreeAZ.Azureregionselectionpending.PrivateAKSclusteronemember.AvailabilityZone1.LedgerpoolAZ1, "Ledger pool - AZ1", $type="AKS user pool", $descr="Three separate hosts: two validators and one RPC node. No Spot; no automatic validator scaling.", $tags="", $link="") {
+        Deployment_Node(ProductionthreeAZ.Azureregionselectionpending.PrivateAKSclusteronemember.AvailabilityZone1.LedgerpoolAZ1.ValidatorV1pod, "Validator V1 pod", $type="StatefulSet / Besu security-module plugin", $descr="Unique node identity; dedicated RWO Premium SSD LRS PVC. Pin to AZ1; lost-zone volumes are not on the surviving write path.", $tags="", $link="") {
+          Container(ProductionthreeAZ.Azureregionselectionpending.PrivateAKSclusteronemember.AvailabilityZone1.LedgerpoolAZ1.ValidatorV1pod.Besunode_1, "Besu node", $techn="Java / Besu / RocksDB", $descr="Runs the selected validator or non-validator RPC/discovery role; each instance owns its key and ledger.", $tags="", $link="https://github.com/besu-eth/besu/tree/7e05c2342404d27bd06a992e336c5e0c86a5d8d1")
+        }
+
+        Deployment_Node(ProductionthreeAZ.Azureregionselectionpending.PrivateAKSclusteronemember.AvailabilityZone1.LedgerpoolAZ1.ValidatorV2pod, "Validator V2 pod", $type="StatefulSet / Besu security-module plugin", $descr="Unique node identity; dedicated RWO Premium SSD LRS PVC. Pin to AZ1; lost-zone volumes are not on the surviving write path.", $tags="", $link="") {
+          Container(ProductionthreeAZ.Azureregionselectionpending.PrivateAKSclusteronemember.AvailabilityZone1.LedgerpoolAZ1.ValidatorV2pod.Besunode_1, "Besu node", $techn="Java / Besu / RocksDB", $descr="Runs the selected validator or non-validator RPC/discovery role; each instance owns its key and ledger.", $tags="", $link="https://github.com/besu-eth/besu/tree/7e05c2342404d27bd06a992e336c5e0c86a5d8d1")
+        }
+
+        Deployment_Node(ProductionthreeAZ.Azureregionselectionpending.PrivateAKSclusteronemember.AvailabilityZone1.LedgerpoolAZ1.RPCR1pod, "RPC R1 pod", $type="StatefulSet / Besu", $descr="Non-validator full node, stable P2P endpoint, own RWO Premium SSD LRS PVC. Also serves static peer bootstrap.", $tags="", $link="") {
+          Container(ProductionthreeAZ.Azureregionselectionpending.PrivateAKSclusteronemember.AvailabilityZone1.LedgerpoolAZ1.RPCR1pod.Besunode_1, "Besu node", $techn="Java / Besu / RocksDB", $descr="Runs the selected validator or non-validator RPC/discovery role; each instance owns its key and ledger.", $tags="", $link="https://github.com/besu-eth/besu/tree/7e05c2342404d27bd06a992e336c5e0c86a5d8d1")
+        }
+
+      }
+
+    }
+
+    Deployment_Node(ProductionthreeAZ.Azureregionselectionpending.PrivateAKSclusteronemember.AvailabilityZone2, "Availability Zone 2", $type="Azure AZ 2", $descr="Independent power, cooling and network failure domain.", $tags="", $link="") {
+      Deployment_Node(ProductionthreeAZ.Azureregionselectionpending.PrivateAKSclusteronemember.AvailabilityZone2.LedgerpoolAZ2, "Ledger pool - AZ2", $type="AKS user pool", $descr="Three separate hosts: two validators and one RPC node. No Spot; no automatic validator scaling.", $tags="", $link="") {
+        Deployment_Node(ProductionthreeAZ.Azureregionselectionpending.PrivateAKSclusteronemember.AvailabilityZone2.LedgerpoolAZ2.ValidatorV3pod, "Validator V3 pod", $type="StatefulSet / Besu security-module plugin", $descr="Unique node identity; dedicated RWO Premium SSD LRS PVC. Pin to AZ2; lost-zone volumes are not on the surviving write path.", $tags="", $link="") {
+          Container(ProductionthreeAZ.Azureregionselectionpending.PrivateAKSclusteronemember.AvailabilityZone2.LedgerpoolAZ2.ValidatorV3pod.Besunode_1, "Besu node", $techn="Java / Besu / RocksDB", $descr="Runs the selected validator or non-validator RPC/discovery role; each instance owns its key and ledger.", $tags="", $link="https://github.com/besu-eth/besu/tree/7e05c2342404d27bd06a992e336c5e0c86a5d8d1")
+        }
+
+        Deployment_Node(ProductionthreeAZ.Azureregionselectionpending.PrivateAKSclusteronemember.AvailabilityZone2.LedgerpoolAZ2.ValidatorV4pod, "Validator V4 pod", $type="StatefulSet / Besu security-module plugin", $descr="Unique node identity; dedicated RWO Premium SSD LRS PVC. Pin to AZ2; lost-zone volumes are not on the surviving write path.", $tags="", $link="") {
+          Container(ProductionthreeAZ.Azureregionselectionpending.PrivateAKSclusteronemember.AvailabilityZone2.LedgerpoolAZ2.ValidatorV4pod.Besunode_1, "Besu node", $techn="Java / Besu / RocksDB", $descr="Runs the selected validator or non-validator RPC/discovery role; each instance owns its key and ledger.", $tags="", $link="https://github.com/besu-eth/besu/tree/7e05c2342404d27bd06a992e336c5e0c86a5d8d1")
+        }
+
+        Deployment_Node(ProductionthreeAZ.Azureregionselectionpending.PrivateAKSclusteronemember.AvailabilityZone2.LedgerpoolAZ2.RPCR2pod, "RPC R2 pod", $type="StatefulSet / Besu", $descr="Non-validator full node, stable P2P endpoint, own RWO Premium SSD LRS PVC. Also serves static peer bootstrap.", $tags="", $link="") {
+          Container(ProductionthreeAZ.Azureregionselectionpending.PrivateAKSclusteronemember.AvailabilityZone2.LedgerpoolAZ2.RPCR2pod.Besunode_1, "Besu node", $techn="Java / Besu / RocksDB", $descr="Runs the selected validator or non-validator RPC/discovery role; each instance owns its key and ledger.", $tags="", $link="https://github.com/besu-eth/besu/tree/7e05c2342404d27bd06a992e336c5e0c86a5d8d1")
+        }
+
+      }
+
+    }
+
+    Deployment_Node(ProductionthreeAZ.Azureregionselectionpending.PrivateAKSclusteronemember.AvailabilityZone3, "Availability Zone 3", $type="Azure AZ 3", $descr="Independent power, cooling and network failure domain.", $tags="", $link="") {
+      Deployment_Node(ProductionthreeAZ.Azureregionselectionpending.PrivateAKSclusteronemember.AvailabilityZone3.LedgerpoolAZ3, "Ledger pool - AZ3", $type="AKS user pool", $descr="Three separate hosts: two validators and one RPC node. No Spot; no automatic validator scaling.", $tags="", $link="") {
+        Deployment_Node(ProductionthreeAZ.Azureregionselectionpending.PrivateAKSclusteronemember.AvailabilityZone3.LedgerpoolAZ3.ValidatorV5pod, "Validator V5 pod", $type="StatefulSet / Besu security-module plugin", $descr="Unique node identity; dedicated RWO Premium SSD LRS PVC. Pin to AZ3; lost-zone volumes are not on the surviving write path.", $tags="", $link="") {
+          Container(ProductionthreeAZ.Azureregionselectionpending.PrivateAKSclusteronemember.AvailabilityZone3.LedgerpoolAZ3.ValidatorV5pod.Besunode_1, "Besu node", $techn="Java / Besu / RocksDB", $descr="Runs the selected validator or non-validator RPC/discovery role; each instance owns its key and ledger.", $tags="", $link="https://github.com/besu-eth/besu/tree/7e05c2342404d27bd06a992e336c5e0c86a5d8d1")
+        }
+
+        Deployment_Node(ProductionthreeAZ.Azureregionselectionpending.PrivateAKSclusteronemember.AvailabilityZone3.LedgerpoolAZ3.ValidatorV6pod, "Validator V6 pod", $type="StatefulSet / Besu security-module plugin", $descr="Unique node identity; dedicated RWO Premium SSD LRS PVC. Pin to AZ3; lost-zone volumes are not on the surviving write path.", $tags="", $link="") {
+          Container(ProductionthreeAZ.Azureregionselectionpending.PrivateAKSclusteronemember.AvailabilityZone3.LedgerpoolAZ3.ValidatorV6pod.Besunode_1, "Besu node", $techn="Java / Besu / RocksDB", $descr="Runs the selected validator or non-validator RPC/discovery role; each instance owns its key and ledger.", $tags="", $link="https://github.com/besu-eth/besu/tree/7e05c2342404d27bd06a992e336c5e0c86a5d8d1")
+        }
+
+        Deployment_Node(ProductionthreeAZ.Azureregionselectionpending.PrivateAKSclusteronemember.AvailabilityZone3.LedgerpoolAZ3.RPCR3pod, "RPC R3 pod", $type="StatefulSet / Besu", $descr="Non-validator full node, stable P2P endpoint, own RWO Premium SSD LRS PVC. Also serves static peer bootstrap.", $tags="", $link="") {
+          Container(ProductionthreeAZ.Azureregionselectionpending.PrivateAKSclusteronemember.AvailabilityZone3.LedgerpoolAZ3.RPCR3pod.Besunode_1, "Besu node", $techn="Java / Besu / RocksDB", $descr="Runs the selected validator or non-validator RPC/discovery role; each instance owns its key and ledger.", $tags="", $link="https://github.com/besu-eth/besu/tree/7e05c2342404d27bd06a992e336c5e0c86a5d8d1")
+        }
+
+      }
+
+    }
+
+  }
+
+  Deployment_Node(ProductionthreeAZ.Azureregionselectionpending.AzurekeyservicesoutsideAKS, "Azure key services - outside AKS", $type="Azure HSM services / Entra", $descr="Separate validator, transaction and TLS/secrets key domains.", $tags="", $link="") {
+    Deployment_Node(ProductionthreeAZ.Azureregionselectionpending.AzurekeyservicesoutsideAKS.ValidatorHSMclusterGATEH1, "Validator HSM cluster - GATE H1", $type="Candidate Azure Cloud HSM / PKCS#11", $descr="Azure Cloud HSM candidate: three service nodes, AZ placement NOT established. Require secp256k1 signing + ECDH, PKCS#11 and AZ-outage proof.", $tags="", $link="")
+  }
+
+}
+
+Rel(ProductionthreeAZ.Azureregionselectionpending.PrivateAKSclusteronemember.AvailabilityZone1.LedgerpoolAZ1.ValidatorV1pod.Besunode_1, ProductionthreeAZ.Azureregionselectionpending.PrivateAKSclusteronemember.AvailabilityZone1.LedgerpoolAZ1.ValidatorV2pod.Besunode_1, "Gossips transactions, blocks and QBFT peer messages", $techn="DevP2P / TCP", $tags="", $link="")
+Rel(ProductionthreeAZ.Azureregionselectionpending.PrivateAKSclusteronemember.AvailabilityZone1.LedgerpoolAZ1.RPCR1pod.Besunode_1, ProductionthreeAZ.Azureregionselectionpending.PrivateAKSclusteronemember.AvailabilityZone1.LedgerpoolAZ1.ValidatorV1pod.Besunode_1, "Gossips transactions, blocks and QBFT peer messages", $techn="DevP2P / TCP", $tags="", $link="")
+Rel(ProductionthreeAZ.Azureregionselectionpending.PrivateAKSclusteronemember.AvailabilityZone1.LedgerpoolAZ1.RPCR1pod.Besunode_1, ProductionthreeAZ.Azureregionselectionpending.PrivateAKSclusteronemember.AvailabilityZone1.LedgerpoolAZ1.ValidatorV2pod.Besunode_1, "Gossips transactions, blocks and QBFT peer messages", $techn="DevP2P / TCP", $tags="", $link="")
+Rel(ProductionthreeAZ.Azureregionselectionpending.PrivateAKSclusteronemember.AvailabilityZone1.LedgerpoolAZ1.ValidatorV1pod.Besunode_1, ProductionthreeAZ.Azureregionselectionpending.PrivateAKSclusteronemember.AvailabilityZone2.LedgerpoolAZ2.ValidatorV3pod.Besunode_1, "Gossips transactions, blocks and QBFT peer messages", $techn="DevP2P / TCP", $tags="", $link="")
+Rel(ProductionthreeAZ.Azureregionselectionpending.PrivateAKSclusteronemember.AvailabilityZone2.LedgerpoolAZ2.ValidatorV3pod.Besunode_1, ProductionthreeAZ.Azureregionselectionpending.PrivateAKSclusteronemember.AvailabilityZone2.LedgerpoolAZ2.ValidatorV4pod.Besunode_1, "Gossips transactions, blocks and QBFT peer messages", $techn="DevP2P / TCP", $tags="", $link="")
+Rel(ProductionthreeAZ.Azureregionselectionpending.PrivateAKSclusteronemember.AvailabilityZone2.LedgerpoolAZ2.RPCR2pod.Besunode_1, ProductionthreeAZ.Azureregionselectionpending.PrivateAKSclusteronemember.AvailabilityZone2.LedgerpoolAZ2.ValidatorV3pod.Besunode_1, "Gossips transactions, blocks and QBFT peer messages", $techn="DevP2P / TCP", $tags="", $link="")
+Rel(ProductionthreeAZ.Azureregionselectionpending.PrivateAKSclusteronemember.AvailabilityZone2.LedgerpoolAZ2.RPCR2pod.Besunode_1, ProductionthreeAZ.Azureregionselectionpending.PrivateAKSclusteronemember.AvailabilityZone2.LedgerpoolAZ2.ValidatorV4pod.Besunode_1, "Gossips transactions, blocks and QBFT peer messages", $techn="DevP2P / TCP", $tags="", $link="")
+Rel(ProductionthreeAZ.Azureregionselectionpending.PrivateAKSclusteronemember.AvailabilityZone1.LedgerpoolAZ1.ValidatorV1pod.Besunode_1, ProductionthreeAZ.Azureregionselectionpending.PrivateAKSclusteronemember.AvailabilityZone3.LedgerpoolAZ3.ValidatorV5pod.Besunode_1, "Gossips transactions, blocks and QBFT peer messages", $techn="DevP2P / TCP", $tags="", $link="")
+Rel(ProductionthreeAZ.Azureregionselectionpending.PrivateAKSclusteronemember.AvailabilityZone2.LedgerpoolAZ2.ValidatorV3pod.Besunode_1, ProductionthreeAZ.Azureregionselectionpending.PrivateAKSclusteronemember.AvailabilityZone3.LedgerpoolAZ3.ValidatorV5pod.Besunode_1, "Gossips transactions, blocks and QBFT peer messages", $techn="DevP2P / TCP", $tags="", $link="")
+Rel(ProductionthreeAZ.Azureregionselectionpending.PrivateAKSclusteronemember.AvailabilityZone3.LedgerpoolAZ3.ValidatorV5pod.Besunode_1, ProductionthreeAZ.Azureregionselectionpending.PrivateAKSclusteronemember.AvailabilityZone3.LedgerpoolAZ3.ValidatorV6pod.Besunode_1, "Gossips transactions, blocks and QBFT peer messages", $techn="DevP2P / TCP", $tags="", $link="")
+Rel(ProductionthreeAZ.Azureregionselectionpending.PrivateAKSclusteronemember.AvailabilityZone3.LedgerpoolAZ3.RPCR3pod.Besunode_1, ProductionthreeAZ.Azureregionselectionpending.PrivateAKSclusteronemember.AvailabilityZone3.LedgerpoolAZ3.ValidatorV5pod.Besunode_1, "Gossips transactions, blocks and QBFT peer messages", $techn="DevP2P / TCP", $tags="", $link="")
+Rel(ProductionthreeAZ.Azureregionselectionpending.PrivateAKSclusteronemember.AvailabilityZone3.LedgerpoolAZ3.RPCR3pod.Besunode_1, ProductionthreeAZ.Azureregionselectionpending.PrivateAKSclusteronemember.AvailabilityZone3.LedgerpoolAZ3.ValidatorV6pod.Besunode_1, "Gossips transactions, blocks and QBFT peer messages", $techn="DevP2P / TCP", $tags="", $link="")
+Rel(ProductionthreeAZ.Azureregionselectionpending.RegionalnetworkingandAKScontrol.BesuRPCroutingservice, ProductionthreeAZ.Azureregionselectionpending.PrivateAKSclusteronemember.AvailabilityZone1.LedgerpoolAZ1.RPCR1pod.Besunode_1, "Routes a pinned session to a healthy RPC node", $techn="HTTP JSON-RPC 8545 / optional WS 8546", $tags="", $link="")
+Rel(ProductionthreeAZ.Azureregionselectionpending.PrivateAKSclusteronemember.AvailabilityZone1.LedgerpoolAZ1.ValidatorV1pod.Besunode_1, ProductionthreeAZ.Azureregionselectionpending.AzurekeyservicesoutsideAKS.ValidatorHSMclusterGATEH1, "Signs QBFT payloads and performs node-key ECDH with key V1", $techn="PKCS#11 / vendor encrypted channel", $tags="", $link="")
+Rel(ProductionthreeAZ.Azureregionselectionpending.PrivateAKSclusteronemember.AvailabilityZone1.LedgerpoolAZ1.ValidatorV2pod.Besunode_1, ProductionthreeAZ.Azureregionselectionpending.AzurekeyservicesoutsideAKS.ValidatorHSMclusterGATEH1, "Signs QBFT payloads and performs node-key ECDH with key V2", $techn="PKCS#11 / vendor encrypted channel", $tags="", $link="")
+Rel(ProductionthreeAZ.Azureregionselectionpending.RegionalnetworkingandAKScontrol.BesuRPCroutingservice, ProductionthreeAZ.Azureregionselectionpending.PrivateAKSclusteronemember.AvailabilityZone2.LedgerpoolAZ2.RPCR2pod.Besunode_1, "Routes a pinned session to a healthy RPC node", $techn="HTTP JSON-RPC 8545 / optional WS 8546", $tags="", $link="")
+Rel(ProductionthreeAZ.Azureregionselectionpending.PrivateAKSclusteronemember.AvailabilityZone2.LedgerpoolAZ2.ValidatorV3pod.Besunode_1, ProductionthreeAZ.Azureregionselectionpending.AzurekeyservicesoutsideAKS.ValidatorHSMclusterGATEH1, "Signs QBFT payloads and performs node-key ECDH with key V3", $techn="PKCS#11 / vendor encrypted channel", $tags="", $link="")
+Rel(ProductionthreeAZ.Azureregionselectionpending.PrivateAKSclusteronemember.AvailabilityZone2.LedgerpoolAZ2.ValidatorV4pod.Besunode_1, ProductionthreeAZ.Azureregionselectionpending.AzurekeyservicesoutsideAKS.ValidatorHSMclusterGATEH1, "Signs QBFT payloads and performs node-key ECDH with key V4", $techn="PKCS#11 / vendor encrypted channel", $tags="", $link="")
+Rel(ProductionthreeAZ.Azureregionselectionpending.RegionalnetworkingandAKScontrol.BesuRPCroutingservice, ProductionthreeAZ.Azureregionselectionpending.PrivateAKSclusteronemember.AvailabilityZone3.LedgerpoolAZ3.RPCR3pod.Besunode_1, "Routes a pinned session to a healthy RPC node", $techn="HTTP JSON-RPC 8545 / optional WS 8546", $tags="", $link="")
+Rel(ProductionthreeAZ.Azureregionselectionpending.PrivateAKSclusteronemember.AvailabilityZone3.LedgerpoolAZ3.ValidatorV5pod.Besunode_1, ProductionthreeAZ.Azureregionselectionpending.AzurekeyservicesoutsideAKS.ValidatorHSMclusterGATEH1, "Signs QBFT payloads and performs node-key ECDH with key V5", $techn="PKCS#11 / vendor encrypted channel", $tags="", $link="")
+Rel(ProductionthreeAZ.Azureregionselectionpending.PrivateAKSclusteronemember.AvailabilityZone3.LedgerpoolAZ3.ValidatorV6pod.Besunode_1, ProductionthreeAZ.Azureregionselectionpending.AzurekeyservicesoutsideAKS.ValidatorHSMclusterGATEH1, "Signs QBFT payloads and performs node-key ECDH with key V6", $techn="PKCS#11 / vendor encrypted channel", $tags="", $link="")
+
+SHOW_LEGEND(true)
+hide stereotypes
+@enduml

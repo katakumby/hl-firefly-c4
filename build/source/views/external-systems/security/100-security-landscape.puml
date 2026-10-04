@@ -1,0 +1,88 @@
+@startuml
+title <size:24>System Landscape - Security product reference catalog</size>\n<size:24>System Landscape - Security product reference catalog</size>
+
+set separator none
+left to right direction
+
+<style>
+  root {
+    BackgroundColor: #ffffff
+    FontColor: #444444
+  }
+</style>
+
+!include <C4/C4>
+!include <C4/C4_Context>
+
+AddBoundaryTag("Azure cryptographic services", $borderColor="#444444", $fontColor="#444444", $borderStyle="dashed")
+Boundary(group_1, "Azure cryptographic services", $tags="Azure cryptographic services") {
+  System(AzureResourceManager, "Azure Resource Manager", $descr="External management-plane boundary; applies Azure RBAC to Managed HSM resource administration, not key operations.", $tags="", $link="https://learn.microsoft.com/en-us/azure/key-vault/managed-hsm/access-control")
+  System(AzureManagedHSM, "Azure Managed HSM", $descr="Protects cryptographic keys and performs authorized cryptographic operations; not a general secret or certificate store.", $tags="", $link="https://learn.microsoft.com/en-us/azure/key-vault/managed-hsm/access-control")
+}
+
+AddBoundaryTag("Identity and federation", $borderColor="#444444", $fontColor="#444444", $borderStyle="dashed")
+Boundary(group_2, "Identity and federation", $tags="Identity and federation") {
+  System(MicrosoftEntraID, "Microsoft Entra ID", $descr="Cloud identity, token issuance, directory administration and provisioning; separate from AD DS and AD FS.", $tags="", $link="https://learn.microsoft.com/en-us/entra/architecture/architecture")
+  System(MicrosoftActiveDirectoryFederationServices, "Microsoft Active Directory Federation Services", $descr="Federates AD-backed identities and issues claims to relying parties; separate from directory synchronization.", $tags="", $link="https://learn.microsoft.com/en-us/windows-server/identity/ad-fs/ad-fs-overview")
+  System(MicrosoftActiveDirectoryDomainServices, "Microsoft Active Directory Domain Services", $descr="Directory identities, LDAP queries and Kerberos authentication for the enterprise domain.", $tags="", $link="https://learn.microsoft.com/en-us/windows-server/identity/ad-ds/get-started/virtual-dc/active-directory-domain-services-overview")
+  System(Keycloak, "Keycloak", $descr="Identity and access management: SSO, federation, brokering and token issuance.", $tags="", $link="https://www.keycloak.org/docs/latest/server_admin/index.html")
+}
+
+AddBoundaryTag("Privileged access and secrets", $borderColor="#444444", $fontColor="#444444", $borderStyle="dashed")
+Boundary(group_3, "Privileged access and secrets", $tags="Privileged access and secrets") {
+  System(CyberArkConjurEnterprise, "CyberArk Conjur Enterprise", $descr="Enterprise workload secret access; documented as Secrets Manager Self-Hosted. OSS is not the selected variant.", $tags="", $link="https://docs.cyberark.com/secrets-manager-sh/latest/en/content/resources/_topnav/cc_home.htm")
+  System(CyberArkPAMSelfHosted, "CyberArk PAM Self-Hosted", $descr="Controls privileged credentials, password rotation and recorded administrative sessions.", $tags="", $link="https://docs.cyberark.com/pam-self-hosted/latest/en/content/pas%20inst/installationoverview.htm")
+}
+
+Person(Consortiumoperator, "Consortium operator", $descr="Operates member namespaces, recovery and the Besu network.", $tags="", $link="https://hyperledger-firefly.github.io/firefly/head/architecture/node_component_architecture/")
+Person(Businessuser, "Business user", $descr="Submits consortium business actions through a member application.", $tags="", $link="https://hyperledger-firefly.github.io/firefly/head/architecture/node_component_architecture/")
+Person(Securityadministrator, "Security administrator", $descr="Configures identity, privileged access, secret policies and key permissions in these reference examples.", $tags="", $link="https://docs.cyberark.com/pam-self-hosted/latest/en/content/pas%20inst/installationoverview.htm")
+System(Memberapplicationreference, "Member application reference", $descr="One example member application boundary; unrelated member applications are not implied to share ownership.", $tags="", $link="https://hyperledger-firefly.github.io/firefly/head/architecture/node_component_architecture/")
+System(Managedtargetsystem, "Managed target system", $descr="Example SSH-accessible administrative target whose privileged account is rotated and sessions are controlled by PAM.", $tags="", $link="https://docs.cyberark.com/pam-self-hosted/latest/en/content/pas%20inst/installationoverview.htm")
+
+Rel(CyberArkPAMSelfHosted, Managedtargetsystem, "Rotates target credentials and brokers recorded privileged sessions", $techn="SSH / target-specific password commands", $tags="", $link="")
+Rel(CyberArkPAMSelfHosted, Consortiumoperator, "Returns brokered session output and completion status", $techn="Encrypted session client", $tags="", $link="")
+Rel(CyberArkPAMSelfHosted, CyberArkConjurEnterprise, "Supplies selected Vault credentials through Vault Synchronizer", $techn="CyberArk Vault protocol + HTTPS / Conjur API", $tags="", $link="")
+Rel(MicrosoftEntraID, Memberapplicationreference, "Returns identity tokens or assertions for application access", $techn="HTTPS / configured identity protocol", $tags="", $link="")
+Rel(MicrosoftEntraID, Keycloak, "Returns verified identity claims through the configured federation flow", $techn="HTTPS / OIDC", $tags="", $link="")
+Rel(MicrosoftEntraID, MicrosoftActiveDirectoryDomainServices, "Queries selected directory objects through the Cloud Sync provisioning agent", $techn="Protected LDAP / agent-established TLS service channel", $tags="", $link="")
+Rel(Keycloak, Memberapplicationreference, "Returns identity tokens or assertions for application access", $techn="HTTPS / configured identity protocol", $tags="", $link="")
+Rel(Keycloak, MicrosoftActiveDirectoryDomainServices, "Requests LDAP user attributes and credential validation", $techn="LDAPS", $tags="", $link="")
+Rel(Keycloak, MicrosoftEntraID, "Delegates login through browser-mediated OIDC federation", $techn="HTTPS / OIDC", $tags="", $link="")
+Rel(Keycloak, MicrosoftActiveDirectoryFederationServices, "Delegates login through browser-mediated SAML 2.0 federation", $techn="HTTPS / SAML 2.0", $tags="", $link="")
+Rel(AzureManagedHSM, Memberapplicationreference, "Returns signature or wrapped key result without private key material", $techn="HTTPS / Managed HSM REST response", $tags="", $link="")
+Rel(AzureManagedHSM, MicrosoftEntraID, "Retrieves issuer metadata and public signing keys for caller token verification", $techn="HTTPS / OpenID metadata and JWKS", $tags="", $link="")
+Rel(Managedtargetsystem, CyberArkPAMSelfHosted, "Returns password-operation outcomes and privileged session output", $techn="SSH / target command response", $tags="", $link="")
+Rel(Businessuser, Memberapplicationreference, "Submits consortium business actions", $techn="HTTPS", $tags="", $link="")
+Rel(Securityadministrator, Keycloak, "Configures Keycloak access policy and reviews administrative outcomes", $techn="HTTPS / product administration interface", $tags="", $link="")
+Rel(Securityadministrator, AzureManagedHSM, "Configures Azure Managed HSM access policy and reviews administrative outcomes", $techn="HTTPS / product administration interface", $tags="", $link="")
+Rel(Securityadministrator, CyberArkPAMSelfHosted, "Configures CyberArk PAM Self-Hosted access policy and reviews administrative outcomes", $techn="HTTPS / product administration interface", $tags="", $link="")
+Rel(Securityadministrator, CyberArkConjurEnterprise, "Configures CyberArk Conjur Enterprise access policy and reviews administrative outcomes", $techn="HTTPS / product administration interface", $tags="", $link="")
+Rel(Securityadministrator, MicrosoftEntraID, "Configures Microsoft Entra ID access policy and reviews administrative outcomes", $techn="HTTPS / product administration interface", $tags="", $link="")
+Rel(Securityadministrator, MicrosoftActiveDirectoryDomainServices, "Configures Microsoft Active Directory Domain Services access policy and reviews administrative outcomes", $techn="Protected LDAP / directory administration", $tags="", $link="")
+Rel(Securityadministrator, MicrosoftActiveDirectoryFederationServices, "Configures Microsoft Active Directory Federation Services access policy and reviews administrative outcomes", $techn="AD FS administration / PowerShell", $tags="", $link="")
+Rel(Businessuser, Keycloak, "Completes user sign-in through browser-mediated authentication", $techn="HTTPS / user browser", $tags="", $link="")
+Rel(Businessuser, MicrosoftEntraID, "Completes user sign-in through browser-mediated authentication", $techn="HTTPS / user browser", $tags="", $link="")
+Rel(Businessuser, MicrosoftActiveDirectoryFederationServices, "Completes user sign-in through browser-mediated authentication", $techn="HTTPS / user browser", $tags="", $link="")
+Rel(Businessuser, MicrosoftActiveDirectoryDomainServices, "Requests domain sign-in and service tickets through the domain client", $techn="Kerberos", $tags="", $link="")
+Rel(Consortiumoperator, CyberArkPAMSelfHosted, "Requests approved privileged access and submits session commands", $techn="HTTPS / PAM portal and encrypted session client", $tags="", $link="")
+Rel(Securityadministrator, AzureResourceManager, "Submits Managed HSM resource administration request", $techn="HTTPS / Azure Resource Manager API", $tags="", $link="")
+Rel(MicrosoftActiveDirectoryDomainServices, Keycloak, "Returns user attributes and credential validation outcome", $techn="LDAPS", $tags="", $link="")
+Rel(MicrosoftActiveDirectoryDomainServices, MicrosoftActiveDirectoryFederationServices, "Returns domain authentication result and account attributes", $techn="Kerberos / protected directory access", $tags="", $link="")
+Rel(MicrosoftActiveDirectoryDomainServices, MicrosoftEntraID, "Returns selected identity attributes for Cloud Sync provisioning", $techn="Protected LDAP / agent-established TLS service channel", $tags="", $link="")
+Rel(MicrosoftActiveDirectoryDomainServices, Businessuser, "Returns Kerberos ticket response to the domain client", $techn="Kerberos", $tags="", $link="")
+Rel(MicrosoftActiveDirectoryFederationServices, Memberapplicationreference, "Returns identity tokens or assertions for application access", $techn="HTTPS / configured identity protocol", $tags="", $link="")
+Rel(MicrosoftActiveDirectoryFederationServices, Keycloak, "Returns verified identity claims through the configured federation flow", $techn="HTTPS / SAML 2.0", $tags="", $link="")
+Rel(MicrosoftActiveDirectoryFederationServices, MicrosoftActiveDirectoryDomainServices, "Requests domain authentication and account attributes", $techn="Kerberos / protected directory access", $tags="", $link="")
+Rel(Memberapplicationreference, Keycloak, "Requests application sign-in and identity claims", $techn="HTTPS / OIDC or SAML reference flow", $tags="", $link="")
+Rel(Memberapplicationreference, MicrosoftEntraID, "Requests application sign-in and identity claims", $techn="HTTPS / OIDC or SAML reference flow", $tags="", $link="")
+Rel(Memberapplicationreference, MicrosoftActiveDirectoryFederationServices, "Requests application sign-in and identity claims", $techn="HTTPS / OIDC or SAML reference flow", $tags="", $link="")
+Rel(Memberapplicationreference, CyberArkConjurEnterprise, "Authenticates workload and requests permitted application secrets", $techn="HTTPS / Conjur API", $tags="", $link="")
+Rel(Memberapplicationreference, AzureManagedHSM, "Submits authorized signing or key-wrapping request", $techn="HTTPS / Managed HSM REST API", $tags="", $link="")
+Rel(AzureResourceManager, AzureManagedHSM, "Applies resource-management changes authorized by Azure RBAC; does not grant key access", $techn="Azure management-plane interface", $tags="", $link="")
+Rel(CyberArkConjurEnterprise, CyberArkPAMSelfHosted, "Requests selected Vault accounts and changed credentials through Vault Synchronizer", $techn="CyberArk Vault protocol / encrypted channel", $tags="", $link="")
+Rel(CyberArkConjurEnterprise, Memberapplicationreference, "Returns short-lived token or authorized application secret", $techn="HTTPS / Conjur API response", $tags="", $link="")
+
+SHOW_LEGEND(true)
+hide stereotypes
+@enduml

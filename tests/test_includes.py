@@ -41,10 +41,10 @@ class NativeDirectoryIncludes(unittest.TestCase):
                 'fragments/views/20-body/include.inc': 'include *\n',
                 'fragments/views/10-open.inc': 'systemLandscape "landscape" {\n',
             })
-            cli.export(paths.REFERENCE, 'plantuml')
+            cli.build_source([paths.REFERENCE])
             artifact, = cli.inventory()
             self.assertEqual('fragments/views/10-open.inc', artifact['source'])
-            self.assertEqual('fragments/views/landscape.puml', artifact['output'])
+            self.assertEqual('source/fragments/views/landscape.puml', artifact['output'])
 
     def test_scope_folders_preserve_groups_and_container_component_ownership(self):
         with checkout() as root:

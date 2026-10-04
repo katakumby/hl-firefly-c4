@@ -3,8 +3,8 @@
 Solutions Architects and Technical Leads collaborate here on a shared reference
 model and separate initiative proposals. Architects author static C4 in Structurizr DSL and reference UML patterns.
 Technical leads primarily own behavioral/use-case and code diagrams, authored
-as standalone PlantUML (`.puml`) or Mermaid (`.mmd`) files. All generated
-artifacts stay under ignored `build/`.
+as standalone PlantUML (`.puml`) or Mermaid (`.mmd`) files. Generated text and previews are versioned under `build/source/` and `build/preview/`.
+Saved `workspace.json` files beside DSL are versioned layout inputs.
 
 ## Start here
 
@@ -32,6 +32,7 @@ The repository root is the architecture workspace; there is no enclosing
 ```text
 .
 ├── workspace.dsl                 # Shared workspace: reusable model plus published views
+├── workspace.json                # Saved manual coordinates/routing; versioned when present
 ├── model.dsl                     # Extendable model and styles; no authored diagrams
 ├── model/
 │   ├── people.dsl                # Shared actors
@@ -72,14 +73,14 @@ The repository root is the architecture workspace; there is no enclosing
 ├── tests/                        # Containerized tooling regression tests
 ├── ci/
 │   ├── examples/                 # GitHub Actions and Azure DevOps examples and setup guide
-│   ├── select-light-run.cjs      # GitHub lookup of a matching lightweight artifact
-│   └── select-azure-light-run.cjs # Azure lookup of a matching lightweight artifact
+│   ├── select-source-run.cjs      # GitHub lookup of a matching source artifact
+│   └── select-azure-source-run.cjs # Azure lookup of a matching source artifact
 ├── compose.yaml                  # Viewer services and two image-only tools services
 ├── .env                          # Committed toolchain version pins; no secrets
-├── .gitignore                    # Generated outputs and cache exclusions
+├── .gitignore                    # Transient reports, caches and local settings
 ├── AGENTS.md                     # Validation and final-review instructions
 ├── README.md                     # Repository navigation and authoring workflow
-└── build/                        # Ignored generated diagrams, reports and local settings
+└── build/                        # Versioned source/ and preview/ trees; ignored operational reports
 ```
 
 `model.dsl` assembles shared definitions and styles for reuse. `workspace.dsl`
@@ -179,209 +180,105 @@ guidance for authors and reviewers. Custom enforcement can be introduced
 progressively as teams agree on rules worth maintaining. The build also requires explicit portable view keys and unambiguous local source
 paths so generated files have deterministic destinations.
 
-### Export C4-PlantUML (default), Mermaid, SVG or PNG
+### Build diagram sources
 
-The commands below use this repository's tools wrapper, whose options include
-`--workspace`, `--view`, and `--format`. Official Structurizr subcommands use
-single-dash options such as `-workspace` and `-format`; do not interchange the two
-interfaces. The wrapper's `--format plantuml` selects native C4-PlantUML. In
-official Structurizr tooling, `-format plantuml` selects Structurizr-style
-PlantUML and `-format plantuml/c4plantuml` selects C4-PlantUML.
+Generate distribution text without rendering images:
 
-Export validates fresh sources first. Omit `--workspace` for the reference
-workspace and `--view` for all diagrams in that workspace. Both `export` and
-`export-native` support the same selection options:
+```text
+docker compose run --rm --pull never tools clean
+docker compose run --rm --pull never tools build-source
+```
+
+`clean` is an explicit reset chosen by the operator. It clears generated output and
+old reports, including legacy output layouts. Never clean between source generation
+(or handoff restoration) and previews. Saved adjacent `workspace.json` files remain
+outside build and survive cleanup. Keep optional machine settings in ignored
+`docker/local.env`, not inside build.
+
+`build-source` validates the selected C4 workspaces and uses Structurizr's native
+C4-PlantUML exporter. Authored `.puml` and `.mmd` files are copied unchanged with
+relative local text includes. Include fragments are copied but not independently
+rendered. PlantUML and Mermaid are alternative authoring formats; there is no
+translation or automatic participant generation. Authored syntax is checked during
+preview rendering. C4 exports remain compact native macros without added ID tables.
+
+Both build commands accept the following selection:
 
 | Selection | Arguments |
 |---|---|
-| Every discovered workspace, including nested variants | `--all-workspaces` |
-| One workspace, all its views | `--workspace <path>` |
-| One view | `--workspace <path> --view <key>` |
-| Several views | `--workspace <path> --view <key1> --view <key2>` |
+| All workspaces and owned UML (default) | No selection, or `--all-workspaces` |
+| One workspace and its UML | `--workspace workspaces/ignition/workspace.dsl` |
+| Root workspace and shared UML | `--workspace workspace.dsl` |
+| Selected C4 views only | `--workspace <path> --view <key> --view <another-key>` |
 
-Repeated keys are deduplicated. `--all-workspaces` cannot be combined with
-`--workspace` or `--view`. Unknown keys are reported together before rendering.
-Each selected workspace is validated once, and the whole request is staged before
-publication: a later workspace failure preserves all previous successful exports.
-
-```text
-docker compose run --rm --pull never tools export
-docker compose run --rm --pull never tools export --workspace workspaces/ignition/workspace.dsl
-docker compose run --rm --pull never tools export --view 01-landscape
-docker compose run --rm --pull never tools export --all-workspaces
-docker compose run --rm --pull never tools export --workspace workspaces/ignition/workspace.dsl --view ignition-example-containers --view stable_key_name
-```
-
-Add `--format` to any selection to choose an output:
-
-| Format | Native exporter | Diagram filename |
-|---|---|---|
-| `plantuml` (default) | [C4-PlantUML](https://docs.structurizr.com/export/c4plantuml), `plantuml/c4plantuml` | `<view-key>.puml` |
-| `mermaid` | [Mermaid](https://docs.structurizr.com/export/mermaid) | `<view-key>.mmd` |
-| `svg` | PlantUML rendering of the C4 export | `<view-key>.svg` |
-| `png` | PlantUML rendering of the C4 export | `<view-key>.png` |
+A view selection without `--workspace` targets the root. Repeated keys are
+deduplicated; unknown keys are reported together. `--all-workspaces` cannot be
+combined with workspace/view selection. A selected source handoff certifies only
+that selection; run a full source build before requesting all previews.
 
 ```text
-docker compose run --rm --pull never tools export --format mermaid
-docker compose run --rm --pull never tools export --view 01-landscape --format png
+docker compose run --rm --pull never tools build-source --workspace workspace.dsl --view 01-landscape
+docker compose run --rm --pull never tools build-source --workspace workspaces/ignition/workspace.dsl
 ```
-
-C4-PlantUML is the primary agent review output. Its compact definitions use the
-built-in PlantUML C4 standard library, C4 styling and embedded legends; authored
-export properties can customize them. Text exports preserve the native output
-and need no browser or separate renderer installation.
-
-Mermaid does not reproduce every Structurizr shape, style or layout feature.
-Consumers rendering its HTML labels need `"securityLevel": "loose"`. Routine
-reviews read exported text directly. C4 SVG/PNG exports render the same
-C4-PlantUML definitions; their layout can differ from the native Structurizr viewer.
 
 <a id="filtered-view-export-limitations"></a>
 
-**Filtered-view export limitations:** The pinned C4 exporter does not support
-Structurizr `filtered` views. An ordinary C4 export or lightweight build containing
-them fails before rendering and lists their keys. Select supported diagrams with
-`--view`, or use `tools-browser
-export-native` for filtered views with native layout. No views are silently omitted.
+**Filtered-view export limitations:** the pinned C4-PlantUML exporter cannot export
+Structurizr filtered views. Affected keys produce an actionable error before
+publication. Select supported views or explicitly use native exports for filtered
+views. No view is silently omitted.
 
-A successful export updates the canonical files for its requested workspace,
-selection and format. Other diagrams and formats retain their files and freshness metadata.
-The command reports the file count; `build/artifacts.json` lists the exact output paths. See
-[outputs and maintenance](#outputs-and-maintenance) for directories and metadata.
+### Build previews independently
 
-To refresh C4-PlantUML text for every discovered workspace:
+Both preview stages consume the same successful source handoff and produce SVG and
+PNG. They can run in either order or in separate checkouts:
 
 ```text
-docker compose run --rm --pull never tools export --all-workspaces
+docker compose run --rm --pull never tools build-preview --renderer plantuml
+docker compose run --rm --pull never tools-browser build-preview --renderer mermaid
 ```
 
-Use the [two-stage build](#build-all-diagrams) to regenerate all ordinary diagrams,
-including images and authored UML. For an intentional reset, add `--clean` to the **first export
-only**. This removes all inventory-managed diagram formats and reports before validation;
-the exports above then restore C4-PlantUML text only.
-It preserves captured manual layouts in `build/.layouts/`, `local.env`, the writer
-lock, and unrelated or historical artifacts.
-A failed rebuild cannot restore explicitly cleared files. Ordinary full builds
-already prune obsolete managed files after successful generation.
+PlantUML previews use the browser-free `dlt-architecture-tools-light` image.
+Mermaid previews use `dlt-architecture-tools-browser`. Both project image names
+have no explicit tag. Neither preview stage regenerates C4, reparses DSL, or renders
+from authored originals. They read generated text under `build/source/`.
+
+PlantUML previews support C4 view selection. Mermaid previews support workspace
+selection and reject `--view`, since C4 source output is PlantUML only.
+Source hashes, installed toolchain compatibility, handoff coverage, and CI commit
+provenance are checked before rendering. Missing, changed or incompatible handoffs
+fail with guidance to rerun source generation. Local execution needs no Git metadata.
 
 ### On-demand Structurizr layouts and animations
 
-Use `export-native` for images that preserve Structurizr's saved manual positions,
-relationship routing and canvas size, or for animated GIFs. It uses Structurizr's
-own browser renderer; ordinary `export --format svg|png` continues to render
-C4-PlantUML. Normal `build` and the CI examples do not run native exports.
-
-For manual views, omit `autoLayout`, arrange the diagram in the viewer, and
-explicitly save it. The viewer writes `workspace.json` beside the DSL. Capture
-that saved state before exporting:
+Use native exports explicitly for saved manual positions, relationship routing,
+styles and animation. Arrange views without `autoLayout`, then **save in the viewer**.
+The adjacent, versioned `workspace.json` is the authoritative saved layout. Current
+DSL supplies model contents, views and animation definitions. There is no capture
+command or persistent layout copy under build.
 
 ```text
-docker compose run --rm --pull never tools capture-layout --workspace workspaces/ignition/workspace.dsl
 docker compose run --rm --pull never tools-browser export-native --workspace workspaces/ignition/workspace.dsl --format svg
 docker compose run --rm --pull never tools-browser export-native --workspace workspaces/ignition/workspace.dsl --view ignition-example-containers --format png
-docker compose run --rm --pull never tools-browser export-native --workspace workspaces/ignition/workspace.dsl --view example-container-animation --view stable_key_name --format gif
+docker compose run --rm --pull never tools-browser export-native --workspace workspaces/ignition/workspace.dsl --view example-container-animation --view stable_key_name --format gif --frame-duration 3
 docker compose run --rm --pull never tools-browser export-native --all-workspaces --format svg
 ```
 
-Capture stores the saved JSON and capture metadata in
-`build/.layouts/<workspace-entrypoint>/`. Native export parses current DSL and
-merges this snapshot's layout into it. Model contents, view selections and
-animation definitions continue to come from DSL. Automatic views need no snapshot;
-a missing required manual layout fails the request. Capture again after saving
-new layout edits. Keep explicit view keys stable; native matching may recover
-renamed views, but unmatched keys are reported for review.
+Native export defaults to the root workspace, all its views, and SVG. It accepts
+repeatable `--view`. Workspace-wide GIF export reports skipped nonanimated views;
+explicitly requesting a nonanimated GIF is an error. GIF timing defaults to three
+seconds per frame (accepted range 0.01–655.35 seconds).
 
-Native formats are `svg` (default), `png` and `gif`. A workspace-wide GIF export
-skips nonanimated views and reports them; explicitly selecting a nonanimated view
-as GIF fails before rendering. Static animations reveal DSL animation steps;
-dynamic GIFs follow relationship playback and finish with the complete overview.
-The pinned renderer's dynamic batch-export limitation is handled through its
-playback API. GIFs use the same bundled Gifshot encoder as the web application.
-Use `--frame-duration 3` to control seconds per frame (default 3; range
-0.01–655.35, rounded to hundredths). Exports use light mode, include metadata,
-preserve canvas dimensions and do not crop frames.
+Native images go directly into the mirrored `build/preview/` tree with
+`.structurizr` or `.structurizr-key` suffixes. Rendering uses light mode, includes
+metadata, preserves canvas dimensions, and requires no running viewer. Saved JSON
+is frozen temporarily for merging and rechecked before publication. Missing manual
+coordinates, concurrent saves, or rendering failures prevent publication.
 
-Native files use the same mirrored folders with distinct, stable suffixes:
-`<view-key>.structurizr.svg`, `.structurizr.png` or `.structurizr.gif`.
-Separate native legends use `<view-key>.structurizr-key.svg` or `.png`.
-The inventory records renderer versions, layout fingerprint and GIF timing.
-Native reports use `export-native-status.json` and `export-native.log` in each
-workspace's report directory; `.reports/export-native-status.json` summarizes
-the whole request. Ordinary exports similarly have `.reports/export-status.json`.
-
-Selected exports replace only requested views and formats. Normal builds preserve
-native files still belonging to current sources/views, without refreshing their
-metadata; successful builds prune obsolete destinations. Layout snapshots survive
-`--clean`, but deleting the entire `build/` directory removes them. They are ignored
-by Git: back them up or copy them explicitly to share manual work. See the
-[capture and restore instructions](documentation/build.md#manual-layout-snapshots).
-
-### Build all diagrams
-
-Build in two explicit stages, using two separately named images without explicit tags:
-
-| Service / image | Work |
-|---|---|
-| `tools` / `dlt-architecture-tools-light` | Validate all workspaces; export C4-PlantUML; render C4 and authored PlantUML SVG/PNG |
-| `tools-browser` / `dlt-architecture-tools-browser` | Complete deferred Mermaid SVG/PNG from a matching successful light build; native exports on demand |
-
-```text
-docker compose run --rm --pull never tools build
-docker compose run --rm --pull never tools-browser build-browser
-```
-
-The frequent `build` command uses no browser or Node runtime. It discovers all
-shared and workspace-local UML sources and checks cross-format collisions, but
-records Mermaid sources and expected image paths as deferred. Mermaid syntax is
-checked when the browser stage renders it. Existing Mermaid images retain their
-previous freshness metadata until browser completion.
-
-`build-browser` verifies the light report, current source fingerprint, installed
-toolchain compatibility, required artifact/report hashes and CI commit when provided.
-It renders only Mermaid:
-it does not reparse DSL or repeat C4/PlantUML generation. Missing or stale handoffs
-fail before rendering. For incompatible installed tools, reacquire approved images
-under the same image names and rerun the light stage. Each stage renders offline
-and publishes its own selection atomically. Native images and GIFs remain explicit
-`export-native` operations; neither ordinary stage invokes them.
-Inspection errors and warnings are printed during the build and recorded in each
-workspace's `validation.json` / `validation.log`, plus `build/build.json` and
-`build/build.log`. Reports distinguish `inspection_passed` from the command's
-`passed` result and declare the `strict` or `report-only` inspection policy.
-Inspection findings keep their original severity; they do not block publication.
-Explicit stable view keys and collision-free output paths are still required.
-Each standalone `.puml` or `.mmd` source contains one diagram. Use `.pumlinc` for local PlantUML includes;
-paths resolve relative to the including source. Remote includes require replacing
-URLs with repository files or bundled PlantUML libraries. A `.puml` and `.mmd`
-with the same relative stem are rejected because their image outputs would collide.
-
-C4 outputs use the paths described below. Authored UML mirrors its source path:
-`uml/patterns/example/sequence.puml` produces
-`build/uml/patterns/example/sequence.svg` and `.png`; workspace-local diagrams
-produce `build/workspaces/<epic-id>/uml/...` images. Mermaid and PlantUML are
-independent authoring choices; there is no conversion or generated participant list.
-Optional comments can record canonical model IDs. A future consistency fitness
-check will warn about discrepancies; this build does not implement it.
-
-Markdown links to the source and to relative generated SVG/PNG paths. Previews
-require the corresponding successful stage; Mermaid previews require browser completion. All 14 existing FireFly–Besu sequences have standalone
-sources beside their use-case README. Consumers may copy generated images or
-embed this repository with both sources and build output; preserve relative paths
-when copying linked Markdown. No documentation hosting service is required.
-
-`build/build.json` records the latest stage attempt, source fingerprint, renderer
-versions, sources and output paths. `passed: true` with `stage: light` means the
-lightweight stage succeeded; `complete: true` requires browser completion.
-`build/.reports/build-light.json` and `build-browser.json` retain each stage's
-report, with adjacent `.log` diagnostics. A failed stage preserves previous
-artifacts and records failure. Light builds prune obsolete C4/PlantUML outputs;
-browser completion prunes obsolete Mermaid outputs after successful generation.
-Individual exports also record their latest attempt in `export-status.json`.
-
-The repository can be cloned or used as a Git submodule beneath another codebase.
-Run Compose here, or use `docker compose --project-directory <checkout>
---env-file <checkout>/.env -f <checkout>/compose.yaml ...` from elsewhere. Paths passed to `--workspace` are relative to this architecture
-repository, independent of the parent repository and Git metadata.
+Normal builds and CI never generate native exports. Ordinary stages leave their
+files and freshness metadata intact. Layout-only edits do not invalidate ordinary
+source or preview stages. See [saved layouts](documentation/build.md#saved-layouts)
+for version-control and viewer restoration instructions.
 
 ### Final architecture review
 
@@ -390,8 +287,8 @@ step. Read those fresh `.puml` exports first, then inspect relevant DSL definiti
 correctness and details the export omits. Review images only when explicitly
 requested. If corrections change the DSL, regenerate affected exports before
 completing the review. A failed export leaves previous successful files in place;
-those files are not current review evidence. Keep generated exports untracked and
-make corrections in DSL. See [AGENTS.md](AGENTS.md) for persistent agent guidance.
+those files are not current review evidence. Commit generated deliverables, but make corrections in DSL or authored UML,
+then regenerate. Never edit generated files as authoring sources. See [AGENTS.md](AGENTS.md) for persistent agent guidance.
 
 ### View architecture directly from DSL
 
@@ -441,94 +338,73 @@ docker compose down
 
 ### Outputs and maintenance
 
-Diagram outputs mirror their source directories recursively, with formats side by side:
+The same relative tree appears in separate source and preview directories:
 
-| Source | Generated output |
-|---|---|
-| `views/external-systems/overview/01-landscape.dsl` | `build/views/external-systems/overview/01-landscape.{puml,svg,png}` |
-| `workspaces/blockchain-foundation/views/main.dsl` | `build/workspaces/blockchain-foundation/views/<view-key>.{puml,svg,png}` |
-| Inline view in `workspaces/ignition/workspace.dsl` | `build/workspaces/ignition/<view-key>.{puml,svg,png}` |
-| `uml/patterns/messaging/claim-check/sequence.puml` | `build/uml/patterns/messaging/claim-check/sequence.{svg,png}` |
-| `workspaces/ignition/uml/payments/submit.mmd` | `build/workspaces/ignition/uml/payments/submit.{svg,png}` |
+| Authoring input | Generated source | Ordinary preview |
+|---|---|---|
+| `views/external-systems/overview/01-landscape.dsl` | `build/source/views/external-systems/overview/01-landscape.puml` | `build/preview/views/external-systems/overview/01-landscape.{svg,png}` |
+| `workspaces/blockchain-foundation/views/main.dsl` | `build/source/workspaces/blockchain-foundation/views/<view-key>.puml` | `build/preview/workspaces/blockchain-foundation/views/<view-key>.{svg,png}` |
+| Inline workspace view | `build/source/workspaces/<name>/<view-key>.puml` | `build/preview/workspaces/<name>/<view-key>.{svg,png}` |
+| `uml/patterns/messaging/sequence.puml` | `build/source/uml/patterns/messaging/sequence.puml` | `build/preview/uml/patterns/messaging/sequence.{svg,png}` |
+| Workspace-local `uml/payments/submit.mmd` | `build/source/workspaces/<name>/uml/payments/submit.mmd` | `build/preview/workspaces/<name>/uml/payments/submit.{svg,png}` |
 
-A DSL file may declare multiple views; each uses its explicit view key as the
-filename. `export --view` writes the same canonical file as a complete export.
-Inherited views retain their relative view folders within the consuming workspace:
-`workspaces/team/variants/future/workspace.dsl` writes inherited `views/main.dsl`
-views into `build/workspaces/team/variants/future/views/`. Inline views use the
-workspace directory. Named noncanonical entrypoints get their own stem namespace.
-Local include/extension provenance is cross-checked with native Structurizr view
-keys, following directory includes recursively. Ambiguous declarations, generated
-keys, unsafe filenames and collisions
-(including case-only differences) fail before publication. Keep view keys literal
-and include/extends paths local; plugin/script-generated views cannot be mapped.
+C4 filenames use explicit view keys, including multiple views in one DSL file.
+Inherited views remain inside the consuming workspace's namespace. Standalone
+UML retains its basename. Selected operations use the same destinations as full
+operations; hashes never appear in filenames. Ambiguous mappings, unsafe names,
+and case-insensitive output collisions fail before publication.
 
-The generated tree separates mirrored diagrams from reports and local execution state:
+Versioned `source.json`, `preview-plantuml.json`, `preview-mermaid.json`, and
+`preview-native.json` under build inventory each stage's managed files. They contain
+source paths, workspace/view identity, hashes and relevant renderer/layout evidence;
+no per-run timestamps. Native inventory appears after the first native export.
 
-```text
-build/
-├── views/                        # Shared C4 files, mirroring views/
-├── uml/                          # Shared UML images, mirroring uml/
-├── workspaces/<epic-id>/          # Local/inherited C4 files and local UML images
-├── .reports/
-│   ├── workspace.dsl/            # Reports and parsed JSON for the shared workspace
-│   ├── workspaces/<epic-id>/workspace.dsl/  # Reports for each workstream
-│   ├── build-light.{json,log}    # Lightweight handoff status and diagnostics
-│   ├── build-browser.{json,log}  # Browser completion status and diagnostics
-│   └── light/<workspace-entrypoint>/     # Frozen validation evidence for handoffs
-├── .layouts/<workspace-entrypoint>/  # Captured manual layouts; preserved by --clean
-├── artifacts.json                # Inventory of managed files and per-format freshness
-├── build.json                    # Latest stage attempt, completion state and findings
-├── build.log                     # Latest stage diagnostics
-├── .tools.lock                   # Persistent writer-lock file
-├── .staging/                     # Temporary publication state; cleaned after completion
-└── local.env                     # Optional local Compose settings; never an artifact
-```
+Ignored `.reports/<stage>.{json,log}` records the latest attempt, selection, timestamps,
+installed toolchain and CI provenance. `.reports/<workspace-entrypoint>/` holds
+validation results and parsed JSON. `.reports/source/<workspace-entrypoint>/`
+freezes validation evidence for the source handoff independently of later validation
+or native exports. A failed attempt leaves old files in place but does not certify
+those files as current. Committed diagrams alone are not an executable handoff.
 
-`build/.reports/<workspace-entrypoint>/` holds `workspace.json`, `validation.json`,
-`validation.log`, and the latest `export-status.json` / `export.log` when exported.
-For example, root validation is `build/.reports/workspace.dsl/validation.json`.
-The parsed JSON remains the last successful validation if a later attempt fails.
-`build/artifacts.json` inventories each diagram's source, workspace, view key,
-format, source/output fingerprints, versions and generation time. A retained
-format is current only when its fingerprint matches current inputs; exporting
-PlantUML does not refresh older SVG metadata. Native exports also require a matching
-captured-layout fingerprint. Hashes never determine filenames.
+One writer lock protects staging and journaled, file-level publication. Each stage
+prunes moved/deleted outputs only after its successful regeneration, within its
+selection and ownership. Source generation preserves previous previews without
+refreshing their metadata. Preview stages preserve source files and other renderers'
+outputs. Format changes cannot cause one renderer to delete another's new output.
 
-One writer lock protects `build/.staging/`. Publication updates individual files
-and an on-disk journal allows the next command to recover interrupted publication.
-Failures preserve previous successful diagrams and inventory; attempt reports
-record failure. Completing both stages prunes removed/moved views and sources,
-and removes recognized outputs from the previous `build/c4/` layout. Unrelated
-historical files and local settings remain untouched. Empty generated folders
-are removed. Build twice without source changes to get the same output path set.
+Freshness includes architecture inputs, documentation and tooling, accepted hidden
+folders and local includes. It excludes generated output, Git metadata, agent
+configuration, named caches, local settings and saved layout JSON. Layout JSON is
+fingerprinted separately for native rendering. Relative local includes must stay
+inside the repository; standard libraries come from the approved tools image.
 
-Freshness scans architecture sources, documentation and tooling, including accepted
-inputs in hidden folders and local include fragments. Generated output, Git metadata,
-agent configuration and known caches are excluded; a leading dot alone does not
-exclude an authoring input. Native Structurizr viewers write ignored `workspace.json`
-and `.structurizr/` caches beside DSL.
-Local includes must stay inside the checkout and outside those excluded directories.
-Directory includes follow nested files of any extension, just as the native parser
-does; excluded directories and escaping or cyclic directory symlinks fail explicitly.
-DSL remains the source of truth.
+Copy `build/source/` for developer-repository text consumption and AI-assisted
+reviews; keep local include paths together. Copy images from `build/preview/` for
+an internal wiki. Rendering libraries are not distributed with the source tree.
+Consumers who render text in an IDE supply their own supported plugins/libraries.
 
-Tooling lives in [scripts](scripts), with containerized tests in [tests](tests):
+### Corporate environment and CI
+
+The [Docker guide](documentation/build.md) covers image acquisition, offline archive
+transfer, plain Docker commands, non-root permissions and platform-team maintenance.
+The [CI examples](ci/examples/README.md) publish source handoffs on push/PR, then
+render independent previews on a daily 02:00 UTC schedule or manually. Artifacts
+must match the exact commit. Successful jobs publish only verified stage outputs;
+failed jobs publish diagnostics. CI does not commit generated files.
+
+Containerized regressions:
 
 ```text
 docker compose run --rm --pull never --entrypoint python3 tools -B -m unittest discover -s tests -v
 docker compose run --rm --pull never --entrypoint python3 tools-browser -B -m unittest discover -s tests -v
 ```
 
-### Corporate environment and CI
-
-See the [corporate Docker guide](documentation/build.md) for approved image
-acquisition, offline image archives, plain Docker commands, permissions and
-explicit platform-team image maintenance. See [CI examples](ci/examples/README.md)
-for GitHub Actions and Azure DevOps Services pipelines. Push/PR jobs test and build
-the lightweight outputs. Scheduled or manual browser jobs reuse an available
-lightweight artifact for the exact commit and complete Mermaid rendering. Both
-publish only allowlisted artifacts; failed jobs upload diagnostics only.
+The previous `build`, `build-browser`, ordinary `export`, `capture-layout`, and
+`--clean` interfaces have been removed. Run explicit `clean`, then `build-source`,
+then the desired preview commands. Old handoffs are incompatible and must be
+regenerated. The existing approved images remain usable; scripts are mounted from
+this checkout. Sources, previews, inventories and saved layouts are versioned;
+reports, locks, staging, viewer caches and local overrides are ignored.
 
 ## Contributing an initiative
 

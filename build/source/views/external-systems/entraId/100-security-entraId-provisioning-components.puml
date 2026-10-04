@@ -1,0 +1,38 @@
+@startuml
+title <size:24>Component - Cloud Sync provisioning service: logical responsibilities</size>\n<size:24>Component - Cloud Sync provisioning service: logical responsibilities</size>
+
+set separator none
+left to right direction
+
+<style>
+  root {
+    BackgroundColor: #ffffff
+    FontColor: #444444
+  }
+</style>
+
+!include <C4/C4>
+!include <C4/C4_Context>
+!include <C4/C4_Container>
+!include <C4/C4_Component>
+
+System_Boundary("MicrosoftEntraID_boundary", "Microsoft Entra ID", $tags="") {
+  Container_Boundary("MicrosoftEntraID.CloudSyncprovisioningservice_boundary", "Cloud Sync provisioning service", $tags="") {
+    Component(MicrosoftEntraID.CloudSyncprovisioningservice.Provisioningorchestration, "Provisioning orchestration", $techn="Cloud Sync logical responsibility", $descr="Logical reference: Schedules scoped synchronization work and tracks incremental progress.", $tags="", $link="https://learn.microsoft.com/en-us/entra/identity/hybrid/cloud-sync/what-is-cloud-sync")
+    Component(MicrosoftEntraID.CloudSyncprovisioningservice.Provisioningmappingandprocessing, "Provisioning mapping and processing", $techn="Cloud Sync logical responsibility", $descr="Logical reference: Processes returned attributes according to configured scopes and mappings.", $tags="", $link="https://learn.microsoft.com/en-us/entra/identity/hybrid/cloud-sync/what-is-cloud-sync")
+    Component(MicrosoftEntraID.CloudSyncprovisioningservice.Directoryupdateclient, "Directory update client", $techn="Cloud Sync logical responsibility", $descr="Logical reference: Commits processed object changes to the Entra directory.", $tags="", $link="https://learn.microsoft.com/en-us/entra/identity/hybrid/cloud-sync/what-is-cloud-sync")
+  }
+
+  Container(MicrosoftEntraID.CloudSyncprovisioningagent, "Cloud Sync provisioning agent", $techn="Microsoft Entra provisioning agent / Windows service", $descr="Customer-managed runtime that queries AD DS through outbound-established communication with the provisioning service.", $tags="", $link="https://learn.microsoft.com/en-us/entra/identity/hybrid/cloud-sync/what-is-cloud-sync")
+  Container(MicrosoftEntraID.DirectoryandadministrationAPI, "Directory and administration API", $techn="Microsoft Entra managed service (logical)", $descr="Logical directory and Microsoft Graph-facing boundary for users, groups, applications and policies.", $tags="", $link="https://learn.microsoft.com/en-us/entra/architecture/architecture")
+}
+
+Rel(MicrosoftEntraID.CloudSyncprovisioningservice.Provisioningorchestration, MicrosoftEntraID.CloudSyncprovisioningservice.Provisioningmappingandprocessing, "Submits returned directory object changes and synchronization state", $techn="In-process logical interface", $tags="", $link="")
+Rel(MicrosoftEntraID.CloudSyncprovisioningservice.Provisioningmappingandprocessing, MicrosoftEntraID.CloudSyncprovisioningservice.Directoryupdateclient, "Supplies filtered and mapped directory object changes", $techn="In-process logical interface", $tags="", $link="")
+Rel(MicrosoftEntraID.CloudSyncprovisioningservice.Directoryupdateclient, MicrosoftEntraID.DirectoryandadministrationAPI, "Commits scoped user, group and contact changes", $techn="Microsoft internal directory interface (logical)", $tags="", $link="")
+Rel(MicrosoftEntraID.CloudSyncprovisioningservice.Provisioningorchestration, MicrosoftEntraID.CloudSyncprovisioningagent, "Delivers scoped directory synchronization requests", $techn="SCIM / agent-established service channel", $tags="", $link="")
+Rel(MicrosoftEntraID.CloudSyncprovisioningagent, MicrosoftEntraID.CloudSyncprovisioningservice.Provisioningmappingandprocessing, "Returns scoped object attributes and synchronization progress", $techn="TLS / established Cloud Sync channel", $tags="", $link="")
+
+SHOW_LEGEND(true)
+hide stereotypes
+@enduml

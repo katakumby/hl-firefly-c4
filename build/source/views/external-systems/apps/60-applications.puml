@@ -1,0 +1,34 @@
+@startuml
+title <size:24>Container - member business applications</size>\n<size:24>Container - member business applications</size>
+
+set separator none
+left to right direction
+
+<style>
+  root {
+    BackgroundColor: #ffffff
+    FontColor: #444444
+  }
+</style>
+
+!include <C4/C4>
+!include <C4/C4_Context>
+!include <C4/C4_Container>
+
+Person(Businessuser, "Business user", $descr="Submits consortium business actions through a member application.", $tags="", $link="https://hyperledger-firefly.github.io/firefly/head/architecture/node_component_architecture/")
+
+System_Boundary("HyperledgerFireFly_boundary", "Hyperledger FireFly", $tags="") {
+  Container(HyperledgerFireFly.FireFlyCore, "FireFly Core", $techn="Go", $descr="Exposes member APIs, serves Explorer assets and orchestrates multiparty operations.", $tags="", $link="https://github.com/hyperledger-firefly/firefly/tree/9d20f3081c9074d5b012427e5572ebc03da8d95d/internal/orchestrator")
+}
+
+System_Boundary("Memberapplicationreference_boundary", "Member application reference", $tags="") {
+  Container(Memberapplicationreference.Memberbusinessapplication, "Member business application", $techn="Example application / REST client", $descr="Submits requests and consumes acknowledged FireFly events.", $tags="", $link="https://hyperledger-firefly.github.io/firefly/head/architecture/node_component_architecture/")
+}
+
+Rel(HyperledgerFireFly.FireFlyCore, Memberapplicationreference.Memberbusinessapplication, "Delivers subscribed events and accepts ACKs", $techn="WebSocket / webhook / HTTPS", $tags="", $link="")
+Rel(Businessuser, Memberapplicationreference.Memberbusinessapplication, "Submits business actions", $techn="HTTPS", $tags="", $link="")
+Rel(Memberapplicationreference.Memberbusinessapplication, HyperledgerFireFly.FireFlyCore, "Submits member-scoped commands and queries", $techn="HTTPS / REST", $tags="", $link="")
+
+SHOW_LEGEND(true)
+hide stereotypes
+@enduml

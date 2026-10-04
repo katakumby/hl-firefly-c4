@@ -1,0 +1,67 @@
+@startuml
+title <size:24>Component - Unleash server: supporting services</size>\n<size:24>Component - Unleash server: supporting services</size>
+
+set separator none
+left to right direction
+
+<style>
+  root {
+    BackgroundColor: #ffffff
+    FontColor: #444444
+  }
+</style>
+
+!include <C4/C4>
+!include <C4/C4_Context>
+!include <C4/C4_Container>
+!include <C4/C4_Component>
+
+System_Boundary("Unleash_boundary", "Unleash", $tags="") {
+  Container_Boundary("Unleash.Unleashserver_boundary", "Unleash server", $tags="") {
+    Component(Unleash.Unleashserver.AdminAPI, "Admin API", $techn="TypeScript / Node.js", $descr="Validates management and reporting requests and routes them to domain services.", $tags="", $link="https://github.com/Unleash/unleash/tree/66d4a45c1d24c4bc8a08d8c75d205bd61dc3aed0/src/lib/routes/admin-api")
+    Component(Unleash.Unleashserver.Userssessionsandaccess, "Users, sessions and access", $techn="TypeScript / Node.js", $descr="Authenticates local users and applies OSS permissions; manages sessions and user records.", $tags="", $link="https://github.com/Unleash/unleash/blob/66d4a45c1d24c4bc8a08d8c75d205bd61dc3aed0/src/lib/middleware/oss-authentication.ts")
+    Component(Unleash.Unleashserver.Flagsprojectsandenvironments, "Flags, projects and environments", $techn="TypeScript / Node.js", $descr="Manages flag state, variants, metadata and project/environment configuration.", $tags="", $link="https://github.com/Unleash/unleash/tree/66d4a45c1d24c4bc8a08d8c75d205bd61dc3aed0/src/lib/features/feature-toggle")
+    Component(Unleash.Unleashserver.Frontendandplaygroundevaluation, "Frontend and playground evaluation", $techn="TypeScript / Node.js", $descr="Evaluates strategy and variant rules using embedded unleash-client and playground logic.", $tags="", $link="https://github.com/Unleash/unleash/blob/66d4a45c1d24c4bc8a08d8c75d205bd61dc3aed0/src/lib/features/frontend-api/frontend-api-service.ts")
+    Component(Unleash.Unleashserver.SDKregistrationandmetrics, "SDK registration and metrics", $techn="TypeScript / Node.js", $descr="Tracks applications and instances; buffers, aggregates and stores flag and variant usage.", $tags="", $link="https://github.com/Unleash/unleash/tree/66d4a45c1d24c4bc8a08d8c75d205bd61dc3aed0/src/lib/features/metrics/instance")
+    Component(Unleash.Unleashserver.Lifecycleandinsights, "Lifecycle and insights", $techn="TypeScript / Node.js", $descr="Updates flag lifecycle from metrics and audit events; supplies OSS usage and project health reports.", $tags="", $link="https://github.com/Unleash/unleash/tree/66d4a45c1d24c4bc8a08d8c75d205bd61dc3aed0/src/lib/features/feature-lifecycle")
+    Component(Unleash.Unleashserver.Auditeventsandpublication, "Audit events and publication", $techn="TypeScript / Node.js", $descr="Stores audit history and publishes recorded events to in-process subscribers.", $tags="", $link="https://github.com/Unleash/unleash/tree/66d4a45c1d24c4bc8a08d8c75d205bd61dc3aed0/src/lib/features/events")
+    Component(Unleash.Unleashserver.Addonsandnotifications, "Add-ons and notifications", $techn="TypeScript / Node.js", $descr="Filters audit events for configured handlers and prepares notifications; recipients are outside this model.", $tags="", $link="https://github.com/Unleash/unleash/blob/66d4a45c1d24c4bc8a08d8c75d205bd61dc3aed0/src/lib/services/addon-service.ts")
+    Component(Unleash.Unleashserver.Settingsandbackgroundjobs, "Settings and background jobs", $techn="TypeScript / Node.js", $descr="Loads settings and schedules cache refresh, event publication, aggregation and maintenance.", $tags="", $link="https://github.com/Unleash/unleash/tree/66d4a45c1d24c4bc8a08d8c75d205bd61dc3aed0/src/lib/features/settings")
+    Component(Unleash.Unleashserver.Healthandoperationalmetrics, "Health and operational metrics", $techn="TypeScript / Node.js", $descr="Reports process/database readiness and gathers HTTP, database and scheduler measurements.", $tags="", $link="https://github.com/Unleash/unleash/blob/66d4a45c1d24c4bc8a08d8c75d205bd61dc3aed0/src/lib/routes/health-check.ts")
+    Component(Unleash.Unleashserver.Persistenceandmigrations, "Persistence and migrations", $techn="TypeScript / Node.js", $descr="Groups Knex stores, read models, sessions and schema migration access to PostgreSQL.", $tags="", $link="https://github.com/Unleash/unleash/tree/66d4a45c1d24c4bc8a08d8c75d205bd61dc3aed0/src/lib/db")
+  }
+
+  ContainerDb(Unleash.UnleashPostgreSQL, "Unleash PostgreSQL", $techn="PostgreSQL / Knex", $descr="Stores configuration, user/session/token records, audit history, registrations and aggregated usage.", $tags="", $link="https://github.com/Unleash/unleash/tree/66d4a45c1d24c4bc8a08d8c75d205bd61dc3aed0/src/lib/db")
+}
+
+Rel(Unleash.Unleashserver.Persistenceandmigrations, Unleash.UnleashPostgreSQL, "Executes queries, transactions and migrations", $techn="PostgreSQL wire protocol", $tags="", $link="")
+Rel(Unleash.Unleashserver.SDKregistrationandmetrics, Unleash.Unleashserver.Persistenceandmigrations, "Persists registrations and aggregated usage", $techn="In-process", $tags="", $link="")
+Rel(Unleash.Unleashserver.AdminAPI, Unleash.Unleashserver.Auditeventsandpublication, "Queries audit history", $techn="In-process", $tags="", $link="")
+Rel(Unleash.Unleashserver.AdminAPI, Unleash.Unleashserver.Lifecycleandinsights, "Queries reports and changes lifecycle completion", $techn="In-process", $tags="", $link="")
+Rel(Unleash.Unleashserver.AdminAPI, Unleash.Unleashserver.SDKregistrationandmetrics, "Queries applications and usage summaries", $techn="In-process", $tags="", $link="")
+Rel(Unleash.Unleashserver.AdminAPI, Unleash.Unleashserver.Frontendandplaygroundevaluation, "Submits playground context for evaluation", $techn="In-process", $tags="", $link="")
+Rel(Unleash.Unleashserver.Frontendandplaygroundevaluation, Unleash.Unleashserver.Flagsprojectsandenvironments, "Loads playground feature definitions", $techn="In-process", $tags="", $link="")
+Rel(Unleash.Unleashserver.Frontendandplaygroundevaluation, Unleash.Unleashserver.Persistenceandmigrations, "Reads playground segments and project access", $techn="In-process", $tags="", $link="")
+Rel(Unleash.Unleashserver.AdminAPI, Unleash.Unleashserver.Settingsandbackgroundjobs, "Reads and updates instance settings", $techn="In-process", $tags="", $link="")
+Rel(Unleash.Unleashserver.Lifecycleandinsights, Unleash.Unleashserver.Persistenceandmigrations, "Reads reporting data and persists lifecycle state", $techn="In-process", $tags="", $link="")
+Rel(Unleash.Unleashserver.Auditeventsandpublication, Unleash.Unleashserver.Persistenceandmigrations, "Stores events and reads publication state", $techn="In-process", $tags="", $link="")
+Rel(Unleash.Unleashserver.Auditeventsandpublication, Unleash.Unleashserver.Addonsandnotifications, "Publishes recorded events to configured handlers", $techn="In-process", $tags="", $link="")
+Rel(Unleash.Unleashserver.Addonsandnotifications, Unleash.Unleashserver.Persistenceandmigrations, "Reads handler configuration and records outcomes", $techn="In-process", $tags="", $link="")
+Rel(Unleash.Unleashserver.Userssessionsandaccess, Unleash.Unleashserver.Addonsandnotifications, "Prepares account and password-reset notifications", $techn="In-process", $tags="", $link="")
+Rel(Unleash.Unleashserver.Settingsandbackgroundjobs, Unleash.Unleashserver.Persistenceandmigrations, "Reads settings and performs maintenance writes", $techn="In-process", $tags="", $link="")
+Rel(Unleash.Unleashserver.Settingsandbackgroundjobs, Unleash.Unleashserver.Auditeventsandpublication, "Schedules unannounced-event publication", $techn="In-process", $tags="", $link="")
+Rel(Unleash.Unleashserver.Settingsandbackgroundjobs, Unleash.Unleashserver.SDKregistrationandmetrics, "Schedules metric flush, aggregation and retention", $techn="In-process", $tags="", $link="")
+Rel(Unleash.Unleashserver.Settingsandbackgroundjobs, Unleash.Unleashserver.Lifecycleandinsights, "Schedules project health calculations", $techn="In-process", $tags="", $link="")
+Rel(Unleash.Unleashserver.Settingsandbackgroundjobs, Unleash.Unleashserver.Userssessionsandaccess, "Schedules account activity updates", $techn="In-process", $tags="", $link="")
+Rel(Unleash.Unleashserver.Healthandoperationalmetrics, Unleash.Unleashserver.Persistenceandmigrations, "Checks database readiness and observes SQL metrics", $techn="In-process", $tags="", $link="")
+Rel(Unleash.Unleashserver.Settingsandbackgroundjobs, Unleash.Unleashserver.Healthandoperationalmetrics, "Publishes job execution measurements", $techn="In-process", $tags="", $link="")
+Rel(Unleash.Unleashserver.Settingsandbackgroundjobs, Unleash.Unleashserver.Flagsprojectsandenvironments, "Updates stale flags and project status", $techn="In-process", $tags="", $link="")
+Rel(Unleash.Unleashserver.Settingsandbackgroundjobs, Unleash.Unleashserver.Addonsandnotifications, "Schedules handler-outcome retention cleanup", $techn="In-process", $tags="", $link="")
+Rel(Unleash.Unleashserver.SDKregistrationandmetrics, Unleash.Unleashserver.Lifecycleandinsights, "Publishes persisted usage for lifecycle transitions", $techn="In-process", $tags="", $link="")
+Rel(Unleash.Unleashserver.Auditeventsandpublication, Unleash.Unleashserver.Lifecycleandinsights, "Publishes flag events for lifecycle transitions", $techn="In-process", $tags="", $link="")
+Rel(Unleash.Unleashserver.Lifecycleandinsights, Unleash.Unleashserver.Auditeventsandpublication, "Records flag completion and reversal events", $techn="In-process", $tags="", $link="")
+Rel(Unleash.Unleashserver.Lifecycleandinsights, Unleash.Unleashserver.Healthandoperationalmetrics, "Publishes lifecycle stage-entry measurements", $techn="In-process", $tags="", $link="")
+
+SHOW_LEGEND(true)
+hide stereotypes
+@enduml

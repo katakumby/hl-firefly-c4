@@ -1,0 +1,34 @@
+@startuml
+title <size:24>Component - FireFly Explorer browser application</size>\n<size:24>Component - FireFly Explorer browser application</size>
+
+set separator none
+left to right direction
+
+<style>
+  root {
+    BackgroundColor: #ffffff
+    FontColor: #444444
+  }
+</style>
+
+!include <C4/C4>
+!include <C4/C4_Context>
+!include <C4/C4_Container>
+!include <C4/C4_Component>
+
+Person(Consortiumoperator, "Consortium operator", $descr="Operates member namespaces, recovery and the Besu network.", $tags="", $link="https://hyperledger-firefly.github.io/firefly/head/architecture/node_component_architecture/")
+
+System_Boundary("HyperledgerFireFly_boundary", "Hyperledger FireFly", $tags="") {
+  Container_Boundary("HyperledgerFireFly.FireFlyExplorer_boundary", "FireFly Explorer", $tags="") {
+    Component(HyperledgerFireFly.FireFlyExplorer.ExplorerscreensandAPIclient, "Explorer screens and API client", $techn="React / TypeScript", $descr="Displays member resources and queries Core through browser HTTP requests.", $tags="", $link="https://github.com/hyperledger-firefly/ui/tree/658bae40220f124e0e20182cc48b231473e754c5/src")
+  }
+
+  Container(HyperledgerFireFly.FireFlyCore, "FireFly Core", $techn="Go", $descr="Exposes member APIs, serves Explorer assets and orchestrates multiparty operations.", $tags="", $link="https://github.com/hyperledger-firefly/firefly/tree/9d20f3081c9074d5b012427e5572ebc03da8d95d/internal/orchestrator")
+}
+
+Rel(Consortiumoperator, HyperledgerFireFly.FireFlyExplorer.ExplorerscreensandAPIclient, "Selects member resources to inspect", $techn="Browser interaction", $tags="", $link="")
+Rel(HyperledgerFireFly.FireFlyExplorer.ExplorerscreensandAPIclient, HyperledgerFireFly.FireFlyCore, "Requests member resources and renders returned state", $techn="HTTP(S) / REST / JSON", $tags="", $link="")
+
+SHOW_LEGEND(true)
+hide stereotypes
+@enduml

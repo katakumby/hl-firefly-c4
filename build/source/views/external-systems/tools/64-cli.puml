@@ -1,0 +1,46 @@
+@startuml
+title <size:24>Component - FireFly CLI</size>\n<size:24>Component - FireFly CLI</size>
+
+set separator none
+left to right direction
+
+<style>
+  root {
+    BackgroundColor: #ffffff
+    FontColor: #444444
+  }
+</style>
+
+!include <C4/C4>
+!include <C4/C4_Context>
+!include <C4/C4_Container>
+!include <C4/C4_Component>
+
+Person(Applicationdeveloper, "Application developer", $descr="Builds and tests member business integrations.", $tags="", $link="https://hyperledger-firefly.github.io/firefly/head/architecture/node_component_architecture/")
+
+System(DeveloperDockerengine, "Developer Docker engine", $descr="Local container engine used by FireFly CLI; no network is provisioned by this architecture task.", $tags="", $link="https://github.com/hyperledger-firefly/cli/tree/9b868d3326ba4fbadd01c74a36c7e5a92a8c2609/internal/docker")
+
+System_Boundary("FireFlydevelopertools_boundary", "FireFly developer tools", $tags="") {
+  Container_Boundary("FireFlydevelopertools.FireFlyCLI_boundary", "FireFly CLI", $tags="") {
+    Component(FireFlydevelopertools.FireFlyCLI.CLIcommands, "CLI commands", $techn="Go", $descr="Accepts stack creation, start, stop and administration commands.", $tags="", $link="https://github.com/hyperledger-firefly/cli/tree/9b868d3326ba4fbadd01c74a36c7e5a92a8c2609/cmd")
+    Component(FireFlydevelopertools.FireFlyCLI.Stackconfigurationandmanifests, "Stack configuration and manifests", $techn="Go", $descr="Assembles member stack configuration and state.", $tags="", $link="https://github.com/hyperledger-firefly/cli/tree/9b868d3326ba4fbadd01c74a36c7e5a92a8c2609/internal/stacks")
+    Component(FireFlydevelopertools.FireFlyCLI.Dockerintegration, "Docker integration", $techn="Go", $descr="Invokes Docker Compose to manage local development runtimes.", $tags="", $link="https://github.com/hyperledger-firefly/cli/tree/9b868d3326ba4fbadd01c74a36c7e5a92a8c2609/internal/docker")
+    Component(FireFlydevelopertools.FireFlyCLI.Blockchainsetupadapters, "Blockchain setup adapters", $techn="Go", $descr="Configures selected Ethereum, Fabric, Tezos or Cardano backends.", $tags="", $link="https://github.com/hyperledger-firefly/cli/tree/9b868d3326ba4fbadd01c74a36c7e5a92a8c2609/internal/blockchain")
+    Component(FireFlydevelopertools.FireFlyCLI.Tokensetupadapters, "Token setup adapters", $techn="Go", $descr="Configures optional ERC token connectors.", $tags="", $link="https://github.com/hyperledger-firefly/cli/tree/9b868d3326ba4fbadd01c74a36c7e5a92a8c2609/internal/tokens")
+    Component(FireFlydevelopertools.FireFlyCLI.Coreadministrationclient, "Core administration client", $techn="Go", $descr="Registers identities and configures Core namespaces.", $tags="", $link="https://github.com/hyperledger-firefly/cli/tree/9b868d3326ba4fbadd01c74a36c7e5a92a8c2609/internal/core")
+  }
+
+}
+
+Rel(Applicationdeveloper, FireFlydevelopertools.FireFlyCLI.CLIcommands, "Invokes development stack commands", $techn="Local process invocation", $tags="", $link="")
+Rel(FireFlydevelopertools.FireFlyCLI.Dockerintegration, DeveloperDockerengine, "Starts and stops local stack services", $techn="Docker Compose CLI", $tags="", $link="")
+Rel(FireFlydevelopertools.FireFlyCLI.Coreadministrationclient, HyperledgerFireFly.FireFlyCore, "Configures and inspects development members", $techn="HTTP / REST + Admin API", $tags="", $link="")
+Rel(FireFlydevelopertools.FireFlyCLI.CLIcommands, FireFlydevelopertools.FireFlyCLI.Stackconfigurationandmanifests, "Requests development stack lifecycle changes", $techn="In-process calls / Go", $tags="", $link="")
+Rel(FireFlydevelopertools.FireFlyCLI.Stackconfigurationandmanifests, FireFlydevelopertools.FireFlyCLI.Dockerintegration, "Supplies generated runtime manifests", $techn="In-process calls / Go", $tags="", $link="")
+Rel(FireFlydevelopertools.FireFlyCLI.Stackconfigurationandmanifests, FireFlydevelopertools.FireFlyCLI.Blockchainsetupadapters, "Selects and configures the blockchain backend", $techn="In-process calls / Go", $tags="", $link="")
+Rel(FireFlydevelopertools.FireFlyCLI.Stackconfigurationandmanifests, FireFlydevelopertools.FireFlyCLI.Tokensetupadapters, "Selects optional token services", $techn="In-process calls / Go", $tags="", $link="")
+Rel(FireFlydevelopertools.FireFlyCLI.Stackconfigurationandmanifests, FireFlydevelopertools.FireFlyCLI.Coreadministrationclient, "Configures member Core instances", $techn="In-process calls / Go", $tags="", $link="")
+
+SHOW_LEGEND(true)
+hide stereotypes
+@enduml

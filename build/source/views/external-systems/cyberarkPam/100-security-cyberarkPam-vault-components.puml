@@ -1,0 +1,35 @@
+@startuml
+title <size:24>Component - Digital Vault: logical responsibilities</size>\n<size:24>Component - Digital Vault: logical responsibilities</size>
+
+set separator none
+left to right direction
+
+<style>
+  root {
+    BackgroundColor: #ffffff
+    FontColor: #444444
+  }
+</style>
+
+!include <C4/C4>
+!include <C4/C4_Context>
+!include <C4/C4_Component>
+
+System_Boundary("CyberArkPAMSelfHosted_boundary", "CyberArk PAM Self-Hosted", $tags="") {
+  Container_Boundary("CyberArkPAMSelfHosted.DigitalVault_boundary", "Digital Vault", $tags="") {
+    Component(CyberArkPAMSelfHosted.DigitalVault.Vaultaccessinterface, "Vault access interface", $techn="Vault responsibility / proprietary implementation", $descr="Logical reference: Accepts authenticated Safe, credential and record operations.", $tags="", $link="https://docs.cyberark.com/pam-self-hosted/latest/en/content/pas%20inst/installationoverview.htm")
+    Component(CyberArkPAMSelfHosted.DigitalVault.Safepermissions, "Safe permissions", $techn="Vault responsibility / proprietary implementation", $descr="Logical reference: Checks access permissions for credentials and records.", $tags="", $link="https://docs.cyberark.com/pam-self-hosted/latest/en/content/pas%20inst/installationoverview.htm")
+    Component(CyberArkPAMSelfHosted.DigitalVault.Protectedcredentialstorage, "Protected credential storage", $techn="Vault responsibility / proprietary implementation", $descr="Logical reference: Owns encrypted credential and Safe records inside the Vault boundary.", $tags="", $link="https://docs.cyberark.com/pam-self-hosted/latest/en/content/pas%20inst/installationoverview.htm")
+    Component(CyberArkPAMSelfHosted.DigitalVault.Auditandrecordingstorage, "Audit and recording storage", $techn="Vault responsibility / proprietary implementation", $descr="Logical reference: Retains access audit records and uploaded session recordings.", $tags="", $link="https://docs.cyberark.com/pam-self-hosted/latest/en/content/pas%20inst/installationoverview.htm")
+  }
+
+}
+
+Rel(CyberArkPAMSelfHosted.DigitalVault.Vaultaccessinterface, CyberArkPAMSelfHosted.DigitalVault.Safepermissions, "Passes caller identity and requested Safe operation", $techn="In-process logical interface", $tags="", $link="")
+Rel(CyberArkPAMSelfHosted.DigitalVault.Safepermissions, CyberArkPAMSelfHosted.DigitalVault.Protectedcredentialstorage, "Authorizes credential read or write", $techn="In-process logical interface", $tags="", $link="")
+Rel(CyberArkPAMSelfHosted.DigitalVault.Protectedcredentialstorage, CyberArkPAMSelfHosted.DigitalVault.Vaultaccessinterface, "Returns permitted credential or metadata response", $techn="In-process logical interface", $tags="", $link="")
+Rel(CyberArkPAMSelfHosted.DigitalVault.Vaultaccessinterface, CyberArkPAMSelfHosted.DigitalVault.Auditandrecordingstorage, "Stores access events or uploaded session recordings", $techn="In-process logical interface", $tags="", $link="")
+
+SHOW_LEGEND(true)
+hide stereotypes
+@enduml

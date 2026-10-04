@@ -1,0 +1,30 @@
+@startuml
+title <size:24>Browse top 20 books feature</size>
+
+set separator none
+top to bottom direction
+
+<style>
+  root {
+    BackgroundColor: #ffffff
+    FontColor: #444444
+  }
+</style>
+
+!include <C4/C4>
+!include <C4/C4_Context>
+!include <C4/C4_Container>
+
+System_Boundary("ExampleSystem_boundary", "Example System", $tags="") {
+  Container(ExampleSystem.API, "API", $techn="", $descr="The API container for the example system.", $tags="", $link="")
+  Container(ExampleSystem.Backend, "Backend", $techn="", $descr="The backend container for the example system.", $tags="", $link="")
+}
+
+Rel(ExampleSystem.API, ExampleSystem.Backend, "1: Requests the top 20 books from", $techn="", $tags="", $link="")
+Rel(ExampleSystem.Backend, ExampleSystem.API, "2: Queries the top 20 books using", $techn="", $tags="", $link="")
+Rel(ExampleSystem.API, ExampleSystem.Backend, "3: Query another set of books", $techn="", $tags="", $link="")
+Rel(ExampleSystem.Backend, ExampleSystem.API, "4: Sends the updated top 20 books back to the API", $techn="", $tags="", $link="")
+
+SHOW_LEGEND(true)
+hide stereotypes
+@enduml

@@ -1,0 +1,45 @@
+@startuml
+title <size:24>Component - Central Policy Manager: logical responsibilities</size>\n<size:24>Component - Central Policy Manager: logical responsibilities</size>
+
+set separator none
+left to right direction
+
+<style>
+  root {
+    BackgroundColor: #ffffff
+    FontColor: #444444
+  }
+</style>
+
+!include <C4/C4>
+!include <C4/C4_Context>
+!include <C4/C4_Container>
+!include <C4/C4_Component>
+
+System(Managedtargetsystem, "Managed target system", $descr="Example SSH-accessible administrative target whose privileged account is rotated and sessions are controlled by PAM.", $tags="", $link="https://docs.cyberark.com/pam-self-hosted/latest/en/content/pas%20inst/installationoverview.htm")
+
+System_Boundary("CyberArkPAMSelfHosted_boundary", "CyberArk PAM Self-Hosted", $tags="") {
+  Container_Boundary("CyberArkPAMSelfHosted.CentralPolicyManager_boundary", "Central Policy Manager", $tags="") {
+    Component(CyberArkPAMSelfHosted.CentralPolicyManager.Passwordmanagementscheduler, "Password management scheduler", $techn="CPM responsibility / proprietary implementation", $descr="Logical reference: Selects target accounts requiring verification, change or reconciliation.", $tags="", $link="https://docs.cyberark.com/pam-self-hosted/latest/en/content/pas%20inst/installationoverview.htm")
+    Component(CyberArkPAMSelfHosted.CentralPolicyManager.Passwordrotationorchestration, "Password rotation orchestration", $techn="CPM responsibility / proprietary implementation", $descr="Logical reference: Coordinates target password change and Vault credential update.", $tags="", $link="https://docs.cyberark.com/pam-self-hosted/latest/en/content/pas%20inst/installationoverview.htm")
+    Component(CyberArkPAMSelfHosted.CentralPolicyManager.Targetplatformconnector, "Target platform connector", $techn="CPM responsibility / proprietary implementation", $descr="Logical reference: Runs the configured target-specific password verification or change operation.", $tags="", $link="https://docs.cyberark.com/pam-self-hosted/latest/en/content/pas%20inst/installationoverview.htm")
+    Component(CyberArkPAMSelfHosted.CentralPolicyManager.Vaultcredentialclient, "Vault credential client", $techn="CPM responsibility / proprietary implementation", $descr="Logical reference: Reads current credentials and writes successfully changed credentials.", $tags="", $link="https://docs.cyberark.com/pam-self-hosted/latest/en/content/pas%20inst/installationoverview.htm")
+  }
+
+  Container(CyberArkPAMSelfHosted.DigitalVault, "Digital Vault", $techn="CyberArk PAM / proprietary service", $descr="Protects privileged credentials, Safe permissions and audit/session records.", $tags="", $link="https://docs.cyberark.com/pam-self-hosted/latest/en/content/pas%20inst/installationoverview.htm")
+}
+
+Rel(Managedtargetsystem, CyberArkPAMSelfHosted.CentralPolicyManager.Targetplatformconnector, "Returns password verification or change outcome", $techn="SSH / target command response", $tags="", $link="")
+Rel(CyberArkPAMSelfHosted.CentralPolicyManager.Passwordmanagementscheduler, CyberArkPAMSelfHosted.CentralPolicyManager.Passwordrotationorchestration, "Passes account identifier and password management task", $techn="In-process logical interface", $tags="", $link="")
+Rel(CyberArkPAMSelfHosted.CentralPolicyManager.Passwordrotationorchestration, CyberArkPAMSelfHosted.CentralPolicyManager.Vaultcredentialclient, "Requests current credential and target account metadata", $techn="In-process logical interface", $tags="", $link="")
+Rel(CyberArkPAMSelfHosted.CentralPolicyManager.Vaultcredentialclient, CyberArkPAMSelfHosted.CentralPolicyManager.Passwordrotationorchestration, "Returns permitted credential and target details", $techn="In-process logical interface", $tags="", $link="")
+Rel(CyberArkPAMSelfHosted.CentralPolicyManager.Passwordrotationorchestration, CyberArkPAMSelfHosted.CentralPolicyManager.Targetplatformconnector, "Passes password verification or change operation", $techn="In-process logical interface", $tags="", $link="")
+Rel(CyberArkPAMSelfHosted.CentralPolicyManager.Targetplatformconnector, CyberArkPAMSelfHosted.CentralPolicyManager.Passwordrotationorchestration, "Returns target password operation outcome", $techn="In-process logical interface", $tags="", $link="")
+Rel(CyberArkPAMSelfHosted.CentralPolicyManager.Passwordrotationorchestration, CyberArkPAMSelfHosted.CentralPolicyManager.Vaultcredentialclient, "Submits successfully changed credential for storage", $techn="In-process logical interface", $tags="", $link="")
+Rel(CyberArkPAMSelfHosted.CentralPolicyManager.Vaultcredentialclient, CyberArkPAMSelfHosted.DigitalVault, "Submits permitted Safe credential or metadata operations", $techn="CyberArk Vault protocol / encrypted channel", $tags="", $link="")
+Rel(CyberArkPAMSelfHosted.DigitalVault, CyberArkPAMSelfHosted.CentralPolicyManager.Vaultcredentialclient, "Returns authorized credential or account metadata", $techn="CyberArk Vault protocol / encrypted channel", $tags="", $link="")
+Rel(CyberArkPAMSelfHosted.CentralPolicyManager.Targetplatformconnector, Managedtargetsystem, "Verifies or changes the privileged target password", $techn="SSH / target-specific password commands", $tags="", $link="")
+
+SHOW_LEGEND(true)
+hide stereotypes
+@enduml

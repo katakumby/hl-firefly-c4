@@ -20,7 +20,8 @@ DRIVER = Path(__file__).with_name('native_renderer.cjs')
 
 
 def layout_path(workspace, root, build):
-    return confined(build, Path('.layouts') / workspace.relative_to(root) / 'workspace.json')
+    workspace.resolve().relative_to(root.resolve())
+    return workspace.with_suffix('.json')
 
 
 def layout_fingerprint(workspace, root, build):
@@ -72,7 +73,7 @@ def prepare(workspace, raw, keys, explicit, format, duration, root, build, stage
         frozen = stage / 'layout.json'
         frozen.write_bytes(snapshot.read_bytes())
         if hashlib.sha256(frozen.read_bytes()).hexdigest() != fingerprint:
-            raise ValueError('Captured layout changed while reading it')
+            raise ValueError('Saved layout changed while reading it')
         saved = json.loads(frozen.read_text())
         unmatched = sorted(set(keys) - set(views(saved)))
         if unmatched:
@@ -111,7 +112,7 @@ def prepare(workspace, raw, keys, explicit, format, duration, root, build, stage
             missing.append(key)
     if missing:
         raise ValueError('Saved manual layout is missing for: ' + ', '.join(missing)
-                         + '. Arrange and save these views in Structurizr, then run capture-layout.')
+                         + '. Arrange and explicitly save these views in Structurizr first.')
     for warning in warnings:
         logs.append('WARNING: ' + warning)
         print('WARNING: ' + warning, flush=True)

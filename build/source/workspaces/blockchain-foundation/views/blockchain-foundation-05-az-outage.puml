@@ -1,0 +1,58 @@
+@startuml
+title <size:24>05 - Deployment after AZ1 loss - surviving quorum and recovered member</size>\n<size:24>Four validators keep quorum; the existing member resumes in AZ2 after fencing. This is a recovery snapshot, conditional on HSM and recovery qualification.</size>
+
+set separator none
+top to bottom direction
+
+<style>
+  root {
+    BackgroundColor: #ffffff
+    FontColor: #444444
+  }
+</style>
+
+!include <C4/C4>
+!include <C4/C4_Context>
+!include <C4/C4_Deployment>
+
+Deployment_Node(AZ1outagerecovered.SameAzureregionAZ1unavailable, "Same Azure region - AZ1 unavailable", $type="Microsoft Azure", $descr="Recovery snapshot, not additional infrastructure. H1/H2/F1 remain prerequisites.", $tags="", $link="") {
+  Deployment_Node(AZ1outagerecovered.SameAzureregionAZ1unavailable.AZ1unavailable, "AZ1 - unavailable", $type="Failed availability zone", $descr="Do not start duplicate V1/V2 or a second member identity.", $tags="", $link="") {
+    Deployment_Node(AZ1outagerecovered.SameAzureregionAZ1unavailable.AZ1unavailable.LostV1V2R1andactivemember, "Lost V1, V2, R1 and active member", $type="Failed compute", $descr="Ledger disks in AZ1 are temporarily inaccessible. Healthy validators do not depend on them.", $tags="", $link="")
+  }
+
+  Deployment_Node(AZ1outagerecovered.SameAzureregionAZ1unavailable.AZ2surviving, "AZ2 - surviving", $type="Azure AZ2", $descr="One surviving fault domain.", $tags="", $link="") {
+    Deployment_Node(AZ1outagerecovered.SameAzureregionAZ1unavailable.AZ2surviving.V3andV4, "V3 and V4", $type="Besu QBFT", $descr="Two existing validators; same identities and on-chain validator set.", $tags="", $link="")
+    Deployment_Node(AZ1outagerecovered.SameAzureregionAZ1unavailable.AZ2surviving.R2androutingreplica, "R2 and routing replica", $type="Besu / RPC proxy", $descr="Healthy non-validator access; recreate backend-local filters and resume from durable checkpoints.", $tags="", $link="")
+    Deployment_Node(AZ1outagerecovered.SameAzureregionAZ1unavailable.AZ2surviving.MemberArecovered, "Member A recovered", $type="Singleton StatefulSet", $descr="Core + EVMConnect + DX + Kubo restart once; use existing DBs, keys and reattached ZRS volumes.", $tags="", $link="")
+    Deployment_Node(AZ1outagerecovered.SameAzureregionAZ1unavailable.AZ2surviving.PostgreSQLprimary, "PostgreSQL primary", $type="Azure PostgreSQL", $descr="Primary was in AZ2, so this scenario needs reconnection but no database promotion.", $tags="", $link="")
+  }
+
+  Deployment_Node(AZ1outagerecovered.SameAzureregionAZ1unavailable.AZ3surviving, "AZ3 - surviving", $type="Azure AZ3", $descr="Second surviving fault domain.", $tags="", $link="") {
+    Deployment_Node(AZ1outagerecovered.SameAzureregionAZ1unavailable.AZ3surviving.V5andV6, "V5 and V6", $type="Besu QBFT", $descr="Four validators survive in total; Besu quorum remains 4 of 6.", $tags="", $link="")
+    Deployment_Node(AZ1outagerecovered.SameAzureregionAZ1unavailable.AZ3surviving.R3androutingreplica, "R3 and routing replica", $type="Besu / RPC proxy", $descr="Healthy non-validator; enough capacity for loss of one zone.", $tags="", $link="")
+    Deployment_Node(AZ1outagerecovered.SameAzureregionAZ1unavailable.AZ3surviving.PostgreSQLsynchronousstandby, "PostgreSQL synchronous standby", $type="Azure PostgreSQL", $descr="Remains in AZ3. If AZ2 had failed, this standby would instead be promoted.", $tags="", $link="")
+  }
+
+  Deployment_Node(AZ1outagerecovered.SameAzureregionAZ1unavailable.Survivingregionaldependencies, "Surviving regional dependencies", $type="Azure regional services", $descr="These resources must retain their data and remain reachable.", $tags="", $link="") {
+    Deployment_Node(AZ1outagerecovered.SameAzureregionAZ1unavailable.Survivingregionaldependencies.Fencingandrecoverycontrol, "Fencing and recovery control", $type="Proposed automation - gate F1", $descr="Confirm old host shutdown via Azure before detach/reattach and replacement. Fail closed if exclusivity cannot be established.", $tags="", $link="")
+    Deployment_Node(AZ1outagerecovered.SameAzureregionAZ1unavailable.Survivingregionaldependencies.QualifiedHSMKeyVault, "Qualified HSM + Key Vault", $type="External key services", $descr="Validator key operations must survive AZ1 loss. Cloud HSM placement/compatibility still requires gate H1.", $tags="", $link="")
+    Deployment_Node(AZ1outagerecovered.SameAzureregionAZ1unavailable.Survivingregionaldependencies.DXandKuboZRSvolumes, "DX and Kubo ZRS volumes", $type="Premium_ZRS data disks", $descr="Same two disks; single attachment each. Recover filesystem state before marking the member ready.", $tags="", $link="")
+  }
+
+}
+
+Rel(AZ1outagerecovered.SameAzureregionAZ1unavailable.AZ2surviving.V3andV4, AZ1outagerecovered.SameAzureregionAZ1unavailable.AZ3surviving.V5andV6, "Exchange proposals and votes among all four survivors", $techn="devp2p TCP 30303", $tags="", $link="")
+Rel(AZ1outagerecovered.SameAzureregionAZ1unavailable.AZ2surviving.R2androutingreplica, AZ1outagerecovered.SameAzureregionAZ1unavailable.AZ2surviving.V3andV4, "Receives finalized blocks and relays transactions", $techn="devp2p TCP 30303", $tags="", $link="")
+Rel(AZ1outagerecovered.SameAzureregionAZ1unavailable.AZ3surviving.R3androutingreplica, AZ1outagerecovered.SameAzureregionAZ1unavailable.AZ3surviving.V5andV6, "Receives finalized blocks and relays transactions", $techn="devp2p TCP 30303", $tags="", $link="")
+Rel(AZ1outagerecovered.SameAzureregionAZ1unavailable.AZ2surviving.MemberArecovered, AZ1outagerecovered.SameAzureregionAZ1unavailable.AZ2surviving.R2androutingreplica, "Resumes transactions and replays unacknowledged events", $techn="Signing gateway / JSON-RPC", $tags="", $link="")
+Rel(AZ1outagerecovered.SameAzureregionAZ1unavailable.AZ2surviving.MemberArecovered, AZ1outagerecovered.SameAzureregionAZ1unavailable.AZ2surviving.PostgreSQLprimary, "Loads durable state, nonces and checkpoints", $techn="PostgreSQL TLS", $tags="", $link="")
+Rel(AZ1outagerecovered.SameAzureregionAZ1unavailable.AZ2surviving.PostgreSQLprimary, AZ1outagerecovered.SameAzureregionAZ1unavailable.AZ3surviving.PostgreSQLsynchronousstandby, "Continues synchronous WAL replication", $techn="Azure-managed replication", $tags="", $link="")
+Rel(AZ1outagerecovered.SameAzureregionAZ1unavailable.Survivingregionaldependencies.Fencingandrecoverycontrol, AZ1outagerecovered.SameAzureregionAZ1unavailable.AZ2surviving.MemberArecovered, "Allows one replacement after old-host fencing", $techn="Kubernetes API", $tags="", $link="")
+Rel(AZ1outagerecovered.SameAzureregionAZ1unavailable.AZ2surviving.MemberArecovered, AZ1outagerecovered.SameAzureregionAZ1unavailable.Survivingregionaldependencies.DXandKuboZRSvolumes, "Mounts existing member data volumes", $techn="Azure Disk CSI", $tags="", $link="")
+Rel(AZ1outagerecovered.SameAzureregionAZ1unavailable.AZ2surviving.V3andV4, AZ1outagerecovered.SameAzureregionAZ1unavailable.Survivingregionaldependencies.QualifiedHSMKeyVault, "Uses surviving validator HSM access", $techn="PKCS#11", $tags="", $link="")
+Rel(AZ1outagerecovered.SameAzureregionAZ1unavailable.AZ3surviving.V5andV6, AZ1outagerecovered.SameAzureregionAZ1unavailable.Survivingregionaldependencies.QualifiedHSMKeyVault, "Uses surviving validator HSM access", $techn="PKCS#11", $tags="", $link="")
+Rel(AZ1outagerecovered.SameAzureregionAZ1unavailable.AZ2surviving.MemberArecovered, AZ1outagerecovered.SameAzureregionAZ1unavailable.Survivingregionaldependencies.QualifiedHSMKeyVault, "Requests transaction signatures through surviving gateways", $techn="HTTPS", $tags="", $link="")
+
+SHOW_LEGEND(true)
+hide stereotypes
+@enduml

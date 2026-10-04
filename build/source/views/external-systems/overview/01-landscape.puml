@@ -1,0 +1,53 @@
+@startuml
+title <size:24>System Landscape - FireFly consortium architecture</size>\n<size:24>System Landscape - FireFly consortium architecture</size>
+
+set separator none
+left to right direction
+
+<style>
+  root {
+    BackgroundColor: #ffffff
+    FontColor: #444444
+  }
+</style>
+
+!include <C4/C4>
+!include <C4/C4_Context>
+
+AddBoundaryTag("EVM ledger networks", $borderColor="#444444", $fontColor="#444444", $borderStyle="dashed")
+Boundary(group_1, "EVM ledger networks", $tags="EVM ledger networks") {
+  System(PrivateBesunetwork, "Private Besu network", $descr="Permissioned Ethereum network with QBFT validators, private RPC and contracts.", $tags="", $link="https://github.com/besu-eth/besu/tree/7e05c2342404d27bd06a992e336c5e0c86a5d8d1")
+}
+
+AddBoundaryTag("FireFly ecosystem", $borderColor="#444444", $fontColor="#444444", $borderStyle="dashed")
+Boundary(group_2, "FireFly ecosystem", $tags="FireFly ecosystem") {
+  System(HyperledgerFireFly, "Hyperledger FireFly", $descr="Reusable supernode architecture; each consortium member deploys an isolated instance.", $tags="", $link="https://github.com/hyperledger-firefly/firefly/tree/9d20f3081c9074d5b012427e5572ebc03da8d95d")
+  System(OtherFireFlymembers, "Other FireFly members", $descr="Peer supernodes exchanging private envelopes and shared content.", $tags="", $link="https://github.com/hyperledger-firefly/firefly/tree/9d20f3081c9074d5b012427e5572ebc03da8d95d/doc-site/docs/overview/multiparty/multiparty_flow.md")
+  System(FireFlydevelopertools, "FireFly developer tools", $descr="Development utilities and optional sample applications.", $tags="", $link="https://github.com/hyperledger-firefly/firefly/tree/9d20f3081c9074d5b012427e5572ebc03da8d95d/doc-site/docs/overview/key_components/tools.md")
+}
+
+Person(Applicationdeveloper, "Application developer", $descr="Builds and tests member business integrations.", $tags="", $link="https://hyperledger-firefly.github.io/firefly/head/architecture/node_component_architecture/")
+Person(Consortiumoperator, "Consortium operator", $descr="Operates member namespaces, recovery and the Besu network.", $tags="", $link="https://hyperledger-firefly.github.io/firefly/head/architecture/node_component_architecture/")
+Person(Businessuser, "Business user", $descr="Submits consortium business actions through a member application.", $tags="", $link="https://hyperledger-firefly.github.io/firefly/head/architecture/node_component_architecture/")
+System(Memberapplicationreference, "Member application reference", $descr="One example member application boundary; unrelated member applications are not implied to share ownership.", $tags="", $link="https://hyperledger-firefly.github.io/firefly/head/architecture/node_component_architecture/")
+System(Platformoperationsreference, "Platform operations reference", $descr="Reference platform boundary for API routing, database lifecycle and metrics; environment placement is deferred.", $tags="", $link="https://hyperledger-firefly.github.io/firefly/head/architecture/node_component_architecture/")
+
+Rel(HyperledgerFireFly, PrivateBesunetwork, "Submits transactions and consumes finalized events", $techn="Ethereum JSON-RPC + events", $tags="", $link="")
+Rel(HyperledgerFireFly, OtherFireFlymembers, "Exchanges private payloads and shared content references", $techn="HTTPS / mTLS + IPFS", $tags="", $link="")
+Rel(HyperledgerFireFly, Memberapplicationreference, "Delivers subscribed business events and transaction outcomes", $techn="WebSocket / webhook / HTTPS", $tags="", $link="")
+Rel(HyperledgerFireFly, Applicationdeveloper, "Returns customized starter event batches", $techn="WebSocket / JSON", $tags="", $link="")
+Rel(Platformoperationsreference, HyperledgerFireFly, "Routes API requests and observes health", $techn="HTTPS + metrics", $tags="", $link="")
+Rel(Platformoperationsreference, PrivateBesunetwork, "Observes peer and quorum health", $techn="HTTP / metrics", $tags="", $link="")
+Rel(OtherFireFlymembers, HyperledgerFireFly, "Delivers peer payloads and transfer acknowledgements", $techn="HTTPS / mTLS", $tags="", $link="")
+Rel(Consortiumoperator, HyperledgerFireFly, "Inspects and administers member state", $techn="HTTPS / Explorer + Admin API", $tags="", $link="")
+Rel(Businessuser, Memberapplicationreference, "Submits consortium business actions", $techn="HTTPS", $tags="", $link="")
+Rel(Applicationdeveloper, FireFlydevelopertools, "Develops and tests integrations", $techn="CLI + HTTPS", $tags="", $link="")
+Rel(Consortiumoperator, Platformoperationsreference, "Monitors availability and coordinates recovery", $techn="HTTPS", $tags="", $link="")
+Rel(Applicationdeveloper, HyperledgerFireFly, "Exercises customized Corda starter operations", $techn="HTTP REST / JSON", $tags="", $link="")
+Rel(FireFlydevelopertools, HyperledgerFireFly, "Exercises the selected member API", $techn="HTTPS + WebSocket", $tags="", $link="")
+Rel(FireFlydevelopertools, Applicationdeveloper, "Returns audit results and migrated configuration for review", $techn="Local process output", $tags="", $link="")
+Rel(Memberapplicationreference, HyperledgerFireFly, "Submits member requests and consumes events", $techn="HTTPS + WebSocket", $tags="", $link="")
+
+SHOW_LEGEND(true)
+hide stereotypes
+@enduml

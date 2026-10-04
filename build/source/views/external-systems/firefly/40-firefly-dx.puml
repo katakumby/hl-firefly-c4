@@ -1,0 +1,58 @@
+@startuml
+title <size:24>Component - FireFly private data exchange</size>\n<size:24>Component - FireFly private data exchange</size>
+
+set separator none
+left to right direction
+
+<style>
+  root {
+    BackgroundColor: #ffffff
+    FontColor: #444444
+  }
+</style>
+
+!include <C4/C4>
+!include <C4/C4_Context>
+!include <C4/C4_Container>
+!include <C4/C4_Component>
+
+System(OtherFireFlymembers, "Other FireFly members", $descr="Peer supernodes exchanging private envelopes and shared content.", $tags="", $link="https://github.com/hyperledger-firefly/firefly/tree/9d20f3081c9074d5b012427e5572ebc03da8d95d/doc-site/docs/overview/multiparty/multiparty_flow.md")
+
+System_Boundary("HyperledgerFireFly_boundary", "Hyperledger FireFly", $tags="") {
+  Container_Boundary("HyperledgerFireFly.HTTPSDataExchange_boundary", "HTTPS Data Exchange", $tags="") {
+    Component(HyperledgerFireFly.HTTPSDataExchange.InternalRESTAPI, "Internal REST API", $techn="TypeScript / Node.js", $descr="Accepts private messages, blobs and peer configuration.", $tags="", $link="https://github.com/hyperledger-firefly/dataexchange-https/tree/b6a212d531da1ff1c24e762e7156e2593c73d052/src/routers/api.ts")
+    Component(HyperledgerFireFly.HTTPSDataExchange.Peerandcertificateregistry, "Peer and certificate registry", $techn="TypeScript / Node.js", $descr="Resolves remote endpoints and trusted peer certificates.", $tags="", $link="https://github.com/hyperledger-firefly/dataexchange-https/tree/b6a212d531da1ff1c24e762e7156e2593c73d052/src/lib")
+    Component(HyperledgerFireFly.HTTPSDataExchange.MutualTLSpeerendpoint, "Mutual TLS peer endpoint", $techn="TypeScript / Node.js", $descr="Authenticates remote members and transfers private data.", $tags="", $link="https://github.com/hyperledger-firefly/dataexchange-https/tree/b6a212d531da1ff1c24e762e7156e2593c73d052/src/routers/p2p.ts")
+    Component(HyperledgerFireFly.HTTPSDataExchange.Messagetransferhandler, "Message transfer handler", $techn="TypeScript / Node.js", $descr="Sends and receives recipient-scoped message envelopes.", $tags="", $link="https://github.com/hyperledger-firefly/dataexchange-https/tree/b6a212d531da1ff1c24e762e7156e2593c73d052/src/handlers/messages.ts")
+    Component(HyperledgerFireFly.HTTPSDataExchange.Blobtransferhandler, "Blob transfer handler", $techn="TypeScript / Node.js", $descr="Streams binary content to durable member storage.", $tags="", $link="https://github.com/hyperledger-firefly/dataexchange-https/tree/b6a212d531da1ff1c24e762e7156e2593c73d052/src/handlers/blobs.ts")
+    Component(HyperledgerFireFly.HTTPSDataExchange.Eventqueueandacknowledgements, "Event queue and acknowledgements", $techn="TypeScript / Node.js", $descr="Queues delivery notifications in memory and processes acknowledgements.", $tags="", $link="https://github.com/hyperledger-firefly/dataexchange-https/tree/b6a212d531da1ff1c24e762e7156e2593c73d052/src/handlers/events.ts")
+  }
+
+  ContainerDb(HyperledgerFireFly.Privateblobandpeerstore, "Private blob and peer store", $techn="Filesystem", $descr="Stores private binary payloads and peer metadata; storage-class placement is deferred.", $tags="", $link="https://github.com/hyperledger-firefly/dataexchange-https/tree/b6a212d531da1ff1c24e762e7156e2593c73d052/src/handlers/blobs.ts")
+  Container(HyperledgerFireFly.FireFlyCore, "FireFly Core", $techn="Go", $descr="Exposes member APIs, serves Explorer assets and orchestrates multiparty operations.", $tags="", $link="https://github.com/hyperledger-firefly/firefly/tree/9d20f3081c9074d5b012427e5572ebc03da8d95d/internal/orchestrator")
+  ContainerDb(HyperledgerFireFly.Memberkeysandconfiguration, "Member keys and configuration", $techn="Configuration and key files", $descr="Stores signing keystores, mTLS material and configuration; Kubernetes projection belongs to the deferred deployment reference.", $tags="", $link="https://github.com/hyperledger-firefly/signer/tree/cfafd71fb4d2c3061a946f6466269877c3f04d9d/pkg/fswallet")
+}
+
+Rel(HyperledgerFireFly.HTTPSDataExchange.MutualTLSpeerendpoint, OtherFireFlymembers, "Transfers authenticated private envelopes and blobs", $techn="HTTPS / mTLS", $tags="", $link="")
+Rel(OtherFireFlymembers, HyperledgerFireFly.HTTPSDataExchange.MutualTLSpeerendpoint, "Transfers inbound private envelopes and blobs", $techn="HTTPS / mTLS", $tags="", $link="")
+Rel(HyperledgerFireFly.FireFlyCore, HyperledgerFireFly.Memberkeysandconfiguration, "Loads namespace and plugin configuration", $techn="Read-only projected files", $tags="", $link="")
+Rel(HyperledgerFireFly.FireFlyCore, HyperledgerFireFly.HTTPSDataExchange.Eventqueueandacknowledgements, "Acknowledges consumed transfer notifications", $techn="WebSocket / JSON", $tags="", $link="")
+Rel(HyperledgerFireFly.HTTPSDataExchange.InternalRESTAPI, HyperledgerFireFly.HTTPSDataExchange.Peerandcertificateregistry, "Updates peer endpoints and certificates", $techn="In-process calls / TypeScript", $tags="", $link="")
+Rel(HyperledgerFireFly.HTTPSDataExchange.InternalRESTAPI, HyperledgerFireFly.HTTPSDataExchange.Messagetransferhandler, "Submits recipient-scoped messages", $techn="In-process calls / TypeScript", $tags="", $link="")
+Rel(HyperledgerFireFly.HTTPSDataExchange.InternalRESTAPI, HyperledgerFireFly.HTTPSDataExchange.Blobtransferhandler, "Uploads private binary content", $techn="In-process calls / TypeScript", $tags="", $link="")
+Rel(HyperledgerFireFly.HTTPSDataExchange.Messagetransferhandler, HyperledgerFireFly.HTTPSDataExchange.Peerandcertificateregistry, "Resolves destination and trust material", $techn="In-process calls / TypeScript", $tags="", $link="")
+Rel(HyperledgerFireFly.HTTPSDataExchange.Messagetransferhandler, HyperledgerFireFly.HTTPSDataExchange.MutualTLSpeerendpoint, "Transfers private message envelopes", $techn="In-process calls / TypeScript", $tags="", $link="")
+Rel(HyperledgerFireFly.HTTPSDataExchange.Blobtransferhandler, HyperledgerFireFly.HTTPSDataExchange.MutualTLSpeerendpoint, "Transfers encrypted blob streams", $techn="In-process calls / TypeScript", $tags="", $link="")
+Rel(HyperledgerFireFly.HTTPSDataExchange.MutualTLSpeerendpoint, HyperledgerFireFly.HTTPSDataExchange.Messagetransferhandler, "Delivers authenticated inbound messages", $techn="In-process calls / TypeScript", $tags="", $link="")
+Rel(HyperledgerFireFly.HTTPSDataExchange.MutualTLSpeerendpoint, HyperledgerFireFly.HTTPSDataExchange.Blobtransferhandler, "Stores authenticated inbound blobs", $techn="In-process calls / TypeScript", $tags="", $link="")
+Rel(HyperledgerFireFly.HTTPSDataExchange.Messagetransferhandler, HyperledgerFireFly.HTTPSDataExchange.Eventqueueandacknowledgements, "Enqueues message delivery results", $techn="In-process calls / TypeScript", $tags="", $link="")
+Rel(HyperledgerFireFly.HTTPSDataExchange.Blobtransferhandler, HyperledgerFireFly.HTTPSDataExchange.Eventqueueandacknowledgements, "Enqueues blob delivery results", $techn="In-process calls / TypeScript", $tags="", $link="")
+Rel(HyperledgerFireFly.HTTPSDataExchange.Eventqueueandacknowledgements, HyperledgerFireFly.HTTPSDataExchange.InternalRESTAPI, "Delivers notifications and receives acknowledgements", $techn="In-process calls / TypeScript", $tags="", $link="")
+Rel(HyperledgerFireFly.HTTPSDataExchange.Blobtransferhandler, HyperledgerFireFly.Privateblobandpeerstore, "Stores durable private blobs", $techn="Filesystem I/O", $tags="", $link="")
+Rel(HyperledgerFireFly.HTTPSDataExchange.Peerandcertificateregistry, HyperledgerFireFly.Privateblobandpeerstore, "Persists endpoints and peer certificates", $techn="Filesystem I/O", $tags="", $link="")
+Rel(HyperledgerFireFly.HTTPSDataExchange.MutualTLSpeerendpoint, HyperledgerFireFly.Memberkeysandconfiguration, "Loads the member mTLS identity", $techn="Read-only projected files", $tags="", $link="")
+Rel(HyperledgerFireFly.HTTPSDataExchange.Eventqueueandacknowledgements, HyperledgerFireFly.FireFlyCore, "Delivers message and blob transfer notifications", $techn="WebSocket / JSON", $tags="", $link="")
+
+SHOW_LEGEND(true)
+hide stereotypes
+@enduml

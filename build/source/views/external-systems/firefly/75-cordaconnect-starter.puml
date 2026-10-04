@@ -1,0 +1,48 @@
+@startuml
+title <size:24>Component - Corda connector starter: starter</size>\n<size:24>Component - Corda connector starter: starter</size>
+
+set separator none
+left to right direction
+
+<style>
+  root {
+    BackgroundColor: #ffffff
+    FontColor: #444444
+  }
+</style>
+
+!include <C4/C4>
+!include <C4/C4_Context>
+!include <C4/C4_Container>
+!include <C4/C4_Component>
+
+Person(Applicationdeveloper, "Application developer", $descr="Builds and tests member business integrations.", $tags="", $link="https://hyperledger-firefly.github.io/firefly/head/architecture/node_component_architecture/")
+
+System(Cordanetwork, "Corda network", $descr="External Corda node with application-specific CorDapps; starter integration requires customization.", $tags="", $link="https://github.com/hyperledger-firefly/cordaconnect/tree/6579ca46e0d46c9c330c8b2b95f1dd83f0804640/README.md")
+
+System_Boundary("HyperledgerFireFly_boundary", "Hyperledger FireFly", $tags="") {
+  Container_Boundary("HyperledgerFireFly.Cordaconnectorstarter_boundary", "Corda connector starter", $tags="") {
+    Component(HyperledgerFireFly.Cordaconnectorstarter.RESTcontrollers, "REST controllers", $techn="Java", $descr="Accepts FireFly flow, subscription and stream requests.", $tags="", $link="https://github.com/hyperledger-firefly/cordaconnect/tree/6579ca46e0d46c9c330c8b2b95f1dd83f0804640/connector/src/main/java/io/kaleido/cordaconnector/controller")
+    Component(HyperledgerFireFly.Cordaconnectorstarter.CorDappserviceandRPCclient, "CorDapp service and RPC client", $techn="Java", $descr="Starts application-specific flows through Corda RPC.", $tags="", $link="https://github.com/hyperledger-firefly/cordaconnect/tree/6579ca46e0d46c9c330c8b2b95f1dd83f0804640/connector/src/main/java/io/kaleido/cordaconnector/rpc")
+    Component(HyperledgerFireFly.Cordaconnectorstarter.Eventstreamsandsubscriptions, "Event streams and subscriptions", $techn="Java", $descr="Collects vault events and batches them for subscribers.", $tags="", $link="https://github.com/hyperledger-firefly/cordaconnect/tree/6579ca46e0d46c9c330c8b2b95f1dd83f0804640/connector/src/main/java/io/kaleido/cordaconnector/service")
+    Component(HyperledgerFireFly.Cordaconnectorstarter.WebSocketdelivery, "WebSocket delivery", $techn="Java", $descr="Delivers event batches to connector clients.", $tags="", $link="https://github.com/hyperledger-firefly/cordaconnect/tree/6579ca46e0d46c9c330c8b2b95f1dd83f0804640/connector/src/main/java/io/kaleido/cordaconnector/ws")
+    Component(HyperledgerFireFly.Cordaconnectorstarter.JPArepositories, "JPA repositories", $techn="Java", $descr="Persists event-stream and subscription definitions.", $tags="", $link="https://github.com/hyperledger-firefly/cordaconnect/tree/6579ca46e0d46c9c330c8b2b95f1dd83f0804640/connector/src/main/java/io/kaleido/cordaconnector/db")
+  }
+
+  ContainerDb(HyperledgerFireFly.Cordastarterdatabase, "Corda starter database", $techn="H2 / in-memory default", $descr="Starter JPA database; the supplied configuration uses in-memory H2 and is not durable.", $tags="", $link="https://github.com/hyperledger-firefly/cordaconnect/tree/6579ca46e0d46c9c330c8b2b95f1dd83f0804640/connector/src/main/resources")
+}
+
+Rel(HyperledgerFireFly.Cordaconnectorstarter.CorDappserviceandRPCclient, Cordanetwork, "Invokes custom flows and subscribes to vault updates", $techn="Corda RPC", $tags="", $link="")
+Rel(HyperledgerFireFly.Cordaconnectorstarter.WebSocketdelivery, Applicationdeveloper, "Delivers starter event batches to an integration developer", $techn="WebSocket / JSON", $tags="", $link="")
+Rel(Applicationdeveloper, Cordanetwork, "Customizes the CorDapp and Core binding required by the starter", $techn="Development toolchain", $tags="", $link="")
+Rel(Applicationdeveloper, HyperledgerFireFly.Cordaconnectorstarter.RESTcontrollers, "Exercises customized starter operations", $techn="HTTP REST / JSON", $tags="", $link="")
+Rel(HyperledgerFireFly.Cordaconnectorstarter.RESTcontrollers, HyperledgerFireFly.Cordaconnectorstarter.CorDappserviceandRPCclient, "Submits configured CorDapp flow requests", $techn="In-process calls / Java", $tags="", $link="")
+Rel(HyperledgerFireFly.Cordaconnectorstarter.RESTcontrollers, HyperledgerFireFly.Cordaconnectorstarter.Eventstreamsandsubscriptions, "Configures event streams and subscriptions", $techn="In-process calls / Java", $tags="", $link="")
+Rel(HyperledgerFireFly.Cordaconnectorstarter.CorDappserviceandRPCclient, HyperledgerFireFly.Cordaconnectorstarter.Eventstreamsandsubscriptions, "Supplies observed CorDapp state changes", $techn="In-process calls / Java", $tags="", $link="")
+Rel(HyperledgerFireFly.Cordaconnectorstarter.Eventstreamsandsubscriptions, HyperledgerFireFly.Cordaconnectorstarter.WebSocketdelivery, "Publishes event batches", $techn="In-process calls / Java", $tags="", $link="")
+Rel(HyperledgerFireFly.Cordaconnectorstarter.Eventstreamsandsubscriptions, HyperledgerFireFly.Cordaconnectorstarter.JPArepositories, "Persists stream and subscription definitions", $techn="In-process calls / Java", $tags="", $link="")
+Rel(HyperledgerFireFly.Cordaconnectorstarter.JPArepositories, HyperledgerFireFly.Cordastarterdatabase, "Reads and writes subscription definitions", $techn="JPA / embedded H2", $tags="", $link="")
+
+SHOW_LEGEND(true)
+hide stereotypes
+@enduml

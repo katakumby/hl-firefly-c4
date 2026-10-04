@@ -1,0 +1,48 @@
+@startuml
+title <size:24>Container - developer tooling</size>\n<size:24>Container - developer tooling</size>
+
+set separator none
+left to right direction
+
+<style>
+  root {
+    BackgroundColor: #ffffff
+    FontColor: #444444
+  }
+</style>
+
+!include <C4/C4>
+!include <C4/C4_Context>
+!include <C4/C4_Container>
+
+Person(Applicationdeveloper, "Application developer", $descr="Builds and tests member business integrations.", $tags="", $link="https://hyperledger-firefly.github.io/firefly/head/architecture/node_component_architecture/")
+System(DeveloperDockerengine, "Developer Docker engine", $descr="Local container engine used by FireFly CLI; no network is provisioned by this architecture task.", $tags="", $link="https://github.com/hyperledger-firefly/cli/tree/9b868d3326ba4fbadd01c74a36c7e5a92a8c2609/internal/docker")
+
+System_Boundary("HyperledgerFireFly_boundary", "Hyperledger FireFly", $tags="") {
+  Container(HyperledgerFireFly.FireFlyCore, "FireFly Core", $techn="Go", $descr="Exposes member APIs, serves Explorer assets and orchestrates multiparty operations.", $tags="", $link="https://github.com/hyperledger-firefly/firefly/tree/9d20f3081c9074d5b012427e5572ebc03da8d95d/internal/orchestrator")
+}
+
+System_Boundary("FireFlydevelopertools_boundary", "FireFly developer tools", $tags="") {
+  Container(FireFlydevelopertools.FireFlyCLI, "FireFly CLI", $techn="Go / CLI", $descr="Creates local stacks and performs development administration.", $tags="", $link="https://github.com/hyperledger-firefly/cli/tree/9b868d3326ba4fbadd01c74a36c7e5a92a8c2609/README.md")
+  Container(FireFlydevelopertools.FireFlyconfigurationmigrator, "FireFly configuration migrator", $techn="Go / CLI", $descr="Migrates configuration files between supported FireFly versions.", $tags="", $link="https://github.com/hyperledger-firefly/firefly/tree/9d20f3081c9074d5b012427e5572ebc03da8d95d/ffconfig")
+  Container(FireFlydevelopertools.FireFlyeventauditor, "FireFly event auditor", $techn="Go / CLI", $descr="Audits recorded blockchain-event ordering through the Core API.", $tags="", $link="https://github.com/hyperledger-firefly/firefly/tree/9d20f3081c9074d5b012427e5572ebc03da8d95d/auditevents")
+  Container(FireFlydevelopertools.FireFlyPerformanceCLI, "FireFly Performance CLI", $techn="Go", $descr="Generates workloads and reports timings against configured FireFly members.", $tags="", $link="https://github.com/hyperledger-firefly/perf-cli/tree/3d3ec0242b23b30fea41362eb60f0c190dfedde9/README.md")
+  Container(FireFlydevelopertools.Sandboxserver, "Sandbox server", $techn="Node.js / TypeScript", $descr="Serves Sandbox browser assets and maps UI requests to a selected FireFly API.", $tags="", $link="https://github.com/hyperledger-firefly/sandbox/tree/ef7f240b8acf9c79c8fdf5a8bccb73e9de482069/server/src")
+  Container(FireFlydevelopertools.Sandboxbrowserapplication, "Sandbox browser application", $techn="React / TypeScript / browser", $descr="Runs the sample interface in the developer's browser and calls the Sandbox server.", $tags="", $link="https://github.com/hyperledger-firefly/sandbox/tree/ef7f240b8acf9c79c8fdf5a8bccb73e9de482069/ui/src")
+}
+
+Rel(Applicationdeveloper, FireFlydevelopertools.FireFlyCLI, "Creates local test stacks", $techn="Local process invocation", $tags="", $link="")
+Rel(Applicationdeveloper, FireFlydevelopertools.Sandboxbrowserapplication, "Exercises sample messages and token workflows", $techn="Browser interaction", $tags="", $link="")
+Rel(Applicationdeveloper, FireFlydevelopertools.FireFlyPerformanceCLI, "Runs configured performance workloads", $techn="Local process invocation", $tags="", $link="")
+Rel(Applicationdeveloper, FireFlydevelopertools.FireFlyeventauditor, "Audits recorded blockchain-event ordering", $techn="Local process invocation", $tags="", $link="")
+Rel(Applicationdeveloper, FireFlydevelopertools.FireFlyconfigurationmigrator, "Supplies configuration and migration versions", $techn="CLI / file input", $tags="", $link="")
+Rel(FireFlydevelopertools.Sandboxserver, HyperledgerFireFly.FireFlyCore, "Exercises APIs and subscriptions", $techn="HTTPS + WebSocket", $tags="", $link="")
+Rel(FireFlydevelopertools.FireFlyCLI, HyperledgerFireFly.FireFlyCore, "Registers and inspects development stacks", $techn="HTTP / Admin API", $tags="", $link="")
+Rel(FireFlydevelopertools.FireFlyCLI, DeveloperDockerengine, "Manages local development stack services", $techn="Docker Compose CLI", $tags="", $link="")
+Rel(FireFlydevelopertools.FireFlyPerformanceCLI, HyperledgerFireFly.FireFlyCore, "Submits workloads and consumes completion events", $techn="HTTP REST + WebSocket", $tags="", $link="")
+Rel(FireFlydevelopertools.FireFlyeventauditor, HyperledgerFireFly.FireFlyCore, "Retrieves namespace status and recorded blockchain events", $techn="HTTP REST / JSON", $tags="", $link="")
+Rel(FireFlydevelopertools.Sandboxbrowserapplication, FireFlydevelopertools.Sandboxserver, "Requests browser assets and submits sample actions", $techn="HTTP(S) / JSON + static assets", $tags="", $link="")
+
+SHOW_LEGEND(true)
+hide stereotypes
+@enduml

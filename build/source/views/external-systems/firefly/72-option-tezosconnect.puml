@@ -1,0 +1,35 @@
+@startuml
+title <size:24>Container - Optional TezosConnect + FFTM</size>\n<size:24>Container - Optional TezosConnect + FFTM</size>
+
+set separator none
+left to right direction
+
+<style>
+  root {
+    BackgroundColor: #ffffff
+    FontColor: #444444
+  }
+</style>
+
+!include <C4/C4>
+!include <C4/C4_Context>
+!include <C4/C4_Container>
+
+System(Signatory, "Signatory", $descr="Remote Tezos signing service; backend key management is external.", $tags="", $link="https://github.com/hyperledger-firefly/tezosconnect/tree/508ec1e8bb8b671c1eb6e9c090a1d219043dbd8b/README.md")
+System(Tezosnetwork, "Tezos network", $descr="External Tezos node RPC and chain-monitoring endpoints.", $tags="", $link="https://github.com/hyperledger-firefly/tezosconnect/tree/508ec1e8bb8b671c1eb6e9c090a1d219043dbd8b/README.md")
+
+System_Boundary("HyperledgerFireFly_boundary", "Hyperledger FireFly", $tags="") {
+  Container(HyperledgerFireFly.FireFlyCore, "FireFly Core", $techn="Go", $descr="Exposes member APIs, serves Explorer assets and orchestrates multiparty operations.", $tags="", $link="https://github.com/hyperledger-firefly/firefly/tree/9d20f3081c9074d5b012427e5572ebc03da8d95d/internal/orchestrator")
+  ContainerDb(HyperledgerFireFly.TezosConnectstate, "TezosConnect state", $techn="PostgreSQL or LevelDB", $descr="Optional PostgreSQL or LevelDB persistence for the embedded FFTM.", $tags="", $link="https://github.com/hyperledger-firefly/transaction-manager/tree/7a882ddaeaf2e7b9b2203a053402576e436debd9/internal/persistence")
+  Container(HyperledgerFireFly.TezosConnectFFTM, "TezosConnect + FFTM", $techn="Go", $descr="Tezos connector with its dependency-pinned embedded transaction manager.", $tags="", $link="https://github.com/hyperledger-firefly/tezosconnect/tree/508ec1e8bb8b671c1eb6e9c090a1d219043dbd8b")
+}
+
+Rel(HyperledgerFireFly.TezosConnectFFTM, Tezosnetwork, "Queries chain state and injects signed operations", $techn="Tezos HTTP RPC", $tags="", $link="")
+Rel(HyperledgerFireFly.TezosConnectFFTM, Signatory, "Requests signatures for encoded operations", $techn="HTTP / Signatory API", $tags="", $link="")
+Rel(HyperledgerFireFly.FireFlyCore, HyperledgerFireFly.TezosConnectFFTM, "Submits Tezos operations when configured", $techn="HTTP REST + WebSocket", $tags="", $link="")
+Rel(HyperledgerFireFly.TezosConnectFFTM, HyperledgerFireFly.TezosConnectstate, "Persists transaction and stream state", $techn="PostgreSQL wire or LevelDB API", $tags="", $link="")
+Rel(HyperledgerFireFly.TezosConnectFFTM, HyperledgerFireFly.FireFlyCore, "Delivers confirmed Tezos events", $techn="WebSocket / JSON", $tags="", $link="")
+
+SHOW_LEGEND(true)
+hide stereotypes
+@enduml

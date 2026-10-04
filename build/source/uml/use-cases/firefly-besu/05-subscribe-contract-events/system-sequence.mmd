@@ -1,0 +1,29 @@
+---
+title: UC5 - Subscribe to contract events - software systems
+config:
+  theme: default
+  sequence:
+    mirrorActors: false
+    wrap: true
+---
+sequenceDiagram
+    autonumber
+%% C4: App=apps; FF=firefly; Ledger=besu
+    participant App as Member application<br/>reference<br/>[Software System]
+    participant FF as Hyperledger FireFly<br/>[Software System]
+    participant Ledger as Private Besu<br/>network<br/>[Software System]
+
+    App->>FF: Create contract listener and durable subscription [HTTPS REST / JSON]
+    FF-->>App: Listener and subscription identifiers [HTTPS REST / JSON]
+    App->>FF: Start named subscription, autoack false [WebSocket / JSON over TLS]
+    loop Read and confirm matching contract logs
+        FF->>Ledger: Poll blocks and Changed logs [Ethereum JSON-RPC / HTTP]
+        Ledger-->>FF: Blocks and matching logs [Ethereum JSON-RPC / HTTP]
+    end
+    FF-->>App: blockchain_event_received [WebSocket / JSON over TLS]
+    App->>FF: ACK after processing [WebSocket / JSON over TLS]
+    opt Connection lost before a later event is acknowledged
+        App->>FF: Reconnect and start the same subscription [WebSocket / JSON over TLS]
+        FF-->>App: Resume, unacknowledged event may repeat [WebSocket / JSON over TLS]
+        App->>FF: ACK after duplicate-safe processing [WebSocket / JSON over TLS]
+    end

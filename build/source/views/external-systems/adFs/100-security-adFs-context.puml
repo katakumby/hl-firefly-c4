@@ -1,0 +1,49 @@
+@startuml
+title <size:24>System Context - Microsoft Active Directory Federation Services reference</size>\n<size:24>System Context - Microsoft Active Directory Federation Services reference</size>
+
+set separator none
+left to right direction
+
+<style>
+  root {
+    BackgroundColor: #ffffff
+    FontColor: #444444
+  }
+</style>
+
+!include <C4/C4>
+!include <C4/C4_Context>
+
+AddBoundaryTag("Identity and federation", $borderColor="#444444", $fontColor="#444444", $borderStyle="dashed")
+Boundary(group_1, "Identity and federation", $tags="Identity and federation") {
+  System(MicrosoftActiveDirectoryFederationServices, "Microsoft Active Directory Federation Services", $descr="Federates AD-backed identities and issues claims to relying parties; separate from directory synchronization.", $tags="", $link="https://learn.microsoft.com/en-us/windows-server/identity/ad-fs/ad-fs-overview")
+  System(MicrosoftActiveDirectoryDomainServices, "Microsoft Active Directory Domain Services", $descr="Directory identities, LDAP queries and Kerberos authentication for the enterprise domain.", $tags="", $link="https://learn.microsoft.com/en-us/windows-server/identity/ad-ds/get-started/virtual-dc/active-directory-domain-services-overview")
+  System(Keycloak, "Keycloak", $descr="Identity and access management: SSO, federation, brokering and token issuance.", $tags="", $link="https://www.keycloak.org/docs/latest/server_admin/index.html")
+}
+
+Person(Businessuser, "Business user", $descr="Submits consortium business actions through a member application.", $tags="", $link="https://hyperledger-firefly.github.io/firefly/head/architecture/node_component_architecture/")
+Person(Securityadministrator, "Security administrator", $descr="Configures identity, privileged access, secret policies and key permissions in these reference examples.", $tags="", $link="https://docs.cyberark.com/pam-self-hosted/latest/en/content/pas%20inst/installationoverview.htm")
+System(Memberapplicationreference, "Member application reference", $descr="One example member application boundary; unrelated member applications are not implied to share ownership.", $tags="", $link="https://hyperledger-firefly.github.io/firefly/head/architecture/node_component_architecture/")
+
+Rel(Keycloak, Memberapplicationreference, "Returns identity tokens or assertions for application access", $techn="HTTPS / configured identity protocol", $tags="", $link="")
+Rel(Keycloak, MicrosoftActiveDirectoryDomainServices, "Requests LDAP user attributes and credential validation", $techn="LDAPS", $tags="", $link="")
+Rel(Keycloak, MicrosoftActiveDirectoryFederationServices, "Delegates login through browser-mediated SAML 2.0 federation", $techn="HTTPS / SAML 2.0", $tags="", $link="")
+Rel(Businessuser, Memberapplicationreference, "Submits consortium business actions", $techn="HTTPS", $tags="", $link="")
+Rel(Securityadministrator, Keycloak, "Configures Keycloak access policy and reviews administrative outcomes", $techn="HTTPS / product administration interface", $tags="", $link="")
+Rel(Securityadministrator, MicrosoftActiveDirectoryDomainServices, "Configures Microsoft Active Directory Domain Services access policy and reviews administrative outcomes", $techn="Protected LDAP / directory administration", $tags="", $link="")
+Rel(Securityadministrator, MicrosoftActiveDirectoryFederationServices, "Configures Microsoft Active Directory Federation Services access policy and reviews administrative outcomes", $techn="AD FS administration / PowerShell", $tags="", $link="")
+Rel(Businessuser, Keycloak, "Completes user sign-in through browser-mediated authentication", $techn="HTTPS / user browser", $tags="", $link="")
+Rel(Businessuser, MicrosoftActiveDirectoryFederationServices, "Completes user sign-in through browser-mediated authentication", $techn="HTTPS / user browser", $tags="", $link="")
+Rel(Businessuser, MicrosoftActiveDirectoryDomainServices, "Requests domain sign-in and service tickets through the domain client", $techn="Kerberos", $tags="", $link="")
+Rel(MicrosoftActiveDirectoryDomainServices, Keycloak, "Returns user attributes and credential validation outcome", $techn="LDAPS", $tags="", $link="")
+Rel(MicrosoftActiveDirectoryDomainServices, MicrosoftActiveDirectoryFederationServices, "Returns domain authentication result and account attributes", $techn="Kerberos / protected directory access", $tags="", $link="")
+Rel(MicrosoftActiveDirectoryDomainServices, Businessuser, "Returns Kerberos ticket response to the domain client", $techn="Kerberos", $tags="", $link="")
+Rel(MicrosoftActiveDirectoryFederationServices, Memberapplicationreference, "Returns identity tokens or assertions for application access", $techn="HTTPS / configured identity protocol", $tags="", $link="")
+Rel(MicrosoftActiveDirectoryFederationServices, Keycloak, "Returns verified identity claims through the configured federation flow", $techn="HTTPS / SAML 2.0", $tags="", $link="")
+Rel(MicrosoftActiveDirectoryFederationServices, MicrosoftActiveDirectoryDomainServices, "Requests domain authentication and account attributes", $techn="Kerberos / protected directory access", $tags="", $link="")
+Rel(Memberapplicationreference, Keycloak, "Requests application sign-in and identity claims", $techn="HTTPS / OIDC or SAML reference flow", $tags="", $link="")
+Rel(Memberapplicationreference, MicrosoftActiveDirectoryFederationServices, "Requests application sign-in and identity claims", $techn="HTTPS / OIDC or SAML reference flow", $tags="", $link="")
+
+SHOW_LEGEND(true)
+hide stereotypes
+@enduml

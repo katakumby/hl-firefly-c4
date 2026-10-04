@@ -1,0 +1,46 @@
+@startuml
+title <size:24>Container - Example: PAM password rotation and recorded sessions</size>\n<size:24>Container - Example: PAM password rotation and recorded sessions</size>
+
+set separator none
+left to right direction
+
+<style>
+  root {
+    BackgroundColor: #ffffff
+    FontColor: #444444
+  }
+</style>
+
+!include <C4/C4>
+!include <C4/C4_Context>
+!include <C4/C4_Container>
+
+Person(Consortiumoperator, "Consortium operator", $descr="Operates member namespaces, recovery and the Besu network.", $tags="", $link="https://hyperledger-firefly.github.io/firefly/head/architecture/node_component_architecture/")
+System(Managedtargetsystem, "Managed target system", $descr="Example SSH-accessible administrative target whose privileged account is rotated and sessions are controlled by PAM.", $tags="", $link="https://docs.cyberark.com/pam-self-hosted/latest/en/content/pas%20inst/installationoverview.htm")
+
+System_Boundary("CyberArkPAMSelfHosted_boundary", "CyberArk PAM Self-Hosted", $tags="") {
+  Container(CyberArkPAMSelfHosted.CentralPolicyManager, "Central Policy Manager", $techn="CyberArk PAM / proprietary service", $descr="Verifies, rotates and reconciles managed target-account passwords.", $tags="", $link="https://docs.cyberark.com/pam-self-hosted/latest/en/content/pas%20inst/installationoverview.htm")
+  Container(CyberArkPAMSelfHosted.PrivilegedSessionManager, "Privileged Session Manager", $techn="CyberArk PAM / proprietary service", $descr="Brokers privileged target sessions and records session activity.", $tags="", $link="https://docs.cyberark.com/pam-self-hosted/latest/en/content/pas%20inst/installationoverview.htm")
+  Container(CyberArkPAMSelfHosted.PasswordVaultWebAccess, "Password Vault Web Access", $techn="CyberArk PAM / proprietary service", $descr="Provides the web interface and APIs for privileged-account access and administration.", $tags="", $link="https://docs.cyberark.com/pam-self-hosted/latest/en/content/pas%20inst/installationoverview.htm")
+  Container(CyberArkPAMSelfHosted.DigitalVault, "Digital Vault", $techn="CyberArk PAM / proprietary service", $descr="Protects privileged credentials, Safe permissions and audit/session records.", $tags="", $link="https://docs.cyberark.com/pam-self-hosted/latest/en/content/pas%20inst/installationoverview.htm")
+}
+
+Rel(CyberArkPAMSelfHosted.PrivilegedSessionManager, Consortiumoperator, "Returns brokered session output and completion status", $techn="PSM-supported session client / encrypted connection", $tags="", $link="")
+Rel(Managedtargetsystem, CyberArkPAMSelfHosted.CentralPolicyManager, "Returns password verification or change outcome", $techn="SSH / target command response", $tags="", $link="")
+Rel(Managedtargetsystem, CyberArkPAMSelfHosted.PrivilegedSessionManager, "Returns command output and session state", $techn="SSH", $tags="", $link="")
+Rel(Consortiumoperator, CyberArkPAMSelfHosted.PasswordVaultWebAccess, "Requests approved privileged-account access or recorded target session", $techn="HTTPS / PAM web portal", $tags="", $link="")
+Rel(Consortiumoperator, CyberArkPAMSelfHosted.PrivilegedSessionManager, "Connects authorized session client and submits administrative input", $techn="PSM-supported session client / encrypted connection", $tags="", $link="")
+Rel(CyberArkPAMSelfHosted.PasswordVaultWebAccess, CyberArkPAMSelfHosted.DigitalVault, "Submits permitted Safe credential or metadata operations", $techn="CyberArk Vault protocol / encrypted channel", $tags="", $link="")
+Rel(CyberArkPAMSelfHosted.DigitalVault, CyberArkPAMSelfHosted.PasswordVaultWebAccess, "Returns authorized credential or account metadata", $techn="CyberArk Vault protocol / encrypted channel", $tags="", $link="")
+Rel(CyberArkPAMSelfHosted.CentralPolicyManager, CyberArkPAMSelfHosted.DigitalVault, "Submits permitted Safe credential or metadata operations", $techn="CyberArk Vault protocol / encrypted channel", $tags="", $link="")
+Rel(CyberArkPAMSelfHosted.DigitalVault, CyberArkPAMSelfHosted.CentralPolicyManager, "Returns authorized credential or account metadata", $techn="CyberArk Vault protocol / encrypted channel", $tags="", $link="")
+Rel(CyberArkPAMSelfHosted.PrivilegedSessionManager, CyberArkPAMSelfHosted.DigitalVault, "Submits permitted Safe credential or metadata operations", $techn="CyberArk Vault protocol / encrypted channel", $tags="", $link="")
+Rel(CyberArkPAMSelfHosted.DigitalVault, CyberArkPAMSelfHosted.PrivilegedSessionManager, "Returns authorized credential or account metadata", $techn="CyberArk Vault protocol / encrypted channel", $tags="", $link="")
+Rel(CyberArkPAMSelfHosted.PrivilegedSessionManager, CyberArkPAMSelfHosted.DigitalVault, "Uploads session recordings and audit metadata", $techn="CyberArk Vault protocol / encrypted channel", $tags="", $link="")
+Rel(CyberArkPAMSelfHosted.PasswordVaultWebAccess, CyberArkPAMSelfHosted.PrivilegedSessionManager, "Supplies authorized session-launch context via the user session client", $techn="Session connection parameters / client-mediated", $tags="", $link="")
+Rel(CyberArkPAMSelfHosted.CentralPolicyManager, Managedtargetsystem, "Verifies or changes the privileged target password", $techn="SSH / target-specific password commands", $tags="", $link="")
+Rel(CyberArkPAMSelfHosted.PrivilegedSessionManager, Managedtargetsystem, "Opens privileged SSH session and relays administrator commands", $techn="SSH", $tags="", $link="")
+
+SHOW_LEGEND(true)
+hide stereotypes
+@enduml

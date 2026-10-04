@@ -1,0 +1,120 @@
+# Job template for azure-pipelines.yaml; not a standalone pipeline.
+parameters:
+  - name: stage
+    type: string
+    values: [source, plantuml, mermaid]
+  - name: acquireImage
+    type: boolean
+  - name: registryServiceConnection
+    type: string
+jobs:
+  - job: ${{ parameters.stage }}
+    ${{ if eq(parameters.stage, 'source') }}:
+      condition: and(succeeded(), eq(variables['architectureStage'], 'source'))
+    ${{ else }}:
+      dependsOn: Lookup
+      condition: and(succeeded(), or(eq(variables['architectureStage'], 'previews'), eq(variables['architectureStage'], '${{ parameters.stage }}')))
+      variables:
+        sourceBuildId: $[ dependencies.Lookup.outputs['lookup.architectureSourceBuildId'] ]
+    workspace:
+      clean: all
+    steps:
+      - checkout: self
+        path: s/architecture
+        clean: true
+        persistCredentials: false
+      - ${{ if eq(parameters.acquireImage, true) }}:
+        - task: Docker@2
+          inputs:
+            command: login
+            containerRegistry: ${{ parameters.registryServiceConnection }}
+      - bash: |
+          set -euo pipefail
+          profile=()
+          if [ "$BUILD_STAGE" = mermaid ]; then
+            image="${ARCHITECTURE_BROWSER_IMAGE:?Configure browser image}"; profile=(--browser)
+          else
+            image="${ARCHITECTURE_TOOLS_IMAGE:?Configure lightweight image}"
+          fi
+          if [ "${ACQUIRE_IMAGE,,}" = true ]; then docker pull "$image"; fi
+          docker image inspect "$image" >/dev/null
+          docker/run.sh "${profile[@]}" clean
+          mkdir -p build/.reports
+          docker/run.sh "${profile[@]}" test 2>&1 | tee "build/.reports/tests-$BUILD_STAGE.log"
+        displayName: Acquire required image, clean before restoration, run offline tests
+        workingDirectory: $(Pipeline.Workspace)/s/architecture
+        env:
+          BUILD_STAGE: ${{ parameters.stage }}
+          ACQUIRE_IMAGE: ${{ parameters.acquireImage }}
+          ARCHITECTURE_TOOLS_IMAGE: $(ARCHITECTURE_TOOLS_IMAGE)
+          ARCHITECTURE_BROWSER_IMAGE: $(ARCHITECTURE_BROWSER_IMAGE)
+      - ${{ if ne(parameters.stage, 'source') }}:
+        - task: DownloadPipelineArtifact@2
+          displayName: Restore exact-commit source handoff
+          inputs:
+            buildType: specific
+            project: $(System.TeamProjectId)
+            definition: $(System.DefinitionId)
+            buildVersionToDownload: specific
+            pipelineId: $(sourceBuildId)
+            allowPartiallySucceededBuilds: false
+            allowFailedBuilds: false
+            artifactName: architecture-source
+            targetPath: $(Pipeline.Workspace)/s/architecture/build
+      - bash: |
+          set -euo pipefail
+          mkdir -p "$ARCHITECTURE_ARTIFACT_DIR"
+          if [ "$BUILD_STAGE" = source ]; then
+            docker/run.sh build-source
+            docker/run.sh package --stage source
+          else
+            docker/run.sh build-preview --renderer "$BUILD_STAGE"
+            docker/run.sh package --stage preview --renderer "$BUILD_STAGE"
+          fi
+        displayName: Generate and package selected stage offline
+        workingDirectory: $(Pipeline.Workspace)/s/architecture
+        env:
+          BUILD_STAGE: ${{ parameters.stage }}
+          ARCHITECTURE_SOURCE_REVISION: $(Build.SourceVersion)
+          ARCHITECTURE_CI_RUN: azure:$(Build.BuildId)
+          ARCHITECTURE_TOOLS_IMAGE: $(ARCHITECTURE_TOOLS_IMAGE)
+          ARCHITECTURE_BROWSER_IMAGE: $(ARCHITECTURE_BROWSER_IMAGE)
+          ARCHITECTURE_ARTIFACT_DIR: $(Build.ArtifactStagingDirectory)/architecture-${{ parameters.stage }}
+      - task: PublishPipelineArtifact@1
+        inputs:
+          targetPath: $(Build.ArtifactStagingDirectory)/architecture-${{ parameters.stage }}
+          ${{ if eq(parameters.stage, 'source') }}:
+            artifact: architecture-source
+          ${{ else }}:
+            artifact: architecture-preview-${{ parameters.stage }}
+      - ${{ if eq(parameters.stage, 'source') }}:
+        - bash: echo "##vso[build.addbuildtag]architecture-source-$SOURCE_REVISION"
+          displayName: Index successful source build by commit
+          env:
+            SOURCE_REVISION: $(Build.SourceVersion)
+      - bash: |
+          mkdir -p "$ARCHITECTURE_ARTIFACT_DIR"
+          if [ "$BUILD_STAGE" = mermaid ]; then
+            if docker image inspect "$ARCHITECTURE_BROWSER_IMAGE" >/dev/null 2>&1; then docker/run.sh --browser package --diagnostics; fi
+          else
+            if docker image inspect "$ARCHITECTURE_TOOLS_IMAGE" >/dev/null 2>&1; then docker/run.sh package --diagnostics; fi
+          fi
+        displayName: Package failure diagnostics
+        condition: failed()
+        workingDirectory: $(Pipeline.Workspace)/s/architecture
+        env:
+          BUILD_STAGE: ${{ parameters.stage }}
+          ARCHITECTURE_TOOLS_IMAGE: $(ARCHITECTURE_TOOLS_IMAGE)
+          ARCHITECTURE_BROWSER_IMAGE: $(ARCHITECTURE_BROWSER_IMAGE)
+          ARCHITECTURE_ARTIFACT_DIR: $(Build.ArtifactStagingDirectory)/diagnostics-${{ parameters.stage }}
+      - task: PublishPipelineArtifact@1
+        condition: failed()
+        inputs:
+          targetPath: $(Build.ArtifactStagingDirectory)/diagnostics-${{ parameters.stage }}
+          artifact: architecture-diagnostics-${{ parameters.stage }}
+      - ${{ if eq(parameters.acquireImage, true) }}:
+        - task: Docker@2
+          condition: always()
+          inputs:
+            command: logout
+            containerRegistry: ${{ parameters.registryServiceConnection }}

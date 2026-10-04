@@ -1,0 +1,51 @@
+@startuml
+title <size:24>Component - Core token and event adapters</size>\n<size:24>Component - Core token and event adapters</size>
+
+set separator none
+left to right direction
+
+<style>
+  root {
+    BackgroundColor: #ffffff
+    FontColor: #444444
+  }
+</style>
+
+!include <C4/C4>
+!include <C4/C4_Context>
+!include <C4/C4_Container>
+!include <C4/C4_Component>
+
+System_Boundary("HyperledgerFireFly_boundary", "Hyperledger FireFly", $tags="") {
+  Container_Boundary("HyperledgerFireFly.FireFlyCore_boundary", "FireFly Core", $tags="") {
+    Component(HyperledgerFireFly.FireFlyCore.Inboundeventaggregator, "Inbound event aggregator", $techn="Go", $descr="Correlates ledger pins with payloads and sequences confirmed messages.", $tags="", $link="https://github.com/hyperledger-firefly/firefly/tree/9d20f3081c9074d5b012427e5572ebc03da8d95d/internal/events/aggregator.go")
+    Component(HyperledgerFireFly.FireFlyCore.Tokenplugin, "Token plugin", $techn="Go", $descr="Binds standard token operations to remote token connectors.", $tags="", $link="https://github.com/hyperledger-firefly/firefly/tree/9d20f3081c9074d5b012427e5572ebc03da8d95d/internal/tokens")
+    Component(HyperledgerFireFly.FireFlyCore.Eventtransportinterface, "Event transport interface", $techn="Go", $descr="Binds subscriber delivery to a configured event transport.", $tags="", $link="https://github.com/hyperledger-firefly/firefly/tree/9d20f3081c9074d5b012427e5572ebc03da8d95d/internal/events")
+    Component(HyperledgerFireFly.FireFlyCore.Tokenconnectoradapter, "Token connector adapter", $techn="Go", $descr="Maps token operations and events to standard remote token APIs.", $tags="", $link="https://github.com/hyperledger-firefly/firefly/tree/9d20f3081c9074d5b012427e5572ebc03da8d95d/internal/tokens/fftokens")
+    Component(HyperledgerFireFly.FireFlyCore.WebSocketeventtransport, "WebSocket event transport", $techn="Go", $descr="Delivers subscription batches and consumes acknowledgements.", $tags="", $link="https://github.com/hyperledger-firefly/firefly/tree/9d20f3081c9074d5b012427e5572ebc03da8d95d/internal/events/websockets")
+    Component(HyperledgerFireFly.FireFlyCore.Webhookeventtransport, "Webhook event transport", $techn="Go", $descr="Posts event batches to configured callback endpoints.", $tags="", $link="https://github.com/hyperledger-firefly/firefly/tree/9d20f3081c9074d5b012427e5572ebc03da8d95d/internal/events/webhooks")
+    Component(HyperledgerFireFly.FireFlyCore.Systemeventtransport, "System event transport", $techn="Go", $descr="Delivers internal subscriptions to Core event consumers.", $tags="", $link="https://github.com/hyperledger-firefly/firefly/tree/9d20f3081c9074d5b012427e5572ebc03da8d95d/internal/events/system")
+  }
+
+  Container(HyperledgerFireFly.ERC1155connector, "ERC-1155 connector", $techn="TypeScript / NestJS", $descr="Maps multi-token operations and events to FireFly.", $tags="", $link="https://github.com/hyperledger-firefly/tokens-erc1155/tree/0355a0eb11fd12e311829a41bcbfea6148e52469/src")
+  Container(HyperledgerFireFly.ERC20ERC721connector, "ERC-20 / ERC-721 connector", $techn="TypeScript / NestJS", $descr="Maps fungible and non-fungible token APIs to EVM contracts.", $tags="", $link="https://github.com/hyperledger-firefly/tokens-erc20-erc721/tree/7993b308284a396950587b5206370f7f254073d9/src")
+}
+
+Rel(HyperledgerFireFly.FireFlyCore.Eventtransportinterface, Memberapplicationreference.Memberbusinessapplication, "Delivers events through configured transports", $techn="WebSocket / webhook / HTTPS", $tags="", $link="")
+Rel(HyperledgerFireFly.FireFlyCore.WebSocketeventtransport, Memberapplicationreference.Memberbusinessapplication, "Delivers subscribed event batches", $techn="WebSocket / JSON", $tags="", $link="")
+Rel(HyperledgerFireFly.FireFlyCore.Webhookeventtransport, Memberapplicationreference.Memberbusinessapplication, "Delivers subscribed event batches", $techn="HTTP POST / JSON", $tags="", $link="")
+Rel(HyperledgerFireFly.FireFlyCore.Tokenplugin, HyperledgerFireFly.FireFlyCore.Inboundeventaggregator, "Delivers token creation and transfer events", $techn="In-process calls / Go", $tags="", $link="")
+Rel(HyperledgerFireFly.FireFlyCore.Tokenplugin, HyperledgerFireFly.ERC20ERC721connector, "Submits ERC-20 and ERC-721 operations", $techn="HTTP REST / JSON", $tags="", $link="")
+Rel(HyperledgerFireFly.FireFlyCore.Tokenplugin, HyperledgerFireFly.ERC1155connector, "Submits ERC-1155 operations", $techn="HTTP REST / JSON", $tags="", $link="")
+Rel(HyperledgerFireFly.FireFlyCore.Tokenplugin, HyperledgerFireFly.FireFlyCore.Tokenconnectoradapter, "Dispatches standard token operations", $techn="In-process calls / Go", $tags="", $link="")
+Rel(HyperledgerFireFly.FireFlyCore.Eventtransportinterface, HyperledgerFireFly.FireFlyCore.WebSocketeventtransport, "Delivers WebSocket subscription batches", $techn="In-process calls / Go", $tags="", $link="")
+Rel(HyperledgerFireFly.FireFlyCore.Eventtransportinterface, HyperledgerFireFly.FireFlyCore.Webhookeventtransport, "Delivers webhook subscription batches", $techn="In-process calls / Go", $tags="", $link="")
+Rel(HyperledgerFireFly.FireFlyCore.Eventtransportinterface, HyperledgerFireFly.FireFlyCore.Systemeventtransport, "Delivers internal subscription batches", $techn="In-process calls / Go", $tags="", $link="")
+Rel(HyperledgerFireFly.FireFlyCore.Systemeventtransport, HyperledgerFireFly.FireFlyCore.Inboundeventaggregator, "Routes internal subscription notifications", $techn="In-process calls / Go", $tags="", $link="")
+Rel(HyperledgerFireFly.FireFlyCore.Tokenconnectoradapter, HyperledgerFireFly.ERC20ERC721connector, "Submits ERC-20 and ERC-721 operations", $techn="HTTP REST + WebSocket", $tags="", $link="")
+Rel(HyperledgerFireFly.FireFlyCore.Tokenconnectoradapter, HyperledgerFireFly.ERC1155connector, "Submits ERC-1155 operations", $techn="HTTP REST + WebSocket", $tags="", $link="")
+Rel(Memberapplicationreference.Memberbusinessapplication, HyperledgerFireFly.FireFlyCore.WebSocketeventtransport, "Acknowledges consumed event batches", $techn="WebSocket / JSON", $tags="", $link="")
+
+SHOW_LEGEND(true)
+hide stereotypes
+@enduml

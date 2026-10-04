@@ -47,13 +47,13 @@ Keep local C4 views inline or in optional `views/` fragments, standalone
 PlantUML/Mermaid diagrams in `uml/`, and explanations in `docs/`.
 The starter's `!docs .` attaches the initiative README to the viewer. Change it to
 `!docs docs` if the workspace should publish those design notes instead.
-`validate` and `build` discover new
+`validate` and `build-source` discover new
 `workspaces/**/workspace.dsl` entrypoints automatically; a Compose service is
 needed only for an interactive viewer. Run validation after replacing placeholders:
 
 ```text
 docker compose run --rm --pull never tools validate --workspace workspaces/<epic-id>/workspace.dsl
-docker compose run --rm --pull never tools export --workspace workspaces/<epic-id>/workspace.dsl
+docker compose run --rm --pull never tools build-source --workspace workspaces/<epic-id>/workspace.dsl
 ```
 
 The shared model supplies definitions and styles, not the root workspace's views.

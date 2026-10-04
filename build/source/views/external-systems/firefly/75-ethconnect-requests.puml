@@ -1,0 +1,56 @@
+@startuml
+title <size:24>Component - EthConnect (legacy option): requests</size>\n<size:24>Component - EthConnect (legacy option): requests</size>
+
+set separator none
+left to right direction
+
+<style>
+  root {
+    BackgroundColor: #ffffff
+    FontColor: #444444
+  }
+</style>
+
+!include <C4/C4>
+!include <C4/C4_Context>
+!include <C4/C4_Container>
+!include <C4/C4_Component>
+
+System(MongoDBreceiptservice, "MongoDB receipt service", $descr="Optional receipt persistence for legacy Ethereum and Fabric connectors.", $tags="", $link="https://github.com/hyperledger-firefly/ethconnect/tree/e8ae0eda16cc61b8ac256cdbf5f09edeb571b8c0/internal/receipts/mongoreceipts.go")
+
+System_Boundary("HyperledgerFireFly_boundary", "Hyperledger FireFly", $tags="") {
+  Container_Boundary("HyperledgerFireFly.EthConnectlegacyoption_boundary", "EthConnect (legacy option)", $tags="") {
+    Component(HyperledgerFireFly.EthConnectlegacyoption.RESTgatewayandauthorization, "REST gateway and authorization", $techn="Go", $descr="Accepts requests and dispatches direct or asynchronous processing.", $tags="", $link="https://github.com/hyperledger-firefly/ethconnect/tree/e8ae0eda16cc61b8ac256cdbf5f09edeb571b8c0/internal/rest")
+    Component(HyperledgerFireFly.EthConnectlegacyoption.Authorizationextension, "Authorization extension", $techn="Go", $descr="Applies configured request authorization hooks.", $tags="", $link="https://github.com/hyperledger-firefly/ethconnect/tree/e8ae0eda16cc61b8ac256cdbf5f09edeb571b8c0/internal/auth")
+    Component(HyperledgerFireFly.EthConnectlegacyoption.Contractgateway, "Contract gateway", $techn="Go", $descr="Builds ABI-backed REST APIs and routes contract operations.", $tags="", $link="https://github.com/hyperledger-firefly/ethconnect/tree/e8ae0eda16cc61b8ac256cdbf5f09edeb571b8c0/internal/contractgateway")
+    Component(HyperledgerFireFly.EthConnectlegacyoption.ContractregistryandABImetadata, "Contract registry and ABI metadata", $techn="Go", $descr="Stores deployed contract interfaces and resolves contract addresses.", $tags="", $link="https://github.com/hyperledger-firefly/ethconnect/tree/e8ae0eda16cc61b8ac256cdbf5f09edeb571b8c0/internal/contractregistry")
+    Component(HyperledgerFireFly.EthConnectlegacyoption.OpenAPIgeneration, "OpenAPI generation", $techn="Go", $descr="Generates request schemas from contract ABIs.", $tags="", $link="https://github.com/hyperledger-firefly/ethconnect/tree/e8ae0eda16cc61b8ac256cdbf5f09edeb571b8c0/internal/openapi")
+    Component(HyperledgerFireFly.EthConnectlegacyoption.Transactionprocessor, "Transaction processor", $techn="Go", $descr="Allocates nonces, submits transactions and waits for receipts.", $tags="", $link="https://github.com/hyperledger-firefly/ethconnect/tree/e8ae0eda16cc61b8ac256cdbf5f09edeb571b8c0/internal/tx")
+    Component(HyperledgerFireFly.EthConnectlegacyoption.EthereumRPCandABIbinding, "Ethereum RPC and ABI binding", $techn="Go", $descr="Encodes transactions, calls RPC and supports external signing.", $tags="", $link="https://github.com/hyperledger-firefly/ethconnect/tree/e8ae0eda16cc61b8ac256cdbf5f09edeb571b8c0/internal/eth")
+    Component(HyperledgerFireFly.EthConnectlegacyoption.Receiptstore, "Receipt store", $techn="Go", $descr="Persists transaction outcomes in a configured receipt backend.", $tags="", $link="https://github.com/hyperledger-firefly/ethconnect/tree/e8ae0eda16cc61b8ac256cdbf5f09edeb571b8c0/internal/receipts")
+    Component(HyperledgerFireFly.EthConnectlegacyoption.Embeddedkeyvaluestorage, "Embedded key-value storage", $techn="Go", $descr="Stores event subscriptions and registry data in LevelDB.", $tags="", $link="https://github.com/hyperledger-firefly/ethconnect/tree/e8ae0eda16cc61b8ac256cdbf5f09edeb571b8c0/internal/kvstore")
+  }
+
+  Container(HyperledgerFireFly.FireFlyCore, "FireFly Core", $techn="Go", $descr="Exposes member APIs, serves Explorer assets and orchestrates multiparty operations.", $tags="", $link="https://github.com/hyperledger-firefly/firefly/tree/9d20f3081c9074d5b012427e5572ebc03da8d95d/internal/orchestrator")
+  ContainerDb(HyperledgerFireFly.EthConnectlocalstate, "EthConnect local state", $techn="LevelDB / filesystem", $descr="Optional LevelDB receipts, subscriptions and contract metadata.", $tags="", $link="https://github.com/hyperledger-firefly/ethconnect/tree/e8ae0eda16cc61b8ac256cdbf5f09edeb571b8c0/internal/kvstore")
+  Container(HyperledgerFireFly.FireFlySigner, "FireFly Signer", $techn="Go", $descr="Signs member transactions and proxies Ethereum RPC calls.", $tags="", $link="https://github.com/hyperledger-firefly/signer/tree/cfafd71fb4d2c3061a946f6466269877c3f04d9d/internal/rpcserver")
+}
+
+Rel(HyperledgerFireFly.EthConnectlegacyoption.Receiptstore, MongoDBreceiptservice, "Stores receipts when MongoDB is selected", $techn="MongoDB wire protocol", $tags="", $link="")
+Rel(HyperledgerFireFly.FireFlyCore, HyperledgerFireFly.EthConnectlegacyoption.RESTgatewayandauthorization, "Submits configured ledger requests", $techn="HTTP REST / JSON", $tags="", $link="")
+Rel(HyperledgerFireFly.EthConnectlegacyoption.RESTgatewayandauthorization, HyperledgerFireFly.EthConnectlegacyoption.Authorizationextension, "Checks configured authorization hooks", $techn="In-process calls / Go", $tags="", $link="")
+Rel(HyperledgerFireFly.EthConnectlegacyoption.RESTgatewayandauthorization, HyperledgerFireFly.EthConnectlegacyoption.Contractgateway, "Routes ABI-backed contract requests", $techn="In-process calls / Go", $tags="", $link="")
+Rel(HyperledgerFireFly.EthConnectlegacyoption.Contractgateway, HyperledgerFireFly.EthConnectlegacyoption.ContractregistryandABImetadata, "Resolves contract addresses and interfaces", $techn="In-process calls / Go", $tags="", $link="")
+Rel(HyperledgerFireFly.EthConnectlegacyoption.Contractgateway, HyperledgerFireFly.EthConnectlegacyoption.OpenAPIgeneration, "Generates contract request schemas", $techn="In-process calls / Go", $tags="", $link="")
+Rel(HyperledgerFireFly.EthConnectlegacyoption.Contractgateway, HyperledgerFireFly.EthConnectlegacyoption.Transactionprocessor, "Dispatches transaction requests", $techn="In-process calls / Go", $tags="", $link="")
+Rel(HyperledgerFireFly.EthConnectlegacyoption.RESTgatewayandauthorization, HyperledgerFireFly.EthConnectlegacyoption.Transactionprocessor, "Dispatches direct transaction requests", $techn="In-process calls / Go", $tags="", $link="")
+Rel(HyperledgerFireFly.EthConnectlegacyoption.Transactionprocessor, HyperledgerFireFly.EthConnectlegacyoption.EthereumRPCandABIbinding, "Encodes and submits Ethereum transactions", $techn="In-process calls / Go", $tags="", $link="")
+Rel(HyperledgerFireFly.EthConnectlegacyoption.Transactionprocessor, HyperledgerFireFly.EthConnectlegacyoption.Receiptstore, "Persists completed transaction outcomes", $techn="In-process calls / Go", $tags="", $link="")
+Rel(HyperledgerFireFly.EthConnectlegacyoption.ContractregistryandABImetadata, HyperledgerFireFly.EthConnectlegacyoption.Embeddedkeyvaluestorage, "Persists contract metadata", $techn="In-process calls / Go", $tags="", $link="")
+Rel(HyperledgerFireFly.EthConnectlegacyoption.EthereumRPCandABIbinding, HyperledgerFireFly.FireFlySigner, "Requests Ethereum transaction signing and RPC forwarding", $techn="HTTP JSON-RPC", $tags="", $link="")
+Rel(HyperledgerFireFly.EthConnectlegacyoption.Embeddedkeyvaluestorage, HyperledgerFireFly.EthConnectlocalstate, "Reads and writes event and registry records", $techn="LevelDB API / filesystem", $tags="", $link="")
+Rel(HyperledgerFireFly.EthConnectlegacyoption.Receiptstore, HyperledgerFireFly.EthConnectlocalstate, "Persists receipts when LevelDB is selected", $techn="LevelDB API / filesystem", $tags="", $link="")
+
+SHOW_LEGEND(true)
+hide stereotypes
+@enduml

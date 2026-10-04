@@ -1,0 +1,62 @@
+@startuml
+title <size:24>Component - Unleash server: administration</size>\n<size:24>Component - Unleash server: administration</size>
+
+set separator none
+left to right direction
+
+<style>
+  root {
+    BackgroundColor: #ffffff
+    FontColor: #444444
+  }
+</style>
+
+!include <C4/C4>
+!include <C4/C4_Context>
+!include <C4/C4_Container>
+!include <C4/C4_Component>
+
+System_Boundary("Unleash_boundary", "Unleash", $tags="") {
+  Container_Boundary("Unleash.Unleashserver_boundary", "Unleash server", $tags="") {
+    Component(Unleash.Unleashserver.Staticassethosting, "Static asset hosting", $techn="TypeScript / Node.js", $descr="Serves the Admin UI entry document and bundled browser assets.", $tags="", $link="https://github.com/Unleash/unleash/blob/66d4a45c1d24c4bc8a08d8c75d205bd61dc3aed0/src/lib/app.ts")
+    Component(Unleash.Unleashserver.AdminAPI, "Admin API", $techn="TypeScript / Node.js", $descr="Validates management and reporting requests and routes them to domain services.", $tags="", $link="https://github.com/Unleash/unleash/tree/66d4a45c1d24c4bc8a08d8c75d205bd61dc3aed0/src/lib/routes/admin-api")
+    Component(Unleash.Unleashserver.Userssessionsandaccess, "Users, sessions and access", $techn="TypeScript / Node.js", $descr="Authenticates local users and applies OSS permissions; manages sessions and user records.", $tags="", $link="https://github.com/Unleash/unleash/blob/66d4a45c1d24c4bc8a08d8c75d205bd61dc3aed0/src/lib/middleware/oss-authentication.ts")
+    Component(Unleash.Unleashserver.APItokenmanagement, "API-token management", $techn="TypeScript / Node.js", $descr="Creates and validates API tokens and caches their environment and project scopes.", $tags="", $link="https://github.com/Unleash/unleash/blob/66d4a45c1d24c4bc8a08d8c75d205bd61dc3aed0/src/lib/services/api-token-service.ts")
+    Component(Unleash.Unleashserver.Flagsprojectsandenvironments, "Flags, projects and environments", $techn="TypeScript / Node.js", $descr="Manages flag state, variants, metadata and project/environment configuration.", $tags="", $link="https://github.com/Unleash/unleash/tree/66d4a45c1d24c4bc8a08d8c75d205bd61dc3aed0/src/lib/features/feature-toggle")
+    Component(Unleash.Unleashserver.Targetingconfiguration, "Targeting configuration", $techn="TypeScript / Node.js", $descr="Manages strategy definitions, segments, context fields and constraints used by flag strategies.", $tags="", $link="https://github.com/Unleash/unleash/blob/66d4a45c1d24c4bc8a08d8c75d205bd61dc3aed0/src/lib/services/strategy-service.ts")
+    Component(Unleash.Unleashserver.Auditeventsandpublication, "Audit events and publication", $techn="TypeScript / Node.js", $descr="Stores audit history and publishes recorded events to in-process subscribers.", $tags="", $link="https://github.com/Unleash/unleash/tree/66d4a45c1d24c4bc8a08d8c75d205bd61dc3aed0/src/lib/features/events")
+    Component(Unleash.Unleashserver.Importandexport, "Import and export", $techn="TypeScript / Node.js", $descr="Transfers flag configuration and validates references to existing segments and custom strategies.", $tags="", $link="https://github.com/Unleash/unleash/tree/66d4a45c1d24c4bc8a08d8c75d205bd61dc3aed0/src/lib/features/export-import-toggles")
+    Component(Unleash.Unleashserver.Addonsandnotifications, "Add-ons and notifications", $techn="TypeScript / Node.js", $descr="Filters audit events for configured handlers and prepares notifications; recipients are outside this model.", $tags="", $link="https://github.com/Unleash/unleash/blob/66d4a45c1d24c4bc8a08d8c75d205bd61dc3aed0/src/lib/services/addon-service.ts")
+    Component(Unleash.Unleashserver.Persistenceandmigrations, "Persistence and migrations", $techn="TypeScript / Node.js", $descr="Groups Knex stores, read models, sessions and schema migration access to PostgreSQL.", $tags="", $link="https://github.com/Unleash/unleash/tree/66d4a45c1d24c4bc8a08d8c75d205bd61dc3aed0/src/lib/db")
+  }
+
+  ContainerDb(Unleash.UnleashPostgreSQL, "Unleash PostgreSQL", $techn="PostgreSQL / Knex", $descr="Stores configuration, user/session/token records, audit history, registrations and aggregated usage.", $tags="", $link="https://github.com/Unleash/unleash/tree/66d4a45c1d24c4bc8a08d8c75d205bd61dc3aed0/src/lib/db")
+  Container(Unleash.AdminUI, "Admin UI", $techn="React / TypeScript / browser", $descr="Runs management screens in the browser; the server distributes its static assets.", $tags="", $link="https://github.com/Unleash/unleash/tree/66d4a45c1d24c4bc8a08d8c75d205bd61dc3aed0/frontend/src")
+}
+
+Rel(Unleash.Unleashserver.AdminAPI, Unleash.Unleashserver.Userssessionsandaccess, "Checks user identity and resource permissions", $techn="In-process", $tags="", $link="")
+Rel(Unleash.Unleashserver.AdminAPI, Unleash.Unleashserver.APItokenmanagement, "Manages tokens and checks API/PAT credentials", $techn="In-process", $tags="", $link="")
+Rel(Unleash.Unleashserver.AdminAPI, Unleash.Unleashserver.Flagsprojectsandenvironments, "Queries and changes flags, projects and environments", $techn="In-process", $tags="", $link="")
+Rel(Unleash.Unleashserver.AdminAPI, Unleash.Unleashserver.Targetingconfiguration, "Queries and changes targeting definitions", $techn="In-process", $tags="", $link="")
+Rel(Unleash.Unleashserver.AdminAPI, Unleash.Unleashserver.Importandexport, "Validates import and export requests", $techn="In-process", $tags="", $link="")
+Rel(Unleash.Unleashserver.Userssessionsandaccess, Unleash.Unleashserver.Persistenceandmigrations, "Reads and writes users, permissions and sessions", $techn="In-process", $tags="", $link="")
+Rel(Unleash.Unleashserver.APItokenmanagement, Unleash.Unleashserver.Persistenceandmigrations, "Reads and writes token records and scopes", $techn="In-process", $tags="", $link="")
+Rel(Unleash.Unleashserver.Flagsprojectsandenvironments, Unleash.Unleashserver.Persistenceandmigrations, "Reads and writes feature configuration", $techn="In-process", $tags="", $link="")
+Rel(Unleash.Unleashserver.Targetingconfiguration, Unleash.Unleashserver.Persistenceandmigrations, "Reads and writes targeting resources", $techn="In-process", $tags="", $link="")
+Rel(Unleash.Unleashserver.Flagsprojectsandenvironments, Unleash.Unleashserver.Targetingconfiguration, "Validates strategy and segment references", $techn="In-process", $tags="", $link="")
+Rel(Unleash.Unleashserver.Flagsprojectsandenvironments, Unleash.Unleashserver.Auditeventsandpublication, "Records configuration change events", $techn="In-process", $tags="", $link="")
+Rel(Unleash.Unleashserver.Targetingconfiguration, Unleash.Unleashserver.Auditeventsandpublication, "Records targeting change events", $techn="In-process", $tags="", $link="")
+Rel(Unleash.Unleashserver.Userssessionsandaccess, Unleash.Unleashserver.Auditeventsandpublication, "Records account and authentication events", $techn="In-process", $tags="", $link="")
+Rel(Unleash.Unleashserver.APItokenmanagement, Unleash.Unleashserver.Auditeventsandpublication, "Records token lifecycle events", $techn="In-process", $tags="", $link="")
+Rel(Unleash.Unleashserver.Importandexport, Unleash.Unleashserver.Persistenceandmigrations, "Reads exports and persists validated imports", $techn="In-process", $tags="", $link="")
+Rel(Unleash.Unleashserver.Importandexport, Unleash.Unleashserver.Auditeventsandpublication, "Records imported configuration events", $techn="In-process", $tags="", $link="")
+Rel(Unleash.Unleashserver.Persistenceandmigrations, Unleash.UnleashPostgreSQL, "Executes queries, transactions and migrations", $techn="PostgreSQL wire protocol", $tags="", $link="")
+Rel(Unleash.Unleashserver.AdminAPI, Unleash.Unleashserver.Addonsandnotifications, "Manages add-on configuration and notification actions", $techn="In-process", $tags="", $link="")
+Rel(Unleash.Unleashserver.Addonsandnotifications, Unleash.Unleashserver.Auditeventsandpublication, "Records add-on configuration changes", $techn="In-process", $tags="", $link="")
+Rel(Unleash.AdminUI, Unleash.Unleashserver.Staticassethosting, "Requests entry HTML and browser assets", $techn="HTTP(S) / HTML, JS, CSS", $tags="", $link="")
+Rel(Unleash.AdminUI, Unleash.Unleashserver.Userssessionsandaccess, "Submits credentials and session requests", $techn="HTTP(S) / JSON", $tags="", $link="")
+Rel(Unleash.AdminUI, Unleash.Unleashserver.AdminAPI, "Submits resource commands and report queries", $techn="HTTP(S) / JSON", $tags="", $link="")
+
+SHOW_LEGEND(true)
+hide stereotypes
+@enduml

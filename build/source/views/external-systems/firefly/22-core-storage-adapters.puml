@@ -1,0 +1,65 @@
+@startuml
+title <size:24>Component - Core storage and exchange adapters</size>\n<size:24>Component - Core storage and exchange adapters</size>
+
+set separator none
+left to right direction
+
+<style>
+  root {
+    BackgroundColor: #ffffff
+    FontColor: #444444
+  }
+</style>
+
+!include <C4/C4>
+!include <C4/C4_Context>
+!include <C4/C4_Container>
+!include <C4/C4_Component>
+
+System_Boundary("HyperledgerFireFly_boundary", "Hyperledger FireFly", $tags="") {
+  Container_Boundary("HyperledgerFireFly.FireFlyCore_boundary", "FireFly Core", $tags="") {
+    Component(HyperledgerFireFly.FireFlyCore.Datamanager, "Data manager", $techn="Go", $descr="Validates, hashes and retrieves structured data and blob references.", $tags="", $link="https://github.com/hyperledger-firefly/firefly/tree/9d20f3081c9074d5b012427e5572ebc03da8d95d/internal/data")
+    Component(HyperledgerFireFly.FireFlyCore.Batchprocessor, "Batch processor", $techn="Go", $descr="Assembles ordered message batches and aggregate hashes.", $tags="", $link="https://github.com/hyperledger-firefly/firefly/tree/9d20f3081c9074d5b012427e5572ebc03da8d95d/internal/batch")
+    Component(HyperledgerFireFly.FireFlyCore.Broadcastmanager, "Broadcast manager", $techn="Go", $descr="Publishes shared payloads and orchestrates ledger pinning.", $tags="", $link="https://github.com/hyperledger-firefly/firefly/tree/9d20f3081c9074d5b012427e5572ebc03da8d95d/internal/broadcast")
+    Component(HyperledgerFireFly.FireFlyCore.Privatemessagingandgroups, "Private messaging and groups", $techn="Go", $descr="Routes messages to recipient groups and coordinates delivery.", $tags="", $link="https://github.com/hyperledger-firefly/firefly/tree/9d20f3081c9074d5b012427e5572ebc03da8d95d/internal/privatemessaging")
+    Component(HyperledgerFireFly.FireFlyCore.Databaseplugin, "Database plugin", $techn="Go", $descr="Defines transactional persistence and dispatches to the selected SQL adapter.", $tags="", $link="https://github.com/hyperledger-firefly/firefly/tree/9d20f3081c9074d5b012427e5572ebc03da8d95d/internal/database")
+    Component(HyperledgerFireFly.FireFlyCore.Dataexchangeplugin, "Data exchange plugin", $techn="Go", $descr="Binds message, blob and peer operations to the HTTPS connector.", $tags="", $link="https://github.com/hyperledger-firefly/firefly/tree/9d20f3081c9074d5b012427e5572ebc03da8d95d/internal/dataexchange")
+    Component(HyperledgerFireFly.FireFlyCore.Sharedstorageplugin, "Shared storage plugin", $techn="Go", $descr="Publishes and retrieves content through IPFS APIs.", $tags="", $link="https://github.com/hyperledger-firefly/firefly/tree/9d20f3081c9074d5b012427e5572ebc03da8d95d/internal/sharedstorage")
+    Component(HyperledgerFireFly.FireFlyCore.PostgreSQLadapter, "PostgreSQL adapter", $techn="Go", $descr="Implements Core persistence through the shared SQL layer.", $tags="", $link="https://github.com/hyperledger-firefly/firefly/tree/9d20f3081c9074d5b012427e5572ebc03da8d95d/internal/database/postgres")
+    Component(HyperledgerFireFly.FireFlyCore.SQLiteadapter, "SQLite adapter", $techn="Go", $descr="Implements Core persistence in an embedded SQLite database.", $tags="", $link="https://github.com/hyperledger-firefly/firefly/tree/9d20f3081c9074d5b012427e5572ebc03da8d95d/internal/database/sqlite3")
+    Component(HyperledgerFireFly.FireFlyCore.SQLpersistenceimplementation, "SQL persistence implementation", $techn="Go", $descr="Builds resource queries and transactions for SQL backends.", $tags="", $link="https://github.com/hyperledger-firefly/firefly/tree/9d20f3081c9074d5b012427e5572ebc03da8d95d/internal/database/sqlcommon")
+    Component(HyperledgerFireFly.FireFlyCore.HTTPSDataExchangeadapter, "HTTPS Data Exchange adapter", $techn="Go", $descr="Maps private envelopes, blobs, peers and acknowledgements to FFDX.", $tags="", $link="https://github.com/hyperledger-firefly/firefly/tree/9d20f3081c9074d5b012427e5572ebc03da8d95d/internal/dataexchange/ffdx")
+    Component(HyperledgerFireFly.FireFlyCore.IPFSsharedstorageadapter, "IPFS shared-storage adapter", $techn="Go", $descr="Adds and retrieves broadcast content by CID.", $tags="", $link="https://github.com/hyperledger-firefly/firefly/tree/9d20f3081c9074d5b012427e5572ebc03da8d95d/internal/sharedstorage/ipfs")
+  }
+
+  Container(HyperledgerFireFly.HTTPSDataExchange, "HTTPS Data Exchange", $techn="TypeScript / Node.js", $descr="Exchanges private envelopes and blobs with authenticated members.", $tags="", $link="https://github.com/hyperledger-firefly/dataexchange-https/tree/b6a212d531da1ff1c24e762e7156e2593c73d052/src")
+  Container(HyperledgerFireFly.IPFSKubo, "IPFS Kubo", $techn="Go / Kubo", $descr="Publishes and retrieves consortium-shared content.", $tags="", $link="https://docs.ipfs.tech/concepts/how-ipfs-works/")
+  ContainerDb(HyperledgerFireFly.CorePostgreSQLdatabase, "Core PostgreSQL database", $techn="PostgreSQL", $descr="Stores Core resources and offsets in its own logical database; server placement and replication are outside this model.", $tags="", $link="https://github.com/hyperledger-firefly/firefly/tree/9d20f3081c9074d5b012427e5572ebc03da8d95d/internal/database/postgres")
+  ContainerDb(HyperledgerFireFly.CoreSQLitefile, "Core SQLite file", $techn="SQLite / filesystem", $descr="Optional embedded Core database; no independent database server.", $tags="", $link="https://github.com/hyperledger-firefly/firefly/tree/9d20f3081c9074d5b012427e5572ebc03da8d95d/internal/database/sqlite3")
+}
+
+Rel(HyperledgerFireFly.FireFlyCore.Datamanager, HyperledgerFireFly.FireFlyCore.Databaseplugin, "Persists payload metadata and hashes", $techn="In-process calls / Go", $tags="", $link="")
+Rel(HyperledgerFireFly.FireFlyCore.Batchprocessor, HyperledgerFireFly.FireFlyCore.Datamanager, "Loads payloads for batch assembly", $techn="In-process calls / Go", $tags="", $link="")
+Rel(HyperledgerFireFly.FireFlyCore.Batchprocessor, HyperledgerFireFly.FireFlyCore.Broadcastmanager, "Dispatches broadcast batches", $techn="In-process calls / Go", $tags="", $link="")
+Rel(HyperledgerFireFly.FireFlyCore.Batchprocessor, HyperledgerFireFly.FireFlyCore.Privatemessagingandgroups, "Dispatches recipient-scoped batches", $techn="In-process calls / Go", $tags="", $link="")
+Rel(HyperledgerFireFly.FireFlyCore.Broadcastmanager, HyperledgerFireFly.FireFlyCore.Sharedstorageplugin, "Uploads broadcast payloads", $techn="In-process calls / Go", $tags="", $link="")
+Rel(HyperledgerFireFly.FireFlyCore.Privatemessagingandgroups, HyperledgerFireFly.FireFlyCore.Dataexchangeplugin, "Sends private payloads to recipient nodes", $techn="In-process calls / Go", $tags="", $link="")
+Rel(HyperledgerFireFly.FireFlyCore.Databaseplugin, HyperledgerFireFly.CorePostgreSQLdatabase, "Persists Core resources and offsets", $techn="PostgreSQL wire / TLS", $tags="", $link="")
+Rel(HyperledgerFireFly.FireFlyCore.Dataexchangeplugin, HyperledgerFireFly.HTTPSDataExchange, "Exchanges private data and notifications", $techn="HTTP + WebSocket", $tags="", $link="")
+Rel(HyperledgerFireFly.FireFlyCore.Sharedstorageplugin, HyperledgerFireFly.IPFSKubo, "Publishes and retrieves CIDs", $techn="IPFS HTTP RPC", $tags="", $link="")
+Rel(HyperledgerFireFly.FireFlyCore.Databaseplugin, HyperledgerFireFly.FireFlyCore.PostgreSQLadapter, "Dispatches PostgreSQL persistence when configured", $techn="In-process calls / Go", $tags="", $link="")
+Rel(HyperledgerFireFly.FireFlyCore.Databaseplugin, HyperledgerFireFly.FireFlyCore.SQLiteadapter, "Dispatches embedded SQLite persistence when configured", $techn="In-process calls / Go", $tags="", $link="")
+Rel(HyperledgerFireFly.FireFlyCore.PostgreSQLadapter, HyperledgerFireFly.FireFlyCore.SQLpersistenceimplementation, "Executes PostgreSQL resource queries and transactions", $techn="In-process calls / Go", $tags="", $link="")
+Rel(HyperledgerFireFly.FireFlyCore.SQLiteadapter, HyperledgerFireFly.FireFlyCore.SQLpersistenceimplementation, "Executes SQLite resource queries and transactions", $techn="In-process calls / Go", $tags="", $link="")
+Rel(HyperledgerFireFly.FireFlyCore.Dataexchangeplugin, HyperledgerFireFly.FireFlyCore.HTTPSDataExchangeadapter, "Dispatches private data-transfer operations", $techn="In-process calls / Go", $tags="", $link="")
+Rel(HyperledgerFireFly.FireFlyCore.Sharedstorageplugin, HyperledgerFireFly.FireFlyCore.IPFSsharedstorageadapter, "Dispatches shared-content operations", $techn="In-process calls / Go", $tags="", $link="")
+Rel(HyperledgerFireFly.FireFlyCore.PostgreSQLadapter, HyperledgerFireFly.CorePostgreSQLdatabase, "Reads and writes the Core SQL database", $techn="PostgreSQL wire protocol", $tags="", $link="")
+Rel(HyperledgerFireFly.FireFlyCore.HTTPSDataExchangeadapter, HyperledgerFireFly.HTTPSDataExchange, "Transfers messages, blobs and peer configuration", $techn="HTTP REST + WebSocket", $tags="", $link="")
+Rel(HyperledgerFireFly.FireFlyCore.IPFSsharedstorageadapter, HyperledgerFireFly.IPFSKubo, "Publishes and retrieves shared CIDs", $techn="IPFS HTTP RPC", $tags="", $link="")
+Rel(HyperledgerFireFly.FireFlyCore.SQLiteadapter, HyperledgerFireFly.CoreSQLitefile, "Reads and writes embedded database pages", $techn="SQLite API / filesystem", $tags="", $link="")
+Rel(HyperledgerFireFly.HTTPSDataExchange, HyperledgerFireFly.HTTPSDataExchange, "Transfers private envelopes and blobs to peers; receives ACKs", $techn="HTTPS / mutual TLS", $tags="", $link="")
+Rel(HyperledgerFireFly.IPFSKubo, HyperledgerFireFly.IPFSKubo, "Retrieves shared content blocks from peers by CID", $techn="IPFS / libp2p", $tags="", $link="")
+
+SHOW_LEGEND(true)
+hide stereotypes
+@enduml

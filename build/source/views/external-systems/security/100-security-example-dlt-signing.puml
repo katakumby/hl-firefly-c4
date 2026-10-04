@@ -1,0 +1,52 @@
+@startuml
+title <size:24>Container - Example: Proposed HSM-backed Ethereum transaction signing</size>\n<size:24>Container - Example: Proposed HSM-backed Ethereum transaction signing</size>
+
+set separator none
+left to right direction
+
+<style>
+  root {
+    BackgroundColor: #ffffff
+    FontColor: #444444
+  }
+</style>
+
+!include <C4/C4>
+!include <C4/C4_Context>
+!include <C4/C4_Container>
+
+System_Boundary("MicrosoftEntraID_boundary", "Microsoft Entra ID", $tags="") {
+  Container(MicrosoftEntraID.Authenticationandtokenservice, "Authentication and token service", $techn="Microsoft Entra managed service (logical)", $descr="Logical identity-platform service for user and application authentication and token issuance.", $tags="", $link="https://learn.microsoft.com/en-us/entra/identity-platform/v2-protocols-oidc")
+}
+
+System_Boundary("HyperledgerFireFly_boundary", "Hyperledger FireFly", $tags="") {
+  Container(HyperledgerFireFly.EVMConnectFFTM, "EVMConnect + FFTM", $techn="Go", $descr="Submits Ethereum transactions and streams confirmed events; one nonce writer.", $tags="", $link="https://github.com/hyperledger-firefly/evmconnect/tree/6e12bb4c050677780cf5dd975a926923868b0cb8/cmd/evmconnect.go")
+}
+
+System_Boundary("Memberapplicationreference_boundary", "Member application reference", $tags="") {
+  Container(Memberapplicationreference.ProposedHSMsigningadapter, "Proposed HSM signing adapter", $techn="Reference adapter / Ethereum JSON-RPC + Azure REST", $descr="Optional custom Ethereum RPC signing proxy; requires implementation and compatibility testing. Not built into FireFly Signer.", $tags="", $link="https://learn.microsoft.com/en-us/azure/key-vault/managed-hsm/about-keys-details")
+}
+
+System_Boundary("PrivateBesunetwork_boundary", "Private Besu network", $tags="") {
+  Container(PrivateBesunetwork.Besunode, "Besu node", $techn="Java / Besu / RocksDB", $descr="Runs the selected validator or non-validator RPC/discovery role; each instance owns its key and ledger.", $tags="", $link="https://github.com/besu-eth/besu/tree/7e05c2342404d27bd06a992e336c5e0c86a5d8d1")
+}
+
+System_Boundary("AzureManagedHSM_boundary", "Azure Managed HSM", $tags="") {
+  Container(AzureManagedHSM.ManagedHSMdataplaneservice, "Managed HSM data-plane service", $techn="Azure Managed HSM / HTTPS API", $descr="Logical managed-service boundary for key operations and local role assignments; physical HSM topology is excluded.", $tags="", $link="https://learn.microsoft.com/en-us/azure/key-vault/managed-hsm/access-control")
+}
+
+Rel(MicrosoftEntraID.Authenticationandtokenservice, Memberapplicationreference.ProposedHSMsigningadapter, "Returns Managed HSM audience access token", $techn="HTTPS / OAuth 2.0 token response", $tags="", $link="")
+Rel(HyperledgerFireFly.EVMConnectFFTM, Memberapplicationreference.ProposedHSMsigningadapter, "Submits unsigned transaction to the proposed alternative signing proxy", $techn="Ethereum JSON-RPC / HTTPS (reference)", $tags="", $link="")
+Rel(AzureManagedHSM.ManagedHSMdataplaneservice, MicrosoftEntraID.Authenticationandtokenservice, "Retrieves issuer metadata and public signing keys for cached token verification", $techn="HTTPS / OpenID metadata and JWKS", $tags="", $link="")
+Rel(AzureManagedHSM.ManagedHSMdataplaneservice, Memberapplicationreference.ProposedHSMsigningadapter, "Returns signature bytes and signing key identifier; never private key material", $techn="HTTPS / Managed HSM Sign API response", $tags="", $link="")
+Rel(AzureManagedHSM.ManagedHSMdataplaneservice, Memberapplicationreference.ProposedHSMsigningadapter, "Returns public key parameters for sender and signature verification", $techn="HTTPS / Managed HSM Get Key API response", $tags="", $link="")
+Rel(Memberapplicationreference.ProposedHSMsigningadapter, HyperledgerFireFly.EVMConnectFFTM, "Returns transaction hash or signing/submission error", $techn="Ethereum JSON-RPC response", $tags="", $link="")
+Rel(Memberapplicationreference.ProposedHSMsigningadapter, MicrosoftEntraID.Authenticationandtokenservice, "Authenticates application identity and requests Managed HSM access token", $techn="HTTPS / OAuth 2.0 client credentials", $tags="", $link="")
+Rel(Memberapplicationreference.ProposedHSMsigningadapter, AzureManagedHSM.ManagedHSMdataplaneservice, "Submits Ethereum digest for secp256k1 signing; compatibility must be verified", $techn="HTTPS / Managed HSM Sign API (proposed)", $tags="", $link="")
+Rel(Memberapplicationreference.ProposedHSMsigningadapter, AzureManagedHSM.ManagedHSMdataplaneservice, "Requests public key metadata for the selected key version", $techn="HTTPS / Managed HSM Get Key API", $tags="", $link="")
+Rel(Memberapplicationreference.ProposedHSMsigningadapter, PrivateBesunetwork.Besunode, "Submits encoded signed transaction for validation and propagation", $techn="Ethereum JSON-RPC / eth_sendRawTransaction", $tags="", $link="")
+Rel(PrivateBesunetwork.Besunode, Memberapplicationreference.ProposedHSMsigningadapter, "Returns transaction hash or JSON-RPC rejection", $techn="Ethereum JSON-RPC response", $tags="", $link="")
+
+SHOW_LEGEND(true)
+hide stereotypes
+@enduml

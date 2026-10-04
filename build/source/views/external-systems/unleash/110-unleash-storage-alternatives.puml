@@ -1,0 +1,32 @@
+@startuml
+title <size:24>Container - Unleash Edge: storage alternatives</size>\n<size:24>Container - Unleash Edge: storage alternatives</size>
+
+set separator none
+left to right direction
+
+<style>
+  root {
+    BackgroundColor: #ffffff
+    FontColor: #444444
+  }
+</style>
+
+!include <C4/C4>
+!include <C4/C4_Context>
+!include <C4/C4_Container>
+
+System_Boundary("Unleash_boundary", "Unleash", $tags="") {
+  Container(Unleash.UnleashEdgeOSSoptional, "Unleash Edge (OSS, optional)", $techn="Rust / Axum / Tokio", $descr="Caches configuration and evaluates frontend requests; online polling or offline file mode.", $tags="", $link="https://github.com/Unleash/unleash-edge/blob/c947878de70214235c79eeb5ebe5f35b77ecc075/crates/oss/unleash-edge/src/lib.rs")
+  ContainerDb(Unleash.Edgefilesoptional, "Edge files (optional)", $techn="Filesystem / JSON", $descr="Stores local feature/token snapshots or offline bootstrap JSON; these are distinct file roles.", $tags="", $link="https://github.com/Unleash/unleash-edge/blob/c947878de70214235c79eeb5ebe5f35b77ecc075/crates/oss/unleash-edge-persistence/src/file.rs")
+  ContainerDb(Unleash.EdgeRedisstorageoptional, "Edge Redis storage (optional)", $techn="Redis / serialized JSON", $descr="Stores feature/token recovery snapshots; an alternative to file or S3 persistence.", $tags="", $link="https://github.com/Unleash/unleash-edge/blob/c947878de70214235c79eeb5ebe5f35b77ecc075/crates/oss/unleash-edge-persistence/src/redis.rs")
+  ContainerDb(Unleash.EdgeS3storageoptional, "Edge S3 storage (optional)", $techn="Amazon S3 API / JSON objects", $descr="Stores feature/token recovery snapshots; an alternative to file or Redis persistence.", $tags="", $link="https://github.com/Unleash/unleash-edge/blob/c947878de70214235c79eeb5ebe5f35b77ecc075/crates/oss/unleash-edge-persistence/src/s3.rs")
+}
+
+Rel(Unleash.UnleashEdgeOSSoptional, Unleash.Edgefilesoptional, "Saves and restores local recovery snapshots", $techn="Filesystem / JSON", $tags="", $link="")
+Rel(Unleash.UnleashEdgeOSSoptional, Unleash.EdgeRedisstorageoptional, "Saves and restores Redis recovery snapshots", $techn="Redis protocol / JSON", $tags="", $link="")
+Rel(Unleash.UnleashEdgeOSSoptional, Unleash.EdgeS3storageoptional, "Saves and restores S3 recovery snapshots", $techn="HTTPS / S3 API", $tags="", $link="")
+Rel(Unleash.UnleashEdgeOSSoptional, Unleash.Edgefilesoptional, "Loads and reloads offline feature JSON", $techn="Filesystem / JSON", $tags="", $link="")
+
+SHOW_LEGEND(true)
+hide stereotypes
+@enduml

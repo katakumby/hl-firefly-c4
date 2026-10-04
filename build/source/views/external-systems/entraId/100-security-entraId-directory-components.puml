@@ -1,0 +1,36 @@
+@startuml
+title <size:24>Component - Directory and administration API: logical responsibilities</size>\n<size:24>Component - Directory and administration API: logical responsibilities</size>
+
+set separator none
+left to right direction
+
+<style>
+  root {
+    BackgroundColor: #ffffff
+    FontColor: #444444
+  }
+</style>
+
+!include <C4/C4>
+!include <C4/C4_Context>
+!include <C4/C4_Component>
+
+Person(Securityadministrator, "Security administrator", $descr="Configures identity, privileged access, secret policies and key permissions in these reference examples.", $tags="", $link="https://docs.cyberark.com/pam-self-hosted/latest/en/content/pas%20inst/installationoverview.htm")
+
+System_Boundary("MicrosoftEntraID_boundary", "Microsoft Entra ID", $tags="") {
+  Container_Boundary("MicrosoftEntraID.DirectoryandadministrationAPI_boundary", "Directory and administration API", $tags="") {
+    Component(MicrosoftEntraID.DirectoryandadministrationAPI.DirectoryadministrationAPI, "Directory administration API", $techn="Directory responsibility / implementation undisclosed", $descr="Logical reference: Accepts authorized directory reads and changes through public administrative interfaces.", $tags="", $link="https://learn.microsoft.com/en-us/entra/architecture/architecture")
+    Component(MicrosoftEntraID.DirectoryandadministrationAPI.Directoryauthorization, "Directory authorization", $techn="Directory responsibility / implementation undisclosed", $descr="Logical reference: Checks caller permissions for the requested directory resource operation.", $tags="", $link="https://learn.microsoft.com/en-us/entra/architecture/architecture")
+    Component(MicrosoftEntraID.DirectoryandadministrationAPI.Directoryobjectaccess, "Directory object access", $techn="Directory responsibility / implementation undisclosed", $descr="Logical reference: Reads and writes identity, group, application and policy records.", $tags="", $link="https://learn.microsoft.com/en-us/entra/architecture/architecture")
+  }
+
+}
+
+Rel(Securityadministrator, MicrosoftEntraID.DirectoryandadministrationAPI.DirectoryadministrationAPI, "Submits authorized configuration or access-policy changes", $techn="HTTPS / product administration API", $tags="", $link="")
+Rel(MicrosoftEntraID.DirectoryandadministrationAPI.DirectoryadministrationAPI, MicrosoftEntraID.DirectoryandadministrationAPI.Directoryauthorization, "Passes caller, directory resource and operation", $techn="In-process logical interface", $tags="", $link="")
+Rel(MicrosoftEntraID.DirectoryandadministrationAPI.Directoryauthorization, MicrosoftEntraID.DirectoryandadministrationAPI.Directoryobjectaccess, "Authorizes identity or policy record access", $techn="In-process logical interface", $tags="", $link="")
+Rel(MicrosoftEntraID.DirectoryandadministrationAPI.Directoryobjectaccess, MicrosoftEntraID.DirectoryandadministrationAPI.DirectoryadministrationAPI, "Returns directory objects or update outcome", $techn="In-process logical interface", $tags="", $link="")
+
+SHOW_LEGEND(true)
+hide stereotypes
+@enduml

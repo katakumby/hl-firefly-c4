@@ -1,0 +1,77 @@
+@startuml
+title <size:24>System Landscape - alternative blockchain integrations</size>\n<size:24>System Landscape - alternative blockchain integrations</size>
+
+set separator none
+left to right direction
+
+<style>
+  root {
+    BackgroundColor: #ffffff
+    FontColor: #444444
+  }
+</style>
+
+!include <C4/C4>
+!include <C4/C4_Context>
+
+AddBoundaryTag("Cardano ecosystem", $borderColor="#444444", $fontColor="#444444", $borderStyle="dashed")
+Boundary(group_1, "Cardano ecosystem", $tags="Cardano ecosystem") {
+  System(Cardanonetwork, "Cardano network", $descr="External Cardano ledger accessed through Blockfrost or node-to-client protocols.", $tags="", $link="https://github.com/hyperledger-firefly/cardano/tree/0300bca6b0b99d2a16a81b94f65496934999346e/README.md")
+  System(BlockfrostAPI, "Blockfrost API", $descr="Hosted or self-managed Cardano ledger API; alternative to direct node access.", $tags="", $link="https://github.com/hyperledger-firefly/cardano/tree/0300bca6b0b99d2a16a81b94f65496934999346e/README.md")
+}
+
+AddBoundaryTag("EVM ledger networks", $borderColor="#444444", $fontColor="#444444", $borderStyle="dashed")
+Boundary(group_2, "EVM ledger networks", $tags="EVM ledger networks") {
+  System(OtherEVMnetworks, "Other EVM networks", $descr="Optional public or permissioned EVM-compatible networks; share the Ethereum adapter implementation.", $tags="", $link="https://github.com/hyperledger-firefly/evmconnect/tree/6e12bb4c050677780cf5dd975a926923868b0cb8/README.md")
+}
+
+AddBoundaryTag("Fabric ecosystem", $borderColor="#444444", $fontColor="#444444", $borderStyle="dashed")
+Boundary(group_3, "Fabric ecosystem", $tags="Fabric ecosystem") {
+  System(HyperledgerFabricnetwork, "Hyperledger Fabric network", $descr="External Fabric peer, ordering, discovery and chaincode services.", $tags="", $link="https://github.com/hyperledger-firefly/fabconnect/tree/efab8a2b0ff11863bbd9c5eb8a566820f560546b/README.md")
+  System(Fabriccertificateauthority, "Fabric certificate authority", $descr="Registers and enrolls client identities used by FabConnect.", $tags="", $link="https://github.com/hyperledger-firefly/fabconnect/tree/efab8a2b0ff11863bbd9c5eb8a566820f560546b/internal/fabric/client/identity.go")
+}
+
+AddBoundaryTag("FireFly ecosystem", $borderColor="#444444", $fontColor="#444444", $borderStyle="dashed")
+Boundary(group_4, "FireFly ecosystem", $tags="FireFly ecosystem") {
+  System(HyperledgerFireFly, "Hyperledger FireFly", $descr="Reusable supernode architecture; each consortium member deploys an isolated instance.", $tags="", $link="https://github.com/hyperledger-firefly/firefly/tree/9d20f3081c9074d5b012427e5572ebc03da8d95d")
+  System(FireFlydevelopertools, "FireFly developer tools", $descr="Development utilities and optional sample applications.", $tags="", $link="https://github.com/hyperledger-firefly/firefly/tree/9d20f3081c9074d5b012427e5572ebc03da8d95d/doc-site/docs/overview/key_components/tools.md")
+}
+
+AddBoundaryTag("Legacy connector infrastructure", $borderColor="#444444", $fontColor="#444444", $borderStyle="dashed")
+Boundary(group_5, "Legacy connector infrastructure", $tags="Legacy connector infrastructure") {
+  System(ApacheKafka, "Apache Kafka", $descr="Optional transaction request/reply broker for legacy connector configurations.", $tags="", $link="https://github.com/hyperledger-firefly/ethconnect/tree/e8ae0eda16cc61b8ac256cdbf5f09edeb571b8c0/internal/kafka")
+  System(MongoDBreceiptservice, "MongoDB receipt service", $descr="Optional receipt persistence for legacy Ethereum and Fabric connectors.", $tags="", $link="https://github.com/hyperledger-firefly/ethconnect/tree/e8ae0eda16cc61b8ac256cdbf5f09edeb571b8c0/internal/receipts/mongoreceipts.go")
+}
+
+AddBoundaryTag("Tezos ecosystem", $borderColor="#444444", $fontColor="#444444", $borderStyle="dashed")
+Boundary(group_6, "Tezos ecosystem", $tags="Tezos ecosystem") {
+  System(Signatory, "Signatory", $descr="Remote Tezos signing service; backend key management is external.", $tags="", $link="https://github.com/hyperledger-firefly/tezosconnect/tree/508ec1e8bb8b671c1eb6e9c090a1d219043dbd8b/README.md")
+  System(Tezosnetwork, "Tezos network", $descr="External Tezos node RPC and chain-monitoring endpoints.", $tags="", $link="https://github.com/hyperledger-firefly/tezosconnect/tree/508ec1e8bb8b671c1eb6e9c090a1d219043dbd8b/README.md")
+}
+
+Person(Applicationdeveloper, "Application developer", $descr="Builds and tests member business integrations.", $tags="", $link="https://hyperledger-firefly.github.io/firefly/head/architecture/node_component_architecture/")
+System(Cordanetwork, "Corda network", $descr="External Corda node with application-specific CorDapps; starter integration requires customization.", $tags="", $link="https://github.com/hyperledger-firefly/cordaconnect/tree/6579ca46e0d46c9c330c8b2b95f1dd83f0804640/README.md")
+System(DeveloperDockerengine, "Developer Docker engine", $descr="Local container engine used by FireFly CLI; no network is provisioned by this architecture task.", $tags="", $link="https://github.com/hyperledger-firefly/cli/tree/9b868d3326ba4fbadd01c74a36c7e5a92a8c2609/internal/docker")
+
+Rel(HyperledgerFireFly, OtherEVMnetworks, "Submits ledger operations and consumes events when configured", $techn="Ethereum JSON-RPC", $tags="", $link="")
+Rel(HyperledgerFireFly, HyperledgerFabricnetwork, "Submits ledger operations and consumes events when configured", $techn="Fabric connector API", $tags="", $link="")
+Rel(HyperledgerFireFly, Tezosnetwork, "Submits ledger operations and consumes events when configured", $techn="Tezos connector API", $tags="", $link="")
+Rel(HyperledgerFireFly, Cardanonetwork, "Submits ledger operations and consumes events when configured", $techn="Cardano connector API", $tags="", $link="")
+Rel(HyperledgerFireFly, Applicationdeveloper, "Returns customized starter event batches", $techn="WebSocket / JSON", $tags="", $link="")
+Rel(HyperledgerFireFly, Cordanetwork, "Invokes custom CorDapps and consumes vault updates through the optional starter", $techn="Corda RPC", $tags="", $link="")
+Rel(HyperledgerFireFly, Signatory, "Requests Tezos operation signatures in the optional configuration", $techn="HTTP / Signatory API", $tags="", $link="")
+Rel(HyperledgerFireFly, BlockfrostAPI, "Queries Cardano data and submits transactions in Blockfrost mode", $techn="HTTPS / Blockfrost API", $tags="", $link="")
+Rel(HyperledgerFireFly, Fabriccertificateauthority, "Registers and enrolls signing identities through FabConnect", $techn="Fabric CA / HTTPS", $tags="", $link="")
+Rel(HyperledgerFireFly, ApacheKafka, "Exchanges legacy connector transaction requests and replies", $techn="Kafka protocol", $tags="", $link="")
+Rel(HyperledgerFireFly, MongoDBreceiptservice, "Persists legacy connector receipts when configured", $techn="MongoDB wire protocol", $tags="", $link="")
+Rel(Applicationdeveloper, FireFlydevelopertools, "Develops and tests integrations", $techn="CLI + HTTPS", $tags="", $link="")
+Rel(Applicationdeveloper, Cordanetwork, "Customizes the CorDapp and Core binding required by the starter", $techn="Development toolchain", $tags="", $link="")
+Rel(Applicationdeveloper, HyperledgerFireFly, "Exercises customized Corda starter operations", $techn="HTTP REST / JSON", $tags="", $link="")
+Rel(FireFlydevelopertools, HyperledgerFireFly, "Exercises the selected member API", $techn="HTTPS + WebSocket", $tags="", $link="")
+Rel(FireFlydevelopertools, Applicationdeveloper, "Returns audit results and migrated configuration for review", $techn="Local process output", $tags="", $link="")
+Rel(FireFlydevelopertools, DeveloperDockerengine, "Creates and manages local development stack services", $techn="Docker Compose CLI", $tags="", $link="")
+Rel(BlockfrostAPI, Cardanonetwork, "Reads the ledger and relays submitted transactions", $techn="Cardano integration / service boundary", $tags="", $link="")
+
+SHOW_LEGEND(true)
+hide stereotypes
+@enduml

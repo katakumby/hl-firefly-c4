@@ -4,12 +4,12 @@ on:
   workflow_dispatch:
     inputs:
       stage:
-        description: Build stage
+        description: Generate sources or render an existing source artifact
         type: choice
-        options: [browser, light]
-        default: browser
+        options: [previews, source, plantuml, mermaid]
+        default: previews
   schedule:
-    - cron: '0 2 * * *' # 02:00 UTC; browser completion only
+    - cron: '0 2 * * *' # Independent previews, 02:00 UTC
   push:
     branches: [main]
   pull_request:
@@ -17,16 +17,36 @@ permissions:
   contents: read
   actions: read
 jobs:
+  selection:
+    runs-on: ${{ fromJSON(vars.ARCHITECTURE_RUNNER_LABELS) }}
+    outputs:
+      stages: ${{ steps.choose.outputs.stages }}
+    steps:
+      - id: choose
+        shell: bash
+        env:
+          STAGE: ${{ github.event_name == 'schedule' && 'previews' || github.event_name == 'workflow_dispatch' && inputs.stage || 'source' }}
+        run: |
+          case "$STAGE" in
+            previews) echo 'stages=["plantuml","mermaid"]' >> "$GITHUB_OUTPUT" ;;
+            source|plantuml|mermaid) printf 'stages=["%s"]\n' "$STAGE" >> "$GITHUB_OUTPUT" ;;
+            *) exit 1 ;;
+          esac
   diagrams:
+    needs: selection
+    strategy:
+      fail-fast: false
+      matrix:
+        stage: ${{ fromJSON(needs.selection.outputs.stages) }}
     runs-on: ${{ fromJSON(vars.ARCHITECTURE_RUNNER_LABELS) }}
     env:
-      BUILD_STAGE: ${{ github.event_name == 'schedule' && 'browser' || github.event_name == 'workflow_dispatch' && inputs.stage || 'light' }}
+      BUILD_STAGE: ${{ matrix.stage }}
       ARCHITECTURE_TOOLS_IMAGE: ${{ vars.ARCHITECTURE_TOOLS_IMAGE }}
       ARCHITECTURE_BROWSER_IMAGE: ${{ vars.ARCHITECTURE_BROWSER_IMAGE }}
       ARCHITECTURE_IMAGE_ACQUISITION: ${{ vars.ARCHITECTURE_IMAGE_ACQUISITION }}
       ARCHITECTURE_SOURCE_REVISION: ${{ github.sha }}
       ARCHITECTURE_CI_RUN: github:${{ github.run_id }}:${{ github.run_attempt }}
-      DOCKER_CONFIG: ${{ runner.temp }}/architecture-docker-${{ github.run_id }}-${{ github.run_attempt }}
+      DOCKER_CONFIG: ${{ runner.temp }}/architecture-docker-${{ github.run_id }}-${{ github.run_attempt }}-${{ matrix.stage }}
     defaults:
       run:
         shell: bash
@@ -45,7 +65,7 @@ jobs:
           REGISTRY_PASSWORD: ${{ secrets.ARCHITECTURE_REGISTRY_PASSWORD }}
         run: |
           set -euo pipefail
-          if [ "$BUILD_STAGE" = browser ]; then
+          if [ "$BUILD_STAGE" = mermaid ]; then
             image="${ARCHITECTURE_BROWSER_IMAGE:?Configure the browser image name}"
           else
             image="${ARCHITECTURE_TOOLS_IMAGE:?Configure the lightweight image name}"
@@ -56,63 +76,60 @@ jobs:
             docker pull "$image"
           fi
           docker image inspect "$image" >/dev/null
-      - name: Offline regressions
+      - name: Clean before generation or restoration, then run offline regressions
         run: |
           set -euo pipefail
+          profile=()
+          if [ "$BUILD_STAGE" = mermaid ]; then profile=(--browser); fi
+          docker/run.sh "${profile[@]}" clean
           mkdir -p build/.reports
-          if [ "$BUILD_STAGE" = browser ]; then
-            docker/run.sh --browser test 2>&1 | tee build/.reports/tests-browser.log
-          else
-            docker/run.sh test 2>&1 | tee build/.reports/tests-light.log
-          fi
-      - name: Find prior lightweight artifact for this commit
-        if: env.BUILD_STAGE == 'browser'
+          docker/run.sh "${profile[@]}" test 2>&1 | tee "build/.reports/tests-$BUILD_STAGE.log"
+      - name: Find prior source artifact for this commit
+        if: matrix.stage != 'source'
         id: prior
         uses: actions/github-script@v9
         with:
           script: |
-            const select = require(process.env.GITHUB_WORKSPACE + '/architecture/ci/select-light-run.cjs');
+            const select = require(process.env.GITHUB_WORKSPACE + '/architecture/ci/select-source-run.cjs');
             const workflow_id = process.env.GITHUB_WORKFLOW_REF.split('@')[0].split('/').pop();
             const match = await select(github, {...context.repo, workflow_id,
               sha: context.sha, branch: context.ref.replace(/^refs\/heads\//, '')});
             core.setOutput('run', match.run_id);
             core.setOutput('artifact', match.artifact_id);
       - uses: actions/download-artifact@v8
-        if: env.BUILD_STAGE == 'browser'
+        if: matrix.stage != 'source'
         with:
           artifact-ids: ${{ steps.prior.outputs.artifact }}
           run-id: ${{ steps.prior.outputs.run }}
           github-token: ${{ github.token }}
           path: architecture/build
-      - name: Build selected stage offline
-        run: |
-          set -euo pipefail
-          if [ "$BUILD_STAGE" = browser ]; then docker/run.sh build-browser; else docker/run.sh build; fi
-      - name: Package current artifacts
+      - name: Generate and package the selected stage offline
         env:
-          ARCHITECTURE_ARTIFACT_DIR: ${{ runner.temp }}/architecture-artifacts-${{ github.run_id }}-${{ github.run_attempt }}
+          ARCHITECTURE_ARTIFACT_DIR: ${{ runner.temp }}/architecture-artifacts-${{ github.run_id }}-${{ github.run_attempt }}-${{ matrix.stage }}
         run: |
           set -euo pipefail
           mkdir -p "$ARCHITECTURE_ARTIFACT_DIR"
-          if [ "$BUILD_STAGE" = browser ]; then
-            docker/run.sh --browser package --stage full
+          if [ "$BUILD_STAGE" = source ]; then
+            docker/run.sh build-source
+            docker/run.sh package --stage source
           else
-            docker/run.sh package --stage light
+            docker/run.sh build-preview --renderer "$BUILD_STAGE"
+            docker/run.sh package --stage preview --renderer "$BUILD_STAGE"
           fi
       - uses: actions/upload-artifact@v7
         with:
-          name: architecture-${{ env.BUILD_STAGE == 'light' && 'light' || 'full' }}
-          path: ${{ runner.temp }}/architecture-artifacts-${{ github.run_id }}-${{ github.run_attempt }}/
+          name: architecture-${{ matrix.stage == 'source' && 'source' || format('preview-{0}', matrix.stage) }}
+          path: ${{ runner.temp }}/architecture-artifacts-${{ github.run_id }}-${{ github.run_attempt }}-${{ matrix.stage }}/
           include-hidden-files: true
           retention-days: 30
           if-no-files-found: error
       - name: Package failure diagnostics
         if: failure()
         env:
-          ARCHITECTURE_ARTIFACT_DIR: ${{ runner.temp }}/architecture-diagnostics-${{ github.run_id }}-${{ github.run_attempt }}
+          ARCHITECTURE_ARTIFACT_DIR: ${{ runner.temp }}/architecture-diagnostics-${{ github.run_id }}-${{ github.run_attempt }}-${{ matrix.stage }}
         run: |
           mkdir -p "$ARCHITECTURE_ARTIFACT_DIR"
-          if [ "$BUILD_STAGE" = browser ]; then
+          if [ "$BUILD_STAGE" = mermaid ]; then
             if docker image inspect "$ARCHITECTURE_BROWSER_IMAGE" >/dev/null 2>&1; then docker/run.sh --browser package --diagnostics; fi
           else
             if docker image inspect "$ARCHITECTURE_TOOLS_IMAGE" >/dev/null 2>&1; then docker/run.sh package --diagnostics; fi
@@ -120,8 +137,8 @@ jobs:
       - uses: actions/upload-artifact@v7
         if: failure()
         with:
-          name: architecture-diagnostics
-          path: ${{ runner.temp }}/architecture-diagnostics-${{ github.run_id }}-${{ github.run_attempt }}/
+          name: architecture-diagnostics-${{ matrix.stage }}
+          path: ${{ runner.temp }}/architecture-diagnostics-${{ github.run_id }}-${{ github.run_attempt }}-${{ matrix.stage }}/
           include-hidden-files: true
           retention-days: 30
           if-no-files-found: ignore

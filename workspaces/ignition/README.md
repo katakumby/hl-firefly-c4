@@ -61,17 +61,19 @@ image described in the [build guide](../../documentation/build.md):
 
 ```text
 docker compose run --rm --pull never tools validate --workspace workspaces/ignition/workspace.dsl
-docker compose run --rm --pull never tools export --workspace workspaces/ignition/workspace.dsl
+docker compose run --rm --pull never tools build-source --workspace workspaces/ignition/workspace.dsl
 ```
 
-`validate` is strict; exports and both [build stages](../../README.md#build-all-diagrams)
+`validate` is strict; exports and [generation stages](../../README.md#build-previews-independently)
 report inspection findings without blocking diagram generation. The Example System currently has incomplete
 technology metadata and coverage/connectivity findings. Reports are under
 `build/.reports/workspaces/ignition/workspace.dsl/`. The DApp context exports into
-`build/workspaces/ignition/views/`; the inline example views export directly into
-`build/workspaces/ignition/`, using their view keys as filenames.
+`build/source/workspaces/ignition/views/`; the inline example views export directly into
+`build/source/workspaces/ignition/`, using their view keys as filenames.
 
 Promotion moves reviewed definitions into `model/platform/`, views into
 `views/platform/`, and applicable behavioral diagrams into shared `uml/`.
 Preserve `dapp_platform` and its `architecture.id`; remove the local definition
 in the same reviewed change instead of copying it into two locations.
+
+Generate ordinary SVG/PNG separately with `tools build-preview --renderer plantuml --workspace workspaces/ignition/workspace.dsl`. Previews mirror those source paths beneath `build/preview/`. Saved adjacent `workspace.json` is versioned for native layouts.

@@ -1,0 +1,34 @@
+@startuml
+title <size:24>Container - Unleash: core and optional Edge</size>\n<size:24>Container - Unleash: core and optional Edge</size>
+
+set separator none
+left to right direction
+
+<style>
+  root {
+    BackgroundColor: #ffffff
+    FontColor: #444444
+  }
+</style>
+
+!include <C4/C4>
+!include <C4/C4_Context>
+!include <C4/C4_Container>
+
+System_Boundary("Unleash_boundary", "Unleash", $tags="") {
+  ContainerDb(Unleash.UnleashPostgreSQL, "Unleash PostgreSQL", $techn="PostgreSQL / Knex", $descr="Stores configuration, user/session/token records, audit history, registrations and aggregated usage.", $tags="", $link="https://github.com/Unleash/unleash/tree/66d4a45c1d24c4bc8a08d8c75d205bd61dc3aed0/src/lib/db")
+  Container(Unleash.UnleashEdgeOSSoptional, "Unleash Edge (OSS, optional)", $techn="Rust / Axum / Tokio", $descr="Caches configuration and evaluates frontend requests; online polling or offline file mode.", $tags="", $link="https://github.com/Unleash/unleash-edge/blob/c947878de70214235c79eeb5ebe5f35b77ecc075/crates/oss/unleash-edge/src/lib.rs")
+  Container(Unleash.Unleashserver, "Unleash server", $techn="Node.js / TypeScript / Express", $descr="Hosts OSS administration, configuration delivery, evaluation and background services.", $tags="", $link="https://github.com/Unleash/unleash/blob/66d4a45c1d24c4bc8a08d8c75d205bd61dc3aed0/src/lib/server-impl.ts")
+  Container(Unleash.AdminUI, "Admin UI", $techn="React / TypeScript / browser", $descr="Runs management screens in the browser; the server distributes its static assets.", $tags="", $link="https://github.com/Unleash/unleash/tree/66d4a45c1d24c4bc8a08d8c75d205bd61dc3aed0/frontend/src")
+}
+
+Rel(Unleash.UnleashEdgeOSSoptional, Unleash.Unleashserver, "Polls scoped feature configuration", $techn="HTTP(S) / JSON", $tags="", $link="")
+Rel(Unleash.UnleashEdgeOSSoptional, Unleash.Unleashserver, "Validates tokens and refreshes their scopes", $techn="HTTP(S) / JSON", $tags="", $link="")
+Rel(Unleash.UnleashEdgeOSSoptional, Unleash.Unleashserver, "Forwards registration and usage batches", $techn="HTTP(S) / JSON", $tags="", $link="")
+Rel(Unleash.Unleashserver, Unleash.UnleashPostgreSQL, "Reads and writes Unleash records and schema", $techn="PostgreSQL wire protocol", $tags="", $link="")
+Rel(Unleash.AdminUI, Unleash.Unleashserver, "Requests the Admin UI document and assets", $techn="HTTP(S) / HTML, JS, CSS", $tags="", $link="")
+Rel(Unleash.AdminUI, Unleash.Unleashserver, "Submits login, configuration and reporting requests", $techn="HTTP(S) / JSON", $tags="", $link="")
+
+SHOW_LEGEND(true)
+hide stereotypes
+@enduml

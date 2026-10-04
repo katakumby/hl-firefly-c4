@@ -37,35 +37,33 @@ def contents(directory):
 
 
 def native_output(files):
-    """Stand in for a native export when exercising publication failures."""
-    def run(raw, format, stage, logs, c4_source=None):
-        output = stage / 'diagrams'
+    def run(arguments, logs, **kwargs):
+        output = Path(arguments[arguments.index('-output') + 1])
         output.mkdir()
         for name, content in files.items():
             (output / name).write_text(content)
-        return output
     return run
 
 
-# Keep expected native names independent of the production format mapping.
-FORMATS = (('plantuml', 'structurizr-', 'puml'), ('mermaid', 'structurizr-', 'mmd'),
-           ('svg', '', 'svg'), ('png', '', 'png'))
-
-
 @contextmanager
-def export_fixture(format, keys=('one',)):
+def export_fixture(keys=('one',)):
     with checkout():
         paths.REFERENCE.write_text(BASE)
         directory = paths.output_directory(paths.REFERENCE)
-        destination = cli.BUILD / 'diagrams'
+        directory.mkdir(parents=True)
+        destination = cli.BUILD / 'source/diagrams'
         destination.mkdir(parents=True)
-        (destination / 'previous-output').write_text('previous success')
-        cli.atomic_json(cli.BUILD / 'artifacts.json', {'artifacts': [{
-            'output': 'diagrams/previous-output', 'source': 'workspace.dsl',
-            'workspace': 'workspace.dsl', 'view': 'one', 'format': format}]})
+        (destination / 'previous-output.puml').write_text('previous success')
+        item = cli.artifact(Path('source/diagrams/previous-output.puml'), paths.REFERENCE,
+            paths.REFERENCE, 'plantuml', 'fixture', 'one', kind='c4', renderer='plantuml', dependencies=[])
+        cli.atomic_json(cli.BUILD / 'source.json', {'schema_version': 2, 'artifacts': [item]})
         raw = {'views': {'systemContextViews': [{'key': key} for key in keys]}}
+        cli.atomic_json(directory / 'workspace.json', raw)
+        cli.atomic_json(directory / 'validation.json', {'passed': True})
+        (directory / 'validation.log').write_text('valid')
+        report = {'passed': True, 'source_sha256': 'fixture', 'inspection_findings': [], 'workspace': 'workspace.dsl'}
         mapping = {key: (paths.REFERENCE, Path('diagrams') / key) for key in keys}
-        with patch.object(cli, 'fresh_workspace', return_value=(raw, {'source_sha256': 'fixture'})), \
+        with patch.object(cli, 'validate', return_value={paths.REFERENCE: report}), \
              patch.object(cli, 'index_views', return_value=mapping), \
              patch.object(cli, 'source_fingerprint', return_value='fixture'):
             yield directory, destination
@@ -187,11 +185,11 @@ class C4PlantUMLExport(unittest.TestCase):
             workspace = root / 'workspaces/example/workspace.dsl'
             workspace.parent.mkdir(parents=True)
             workspace.write_text(BASE)
-            arguments = ['architecture.py', 'export', '--workspace', str(workspace)]
+            arguments = ['architecture.py', 'build-source', '--workspace', str(workspace)]
             before = cli.source_fingerprint()
             with patch.object(sys, 'argv', arguments):
                 self.assertEqual(0, cli.main())
-            complete = cli.BUILD / 'workspaces/example'
+            complete = cli.BUILD / 'source/workspaces/example'
             self.assertEqual({'unprefixed.puml', 'duplicate-selection.puml', 'flow.puml'},
                              {p.name for p in complete.iterdir()})
             for file in complete.glob('*.puml'):
@@ -205,7 +203,7 @@ class C4PlantUMLExport(unittest.TestCase):
             self.assertNotIn('Calls', (complete / 'unprefixed.puml').read_text())
             previous = contents(complete)
             untouched = next(item for item in cli.inventory() if item['view'] == 'unprefixed')
-            with patch.object(sys, 'argv', arguments + ['--view', 'flow', '--format', 'plantuml']):
+            with patch.object(sys, 'argv', arguments + ['--view', 'flow']):
                 self.assertEqual(0, cli.main())
             self.assertEqual(previous, contents(complete))
             self.assertEqual(untouched, next(item for item in cli.inventory() if item['view'] == 'unprefixed'))
@@ -214,78 +212,71 @@ class C4PlantUMLExport(unittest.TestCase):
             self.assertFalse((cli.BUILD / '.staging').exists())
 
 
-class MermaidExport(unittest.TestCase):
-    def test_native_explicit_all_and_single_view_without_a_browser(self):
-        with checkout(), patch.dict(os.environ, {'PLAYWRIGHT_BROWSERS_PATH': '/nonexistent'}):
+class AuthoredSources(unittest.TestCase):
+    def test_authored_mermaid_bytes_are_copied_without_syntax_validation(self):
+        with checkout() as root:
             paths.REFERENCE.write_text(BASE)
-            cli.export(paths.REFERENCE, 'mermaid')
-            static = (cli.BUILD / 'unprefixed.mmd').read_text()
-            for expected in ('graph LR', '>A</div>', '>B</div>', '[Software System]'):
-                self.assertIn(expected, static)
-            self.assertNotIn('Calls', static)
-            self.assertIn('Calls', (cli.BUILD / 'flow.mmd').read_text())
-            previous = {p.name: p.read_bytes() for p in cli.BUILD.glob('*.mmd')}
-            cli.export(paths.REFERENCE, 'mermaid', 'flow')
-            self.assertEqual(previous, {p.name: p.read_bytes() for p in cli.BUILD.glob('*.mmd')})
-            log = (paths.output_directory(paths.REFERENCE) / 'export.log').read_text()
-            self.assertIn('-format mermaid', log)
-            self.assertNotIn('-format svg', log)
+            source = root / 'uml/sequence.mmd'
+            source.parent.mkdir()
+            source.write_bytes(b'---\nconfig: {}\n---\nsequenceDiagram\n%% canonical IDs\nA->>B: Call\n')
+            cli.build_source()
+            self.assertEqual(source.read_bytes(), (cli.BUILD / 'source/uml/sequence.mmd').read_bytes())
+            self.assertEqual([source], [root / i['source'] for i in cli.inventory('source') if i['format'] == 'mermaid'])
+            self.assertFalse((cli.BUILD / 'preview').exists())
 
-    def test_native_explicit_workspace_and_variant_export(self):
+    def test_nested_workspace_source_export_preserves_siblings(self):
         with checkout() as root:
             paths.REFERENCE.write_text('Invalid unrelated DSL')
             parent = root / 'workspaces/example/workspace.dsl'
             variant = root / 'workspaces/example/variants/target/workspace.dsl'
-            parent.parent.mkdir(parents=True)
             variant.parent.mkdir(parents=True)
             parent.write_text(BASE)
             variant.write_text('workspace extends ../../workspace.dsl {\n}')
-            outputs = {}
             for workspace in (parent, variant):
-                cli.export(workspace, 'mermaid')
-                output = cli.BUILD / workspace.relative_to(root).parent
-                self.assertEqual(3, len(list(output.glob('*.mmd'))))
-                for previous, snapshot in outputs.items():
-                    self.assertEqual(snapshot, {p.name: p.read_bytes() for p in previous.glob('*.mmd')})
-                outputs[output] = {p.name: p.read_bytes() for p in output.glob('*.mmd')}
-            self.assertFalse(paths.output_directory(paths.REFERENCE).exists())
+                cli.build_source([workspace])
+            self.assertEqual(6, len(cli.inventory('source')))
+            self.assertTrue((cli.BUILD / 'source/workspaces/example/flow.puml').exists())
+            self.assertTrue((cli.BUILD / 'source/workspaces/example/variants/target/flow.puml').exists())
 
-    def test_bad_selection_and_validation_failure_preserve_mermaid(self):
+    def test_bad_selection_and_validation_failure_preserve_source(self):
         with checkout():
             paths.REFERENCE.write_text(BASE)
-            cli.export(paths.REFERENCE, 'mermaid')
-            previous = {p.name: p.read_bytes() for p in cli.BUILD.glob('*.mmd')}
+            cli.build_source()
+            previous = contents(cli.BUILD / 'source')
             for key in ('missing', ''):
                 with self.subTest(key=key), self.assertRaisesRegex(ValueError, 'exactly one'):
-                    cli.export(paths.REFERENCE, 'mermaid', key)
+                    cli.build_source([paths.REFERENCE], [key])
             paths.REFERENCE.write_text('workspace {\n !include missing.dsl\n}')
             with self.assertRaisesRegex(ValueError, 'Validation failed'):
-                cli.export(paths.REFERENCE, 'mermaid')
-            self.assertEqual(previous, {p.name: p.read_bytes() for p in cli.BUILD.glob('*.mmd')})
-            self.assertFalse(json.loads((paths.output_directory(paths.REFERENCE) / 'validation.json').read_text())['passed'])
+                cli.build_source()
+            self.assertEqual(previous, contents(cli.BUILD / 'source'))
 
 
 class FailureHandling(unittest.TestCase):
-    def test_clean_build_preserves_settings_lock_sources_and_other_builds(self):
-        with checkout() as architecture:
+    def test_clean_build_preserves_lock_and_saved_layout_and_local_settings_outside_build(self):
+        with checkout() as root:
             paths.REFERENCE.write_text('Authored DSL')
-            other = cli.ROOT / 'build/evidence/snapshot'
-            other.parent.mkdir(parents=True)
-            other.write_text('Evidence')
+            saved = root / 'workspace.json'
+            saved.write_text('Saved layout')
+            settings = root / 'docker/local.env'
+            settings.parent.mkdir()
+            settings.write_text('LOCAL=1')
             with cli.command_lock():
-                lock_inode = (cli.BUILD / '.tools.lock').stat().st_ino
-                (cli.BUILD / 'local.env').write_text('LOCAL_SETTING=8082')
-                stale = cli.BUILD / 'c4/old-run/nested/diagram.svg'
-                stale.parent.mkdir(parents=True)
-                stale.write_text('Obsolete diagram')
-                cli.atomic_json(cli.BUILD / 'artifacts.json', {'artifacts': [{'output': stale.relative_to(cli.BUILD).as_posix()}]})
-                (cli.BUILD / 'build.json').write_text('{}')
+                inode = (cli.BUILD / '.tools.lock').stat().st_ino
+                for name in ('source/a.puml', 'preview/a.svg', '.layouts/old/workspace.json', 'unrelated/old.log'):
+                    path = cli.BUILD / name
+                    path.parent.mkdir(parents=True, exist_ok=True)
+                    path.write_text('old')
+                (cli.BUILD / 'local.env').write_text('old settings')
+                with self.assertRaisesRegex(ValueError, 'Move build/local.env'):
+                    cli.clean_build()
+                (cli.BUILD / 'local.env').unlink()
                 cli.clean_build()
-                self.assertEqual({'.tools.lock', 'local.env', 'evidence'}, {p.name for p in cli.BUILD.iterdir()})
-                self.assertEqual(lock_inode, (cli.BUILD / '.tools.lock').stat().st_ino)
-                self.assertEqual('LOCAL_SETTING=8082', (cli.BUILD / 'local.env').read_text())
+                self.assertEqual({'.tools.lock'}, {p.name for p in cli.BUILD.iterdir()})
+                self.assertEqual(inode, (cli.BUILD / '.tools.lock').stat().st_ino)
+            self.assertEqual('Saved layout', saved.read_text())
+            self.assertEqual('LOCAL=1', settings.read_text())
             self.assertEqual('Authored DSL', paths.REFERENCE.read_text())
-            self.assertEqual('Evidence', other.read_text())
 
     def test_clean_build_rejects_an_unexpected_root(self):
         with checkout() as architecture:
@@ -366,75 +357,65 @@ class FailureHandling(unittest.TestCase):
 
 class ExportPublication(unittest.TestCase):
     def test_incomplete_output_preserves_previous_exports(self):
-        for format, prefix, extension in FORMATS:
-            for failure in ('missing', 'empty', 'wrong-name', 'legend-only', 'no-views'):
-                keys = () if failure == 'no-views' else ('one', 'two')
-                with self.subTest(format=format, failure=failure), export_fixture(format, keys) as (_, destination):
-                    before = contents(destination)
-                    files = {f'{prefix}one.{extension}': 'native output'}
-                    if failure == 'empty':
-                        files[f'{prefix}two.{extension}'] = ''
-                    elif failure == 'wrong-name':
-                        files[f'unexpected.{extension}'] = 'native output'
-                    elif failure == 'legend-only':
-                        files[f'{prefix}one-key.{extension}'] = 'native legend'
-                    with patch.object(cli, 'produce_diagrams', side_effect=native_output(files)):
-                        with self.assertRaisesRegex(ValueError, 'every requested diagram'):
-                            cli.export(paths.REFERENCE, format)
-                    self.assertEqual(before, contents(destination))
+        for failure in ('missing', 'empty', 'wrong-name', 'legend-only'):
+            with self.subTest(failure=failure), export_fixture(('one', 'two')) as (_, destination):
+                before = contents(destination)
+                files = {'structurizr-one.puml': 'native output'}
+                if failure == 'empty': files['structurizr-two.puml'] = ''
+                if failure == 'wrong-name': files['unexpected.puml'] = 'output'
+                if failure == 'legend-only': files['structurizr-two-key.puml'] = 'legend'
+                with patch.object(cli, 'run_java', side_effect=native_output(files)):
+                    with self.assertRaisesRegex(ValueError, 'every requested diagram'):
+                        cli.build_source()
+                self.assertEqual(before, contents(destination))
 
     def test_failed_export_preserves_previous_files(self):
-        for format, _, _ in FORMATS:
-            with self.subTest(format=format), export_fixture(format) as (_, destination):
-                before = contents(destination)
-                with patch.object(cli, 'run_java', side_effect=RuntimeError('export failed')):
-                    with self.assertRaisesRegex(RuntimeError, 'export failed'):
-                        cli.export(paths.REFERENCE, format)
-                self.assertEqual(before, contents(destination))
+        with export_fixture() as (_, destination):
+            before = contents(destination)
+            with patch.object(cli, 'run_java', side_effect=RuntimeError('export failed')):
+                with self.assertRaisesRegex(RuntimeError, 'export failed'):
+                    cli.build_source()
+            self.assertEqual(before, contents(destination))
 
     def test_sources_changed_during_export_preserves_previous_files(self):
-        for format, prefix, extension in FORMATS:
-            with self.subTest(format=format), export_fixture(format) as (_, destination):
-                before = contents(destination)
-                with patch.object(cli, 'source_fingerprint', return_value='changed'), \
-                     patch.object(cli, 'produce_diagrams', side_effect=native_output({f'{prefix}one.{extension}': 'new output'})):
-                    with self.assertRaisesRegex(ValueError, 'Sources changed during export'):
-                        cli.export(paths.REFERENCE, format)
-                self.assertEqual(before, contents(destination))
+        with export_fixture() as (_, destination):
+            before = contents(destination)
+            with patch.object(cli, 'source_fingerprint', return_value='changed'), \
+                 patch.object(cli, 'run_java', side_effect=native_output({'structurizr-one.puml': 'new'})):
+                with self.assertRaisesRegex(ValueError, 'Sources changed'):
+                    cli.build_source()
+            self.assertEqual(before, contents(destination))
 
-    def test_success_replaces_obsolete_files_and_preserves_other_selections(self):
-        for format, prefix, extension in FORMATS:
-            with self.subTest(format=format), export_fixture(format) as (_, destination):
-                preserved = destination / 'unmanaged.svg'
-                preserved.write_text('preserve')
-                with patch.object(cli, 'produce_diagrams', side_effect=native_output({f'{prefix}one.{extension}': 'native output'})):
-                    cli.export(paths.REFERENCE, format)
-                self.assertEqual({f'one.{extension}', 'unmanaged.svg'}, {p.name for p in destination.iterdir()})
-                self.assertEqual('preserve', preserved.read_text())
+    def test_success_replaces_obsolete_files_and_preserves_unmanaged_files(self):
+        with export_fixture() as (_, destination):
+            (destination / 'unmanaged.txt').write_text('preserve')
+            with patch.object(cli, 'run_java', side_effect=native_output({'structurizr-one.puml': 'native output'})):
+                cli.build_source()
+            self.assertEqual({'one.puml', 'unmanaged.txt'}, {p.name for p in destination.iterdir()})
 
     def test_publication_failure_restores_previous_export(self):
         rename = Path.rename
         def fail_publication(path, target):
-            if path.name == 'structurizr-one.puml':
+            if path.name == 'source.json':
                 raise OSError('publication failed')
             return rename(path, target)
-        with export_fixture('plantuml') as (_, destination):
+        with export_fixture() as (_, destination):
             before = contents(destination)
-            with patch.object(cli, 'produce_diagrams', side_effect=native_output({'structurizr-one.puml': 'new output'})), \
+            with patch.object(cli, 'run_java', side_effect=native_output({'structurizr-one.puml': 'new'})), \
                  patch.object(Path, 'rename', fail_publication):
                 with self.assertRaisesRegex(OSError, 'publication failed'):
-                    cli.export(paths.REFERENCE, 'plantuml')
+                    cli.build_source()
             self.assertEqual(before, contents(destination))
 
     def test_timeout_logs_partial_output_and_preserves_previous_files(self):
         for stdout, stderr in ((b'partial output', b'partial error'), ('partial output', 'partial error'), (None, None)):
-            with self.subTest(stdout=stdout), export_fixture('plantuml') as (directory, destination):
+            with self.subTest(stdout=stdout), export_fixture() as (_, destination):
                 before = contents(destination)
                 timeout = subprocess.TimeoutExpired('java', 600, output=stdout, stderr=stderr)
                 with patch.object(cli.subprocess, 'run', side_effect=timeout):
                     with self.assertRaises(subprocess.TimeoutExpired):
-                        cli.export(paths.REFERENCE, 'plantuml')
-                log = (directory / 'export.log').read_text()
+                        cli.build_source()
+                log = (cli.BUILD / '.reports/source.log').read_text()
                 self.assertIn('-format plantuml/c4plantuml', log)
                 self.assertIn('Timed out after 600 seconds', log)
                 if stdout:

@@ -1,0 +1,35 @@
+@startuml
+title <size:24>Component - FireFly event auditor</size>\n<size:24>Component - FireFly event auditor</size>
+
+set separator none
+left to right direction
+
+<style>
+  root {
+    BackgroundColor: #ffffff
+    FontColor: #444444
+  }
+</style>
+
+!include <C4/C4>
+!include <C4/C4_Context>
+!include <C4/C4_Container>
+!include <C4/C4_Component>
+
+Person(Applicationdeveloper, "Application developer", $descr="Builds and tests member business integrations.", $tags="", $link="https://hyperledger-firefly.github.io/firefly/head/architecture/node_component_architecture/")
+
+System_Boundary("FireFlydevelopertools_boundary", "FireFly developer tools", $tags="") {
+  Container_Boundary("FireFlydevelopertools.FireFlyeventauditor_boundary", "FireFly event auditor", $tags="") {
+    Component(FireFlydevelopertools.FireFlyeventauditor.EventAPIreader, "Event API reader", $techn="Go", $descr="Pages through recorded blockchain events.", $tags="", $link="https://github.com/hyperledger-firefly/firefly/tree/9d20f3081c9074d5b012427e5572ebc03da8d95d/auditevents/main.go")
+    Component(FireFlydevelopertools.FireFlyeventauditor.Orderingauditor, "Ordering auditor", $techn="Go", $descr="Checks increasing protocol identifiers and reports inconsistencies.", $tags="", $link="https://github.com/hyperledger-firefly/firefly/tree/9d20f3081c9074d5b012427e5572ebc03da8d95d/auditevents/main.go")
+  }
+
+}
+
+Rel(FireFlydevelopertools.FireFlyeventauditor.EventAPIreader, HyperledgerFireFly.FireFlyCore, "Pages through status and enriched event records", $techn="HTTP REST / JSON", $tags="", $link="")
+Rel(FireFlydevelopertools.FireFlyeventauditor.Orderingauditor, Applicationdeveloper, "Reports ordering failures and checked event counts", $techn="Console output", $tags="", $link="")
+Rel(FireFlydevelopertools.FireFlyeventauditor.EventAPIreader, FireFlydevelopertools.FireFlyeventauditor.Orderingauditor, "Supplies ordered event pages", $techn="In-process calls / Go", $tags="", $link="")
+
+SHOW_LEGEND(true)
+hide stereotypes
+@enduml

@@ -26,15 +26,15 @@ All API paths in this document use the namespace prefix `/api/v1/namespaces/{ns}
 
 ## Software-system sequence
 
-[Mermaid source](system-sequence.mmd) · [SVG](../../../../build/uml/use-cases/firefly-besu/05-subscribe-contract-events/system-sequence.svg) · [PNG](../../../../build/uml/use-cases/firefly-besu/05-subscribe-contract-events/system-sequence.png)
+[Mermaid source](system-sequence.mmd) · [SVG](../../../../build/preview/uml/use-cases/firefly-besu/05-subscribe-contract-events/system-sequence.svg) · [PNG](../../../../build/preview/uml/use-cases/firefly-besu/05-subscribe-contract-events/system-sequence.png)
 
-![System sequence](../../../../build/uml/use-cases/firefly-besu/05-subscribe-contract-events/system-sequence.svg)
+![System sequence](../../../../build/preview/uml/use-cases/firefly-besu/05-subscribe-contract-events/system-sequence.svg)
 
 ## Container sequence
 
-[Mermaid source](container-sequence.mmd) · [SVG](../../../../build/uml/use-cases/firefly-besu/05-subscribe-contract-events/container-sequence.svg) · [PNG](../../../../build/uml/use-cases/firefly-besu/05-subscribe-contract-events/container-sequence.png)
+[Mermaid source](container-sequence.mmd) · [SVG](../../../../build/preview/uml/use-cases/firefly-besu/05-subscribe-contract-events/container-sequence.svg) · [PNG](../../../../build/preview/uml/use-cases/firefly-besu/05-subscribe-contract-events/container-sequence.png)
 
-![Container sequence](../../../../build/uml/use-cases/firefly-besu/05-subscribe-contract-events/container-sequence.svg)
+![Container sequence](../../../../build/preview/uml/use-cases/firefly-besu/05-subscribe-contract-events/container-sequence.svg)
 
 ## Behavior and failure cases
 

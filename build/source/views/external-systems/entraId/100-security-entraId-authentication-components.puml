@@ -1,0 +1,41 @@
+@startuml
+title <size:24>Component - Authentication and token service: logical responsibilities</size>\n<size:24>Component - Authentication and token service: logical responsibilities</size>
+
+set separator none
+left to right direction
+
+<style>
+  root {
+    BackgroundColor: #ffffff
+    FontColor: #444444
+  }
+</style>
+
+!include <C4/C4>
+!include <C4/C4_Context>
+!include <C4/C4_Container>
+!include <C4/C4_Component>
+
+System_Boundary("MicrosoftEntraID_boundary", "Microsoft Entra ID", $tags="") {
+  Container_Boundary("MicrosoftEntraID.Authenticationandtokenservice_boundary", "Authentication and token service", $tags="") {
+    Component(MicrosoftEntraID.Authenticationandtokenservice.Identityprotocolendpoints, "Identity protocol endpoints", $techn="Identity-platform responsibility / implementation undisclosed", $descr="Logical reference: Accepts OIDC authorization and OAuth token requests.", $tags="", $link="https://learn.microsoft.com/en-us/entra/identity-platform/v2-protocols-oidc")
+    Component(MicrosoftEntraID.Authenticationandtokenservice.Identityauthentication, "Identity authentication", $techn="Identity-platform responsibility / implementation undisclosed", $descr="Logical reference: Validates configured user or application authentication proof.", $tags="", $link="https://learn.microsoft.com/en-us/entra/identity-platform/v2-protocols-oidc")
+    Component(MicrosoftEntraID.Authenticationandtokenservice.Accesspolicyevaluation, "Access-policy evaluation", $techn="Identity-platform responsibility / implementation undisclosed", $descr="Logical reference: Applies applicable sign-in and access requirements for this identity and resource.", $tags="", $link="https://learn.microsoft.com/en-us/entra/identity-platform/v2-protocols-oidc")
+    Component(MicrosoftEntraID.Authenticationandtokenservice.Tokenissuance, "Token issuance", $techn="Identity-platform responsibility / implementation undisclosed", $descr="Logical reference: Issues signed ID and access tokens with audience-specific claims.", $tags="", $link="https://learn.microsoft.com/en-us/entra/identity-platform/v2-protocols-oidc")
+  }
+
+  Container(MicrosoftEntraID.DirectoryandadministrationAPI, "Directory and administration API", $techn="Microsoft Entra managed service (logical)", $descr="Logical directory and Microsoft Graph-facing boundary for users, groups, applications and policies.", $tags="", $link="https://learn.microsoft.com/en-us/entra/architecture/architecture")
+}
+
+Rel(MicrosoftEntraID.Authenticationandtokenservice.Identityprotocolendpoints, Memberapplicationreference.Memberbusinessapplication, "Returns signed identity response through the configured browser/client flow", $techn="HTTPS / OIDC or SAML as configured", $tags="", $link="")
+Rel(MicrosoftEntraID.Authenticationandtokenservice.Identityprotocolendpoints, MicrosoftEntraID.Authenticationandtokenservice.Identityauthentication, "Passes authorization or token request with authentication proof", $techn="In-process logical interface", $tags="", $link="")
+Rel(MicrosoftEntraID.Authenticationandtokenservice.Identityauthentication, MicrosoftEntraID.Authenticationandtokenservice.Accesspolicyevaluation, "Supplies authenticated identity and sign-in context", $techn="In-process logical interface", $tags="", $link="")
+Rel(MicrosoftEntraID.Authenticationandtokenservice.Accesspolicyevaluation, MicrosoftEntraID.Authenticationandtokenservice.Tokenissuance, "Supplies permitted identity, audience and scopes", $techn="In-process logical interface", $tags="", $link="")
+Rel(MicrosoftEntraID.Authenticationandtokenservice.Tokenissuance, MicrosoftEntraID.Authenticationandtokenservice.Identityprotocolendpoints, "Returns signed ID or access token response", $techn="In-process logical interface", $tags="", $link="")
+Rel(MicrosoftEntraID.Authenticationandtokenservice.Identityauthentication, MicrosoftEntraID.DirectoryandadministrationAPI, "Reads identity, application and applicable policy records", $techn="Microsoft internal service interface (logical)", $tags="", $link="")
+Rel(MicrosoftEntraID.Authenticationandtokenservice.Accesspolicyevaluation, MicrosoftEntraID.DirectoryandadministrationAPI, "Reads identity, application and applicable policy records", $techn="Microsoft internal service interface (logical)", $tags="", $link="")
+Rel(Memberapplicationreference.Memberbusinessapplication, MicrosoftEntraID.Authenticationandtokenservice.Identityprotocolendpoints, "Submits relying-party authorization request using the reference client", $techn="HTTPS / OIDC or SAML as configured", $tags="", $link="")
+
+SHOW_LEGEND(true)
+hide stereotypes
+@enduml

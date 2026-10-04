@@ -1,0 +1,44 @@
+@startuml
+title <size:24>Container - Example: Browser-mediated Keycloak and Entra OIDC</size>\n<size:24>Container - Example: Browser-mediated Keycloak and Entra OIDC</size>
+
+set separator none
+left to right direction
+
+<style>
+  root {
+    BackgroundColor: #ffffff
+    FontColor: #444444
+  }
+</style>
+
+!include <C4/C4>
+!include <C4/C4_Context>
+!include <C4/C4_Container>
+
+Person(Businessuser, "Business user", $descr="Submits consortium business actions through a member application.", $tags="", $link="https://hyperledger-firefly.github.io/firefly/head/architecture/node_component_architecture/")
+
+System_Boundary("MicrosoftEntraID_boundary", "Microsoft Entra ID", $tags="") {
+  Container(MicrosoftEntraID.Authenticationandtokenservice, "Authentication and token service", $techn="Microsoft Entra managed service (logical)", $descr="Logical identity-platform service for user and application authentication and token issuance.", $tags="", $link="https://learn.microsoft.com/en-us/entra/identity-platform/v2-protocols-oidc")
+}
+
+System_Boundary("Memberapplicationreference_boundary", "Member application reference", $tags="") {
+  Container(Memberapplicationreference.Memberbusinessapplication, "Member business application", $techn="Example application / REST client", $descr="Submits requests and consumes acknowledged FireFly events.", $tags="", $link="https://hyperledger-firefly.github.io/firefly/head/architecture/node_component_architecture/")
+}
+
+System_Boundary("Keycloak_boundary", "Keycloak", $tags="") {
+  Container(Keycloak.Keycloakserver, "Keycloak server", $techn="Java / Keycloak", $descr="Hosts login, administration, federation and protocol services; cache is embedded.", $tags="", $link="https://www.keycloak.org/docs/latest/server_admin/index.html")
+}
+
+Rel(MicrosoftEntraID.Authenticationandtokenservice, Keycloak.Keycloakserver, "Returns authorization code through browser redirect", $techn="HTTPS / OIDC redirect", $tags="", $link="")
+Rel(MicrosoftEntraID.Authenticationandtokenservice, Keycloak.Keycloakserver, "Returns signed ID token and token endpoint response", $techn="HTTPS / OAuth token response", $tags="", $link="")
+Rel(Keycloak.Keycloakserver, Memberapplicationreference.Memberbusinessapplication, "Returns authenticated identity tokens or assertions through the selected protocol flow", $techn="HTTPS / OIDC reference client", $tags="", $link="")
+Rel(Keycloak.Keycloakserver, MicrosoftEntraID.Authenticationandtokenservice, "Redirects browser with OIDC authorization request", $techn="HTTPS / browser-mediated OIDC", $tags="", $link="")
+Rel(Keycloak.Keycloakserver, MicrosoftEntraID.Authenticationandtokenservice, "Exchanges authorization code with client authentication for tokens", $techn="HTTPS / OAuth token endpoint", $tags="", $link="")
+Rel(Businessuser, Memberapplicationreference.Memberbusinessapplication, "Submits business actions", $techn="HTTPS", $tags="", $link="")
+Rel(Businessuser, Keycloak.Keycloakserver, "Submits sign-in interaction through the user browser", $techn="HTTPS / browser OIDC", $tags="", $link="")
+Rel(Businessuser, MicrosoftEntraID.Authenticationandtokenservice, "Submits sign-in interaction through the user browser", $techn="HTTPS / browser OIDC", $tags="", $link="")
+Rel(Memberapplicationreference.Memberbusinessapplication, Keycloak.Keycloakserver, "Submits authorization request via browser and configured protocol client", $techn="HTTPS / OIDC reference client", $tags="", $link="")
+
+SHOW_LEGEND(true)
+hide stereotypes
+@enduml

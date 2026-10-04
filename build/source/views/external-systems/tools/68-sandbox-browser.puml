@@ -1,0 +1,34 @@
+@startuml
+title <size:24>Component - Sandbox browser application</size>\n<size:24>Component - Sandbox browser application</size>
+
+set separator none
+left to right direction
+
+<style>
+  root {
+    BackgroundColor: #ffffff
+    FontColor: #444444
+  }
+</style>
+
+!include <C4/C4>
+!include <C4/C4_Context>
+!include <C4/C4_Container>
+!include <C4/C4_Component>
+
+Person(Applicationdeveloper, "Application developer", $descr="Builds and tests member business integrations.", $tags="", $link="https://hyperledger-firefly.github.io/firefly/head/architecture/node_component_architecture/")
+
+System_Boundary("FireFlydevelopertools_boundary", "FireFly developer tools", $tags="") {
+  Container_Boundary("FireFlydevelopertools.Sandboxbrowserapplication_boundary", "Sandbox browser application", $tags="") {
+    Component(FireFlydevelopertools.Sandboxbrowserapplication.Sandboxscreensandserverclient, "Sandbox screens and server client", $techn="React / TypeScript", $descr="Collects sample actions and requests their execution through the Sandbox server.", $tags="", $link="https://github.com/hyperledger-firefly/sandbox/tree/ef7f240b8acf9c79c8fdf5a8bccb73e9de482069/ui/src")
+  }
+
+  Container(FireFlydevelopertools.Sandboxserver, "Sandbox server", $techn="Node.js / TypeScript", $descr="Serves Sandbox browser assets and maps UI requests to a selected FireFly API.", $tags="", $link="https://github.com/hyperledger-firefly/sandbox/tree/ef7f240b8acf9c79c8fdf5a8bccb73e9de482069/server/src")
+}
+
+Rel(Applicationdeveloper, FireFlydevelopertools.Sandboxbrowserapplication.Sandboxscreensandserverclient, "Selects sample messages and token actions", $techn="Browser interaction", $tags="", $link="")
+Rel(FireFlydevelopertools.Sandboxbrowserapplication.Sandboxscreensandserverclient, FireFlydevelopertools.Sandboxserver, "Submits selected sample actions and receives results", $techn="HTTP(S) / JSON", $tags="", $link="")
+
+SHOW_LEGEND(true)
+hide stereotypes
+@enduml

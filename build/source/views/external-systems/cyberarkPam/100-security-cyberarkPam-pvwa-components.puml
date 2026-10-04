@@ -1,0 +1,51 @@
+@startuml
+title <size:24>Component - Password Vault Web Access: logical responsibilities</size>\n<size:24>Component - Password Vault Web Access: logical responsibilities</size>
+
+set separator none
+left to right direction
+
+<style>
+  root {
+    BackgroundColor: #ffffff
+    FontColor: #444444
+  }
+</style>
+
+!include <C4/C4>
+!include <C4/C4_Context>
+!include <C4/C4_Container>
+!include <C4/C4_Component>
+
+Person(Consortiumoperator, "Consortium operator", $descr="Operates member namespaces, recovery and the Besu network.", $tags="", $link="https://hyperledger-firefly.github.io/firefly/head/architecture/node_component_architecture/")
+Person(Securityadministrator, "Security administrator", $descr="Configures identity, privileged access, secret policies and key permissions in these reference examples.", $tags="", $link="https://docs.cyberark.com/pam-self-hosted/latest/en/content/pas%20inst/installationoverview.htm")
+
+System_Boundary("CyberArkPAMSelfHosted_boundary", "CyberArk PAM Self-Hosted", $tags="") {
+  Container_Boundary("CyberArkPAMSelfHosted.PasswordVaultWebAccess_boundary", "Password Vault Web Access", $tags="") {
+    Component(CyberArkPAMSelfHosted.PasswordVaultWebAccess.WebportalandAPI, "Web portal and API", $techn="PVWA responsibility / proprietary implementation", $descr="Logical reference: Accepts account access, session-launch and administration requests.", $tags="", $link="https://docs.cyberark.com/pam-self-hosted/latest/en/content/pas%20inst/installationoverview.htm")
+    Component(CyberArkPAMSelfHosted.PasswordVaultWebAccess.Accessrequestworkflow, "Access request workflow", $techn="PVWA responsibility / proprietary implementation", $descr="Logical reference: Evaluates configured request and approval requirements.", $tags="", $link="https://docs.cyberark.com/pam-self-hosted/latest/en/content/pas%20inst/installationoverview.htm")
+    Component(CyberArkPAMSelfHosted.PasswordVaultWebAccess.Vaultclient, "Vault client", $techn="PVWA responsibility / proprietary implementation", $descr="Logical reference: Retrieves permitted account metadata or credentials and submits administration changes.", $tags="", $link="https://docs.cyberark.com/pam-self-hosted/latest/en/content/pas%20inst/installationoverview.htm")
+    Component(CyberArkPAMSelfHosted.PasswordVaultWebAccess.Sessionlaunch, "Session launch", $techn="PVWA responsibility / proprietary implementation", $descr="Logical reference: Creates authorized session connection details for the session manager.", $tags="", $link="https://docs.cyberark.com/pam-self-hosted/latest/en/content/pas%20inst/installationoverview.htm")
+  }
+
+  Container(CyberArkPAMSelfHosted.PrivilegedSessionManager, "Privileged Session Manager", $techn="CyberArk PAM / proprietary service", $descr="Brokers privileged target sessions and records session activity.", $tags="", $link="https://docs.cyberark.com/pam-self-hosted/latest/en/content/pas%20inst/installationoverview.htm")
+  Container(CyberArkPAMSelfHosted.DigitalVault, "Digital Vault", $techn="CyberArk PAM / proprietary service", $descr="Protects privileged credentials, Safe permissions and audit/session records.", $tags="", $link="https://docs.cyberark.com/pam-self-hosted/latest/en/content/pas%20inst/installationoverview.htm")
+}
+
+Rel(CyberArkPAMSelfHosted.PrivilegedSessionManager, Consortiumoperator, "Returns brokered session output and completion status", $techn="PSM-supported session client / encrypted connection", $tags="", $link="")
+Rel(Consortiumoperator, CyberArkPAMSelfHosted.PasswordVaultWebAccess.WebportalandAPI, "Requests approved privileged-account access or recorded target session", $techn="HTTPS / PAM web portal", $tags="", $link="")
+Rel(Consortiumoperator, CyberArkPAMSelfHosted.PrivilegedSessionManager, "Connects authorized session client and submits administrative input", $techn="PSM-supported session client / encrypted connection", $tags="", $link="")
+Rel(Securityadministrator, CyberArkPAMSelfHosted.PasswordVaultWebAccess.WebportalandAPI, "Submits authorized configuration or access-policy changes", $techn="HTTPS / product administration API", $tags="", $link="")
+Rel(CyberArkPAMSelfHosted.PasswordVaultWebAccess.WebportalandAPI, CyberArkPAMSelfHosted.PasswordVaultWebAccess.Accessrequestworkflow, "Submits requested account and access justification", $techn="In-process logical interface", $tags="", $link="")
+Rel(CyberArkPAMSelfHosted.PasswordVaultWebAccess.Accessrequestworkflow, CyberArkPAMSelfHosted.PasswordVaultWebAccess.Vaultclient, "Passes approved credential or metadata request", $techn="In-process logical interface", $tags="", $link="")
+Rel(CyberArkPAMSelfHosted.PasswordVaultWebAccess.Accessrequestworkflow, CyberArkPAMSelfHosted.PasswordVaultWebAccess.Sessionlaunch, "Authorizes target session launch", $techn="In-process logical interface", $tags="", $link="")
+Rel(CyberArkPAMSelfHosted.PasswordVaultWebAccess.Vaultclient, CyberArkPAMSelfHosted.PasswordVaultWebAccess.WebportalandAPI, "Returns authorized account metadata and access outcome", $techn="In-process logical interface", $tags="", $link="")
+Rel(CyberArkPAMSelfHosted.PasswordVaultWebAccess.Vaultclient, CyberArkPAMSelfHosted.DigitalVault, "Submits permitted Safe credential or metadata operations", $techn="CyberArk Vault protocol / encrypted channel", $tags="", $link="")
+Rel(CyberArkPAMSelfHosted.DigitalVault, CyberArkPAMSelfHosted.PasswordVaultWebAccess.Vaultclient, "Returns authorized credential or account metadata", $techn="CyberArk Vault protocol / encrypted channel", $tags="", $link="")
+Rel(CyberArkPAMSelfHosted.PrivilegedSessionManager, CyberArkPAMSelfHosted.DigitalVault, "Submits permitted Safe credential or metadata operations", $techn="CyberArk Vault protocol / encrypted channel", $tags="", $link="")
+Rel(CyberArkPAMSelfHosted.DigitalVault, CyberArkPAMSelfHosted.PrivilegedSessionManager, "Returns authorized credential or account metadata", $techn="CyberArk Vault protocol / encrypted channel", $tags="", $link="")
+Rel(CyberArkPAMSelfHosted.PrivilegedSessionManager, CyberArkPAMSelfHosted.DigitalVault, "Uploads session recordings and audit metadata", $techn="CyberArk Vault protocol / encrypted channel", $tags="", $link="")
+Rel(CyberArkPAMSelfHosted.PasswordVaultWebAccess.Sessionlaunch, CyberArkPAMSelfHosted.PrivilegedSessionManager, "Supplies authorized session-launch context via the user session client", $techn="Session connection parameters / client-mediated", $tags="", $link="")
+
+SHOW_LEGEND(true)
+hide stereotypes
+@enduml

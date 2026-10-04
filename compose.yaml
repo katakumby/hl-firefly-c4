@@ -34,7 +34,7 @@ x-viewer: &viewer
   tmpfs:
     - /tmp:rw,nosuid,size=512m,mode=1777
   volumes:
-    # Native local mode reads workspace.dsl and writes its own Git-ignored cache.
+    # Explicit saves update versioned workspace.json; viewer caches stay ignored.
     - ./:/usr/local/structurizr
   environment:
     HOME: /tmp

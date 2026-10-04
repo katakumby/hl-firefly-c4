@@ -1,0 +1,55 @@
+@startuml
+title <size:24>Container - Microsoft Entra ID logical reference</size>\n<size:24>Container - Microsoft Entra ID logical reference</size>
+
+set separator none
+left to right direction
+
+<style>
+  root {
+    BackgroundColor: #ffffff
+    FontColor: #444444
+  }
+</style>
+
+!include <C4/C4>
+!include <C4/C4_Context>
+!include <C4/C4_Container>
+
+Person(Businessuser, "Business user", $descr="Submits consortium business actions through a member application.", $tags="", $link="https://hyperledger-firefly.github.io/firefly/head/architecture/node_component_architecture/")
+Person(Securityadministrator, "Security administrator", $descr="Configures identity, privileged access, secret policies and key permissions in these reference examples.", $tags="", $link="https://docs.cyberark.com/pam-self-hosted/latest/en/content/pas%20inst/installationoverview.htm")
+
+System_Boundary("MicrosoftEntraID_boundary", "Microsoft Entra ID", $tags="") {
+  Container(MicrosoftEntraID.CloudSyncprovisioningagent, "Cloud Sync provisioning agent", $techn="Microsoft Entra provisioning agent / Windows service", $descr="Customer-managed runtime that queries AD DS through outbound-established communication with the provisioning service.", $tags="", $link="https://learn.microsoft.com/en-us/entra/identity/hybrid/cloud-sync/what-is-cloud-sync")
+  Container(MicrosoftEntraID.Authenticationandtokenservice, "Authentication and token service", $techn="Microsoft Entra managed service (logical)", $descr="Logical identity-platform service for user and application authentication and token issuance.", $tags="", $link="https://learn.microsoft.com/en-us/entra/identity-platform/v2-protocols-oidc")
+  Container(MicrosoftEntraID.DirectoryandadministrationAPI, "Directory and administration API", $techn="Microsoft Entra managed service (logical)", $descr="Logical directory and Microsoft Graph-facing boundary for users, groups, applications and policies.", $tags="", $link="https://learn.microsoft.com/en-us/entra/architecture/architecture")
+  Container(MicrosoftEntraID.CloudSyncprovisioningservice, "Cloud Sync provisioning service", $techn="Microsoft Entra managed service (logical)", $descr="Orchestrates selected AD object synchronization and commits directory changes.", $tags="", $link="https://learn.microsoft.com/en-us/entra/identity/hybrid/cloud-sync/what-is-cloud-sync")
+}
+
+System_Boundary("Memberapplicationreference_boundary", "Member application reference", $tags="") {
+  Container(Memberapplicationreference.Memberbusinessapplication, "Member business application", $techn="Example application / REST client", $descr="Submits requests and consumes acknowledged FireFly events.", $tags="", $link="https://hyperledger-firefly.github.io/firefly/head/architecture/node_component_architecture/")
+}
+
+System_Boundary("MicrosoftActiveDirectoryDomainServices_boundary", "Microsoft Active Directory Domain Services", $tags="") {
+  Container(MicrosoftActiveDirectoryDomainServices.Domaincontrollerservices, "Domain-controller services", $techn="Windows Server / AD DS", $descr="Logical AD DS runtime; no server instances, sites or replication topology are modeled.", $tags="", $link="https://learn.microsoft.com/en-us/windows-server/identity/ad-ds/get-started/virtual-dc/active-directory-domain-services-overview")
+}
+
+Rel(MicrosoftEntraID.CloudSyncprovisioningagent, MicrosoftActiveDirectoryDomainServices.Domaincontrollerservices, "Queries selected users, groups, contacts and requested attributes", $techn="LDAP / protected domain connection", $tags="", $link="")
+Rel(MicrosoftEntraID.Authenticationandtokenservice, Memberapplicationreference.Memberbusinessapplication, "Returns authenticated identity tokens or assertions through the selected protocol flow", $techn="HTTPS / OIDC reference client", $tags="", $link="")
+Rel(MicrosoftEntraID.Authenticationandtokenservice, Memberapplicationreference.Memberbusinessapplication, "Returns HSM-audience workload access token", $techn="HTTPS / OAuth 2.0 token response", $tags="", $link="")
+Rel(Businessuser, Memberapplicationreference.Memberbusinessapplication, "Submits business actions", $techn="HTTPS", $tags="", $link="")
+Rel(Businessuser, MicrosoftEntraID.Authenticationandtokenservice, "Submits sign-in interaction through the user browser", $techn="HTTPS / browser OIDC", $tags="", $link="")
+Rel(Businessuser, MicrosoftActiveDirectoryDomainServices.Domaincontrollerservices, "Requests domain sign-in and service tickets through the domain client", $techn="Kerberos / domain client", $tags="", $link="")
+Rel(Securityadministrator, MicrosoftEntraID.DirectoryandadministrationAPI, "Submits authorized configuration or access-policy changes", $techn="HTTPS / product administration API", $tags="", $link="")
+Rel(Securityadministrator, MicrosoftActiveDirectoryDomainServices.Domaincontrollerservices, "Submits authorized configuration or access-policy changes", $techn="Protected LDAP / directory administration", $tags="", $link="")
+Rel(MicrosoftEntraID.Authenticationandtokenservice, MicrosoftEntraID.DirectoryandadministrationAPI, "Reads identity, application and applicable policy records", $techn="Microsoft internal service interface (logical)", $tags="", $link="")
+Rel(MicrosoftEntraID.CloudSyncprovisioningservice, MicrosoftEntraID.DirectoryandadministrationAPI, "Commits scoped user, group and contact changes", $techn="Microsoft internal directory interface (logical)", $tags="", $link="")
+Rel(MicrosoftEntraID.CloudSyncprovisioningagent, MicrosoftEntraID.CloudSyncprovisioningservice, "Establishes outbound channel and returns requested directory attributes", $techn="TLS / Cloud Sync service channel via Azure Service Bus", $tags="", $link="")
+Rel(MicrosoftEntraID.CloudSyncprovisioningservice, MicrosoftEntraID.CloudSyncprovisioningagent, "Delivers scoped synchronization requests over the agent-established channel", $techn="SCIM / established Cloud Sync channel", $tags="", $link="")
+Rel(MicrosoftActiveDirectoryDomainServices.Domaincontrollerservices, MicrosoftEntraID.CloudSyncprovisioningagent, "Returns scoped directory object attributes and change information", $techn="LDAP / protected domain connection", $tags="", $link="")
+Rel(MicrosoftActiveDirectoryDomainServices.Domaincontrollerservices, Businessuser, "Returns Kerberos ticket response to the domain client", $techn="Kerberos / domain client", $tags="", $link="")
+Rel(Memberapplicationreference.Memberbusinessapplication, MicrosoftEntraID.Authenticationandtokenservice, "Submits authorization request via browser and configured protocol client", $techn="HTTPS / OIDC reference client", $tags="", $link="")
+Rel(Memberapplicationreference.Memberbusinessapplication, MicrosoftEntraID.Authenticationandtokenservice, "Authenticates workload identity and requests HSM-audience access token", $techn="HTTPS / OAuth 2.0 client credentials", $tags="", $link="")
+
+SHOW_LEGEND(true)
+hide stereotypes
+@enduml

@@ -1,0 +1,35 @@
+---
+title: UC2 - Register a contract interface and API - containers
+config:
+  theme: default
+  sequence:
+    mirrorActors: false
+    wrap: true
+---
+sequenceDiagram
+    autonumber
+box rgb(235,245,255) Member application reference
+        %% C4: App=apps.client
+        participant App as Member business<br/>application<br/>[Container]<br/>REST client
+    end
+    box rgb(235,250,240) Hyperledger FireFly
+        %% C4: Core=firefly.core
+        participant Core as FireFly Core<br/>[Container]<br/>Go
+        %% C4: DB=firefly.pg
+        participant DB as Core PostgreSQL<br/>database<br/>[Container]<br/>PostgreSQL
+    end
+
+    App->>Core: POST /contracts/interfaces/generate, ABI [HTTPS REST / JSON]
+    Core->>Core: Convert ABI to FireFly Interface [Go / ABI-to-FFI conversion]
+    Core-->>App: FFI definition [HTTPS REST / JSON]
+    App->>Core: POST /contracts/interfaces, FFI [HTTPS REST / JSON]
+    Core->>DB: Store unpublished interface [PostgreSQL wire / TLS]
+    DB-->>Core: Interface id [PostgreSQL wire / TLS]
+    Core-->>App: Registered interface id [HTTPS REST / JSON]
+    App->>Core: POST /apis, interface id and address [HTTPS REST / JSON]
+    Core->>DB: Store unpublished API binding [PostgreSQL wire / TLS]
+    Core-->>App: API definition and documentation URLs [HTTPS REST / JSON]
+    App->>Core: GET /apis/simple-storage/api/swagger.json [HTTPS REST / JSON]
+    Core->>DB: Load API and interface metadata [PostgreSQL wire / TLS]
+    DB-->>Core: API and FFI [PostgreSQL wire / TLS]
+    Core-->>App: Generated OpenAPI specification [HTTPS REST / JSON]

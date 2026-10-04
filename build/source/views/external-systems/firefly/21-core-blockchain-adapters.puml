@@ -1,0 +1,48 @@
+@startuml
+title <size:24>Component - Core blockchain adapters</size>\n<size:24>Component - Core blockchain adapters</size>
+
+set separator none
+left to right direction
+
+<style>
+  root {
+    BackgroundColor: #ffffff
+    FontColor: #444444
+  }
+</style>
+
+!include <C4/C4>
+!include <C4/C4_Context>
+!include <C4/C4_Container>
+!include <C4/C4_Component>
+
+System_Boundary("HyperledgerFireFly_boundary", "Hyperledger FireFly", $tags="") {
+  Container_Boundary("HyperledgerFireFly.FireFlyCore_boundary", "FireFly Core", $tags="") {
+    Component(HyperledgerFireFly.FireFlyCore.Blockchainplugin, "Blockchain plugin", $techn="Go", $descr="Defines blockchain operations and dispatches to the configured chain adapter.", $tags="", $link="https://github.com/hyperledger-firefly/firefly/tree/9d20f3081c9074d5b012427e5572ebc03da8d95d/internal/blockchain")
+    Component(HyperledgerFireFly.FireFlyCore.Ethereumblockchainadapter, "Ethereum blockchain adapter", $techn="Go", $descr="Maps Core operations to EVMConnect or legacy EthConnect.", $tags="", $link="https://github.com/hyperledger-firefly/firefly/tree/9d20f3081c9074d5b012427e5572ebc03da8d95d/internal/blockchain/ethereum")
+    Component(HyperledgerFireFly.FireFlyCore.Fabricblockchainadapter, "Fabric blockchain adapter", $techn="Go", $descr="Maps chaincode operations and ledger events to FabConnect.", $tags="", $link="https://github.com/hyperledger-firefly/firefly/tree/9d20f3081c9074d5b012427e5572ebc03da8d95d/internal/blockchain/fabric")
+    Component(HyperledgerFireFly.FireFlyCore.Tezosblockchainadapter, "Tezos blockchain adapter", $techn="Go", $descr="Maps FireFly contract operations to TezosConnect.", $tags="", $link="https://github.com/hyperledger-firefly/firefly/tree/9d20f3081c9074d5b012427e5572ebc03da8d95d/internal/blockchain/tezos")
+    Component(HyperledgerFireFly.FireFlyCore.Cardanoblockchainadapter, "Cardano blockchain adapter", $techn="Go", $descr="Maps transactions and contract operations to CardanoConnect.", $tags="", $link="https://github.com/hyperledger-firefly/firefly/tree/9d20f3081c9074d5b012427e5572ebc03da8d95d/internal/blockchain/cardano")
+  }
+
+  Container(HyperledgerFireFly.CardanoConnect, "CardanoConnect", $techn="Rust / Axum", $descr="Native Cardano connector with operation, contract and event managers.", $tags="", $link="https://github.com/hyperledger-firefly/cardano/tree/0300bca6b0b99d2a16a81b94f65496934999346e/firefly-cardanoconnect")
+  Container(HyperledgerFireFly.EthConnectlegacyoption, "EthConnect (legacy option)", $techn="Go", $descr="Original Ethereum connector; REST/direct and optional Kafka bridge configurations.", $tags="", $link="https://github.com/hyperledger-firefly/ethconnect/tree/e8ae0eda16cc61b8ac256cdbf5f09edeb571b8c0")
+  Container(HyperledgerFireFly.EVMConnectFFTM, "EVMConnect + FFTM", $techn="Go", $descr="Submits Ethereum transactions and streams confirmed events; one nonce writer.", $tags="", $link="https://github.com/hyperledger-firefly/evmconnect/tree/6e12bb4c050677780cf5dd975a926923868b0cb8/cmd/evmconnect.go")
+  Container(HyperledgerFireFly.FabConnect, "FabConnect", $techn="Go / Fabric SDK", $descr="Fabric transaction, identity and ledger-event connector.", $tags="", $link="https://github.com/hyperledger-firefly/fabconnect/tree/efab8a2b0ff11863bbd9c5eb8a566820f560546b")
+  Container(HyperledgerFireFly.TezosConnectFFTM, "TezosConnect + FFTM", $techn="Go", $descr="Tezos connector with its dependency-pinned embedded transaction manager.", $tags="", $link="https://github.com/hyperledger-firefly/tezosconnect/tree/508ec1e8bb8b671c1eb6e9c090a1d219043dbd8b")
+}
+
+Rel(HyperledgerFireFly.FireFlyCore.Blockchainplugin, HyperledgerFireFly.EVMConnectFFTM, "Submits blockchain operations", $techn="HTTP REST / JSON", $tags="", $link="")
+Rel(HyperledgerFireFly.FireFlyCore.Blockchainplugin, HyperledgerFireFly.FireFlyCore.Ethereumblockchainadapter, "Dispatches EVM operations when configured", $techn="In-process calls / Go", $tags="", $link="")
+Rel(HyperledgerFireFly.FireFlyCore.Blockchainplugin, HyperledgerFireFly.FireFlyCore.Fabricblockchainadapter, "Dispatches Fabric operations when configured", $techn="In-process calls / Go", $tags="", $link="")
+Rel(HyperledgerFireFly.FireFlyCore.Blockchainplugin, HyperledgerFireFly.FireFlyCore.Tezosblockchainadapter, "Dispatches Tezos operations when configured", $techn="In-process calls / Go", $tags="", $link="")
+Rel(HyperledgerFireFly.FireFlyCore.Blockchainplugin, HyperledgerFireFly.FireFlyCore.Cardanoblockchainadapter, "Dispatches Cardano operations when configured", $techn="In-process calls / Go", $tags="", $link="")
+Rel(HyperledgerFireFly.FireFlyCore.Ethereumblockchainadapter, HyperledgerFireFly.EVMConnectFFTM, "Submits EVM calls, transactions and listeners", $techn="HTTP REST / JSON", $tags="", $link="")
+Rel(HyperledgerFireFly.FireFlyCore.Ethereumblockchainadapter, HyperledgerFireFly.EthConnectlegacyoption, "Submits Ethereum requests in the legacy configuration", $techn="HTTP REST + WebSocket", $tags="", $link="")
+Rel(HyperledgerFireFly.FireFlyCore.Fabricblockchainadapter, HyperledgerFireFly.FabConnect, "Submits chaincode calls and event subscriptions", $techn="HTTP REST + WebSocket", $tags="", $link="")
+Rel(HyperledgerFireFly.FireFlyCore.Tezosblockchainadapter, HyperledgerFireFly.TezosConnectFFTM, "Submits Tezos operations and listeners", $techn="HTTP REST + WebSocket", $tags="", $link="")
+Rel(HyperledgerFireFly.FireFlyCore.Cardanoblockchainadapter, HyperledgerFireFly.CardanoConnect, "Submits Cardano operations and subscriptions", $techn="HTTP REST + WebSocket", $tags="", $link="")
+
+SHOW_LEGEND(true)
+hide stereotypes
+@enduml

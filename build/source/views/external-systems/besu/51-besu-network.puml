@@ -1,0 +1,43 @@
+@startuml
+title <size:24>Component - Besu node: Network and admission</size>\n<size:24>Component - Besu node: Network and admission</size>
+
+set separator none
+left to right direction
+
+<style>
+  root {
+    BackgroundColor: #ffffff
+    FontColor: #444444
+  }
+</style>
+
+!include <C4/C4>
+!include <C4/C4_Context>
+!include <C4/C4_Component>
+
+System_Boundary("PrivateBesunetwork_boundary", "Private Besu network", $tags="") {
+  Container_Boundary("PrivateBesunetwork.Besunode_boundary", "Besu node", $tags="") {
+    AddBoundaryTag("Besu client implementation", $borderColor="#444444", $fontColor="#444444", $borderStyle="dashed")
+    Boundary(group_1, "Besu client implementation", $tags="Besu client implementation") {
+      Component(PrivateBesunetwork.Besunode.JSONRPCandsubscriptions, "JSON-RPC and subscriptions", $techn="Java", $descr="Accepts private-network queries and signed transactions.", $tags="", $link="https://github.com/besu-eth/besu/tree/7e05c2342404d27bd06a992e336c5e0c86a5d8d1/ethereum/api")
+      Component(PrivateBesunetwork.Besunode.Nodeandaccountpermissioning, "Node and account permissioning", $techn="Java", $descr="Applies local peer and account allowlists.", $tags="", $link="https://github.com/besu-eth/besu/tree/7e05c2342404d27bd06a992e336c5e0c86a5d8d1/ethereum/permissioning")
+      Component(PrivateBesunetwork.Besunode.Peerdiscovery, "Peer discovery", $techn="Java", $descr="Discovers peers through configured bootnodes.", $tags="", $link="https://github.com/besu-eth/besu/tree/7e05c2342404d27bd06a992e336c5e0c86a5d8d1/ethereum/p2p")
+      Component(PrivateBesunetwork.Besunode.DevP2Ptransport, "DevP2P transport", $techn="Java", $descr="Exchanges transactions, blocks and consensus messages.", $tags="", $link="https://github.com/besu-eth/besu/tree/7e05c2342404d27bd06a992e336c5e0c86a5d8d1/ethereum/p2p")
+      Component(PrivateBesunetwork.Besunode.Transactionpool, "Transaction pool", $techn="Java", $descr="Validates and queues pending transactions.", $tags="", $link="https://github.com/besu-eth/besu/tree/7e05c2342404d27bd06a992e336c5e0c86a5d8d1/ethereum/eth")
+      Component(PrivateBesunetwork.Besunode.Chainsynchronization, "Chain synchronization", $techn="Java", $descr="Downloads and validates missing blocks and state.", $tags="", $link="https://github.com/besu-eth/besu/tree/7e05c2342404d27bd06a992e336c5e0c86a5d8d1/ethereum/eth")
+    }
+
+  }
+
+}
+
+Rel(PrivateBesunetwork.Besunode.JSONRPCandsubscriptions, PrivateBesunetwork.Besunode.Nodeandaccountpermissioning, "Checks transaction sender admission", $techn="In-process calls / Java", $tags="", $link="")
+Rel(PrivateBesunetwork.Besunode.JSONRPCandsubscriptions, PrivateBesunetwork.Besunode.Transactionpool, "Submits signed transactions", $techn="In-process calls / Java", $tags="", $link="")
+Rel(PrivateBesunetwork.Besunode.Peerdiscovery, PrivateBesunetwork.Besunode.DevP2Ptransport, "Provides discovered peer endpoints", $techn="In-process calls / Java", $tags="", $link="")
+Rel(PrivateBesunetwork.Besunode.DevP2Ptransport, PrivateBesunetwork.Besunode.Nodeandaccountpermissioning, "Checks connecting node admission", $techn="In-process calls / Java", $tags="", $link="")
+Rel(PrivateBesunetwork.Besunode.DevP2Ptransport, PrivateBesunetwork.Besunode.Transactionpool, "Gossips pending transactions", $techn="In-process calls / Java", $tags="", $link="")
+Rel(PrivateBesunetwork.Besunode.DevP2Ptransport, PrivateBesunetwork.Besunode.Chainsynchronization, "Delivers requested blocks and state", $techn="In-process calls / Java", $tags="", $link="")
+
+SHOW_LEGEND(true)
+hide stereotypes
+@enduml

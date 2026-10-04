@@ -1,0 +1,37 @@
+@startuml
+title <size:24>Component - Vault Synchronizer: logical responsibilities</size>\n<size:24>Component - Vault Synchronizer: logical responsibilities</size>
+
+set separator none
+left to right direction
+
+<style>
+  root {
+    BackgroundColor: #ffffff
+    FontColor: #444444
+  }
+</style>
+
+!include <C4/C4>
+!include <C4/C4_Context>
+!include <C4/C4_Container>
+!include <C4/C4_Component>
+
+System_Boundary("CyberArkConjurEnterprise_boundary", "CyberArk Conjur Enterprise", $tags="") {
+  Container_Boundary("CyberArkConjurEnterprise.VaultSynchronizer_boundary", "Vault Synchronizer", $tags="") {
+    Component(CyberArkConjurEnterprise.VaultSynchronizer.Vaultaccountreader, "Vault account reader", $techn="Synchronizer responsibility / proprietary implementation", $descr="Logical reference: Reads selected Vault accounts and changed credentials.", $tags="", $link="https://docs.cyberark.com/secrets-manager-sh/latest/en/content/conjur/cv_synchronizer-lp.htm")
+    Component(CyberArkConjurEnterprise.VaultSynchronizer.Accounttovariablemapping, "Account-to-variable mapping", $techn="Synchronizer responsibility / proprietary implementation", $descr="Logical reference: Maps selected Vault account metadata to Conjur variable identifiers.", $tags="", $link="https://docs.cyberark.com/secrets-manager-sh/latest/en/content/conjur/cv_synchronizer-lp.htm")
+    Component(CyberArkConjurEnterprise.VaultSynchronizer.Conjurupdateclient, "Conjur update client", $techn="Synchronizer responsibility / proprietary implementation", $descr="Logical reference: Authenticates to Conjur and writes synchronized secret values.", $tags="", $link="https://docs.cyberark.com/secrets-manager-sh/latest/en/content/conjur/cv_synchronizer-lp.htm")
+  }
+
+  Container(CyberArkConjurEnterprise.Conjurservice, "Conjur service", $techn="Conjur Enterprise / HTTPS API", $descr="Logical enterprise runtime for policy, workload authentication and secret APIs; no leader/follower placement is specified.", $tags="", $link="https://docs.cyberark.com/secrets-manager-sh/latest/en/content/resources/_topnav/cc_home.htm")
+}
+
+Rel(CyberArkConjurEnterprise.VaultSynchronizer.Vaultaccountreader, CyberArkConjurEnterprise.VaultSynchronizer.Accounttovariablemapping, "Supplies selected account identifier, metadata and credential version", $techn="In-process logical interface", $tags="", $link="")
+Rel(CyberArkConjurEnterprise.VaultSynchronizer.Accounttovariablemapping, CyberArkConjurEnterprise.VaultSynchronizer.Conjurupdateclient, "Supplies mapped variable identifier and updated secret value", $techn="In-process logical interface", $tags="", $link="")
+Rel(CyberArkConjurEnterprise.VaultSynchronizer.Conjurupdateclient, CyberArkConjurEnterprise.Conjurservice, "Authenticates and writes mapped secret variable values", $techn="HTTPS / Conjur API", $tags="", $link="")
+Rel(CyberArkConjurEnterprise.VaultSynchronizer.Vaultaccountreader, CyberArkPAMSelfHosted.DigitalVault, "Reads configured Vault accounts and changed credential versions", $techn="CyberArk Vault protocol / encrypted channel", $tags="", $link="")
+Rel(CyberArkPAMSelfHosted.DigitalVault, CyberArkConjurEnterprise.VaultSynchronizer.Vaultaccountreader, "Returns selected account metadata and credentials", $techn="CyberArk Vault protocol / encrypted channel", $tags="", $link="")
+
+SHOW_LEGEND(true)
+hide stereotypes
+@enduml

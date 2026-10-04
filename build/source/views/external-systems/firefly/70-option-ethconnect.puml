@@ -1,0 +1,38 @@
+@startuml
+title <size:24>Container - Optional EthConnect (legacy option)</size>\n<size:24>Container - Optional EthConnect (legacy option)</size>
+
+set separator none
+left to right direction
+
+<style>
+  root {
+    BackgroundColor: #ffffff
+    FontColor: #444444
+  }
+</style>
+
+!include <C4/C4>
+!include <C4/C4_Context>
+!include <C4/C4_Container>
+
+System_Boundary("HyperledgerFireFly_boundary", "Hyperledger FireFly", $tags="") {
+  Container(HyperledgerFireFly.FireFlyCore, "FireFly Core", $techn="Go", $descr="Exposes member APIs, serves Explorer assets and orchestrates multiparty operations.", $tags="", $link="https://github.com/hyperledger-firefly/firefly/tree/9d20f3081c9074d5b012427e5572ebc03da8d95d/internal/orchestrator")
+  Container(HyperledgerFireFly.EthConnectlegacyoption, "EthConnect (legacy option)", $techn="Go", $descr="Original Ethereum connector; REST/direct and optional Kafka bridge configurations.", $tags="", $link="https://github.com/hyperledger-firefly/ethconnect/tree/e8ae0eda16cc61b8ac256cdbf5f09edeb571b8c0")
+  ContainerDb(HyperledgerFireFly.EthConnectlocalstate, "EthConnect local state", $techn="LevelDB / filesystem", $descr="Optional LevelDB receipts, subscriptions and contract metadata.", $tags="", $link="https://github.com/hyperledger-firefly/ethconnect/tree/e8ae0eda16cc61b8ac256cdbf5f09edeb571b8c0/internal/kvstore")
+  Container(HyperledgerFireFly.FireFlySigner, "FireFly Signer", $techn="Go", $descr="Signs member transactions and proxies Ethereum RPC calls.", $tags="", $link="https://github.com/hyperledger-firefly/signer/tree/cfafd71fb4d2c3061a946f6466269877c3f04d9d/internal/rpcserver")
+}
+
+System_Boundary("PrivateBesunetwork_boundary", "Private Besu network", $tags="") {
+  Container(PrivateBesunetwork.Besunode, "Besu node", $techn="Java / Besu / RocksDB", $descr="Runs the selected validator or non-validator RPC/discovery role; each instance owns its key and ledger.", $tags="", $link="https://github.com/besu-eth/besu/tree/7e05c2342404d27bd06a992e336c5e0c86a5d8d1")
+}
+
+Rel(HyperledgerFireFly.FireFlySigner, PrivateBesunetwork.Besunode, "Submits signed transactions and queries RPC nodes", $techn="HTTP JSON-RPC", $tags="", $link="")
+Rel(HyperledgerFireFly.FireFlyCore, HyperledgerFireFly.EthConnectlegacyoption, "Submits calls and consumes events in the legacy configuration", $techn="HTTP REST + WebSocket", $tags="", $link="")
+Rel(HyperledgerFireFly.EthConnectlegacyoption, HyperledgerFireFly.FireFlySigner, "Submits unsigned transactions and read requests", $techn="HTTP JSON-RPC", $tags="", $link="")
+Rel(HyperledgerFireFly.EthConnectlegacyoption, HyperledgerFireFly.FireFlyCore, "Delivers confirmed contract events and transaction results", $techn="WebSocket / JSON", $tags="", $link="")
+Rel(HyperledgerFireFly.EthConnectlegacyoption, HyperledgerFireFly.EthConnectlocalstate, "Persists connector state in local files", $techn="LevelDB / filesystem", $tags="", $link="")
+Rel(PrivateBesunetwork.Besunode, PrivateBesunetwork.Besunode, "Gossips transactions, blocks and QBFT peer messages", $techn="DevP2P / TCP", $tags="", $link="")
+
+SHOW_LEGEND(true)
+hide stereotypes
+@enduml

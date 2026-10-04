@@ -1,0 +1,54 @@
+@startuml
+title <size:24>Container - platform operations</size>\n<size:24>Container - platform operations</size>
+
+set separator none
+left to right direction
+
+<style>
+  root {
+    BackgroundColor: #ffffff
+    FontColor: #444444
+  }
+</style>
+
+!include <C4/C4>
+!include <C4/C4_Context>
+!include <C4/C4_Container>
+
+Person(Consortiumoperator, "Consortium operator", $descr="Operates member namespaces, recovery and the Besu network.", $tags="", $link="https://hyperledger-firefly.github.io/firefly/head/architecture/node_component_architecture/")
+
+System_Boundary("HyperledgerFireFly_boundary", "Hyperledger FireFly", $tags="") {
+  Container(HyperledgerFireFly.FireFlyCore, "FireFly Core", $techn="Go", $descr="Exposes member APIs, serves Explorer assets and orchestrates multiparty operations.", $tags="", $link="https://github.com/hyperledger-firefly/firefly/tree/9d20f3081c9074d5b012427e5572ebc03da8d95d/internal/orchestrator")
+  Container(HyperledgerFireFly.HTTPSDataExchange, "HTTPS Data Exchange", $techn="TypeScript / Node.js", $descr="Exchanges private envelopes and blobs with authenticated members.", $tags="", $link="https://github.com/hyperledger-firefly/dataexchange-https/tree/b6a212d531da1ff1c24e762e7156e2593c73d052/src")
+  ContainerDb(HyperledgerFireFly.FFTMPostgreSQLdatabase, "FFTM PostgreSQL database", $techn="PostgreSQL", $descr="Stores EVMConnect transaction state, nonces and checkpoints in a separate logical database with separate credentials.", $tags="", $link="https://github.com/hyperledger-firefly/transaction-manager/tree/5915cbc4e0e30dea25068b770dadbcc8bdfa9321/internal/persistence/postgres")
+  ContainerDb(HyperledgerFireFly.CorePostgreSQLdatabase, "Core PostgreSQL database", $techn="PostgreSQL", $descr="Stores Core resources and offsets in its own logical database; server placement and replication are outside this model.", $tags="", $link="https://github.com/hyperledger-firefly/firefly/tree/9d20f3081c9074d5b012427e5572ebc03da8d95d/internal/database/postgres")
+}
+
+System_Boundary("PrivateBesunetwork_boundary", "Private Besu network", $tags="") {
+  Container(PrivateBesunetwork.Besunode, "Besu node", $techn="Java / Besu / RocksDB", $descr="Runs the selected validator or non-validator RPC/discovery role; each instance owns its key and ledger.", $tags="", $link="https://github.com/besu-eth/besu/tree/7e05c2342404d27bd06a992e336c5e0c86a5d8d1")
+}
+
+System_Boundary("Platformoperationsreference_boundary", "Platform operations reference", $tags="") {
+  Container(Platformoperationsreference.PostgreSQLoperator, "PostgreSQL operator", $techn="CloudNativePG", $descr="Reconciles database roles, endpoints and fenced failover.", $tags="", $link="https://cloudnative-pg.io/docs/1.28/replication/")
+  Container(Platformoperationsreference.Gatewayingress, "Gateway / ingress", $techn="Envoy Gateway / Kubernetes", $descr="Routes API traffic; preserves peer mTLS with TLS passthrough.", $tags="", $link="https://hyperledger-firefly.github.io/firefly/head/architecture/node_component_architecture/")
+  Container(Platformoperationsreference.Operationsdashboard, "Operations dashboard", $techn="Grafana", $descr="Displays metrics, replication lag and quorum health.", $tags="", $link="https://hyperledger-firefly.github.io/firefly/head/architecture/node_component_architecture/")
+  Container(Platformoperationsreference.Metricscollector, "Metrics collector", $techn="Prometheus", $descr="Scrapes runtime metrics and evaluates availability alerts.", $tags="", $link="https://hyperledger-firefly.github.io/firefly/head/architecture/node_component_architecture/")
+}
+
+Rel(Platformoperationsreference.Gatewayingress, HyperledgerFireFly.FireFlyCore, "Routes authenticated API requests", $techn="HTTPS / REST + WebSocket", $tags="", $link="")
+Rel(Platformoperationsreference.Gatewayingress, HyperledgerFireFly.HTTPSDataExchange, "Passes peer TLS sessions without terminating mTLS", $techn="TCP / TLS passthrough", $tags="", $link="")
+Rel(Platformoperationsreference.PostgreSQLoperator, HyperledgerFireFly.CorePostgreSQLdatabase, "Reconciles database lifecycle through the hosting PostgreSQL cluster", $techn="Kubernetes API / indirect operator reconciliation", $tags="", $link="")
+Rel(Platformoperationsreference.PostgreSQLoperator, HyperledgerFireFly.FFTMPostgreSQLdatabase, "Reconciles database lifecycle through the hosting PostgreSQL cluster", $techn="Kubernetes API / indirect operator reconciliation", $tags="", $link="")
+Rel(Platformoperationsreference.Metricscollector, HyperledgerFireFly.FireFlyCore, "Scrapes member runtime measurements", $techn="HTTP / Prometheus metrics", $tags="", $link="")
+Rel(Platformoperationsreference.Metricscollector, PrivateBesunetwork.Besunode, "Scrapes peer, block and consensus measurements", $techn="HTTP / Prometheus metrics", $tags="", $link="")
+Rel(Consortiumoperator, Platformoperationsreference.Operationsdashboard, "Reviews quorum and recovery measurements", $techn="HTTPS", $tags="", $link="")
+Rel(HyperledgerFireFly.FireFlyCore, HyperledgerFireFly.HTTPSDataExchange, "Submits private messages, blobs and peer configuration", $techn="HTTP REST / JSON + binary", $tags="", $link="")
+Rel(HyperledgerFireFly.FireFlyCore, HyperledgerFireFly.CorePostgreSQLdatabase, "Reads and writes the private Core database", $techn="PostgreSQL wire / TLS", $tags="", $link="")
+Rel(HyperledgerFireFly.HTTPSDataExchange, HyperledgerFireFly.FireFlyCore, "Delivers transfer notifications and awaits ACKs", $techn="WebSocket / JSON", $tags="", $link="")
+Rel(HyperledgerFireFly.HTTPSDataExchange, HyperledgerFireFly.HTTPSDataExchange, "Transfers private envelopes and blobs to peers; receives ACKs", $techn="HTTPS / mutual TLS", $tags="", $link="")
+Rel(Platformoperationsreference.Operationsdashboard, Platformoperationsreference.Metricscollector, "Queries operational time series", $techn="HTTP / PromQL", $tags="", $link="")
+Rel(PrivateBesunetwork.Besunode, PrivateBesunetwork.Besunode, "Gossips transactions, blocks and QBFT peer messages", $techn="DevP2P / TCP", $tags="", $link="")
+
+SHOW_LEGEND(true)
+hide stereotypes
+@enduml

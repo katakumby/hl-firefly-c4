@@ -1,0 +1,35 @@
+@startuml
+title <size:24>Container - Optional FabConnect</size>\n<size:24>Container - Optional FabConnect</size>
+
+set separator none
+left to right direction
+
+<style>
+  root {
+    BackgroundColor: #ffffff
+    FontColor: #444444
+  }
+</style>
+
+!include <C4/C4>
+!include <C4/C4_Context>
+!include <C4/C4_Container>
+
+System(HyperledgerFabricnetwork, "Hyperledger Fabric network", $descr="External Fabric peer, ordering, discovery and chaincode services.", $tags="", $link="https://github.com/hyperledger-firefly/fabconnect/tree/efab8a2b0ff11863bbd9c5eb8a566820f560546b/README.md")
+System(Fabriccertificateauthority, "Fabric certificate authority", $descr="Registers and enrolls client identities used by FabConnect.", $tags="", $link="https://github.com/hyperledger-firefly/fabconnect/tree/efab8a2b0ff11863bbd9c5eb8a566820f560546b/internal/fabric/client/identity.go")
+
+System_Boundary("HyperledgerFireFly_boundary", "Hyperledger FireFly", $tags="") {
+  Container(HyperledgerFireFly.FireFlyCore, "FireFly Core", $techn="Go", $descr="Exposes member APIs, serves Explorer assets and orchestrates multiparty operations.", $tags="", $link="https://github.com/hyperledger-firefly/firefly/tree/9d20f3081c9074d5b012427e5572ebc03da8d95d/internal/orchestrator")
+  Container(HyperledgerFireFly.FabConnect, "FabConnect", $techn="Go / Fabric SDK", $descr="Fabric transaction, identity and ledger-event connector.", $tags="", $link="https://github.com/hyperledger-firefly/fabconnect/tree/efab8a2b0ff11863bbd9c5eb8a566820f560546b")
+  ContainerDb(HyperledgerFireFly.FabConnectlocalstate, "FabConnect local state", $techn="LevelDB + wallet files", $descr="Connector LevelDB state and Fabric wallet identity material.", $tags="", $link="https://github.com/hyperledger-firefly/fabconnect/tree/efab8a2b0ff11863bbd9c5eb8a566820f560546b/internal/fabric/client/store.go")
+}
+
+Rel(HyperledgerFireFly.FabConnect, HyperledgerFabricnetwork, "Submits endorsed transactions and receives ledger events", $techn="Fabric SDK / gRPC + TLS", $tags="", $link="")
+Rel(HyperledgerFireFly.FabConnect, Fabriccertificateauthority, "Registers and enrolls client identities", $techn="Fabric CA / HTTPS", $tags="", $link="")
+Rel(HyperledgerFireFly.FireFlyCore, HyperledgerFireFly.FabConnect, "Submits Fabric requests when configured", $techn="HTTP REST + WebSocket", $tags="", $link="")
+Rel(HyperledgerFireFly.FabConnect, HyperledgerFireFly.FireFlyCore, "Delivers Fabric events and transaction results", $techn="WebSocket / JSON", $tags="", $link="")
+Rel(HyperledgerFireFly.FabConnect, HyperledgerFireFly.FabConnectlocalstate, "Persists wallet and event state", $techn="Filesystem / LevelDB", $tags="", $link="")
+
+SHOW_LEGEND(true)
+hide stereotypes
+@enduml

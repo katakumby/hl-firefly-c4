@@ -1,0 +1,31 @@
+@startuml
+title <size:24>Container - Optional external EVM network</size>\n<size:24>Container - Optional external EVM network</size>
+
+set separator none
+left to right direction
+
+<style>
+  root {
+    BackgroundColor: #ffffff
+    FontColor: #444444
+  }
+</style>
+
+!include <C4/C4>
+!include <C4/C4_Context>
+!include <C4/C4_Container>
+
+System(OtherEVMnetworks, "Other EVM networks", $descr="Optional public or permissioned EVM-compatible networks; share the Ethereum adapter implementation.", $tags="", $link="https://github.com/hyperledger-firefly/evmconnect/tree/6e12bb4c050677780cf5dd975a926923868b0cb8/README.md")
+
+System_Boundary("HyperledgerFireFly_boundary", "Hyperledger FireFly", $tags="") {
+  Container(HyperledgerFireFly.FireFlyCore, "FireFly Core", $techn="Go", $descr="Exposes member APIs, serves Explorer assets and orchestrates multiparty operations.", $tags="", $link="https://github.com/hyperledger-firefly/firefly/tree/9d20f3081c9074d5b012427e5572ebc03da8d95d/internal/orchestrator")
+  Container(HyperledgerFireFly.EVMConnectFFTM, "EVMConnect + FFTM", $techn="Go", $descr="Submits Ethereum transactions and streams confirmed events; one nonce writer.", $tags="", $link="https://github.com/hyperledger-firefly/evmconnect/tree/6e12bb4c050677780cf5dd975a926923868b0cb8/cmd/evmconnect.go")
+}
+
+Rel(HyperledgerFireFly.EVMConnectFFTM, OtherEVMnetworks, "Submits transactions and polls an alternative EVM network", $techn="HTTP JSON-RPC", $tags="", $link="")
+Rel(HyperledgerFireFly.FireFlyCore, HyperledgerFireFly.EVMConnectFFTM, "Submits contract calls, pins and listeners", $techn="HTTP REST / JSON", $tags="", $link="")
+Rel(HyperledgerFireFly.EVMConnectFFTM, HyperledgerFireFly.FireFlyCore, "Streams confirmed events and transaction results", $techn="WebSocket / JSON", $tags="", $link="")
+
+SHOW_LEGEND(true)
+hide stereotypes
+@enduml

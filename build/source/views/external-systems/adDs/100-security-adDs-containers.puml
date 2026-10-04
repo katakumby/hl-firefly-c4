@@ -1,0 +1,59 @@
+@startuml
+title <size:24>Container - Microsoft Active Directory Domain Services logical reference</size>\n<size:24>Container - Microsoft Active Directory Domain Services logical reference</size>
+
+set separator none
+left to right direction
+
+<style>
+  root {
+    BackgroundColor: #ffffff
+    FontColor: #444444
+  }
+</style>
+
+!include <C4/C4>
+!include <C4/C4_Context>
+!include <C4/C4_Container>
+
+Person(Businessuser, "Business user", $descr="Submits consortium business actions through a member application.", $tags="", $link="https://hyperledger-firefly.github.io/firefly/head/architecture/node_component_architecture/")
+Person(Securityadministrator, "Security administrator", $descr="Configures identity, privileged access, secret policies and key permissions in these reference examples.", $tags="", $link="https://docs.cyberark.com/pam-self-hosted/latest/en/content/pas%20inst/installationoverview.htm")
+
+System_Boundary("MicrosoftEntraID_boundary", "Microsoft Entra ID", $tags="") {
+  Container(MicrosoftEntraID.CloudSyncprovisioningagent, "Cloud Sync provisioning agent", $techn="Microsoft Entra provisioning agent / Windows service", $descr="Customer-managed runtime that queries AD DS through outbound-established communication with the provisioning service.", $tags="", $link="https://learn.microsoft.com/en-us/entra/identity/hybrid/cloud-sync/what-is-cloud-sync")
+}
+
+System_Boundary("MicrosoftActiveDirectoryFederationServices_boundary", "Microsoft Active Directory Federation Services", $tags="") {
+  Container(MicrosoftActiveDirectoryFederationServices.ADFSfederationservice, "AD FS federation service", $techn="Windows Server / AD FS", $descr="Authenticates users and issues claims under configured relying-party trust policy.", $tags="", $link="https://learn.microsoft.com/en-us/windows-server/identity/ad-fs/ad-fs-overview")
+}
+
+System_Boundary("MicrosoftActiveDirectoryDomainServices_boundary", "Microsoft Active Directory Domain Services", $tags="") {
+  ContainerDb(MicrosoftActiveDirectoryDomainServices.SYSVOLstore, "SYSVOL store", $techn="SYSVOL / owned filesystem", $descr="Domain-controller-owned policy templates and scripts; no filesystem deployment is specified.", $tags="", $link="https://learn.microsoft.com/en-us/windows-server/identity/ad-ds/get-started/virtual-dc/active-directory-domain-services-overview")
+  ContainerDb(MicrosoftActiveDirectoryDomainServices.ADdirectorydatastore, "AD directory data store", $techn="NTDS directory database / owned storage", $descr="Domain-controller-owned directory objects, schema and account records.", $tags="", $link="https://learn.microsoft.com/en-us/windows-server/identity/ad-ds/get-started/virtual-dc/active-directory-domain-services-overview")
+  Container(MicrosoftActiveDirectoryDomainServices.Domaincontrollerservices, "Domain-controller services", $techn="Windows Server / AD DS", $descr="Logical AD DS runtime; no server instances, sites or replication topology are modeled.", $tags="", $link="https://learn.microsoft.com/en-us/windows-server/identity/ad-ds/get-started/virtual-dc/active-directory-domain-services-overview")
+}
+
+System_Boundary("Keycloak_boundary", "Keycloak", $tags="") {
+  Container(Keycloak.Keycloakserver, "Keycloak server", $techn="Java / Keycloak", $descr="Hosts login, administration, federation and protocol services; cache is embedded.", $tags="", $link="https://www.keycloak.org/docs/latest/server_admin/index.html")
+}
+
+Rel(MicrosoftEntraID.CloudSyncprovisioningagent, MicrosoftActiveDirectoryDomainServices.Domaincontrollerservices, "Queries selected users, groups, contacts and requested attributes", $techn="LDAP / protected domain connection", $tags="", $link="")
+Rel(Keycloak.Keycloakserver, MicrosoftActiveDirectoryDomainServices.Domaincontrollerservices, "Queries user attributes and validates supplied credentials by LDAP bind", $techn="LDAPS", $tags="", $link="")
+Rel(Keycloak.Keycloakserver, MicrosoftActiveDirectoryFederationServices.ADFSfederationservice, "Redirects browser with SAML authentication request", $techn="HTTPS / browser-mediated SAML 2.0", $tags="", $link="")
+Rel(Businessuser, Keycloak.Keycloakserver, "Submits sign-in interaction through the user browser", $techn="HTTPS / browser OIDC", $tags="", $link="")
+Rel(Businessuser, MicrosoftActiveDirectoryFederationServices.ADFSfederationservice, "Submits sign-in interaction through the user browser", $techn="HTTPS / browser SAML 2.0", $tags="", $link="")
+Rel(Businessuser, MicrosoftActiveDirectoryDomainServices.Domaincontrollerservices, "Requests domain sign-in and service tickets through the domain client", $techn="Kerberos / domain client", $tags="", $link="")
+Rel(Securityadministrator, Keycloak.Keycloakserver, "Submits authorized configuration or access-policy changes", $techn="HTTPS / product administration API", $tags="", $link="")
+Rel(Securityadministrator, MicrosoftActiveDirectoryDomainServices.Domaincontrollerservices, "Submits authorized configuration or access-policy changes", $techn="Protected LDAP / directory administration", $tags="", $link="")
+Rel(Securityadministrator, MicrosoftActiveDirectoryFederationServices.ADFSfederationservice, "Submits authorized configuration or access-policy changes", $techn="AD FS administration / PowerShell configuration interface", $tags="", $link="")
+Rel(MicrosoftActiveDirectoryDomainServices.Domaincontrollerservices, MicrosoftActiveDirectoryDomainServices.ADdirectorydatastore, "Reads and writes directory objects, account records and change state", $techn="Local directory database interface", $tags="", $link="")
+Rel(MicrosoftActiveDirectoryDomainServices.Domaincontrollerservices, MicrosoftActiveDirectoryDomainServices.SYSVOLstore, "Reads domain policy templates and script references", $techn="Local filesystem access", $tags="", $link="")
+Rel(MicrosoftActiveDirectoryDomainServices.Domaincontrollerservices, MicrosoftEntraID.CloudSyncprovisioningagent, "Returns scoped directory object attributes and change information", $techn="LDAP / protected domain connection", $tags="", $link="")
+Rel(MicrosoftActiveDirectoryDomainServices.Domaincontrollerservices, Keycloak.Keycloakserver, "Returns user attributes and bind result; does not export passwords", $techn="LDAPS", $tags="", $link="")
+Rel(MicrosoftActiveDirectoryDomainServices.Domaincontrollerservices, MicrosoftActiveDirectoryFederationServices.ADFSfederationservice, "Returns domain authentication result and requested attributes", $techn="Kerberos / protected directory interfaces", $tags="", $link="")
+Rel(MicrosoftActiveDirectoryDomainServices.Domaincontrollerservices, Businessuser, "Returns Kerberos ticket response to the domain client", $techn="Kerberos / domain client", $tags="", $link="")
+Rel(MicrosoftActiveDirectoryFederationServices.ADFSfederationservice, MicrosoftActiveDirectoryDomainServices.Domaincontrollerservices, "Validates domain authentication and resolves account attributes", $techn="Kerberos / protected directory interfaces", $tags="", $link="")
+Rel(MicrosoftActiveDirectoryFederationServices.ADFSfederationservice, Keycloak.Keycloakserver, "Returns signed SAML assertion through browser POST", $techn="HTTPS / browser-mediated SAML 2.0", $tags="", $link="")
+
+SHOW_LEGEND(true)
+hide stereotypes
+@enduml

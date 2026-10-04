@@ -1,0 +1,52 @@
+@startuml
+title <size:24>Component - EVMConnect persistence and delivery options</size>\n<size:24>Component - EVMConnect persistence and delivery options</size>
+
+set separator none
+left to right direction
+
+<style>
+  root {
+    BackgroundColor: #ffffff
+    FontColor: #444444
+  }
+</style>
+
+!include <C4/C4>
+!include <C4/C4_Context>
+!include <C4/C4_Container>
+!include <C4/C4_Component>
+
+System_Boundary("HyperledgerFireFly_boundary", "Hyperledger FireFly", $tags="") {
+  Container_Boundary("HyperledgerFireFly.EVMConnectFFTM_boundary", "EVMConnect + FFTM", $tags="") {
+    Component(HyperledgerFireFly.EVMConnectFFTM.Transactionmanager, "Transaction manager", $techn="Go", $descr="Coordinates durable transaction and stream lifecycles.", $tags="", $link="https://github.com/hyperledger-firefly/transaction-manager/tree/5915cbc4e0e30dea25068b770dadbcc8bdfa9321/pkg/fftm")
+    Component(HyperledgerFireFly.EVMConnectFFTM.Eventstreams, "Event streams", $techn="Go", $descr="Orders and batches confirmed listener events.", $tags="", $link="https://github.com/hyperledger-firefly/transaction-manager/tree/5915cbc4e0e30dea25068b770dadbcc8bdfa9321/internal/events")
+    Component(HyperledgerFireFly.EVMConnectFFTM.WebSocketbatchdelivery, "WebSocket batch delivery", $techn="Go", $descr="Delivers WebSocket batches and accepts consumer acknowledgements.", $tags="", $link="https://github.com/hyperledger-firefly/transaction-manager/tree/5915cbc4e0e30dea25068b770dadbcc8bdfa9321/internal/ws")
+    Component(HyperledgerFireFly.EVMConnectFFTM.Persistenceadapter, "Persistence adapter", $techn="Go", $descr="Stores transactions, nonces, streams and checkpoints.", $tags="", $link="https://github.com/hyperledger-firefly/transaction-manager/tree/5915cbc4e0e30dea25068b770dadbcc8bdfa9321/internal/persistence")
+    Component(HyperledgerFireFly.EVMConnectFFTM.PostgreSQLpersistence, "PostgreSQL persistence", $techn="Go", $descr="Persists managed transactions and streams in SQL tables.", $tags="", $link="https://github.com/hyperledger-firefly/transaction-manager/tree/5915cbc4e0e30dea25068b770dadbcc8bdfa9321/internal/persistence/postgres")
+    Component(HyperledgerFireFly.EVMConnectFFTM.LevelDBpersistence, "LevelDB persistence", $techn="Go", $descr="Persists transactions and stream state in local key-value files.", $tags="", $link="https://github.com/hyperledger-firefly/transaction-manager/tree/5915cbc4e0e30dea25068b770dadbcc8bdfa9321/internal/persistence/leveldb")
+    Component(HyperledgerFireFly.EVMConnectFFTM.Transactionandstreammetrics, "Transaction and stream metrics", $techn="Go", $descr="Records transaction and event-processing measurements.", $tags="", $link="https://github.com/hyperledger-firefly/transaction-manager/tree/5915cbc4e0e30dea25068b770dadbcc8bdfa9321/internal/metrics")
+    Component(HyperledgerFireFly.EVMConnectFFTM.Webhookbatchdelivery, "Webhook batch delivery", $techn="Go", $descr="Delivers event batches using configured HTTP callbacks.", $tags="", $link="https://github.com/hyperledger-firefly/transaction-manager/tree/5915cbc4e0e30dea25068b770dadbcc8bdfa9321/internal/events")
+  }
+
+  ContainerDb(HyperledgerFireFly.FFTMPostgreSQLdatabase, "FFTM PostgreSQL database", $techn="PostgreSQL", $descr="Stores EVMConnect transaction state, nonces and checkpoints in a separate logical database with separate credentials.", $tags="", $link="https://github.com/hyperledger-firefly/transaction-manager/tree/5915cbc4e0e30dea25068b770dadbcc8bdfa9321/internal/persistence/postgres")
+  ContainerDb(HyperledgerFireFly.FFTMLevelDBfiles, "FFTM LevelDB files", $techn="LevelDB / filesystem", $descr="Optional embedded transaction and stream persistence.", $tags="", $link="https://github.com/hyperledger-firefly/transaction-manager/tree/5915cbc4e0e30dea25068b770dadbcc8bdfa9321/internal/persistence/leveldb")
+}
+
+Rel(HyperledgerFireFly.EVMConnectFFTM.Webhookbatchdelivery, Memberapplicationreference.Memberbusinessapplication, "Posts configured blockchain event batches", $techn="HTTP POST / JSON", $tags="", $link="")
+Rel(HyperledgerFireFly.EVMConnectFFTM.Transactionmanager, HyperledgerFireFly.EVMConnectFFTM.Eventstreams, "Configures listeners and stream lifecycle", $techn="In-process calls / Go", $tags="", $link="")
+Rel(HyperledgerFireFly.EVMConnectFFTM.Eventstreams, HyperledgerFireFly.EVMConnectFFTM.WebSocketbatchdelivery, "Delivers ordered event batches", $techn="In-process calls / Go", $tags="", $link="")
+Rel(HyperledgerFireFly.EVMConnectFFTM.WebSocketbatchdelivery, HyperledgerFireFly.EVMConnectFFTM.Eventstreams, "Acknowledges consumed batches", $techn="In-process calls / Go", $tags="", $link="")
+Rel(HyperledgerFireFly.EVMConnectFFTM.Eventstreams, HyperledgerFireFly.EVMConnectFFTM.Persistenceadapter, "Persists acknowledged checkpoints", $techn="In-process calls / Go", $tags="", $link="")
+Rel(HyperledgerFireFly.EVMConnectFFTM.Transactionmanager, HyperledgerFireFly.EVMConnectFFTM.Persistenceadapter, "Persists transaction lifecycle state", $techn="In-process calls / Go", $tags="", $link="")
+Rel(HyperledgerFireFly.EVMConnectFFTM.Persistenceadapter, HyperledgerFireFly.FFTMPostgreSQLdatabase, "Persists FFTM transactions and checkpoints", $techn="PostgreSQL wire / TLS", $tags="", $link="")
+Rel(HyperledgerFireFly.EVMConnectFFTM.Persistenceadapter, HyperledgerFireFly.EVMConnectFFTM.PostgreSQLpersistence, "Writes state through the selected PostgreSQL backend", $techn="In-process calls / Go", $tags="", $link="")
+Rel(HyperledgerFireFly.EVMConnectFFTM.Persistenceadapter, HyperledgerFireFly.EVMConnectFFTM.LevelDBpersistence, "Writes state through the selected LevelDB backend", $techn="In-process calls / Go", $tags="", $link="")
+Rel(HyperledgerFireFly.EVMConnectFFTM.Eventstreams, HyperledgerFireFly.EVMConnectFFTM.Webhookbatchdelivery, "Dispatches batches when webhook delivery is selected", $techn="In-process calls / Go", $tags="", $link="")
+Rel(HyperledgerFireFly.EVMConnectFFTM.Transactionmanager, HyperledgerFireFly.EVMConnectFFTM.Transactionandstreammetrics, "Records transaction processing measurements", $techn="In-process calls / Go", $tags="", $link="")
+Rel(HyperledgerFireFly.EVMConnectFFTM.Eventstreams, HyperledgerFireFly.EVMConnectFFTM.Transactionandstreammetrics, "Records event-processing measurements", $techn="In-process calls / Go", $tags="", $link="")
+Rel(HyperledgerFireFly.EVMConnectFFTM.PostgreSQLpersistence, HyperledgerFireFly.FFTMPostgreSQLdatabase, "Persists the separate FFTM SQL database", $techn="PostgreSQL wire protocol", $tags="", $link="")
+Rel(HyperledgerFireFly.EVMConnectFFTM.LevelDBpersistence, HyperledgerFireFly.FFTMLevelDBfiles, "Reads and writes local transaction state", $techn="LevelDB API / filesystem", $tags="", $link="")
+
+SHOW_LEGEND(true)
+hide stereotypes
+@enduml

@@ -1,0 +1,35 @@
+@startuml
+title <size:24>System Context - CyberArk Conjur Enterprise reference</size>\n<size:24>System Context - CyberArk Conjur Enterprise reference</size>
+
+set separator none
+left to right direction
+
+<style>
+  root {
+    BackgroundColor: #ffffff
+    FontColor: #444444
+  }
+</style>
+
+!include <C4/C4>
+!include <C4/C4_Context>
+
+AddBoundaryTag("Privileged access and secrets", $borderColor="#444444", $fontColor="#444444", $borderStyle="dashed")
+Boundary(group_1, "Privileged access and secrets", $tags="Privileged access and secrets") {
+  System(CyberArkConjurEnterprise, "CyberArk Conjur Enterprise", $descr="Enterprise workload secret access; documented as Secrets Manager Self-Hosted. OSS is not the selected variant.", $tags="", $link="https://docs.cyberark.com/secrets-manager-sh/latest/en/content/resources/_topnav/cc_home.htm")
+  System(CyberArkPAMSelfHosted, "CyberArk PAM Self-Hosted", $descr="Controls privileged credentials, password rotation and recorded administrative sessions.", $tags="", $link="https://docs.cyberark.com/pam-self-hosted/latest/en/content/pas%20inst/installationoverview.htm")
+}
+
+Person(Securityadministrator, "Security administrator", $descr="Configures identity, privileged access, secret policies and key permissions in these reference examples.", $tags="", $link="https://docs.cyberark.com/pam-self-hosted/latest/en/content/pas%20inst/installationoverview.htm")
+System(Memberapplicationreference, "Member application reference", $descr="One example member application boundary; unrelated member applications are not implied to share ownership.", $tags="", $link="https://hyperledger-firefly.github.io/firefly/head/architecture/node_component_architecture/")
+
+Rel(CyberArkPAMSelfHosted, CyberArkConjurEnterprise, "Supplies selected Vault credentials through Vault Synchronizer", $techn="CyberArk Vault protocol + HTTPS / Conjur API", $tags="", $link="")
+Rel(Securityadministrator, CyberArkPAMSelfHosted, "Configures CyberArk PAM Self-Hosted access policy and reviews administrative outcomes", $techn="HTTPS / product administration interface", $tags="", $link="")
+Rel(Securityadministrator, CyberArkConjurEnterprise, "Configures CyberArk Conjur Enterprise access policy and reviews administrative outcomes", $techn="HTTPS / product administration interface", $tags="", $link="")
+Rel(Memberapplicationreference, CyberArkConjurEnterprise, "Authenticates workload and requests permitted application secrets", $techn="HTTPS / Conjur API", $tags="", $link="")
+Rel(CyberArkConjurEnterprise, CyberArkPAMSelfHosted, "Requests selected Vault accounts and changed credentials through Vault Synchronizer", $techn="CyberArk Vault protocol / encrypted channel", $tags="", $link="")
+Rel(CyberArkConjurEnterprise, Memberapplicationreference, "Returns short-lived token or authorized application secret", $techn="HTTPS / Conjur API response", $tags="", $link="")
+
+SHOW_LEGEND(true)
+hide stereotypes
+@enduml

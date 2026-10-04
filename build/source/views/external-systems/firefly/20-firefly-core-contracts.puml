@@ -1,0 +1,56 @@
+@startuml
+title <size:24>Component - FireFly Core: Contracts, tokens and operations</size>\n<size:24>Component - FireFly Core: Contracts, tokens and operations</size>
+
+set separator none
+left to right direction
+
+<style>
+  root {
+    BackgroundColor: #ffffff
+    FontColor: #444444
+  }
+</style>
+
+!include <C4/C4>
+!include <C4/C4_Context>
+!include <C4/C4_Container>
+!include <C4/C4_Component>
+
+System_Boundary("HyperledgerFireFly_boundary", "Hyperledger FireFly", $tags="") {
+  Container_Boundary("HyperledgerFireFly.FireFlyCore_boundary", "FireFly Core", $tags="") {
+    Component(HyperledgerFireFly.FireFlyCore.Orchestrator, "Orchestrator", $techn="Go", $descr="Coordinates API operations and subsystem lifecycles.", $tags="", $link="https://github.com/hyperledger-firefly/firefly/tree/9d20f3081c9074d5b012427e5572ebc03da8d95d/internal/orchestrator")
+    Component(HyperledgerFireFly.FireFlyCore.Contractmanager, "Contract manager", $techn="Go", $descr="Maps FFIs and APIs to contract calls and event listeners.", $tags="", $link="https://github.com/hyperledger-firefly/firefly/tree/9d20f3081c9074d5b012427e5572ebc03da8d95d/internal/contracts")
+    Component(HyperledgerFireFly.FireFlyCore.Assetmanager, "Asset manager", $techn="Go", $descr="Coordinates token pools, balances and transfers.", $tags="", $link="https://github.com/hyperledger-firefly/firefly/tree/9d20f3081c9074d5b012427e5572ebc03da8d95d/internal/assets")
+    Component(HyperledgerFireFly.FireFlyCore.Operationsmanager, "Operations manager", $techn="Go", $descr="Tracks asynchronous connector requests and results.", $tags="", $link="https://github.com/hyperledger-firefly/firefly/tree/9d20f3081c9074d5b012427e5572ebc03da8d95d/internal/operations")
+    Component(HyperledgerFireFly.FireFlyCore.Transactionhelper, "Transaction helper", $techn="Go", $descr="Correlates operations, messages and blockchain transactions.", $tags="", $link="https://github.com/hyperledger-firefly/firefly/tree/9d20f3081c9074d5b012427e5572ebc03da8d95d/internal/txcommon")
+    Component(HyperledgerFireFly.FireFlyCore.Transactionwriter, "Transaction writer", $techn="Go", $descr="Batches transaction persistence and submission work.", $tags="", $link="https://github.com/hyperledger-firefly/firefly/tree/9d20f3081c9074d5b012427e5572ebc03da8d95d/internal/txwriter")
+    Component(HyperledgerFireFly.FireFlyCore.Blockchainplugin, "Blockchain plugin", $techn="Go", $descr="Defines blockchain operations and dispatches to the configured chain adapter.", $tags="", $link="https://github.com/hyperledger-firefly/firefly/tree/9d20f3081c9074d5b012427e5572ebc03da8d95d/internal/blockchain")
+    Component(HyperledgerFireFly.FireFlyCore.Databaseplugin, "Database plugin", $techn="Go", $descr="Defines transactional persistence and dispatches to the selected SQL adapter.", $tags="", $link="https://github.com/hyperledger-firefly/firefly/tree/9d20f3081c9074d5b012427e5572ebc03da8d95d/internal/database")
+    Component(HyperledgerFireFly.FireFlyCore.Tokenplugin, "Token plugin", $techn="Go", $descr="Binds standard token operations to remote token connectors.", $tags="", $link="https://github.com/hyperledger-firefly/firefly/tree/9d20f3081c9074d5b012427e5572ebc03da8d95d/internal/tokens")
+  }
+
+  Container(HyperledgerFireFly.ERC1155connector, "ERC-1155 connector", $techn="TypeScript / NestJS", $descr="Maps multi-token operations and events to FireFly.", $tags="", $link="https://github.com/hyperledger-firefly/tokens-erc1155/tree/0355a0eb11fd12e311829a41bcbfea6148e52469/src")
+  Container(HyperledgerFireFly.ERC20ERC721connector, "ERC-20 / ERC-721 connector", $techn="TypeScript / NestJS", $descr="Maps fungible and non-fungible token APIs to EVM contracts.", $tags="", $link="https://github.com/hyperledger-firefly/tokens-erc20-erc721/tree/7993b308284a396950587b5206370f7f254073d9/src")
+  Container(HyperledgerFireFly.EVMConnectFFTM, "EVMConnect + FFTM", $techn="Go", $descr="Submits Ethereum transactions and streams confirmed events; one nonce writer.", $tags="", $link="https://github.com/hyperledger-firefly/evmconnect/tree/6e12bb4c050677780cf5dd975a926923868b0cb8/cmd/evmconnect.go")
+}
+
+Rel(HyperledgerFireFly.FireFlyCore.Orchestrator, HyperledgerFireFly.FireFlyCore.Contractmanager, "Submits contract queries and invocations", $techn="In-process calls / Go", $tags="", $link="")
+Rel(HyperledgerFireFly.FireFlyCore.Orchestrator, HyperledgerFireFly.FireFlyCore.Assetmanager, "Submits token pool and transfer requests", $techn="In-process calls / Go", $tags="", $link="")
+Rel(HyperledgerFireFly.FireFlyCore.Contractmanager, HyperledgerFireFly.FireFlyCore.Blockchainplugin, "Submits ABI-backed calls and listeners", $techn="In-process calls / Go", $tags="", $link="")
+Rel(HyperledgerFireFly.FireFlyCore.Assetmanager, HyperledgerFireFly.FireFlyCore.Tokenplugin, "Requests standard token operations", $techn="In-process calls / Go", $tags="", $link="")
+Rel(HyperledgerFireFly.FireFlyCore.Assetmanager, HyperledgerFireFly.FireFlyCore.Contractmanager, "Resolves token contract interfaces", $techn="In-process calls / Go", $tags="", $link="")
+Rel(HyperledgerFireFly.FireFlyCore.Contractmanager, HyperledgerFireFly.FireFlyCore.Operationsmanager, "Tracks contract operation completion", $techn="In-process calls / Go", $tags="", $link="")
+Rel(HyperledgerFireFly.FireFlyCore.Assetmanager, HyperledgerFireFly.FireFlyCore.Operationsmanager, "Tracks token operation completion", $techn="In-process calls / Go", $tags="", $link="")
+Rel(HyperledgerFireFly.FireFlyCore.Operationsmanager, HyperledgerFireFly.FireFlyCore.Transactionhelper, "Correlates operation and transaction identifiers", $techn="In-process calls / Go", $tags="", $link="")
+Rel(HyperledgerFireFly.FireFlyCore.Transactionhelper, HyperledgerFireFly.FireFlyCore.Transactionwriter, "Queues transaction records for persistence", $techn="In-process calls / Go", $tags="", $link="")
+Rel(HyperledgerFireFly.FireFlyCore.Transactionwriter, HyperledgerFireFly.FireFlyCore.Databaseplugin, "Flushes transaction records", $techn="In-process calls / Go", $tags="", $link="")
+Rel(HyperledgerFireFly.FireFlyCore.Operationsmanager, HyperledgerFireFly.FireFlyCore.Databaseplugin, "Persists operation state and retries", $techn="In-process calls / Go", $tags="", $link="")
+Rel(HyperledgerFireFly.FireFlyCore.Blockchainplugin, HyperledgerFireFly.EVMConnectFFTM, "Submits blockchain operations", $techn="HTTP REST / JSON", $tags="", $link="")
+Rel(HyperledgerFireFly.FireFlyCore.Tokenplugin, HyperledgerFireFly.ERC20ERC721connector, "Submits ERC-20 and ERC-721 operations", $techn="HTTP REST / JSON", $tags="", $link="")
+Rel(HyperledgerFireFly.FireFlyCore.Tokenplugin, HyperledgerFireFly.ERC1155connector, "Submits ERC-1155 operations", $techn="HTTP REST / JSON", $tags="", $link="")
+Rel(HyperledgerFireFly.ERC1155connector, HyperledgerFireFly.EVMConnectFFTM, "Submits contract calls and consumes event streams", $techn="HTTP REST + WebSocket", $tags="", $link="")
+Rel(HyperledgerFireFly.ERC20ERC721connector, HyperledgerFireFly.EVMConnectFFTM, "Submits contract calls and consumes event streams", $techn="HTTP REST + WebSocket", $tags="", $link="")
+
+SHOW_LEGEND(true)
+hide stereotypes
+@enduml

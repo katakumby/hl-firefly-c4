@@ -1,0 +1,84 @@
+---
+title: UC6 - Private payload and contract - containers
+config:
+  theme: default
+  sequence:
+    mirrorActors: false
+    wrap: true
+    width: 160
+    actorMargin: 20
+    boxMargin: 8
+    messageMargin: 28
+---
+sequenceDiagram
+    autonumber
+box rgb(235,245,255) Member application reference - A
+        %% C4: AppA=apps.client
+        participant AppA as Member business<br/>application A<br/>[Container]<br/>REST client
+    end
+    box rgb(235,250,240) Hyperledger FireFly - member A
+        %% C4: CoreA=firefly.core; DXA=firefly.dx; EVMA=firefly.evm; SignerA=firefly.signer
+        participant CoreA as FireFly Core A<br/>[Container]<br/>Go
+        participant DXA as HTTPS Data<br/>Exchange A<br/>[Container]<br/>Node.js
+        participant EVMA as EVMConnect<br/>+ FFTM A<br/>[Container]<br/>Go
+        participant SignerA as FireFly Signer A<br/>[Container]<br/>Go
+    end
+    box rgb(255,247,224) Private Besu network
+        %% C4: Besu=besu.node
+        participant Besu as Besu node<br/>[Container]<br/>Java / Besu<br/>RocksDB
+    end
+    box rgb(240,240,255) Hyperledger FireFly - member B
+        %% C4: SignerB=firefly.signer; EVMB=firefly.evm; DXB=firefly.dx; CoreB=firefly.core
+        participant SignerB as FireFly Signer B<br/>[Container]<br/>Go
+        participant EVMB as EVMConnect<br/>+ FFTM B<br/>[Container]<br/>Go
+        participant DXB as HTTPS Data<br/>Exchange B<br/>[Container]<br/>Node.js
+        participant CoreB as FireFly Core B<br/>[Container]<br/>Go
+    end
+    box rgb(235,245,255) Member application reference - B
+        %% C4: AppB=apps.client
+        participant AppB as Member business<br/>application B<br/>[Container]<br/>REST client
+    end
+    Note over AppA,CoreA: Durable message subscription connected, withData true
+    Note over CoreB,AppB: Durable message subscription connected, withData true
+    AppA->>CoreA: Invoke with private message [HTTPS REST / JSON]
+    CoreA-->>AppA: 202 Accepted, operation id and tx [HTTPS REST / JSON]
+    par Private payload delivery
+        CoreA->>DXA: Send private batch [HTTP REST / JSON]
+        DXA->>DXB: Transfer batch [HTTPS / mutual TLS]
+        DXB-->>DXA: Transfer ACK [HTTPS / mutual TLS]
+        DXA-->>CoreA: Delivery notification [WebSocket / JSON]
+        CoreA->>DXA: ACK notification [WebSocket / JSON]
+        DXB-->>CoreB: Received batch [WebSocket / JSON]
+        CoreB->>DXB: ACK ingestion [WebSocket / JSON]
+    and Invocation and member A completion
+        CoreA->>EVMA: Invoke with batch-pin data [HTTP REST / JSON]
+        EVMA->>SignerA: eth_sendTransaction [Ethereum JSON-RPC / HTTP]
+        Note over SignerA,Besu: Signer signs before submission, Besu executes contracts after inclusion
+        SignerA->>Besu: eth_sendRawTransaction [Ethereum JSON-RPC / HTTP]
+        Besu-->>SignerA: Transaction hash [Ethereum JSON-RPC / HTTP]
+        SignerA-->>EVMA: Transaction hash [Ethereum JSON-RPC / HTTP]
+        EVMA->>SignerA: Poll receipt, logs and blocks [Ethereum JSON-RPC / HTTP]
+        SignerA->>Besu: Forward tracking RPCs [Ethereum JSON-RPC / HTTP]
+        Besu-->>SignerA: Receipt, logs and blocks [Ethereum JSON-RPC / HTTP]
+        SignerA-->>EVMA: Tracking results [Ethereum JSON-RPC / HTTP]
+        par After transaction confirmation
+            EVMA-->>CoreA: TransactionSuccess summary, best effort [WebSocket / JSON]
+        and After event confirmation
+            EVMA-->>CoreA: BatchPin event batch [WebSocket / JSON]
+            CoreA->>EVMA: ACK batch ingestion [WebSocket / JSON]
+            Note over AppA,CoreA: Await local payload and sequenced pin
+            CoreA-->>AppA: message_confirmed with JSON data [WebSocket / JSON over TLS]
+            AppA->>CoreA: ACK durable processing [WebSocket / JSON over TLS]
+        end
+    and Member B confirmation
+        EVMB->>SignerB: Poll pin logs and blocks [Ethereum JSON-RPC / HTTP]
+        SignerB->>Besu: Forward tracking RPCs [Ethereum JSON-RPC / HTTP]
+        Besu-->>SignerB: Pin logs and blocks [Ethereum JSON-RPC / HTTP]
+        SignerB-->>EVMB: Tracking results [Ethereum JSON-RPC / HTTP]
+        Note over EVMB,CoreB: Event-confirmation policy satisfied
+        EVMB-->>CoreB: BatchPin event batch [WebSocket / JSON]
+        CoreB->>EVMB: ACK batch ingestion [WebSocket / JSON]
+        Note over CoreB,AppB: Await local payload and sequenced pin
+        CoreB-->>AppB: message_confirmed with JSON data [WebSocket / JSON over TLS]
+        AppB->>CoreB: ACK durable processing [WebSocket / JSON over TLS]
+    end

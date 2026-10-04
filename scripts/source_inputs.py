@@ -71,7 +71,7 @@ def source_files(root, discovered=()):
     for tree in TREES:
         paths.update(path for path in input_files(root / tree)
                      if path.name not in ('workspace.json', 'workspace.json.bak') and path.suffix != '.pyc')
-    paths = {path for path in paths if path.is_file() and allowed(path)}
+    paths = {path for path in paths if path.is_file() and allowed(path) and path != root / 'docker/local.env'}
     pending = [path for path in paths if path.suffix in SOURCE_SUFFIXES - {'.mmd'}]
     visited = set()
     while pending:

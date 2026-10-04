@@ -1,0 +1,51 @@
+@startuml
+title <size:24>Component - AD FS federation service: logical responsibilities</size>\n<size:24>Component - AD FS federation service: logical responsibilities</size>
+
+set separator none
+left to right direction
+
+<style>
+  root {
+    BackgroundColor: #ffffff
+    FontColor: #444444
+  }
+</style>
+
+!include <C4/C4>
+!include <C4/C4_Context>
+!include <C4/C4_Container>
+!include <C4/C4_Component>
+
+Person(Securityadministrator, "Security administrator", $descr="Configures identity, privileged access, secret policies and key permissions in these reference examples.", $tags="", $link="https://docs.cyberark.com/pam-self-hosted/latest/en/content/pas%20inst/installationoverview.htm")
+
+System_Boundary("MicrosoftActiveDirectoryFederationServices_boundary", "Microsoft Active Directory Federation Services", $tags="") {
+  Container_Boundary("MicrosoftActiveDirectoryFederationServices.ADFSfederationservice_boundary", "AD FS federation service", $tags="") {
+    Component(MicrosoftActiveDirectoryFederationServices.ADFSfederationservice.Federationprotocolendpoints, "Federation protocol endpoints", $techn="AD FS logical responsibility", $descr="Logical reference: Accepts relying-party requests and returns browser-mediated federation responses.", $tags="", $link="https://learn.microsoft.com/en-us/windows-server/identity/ad-fs/technical-reference/the-role-of-the-claims-engine")
+    Component(MicrosoftActiveDirectoryFederationServices.ADFSfederationservice.Authenticationadapters, "Authentication adapters", $techn="AD FS logical responsibility", $descr="Logical reference: Validates user authentication through configured domain mechanisms.", $tags="", $link="https://learn.microsoft.com/en-us/windows-server/identity/ad-fs/technical-reference/the-role-of-the-claims-engine")
+    Component(MicrosoftActiveDirectoryFederationServices.ADFSfederationservice.Claimsengine, "Claims engine", $techn="AD FS logical responsibility", $descr="Logical reference: Transforms incoming claims and directory attributes using configured claim rules.", $tags="", $link="https://learn.microsoft.com/en-us/windows-server/identity/ad-fs/technical-reference/the-role-of-the-claims-engine")
+    Component(MicrosoftActiveDirectoryFederationServices.ADFSfederationservice.Tokenissuance, "Token issuance", $techn="AD FS logical responsibility", $descr="Logical reference: Signs and issues claims tokens for the configured relying party.", $tags="", $link="https://learn.microsoft.com/en-us/windows-server/identity/ad-fs/technical-reference/the-role-of-the-claims-engine")
+    Component(MicrosoftActiveDirectoryFederationServices.ADFSfederationservice.Trustandconfigurationaccess, "Trust and configuration access", $techn="AD FS logical responsibility", $descr="Logical reference: Loads relying-party trusts, claims rules and signing configuration.", $tags="", $link="https://learn.microsoft.com/en-us/windows-server/identity/ad-fs/technical-reference/the-role-of-the-claims-engine")
+    Component(MicrosoftActiveDirectoryFederationServices.ADFSfederationservice.Federationauditing, "Federation auditing", $techn="AD FS logical responsibility", $descr="Logical reference: Records authentication, claims issuance outcome and request context.", $tags="", $link="https://learn.microsoft.com/en-us/windows-server/identity/ad-fs/technical-reference/the-role-of-the-claims-engine")
+  }
+
+  ContainerDb(MicrosoftActiveDirectoryFederationServices.ADFSconfigurationstore, "AD FS configuration store", $techn="Windows Internal Database (reference choice)", $descr="Stores trust, claim-rule and federation configuration; WID is the reference store choice.", $tags="", $link="https://learn.microsoft.com/en-us/windows-server/identity/ad-fs/ad-fs-overview")
+}
+
+Rel(Securityadministrator, MicrosoftActiveDirectoryDomainServices.Domaincontrollerservices, "Submits authorized configuration or access-policy changes", $techn="Protected LDAP / directory administration", $tags="", $link="")
+Rel(Securityadministrator, MicrosoftActiveDirectoryFederationServices.ADFSfederationservice.Trustandconfigurationaccess, "Submits authorized configuration or access-policy changes", $techn="AD FS administration / PowerShell configuration interface", $tags="", $link="")
+Rel(MicrosoftActiveDirectoryFederationServices.ADFSfederationservice.Federationprotocolendpoints, MicrosoftActiveDirectoryFederationServices.ADFSfederationservice.Authenticationadapters, "Passes relying-party authentication request and user context", $techn="In-process logical interface", $tags="", $link="")
+Rel(MicrosoftActiveDirectoryFederationServices.ADFSfederationservice.Authenticationadapters, MicrosoftActiveDirectoryFederationServices.ADFSfederationservice.Claimsengine, "Supplies authenticated identity and requested attributes", $techn="In-process logical interface", $tags="", $link="")
+Rel(MicrosoftActiveDirectoryFederationServices.ADFSfederationservice.Claimsengine, MicrosoftActiveDirectoryFederationServices.ADFSfederationservice.Tokenissuance, "Supplies transformed claims and relying-party audience", $techn="In-process logical interface", $tags="", $link="")
+Rel(MicrosoftActiveDirectoryFederationServices.ADFSfederationservice.Tokenissuance, MicrosoftActiveDirectoryFederationServices.ADFSfederationservice.Federationprotocolendpoints, "Returns signed federation response", $techn="In-process logical interface", $tags="", $link="")
+Rel(MicrosoftActiveDirectoryFederationServices.ADFSfederationservice.Claimsengine, MicrosoftActiveDirectoryFederationServices.ADFSfederationservice.Trustandconfigurationaccess, "Loads applicable claims transformation and issuance rules", $techn="In-process logical interface", $tags="", $link="")
+Rel(MicrosoftActiveDirectoryFederationServices.ADFSfederationservice.Tokenissuance, MicrosoftActiveDirectoryFederationServices.ADFSfederationservice.Trustandconfigurationaccess, "Loads token-signing and relying-party trust settings", $techn="In-process logical interface", $tags="", $link="")
+Rel(MicrosoftActiveDirectoryFederationServices.ADFSfederationservice.Federationprotocolendpoints, MicrosoftActiveDirectoryFederationServices.ADFSfederationservice.Federationauditing, "Records federation request context and issuance outcome", $techn="In-process logical interface", $tags="", $link="")
+Rel(MicrosoftActiveDirectoryFederationServices.ADFSfederationservice.Trustandconfigurationaccess, MicrosoftActiveDirectoryFederationServices.ADFSconfigurationstore, "Reads federation trusts, claim rules and signing configuration", $techn="WID / local configuration database interface", $tags="", $link="")
+Rel(MicrosoftActiveDirectoryDomainServices.Domaincontrollerservices, MicrosoftActiveDirectoryFederationServices.ADFSfederationservice.Authenticationadapters, "Returns domain authentication result and requested attributes", $techn="Kerberos / protected directory interfaces", $tags="", $link="")
+Rel(MicrosoftActiveDirectoryFederationServices.ADFSfederationservice.Authenticationadapters, MicrosoftActiveDirectoryDomainServices.Domaincontrollerservices, "Validates domain authentication and resolves account attributes", $techn="Kerberos / protected directory interfaces", $tags="", $link="")
+Rel(MicrosoftActiveDirectoryFederationServices.ADFSfederationservice.Federationprotocolendpoints, Memberapplicationreference.Memberbusinessapplication, "Returns signed identity response through the configured browser/client flow", $techn="HTTPS / OIDC or SAML as configured", $tags="", $link="")
+Rel(Memberapplicationreference.Memberbusinessapplication, MicrosoftActiveDirectoryFederationServices.ADFSfederationservice.Federationprotocolendpoints, "Submits relying-party authorization request using the reference client", $techn="HTTPS / OIDC or SAML as configured", $tags="", $link="")
+
+SHOW_LEGEND(true)
+hide stereotypes
+@enduml

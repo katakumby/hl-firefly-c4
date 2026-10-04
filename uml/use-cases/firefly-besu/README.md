@@ -153,18 +153,18 @@ Follow the [repository review workflow](../../../AGENTS.md) for affected C4 view
 then check these Mermaid sources, relative links and API/source references. Verify
 that paired sequence diagrams describe the same outcome.
 
-Generate a matching lightweight result, then complete Mermaid SVG and PNG previews
-under `build/uml/use-cases/firefly-besu/`:
+Generate a matching generated source handoff, then complete Mermaid SVG and PNG previews
+under `build/preview/uml/use-cases/firefly-besu/`:
 
 ```text
-docker compose run --rm --pull never tools build
-docker compose run --rm --pull never tools-browser build-browser
+docker compose run --rm --pull never tools build-source
+docker compose run --rm --pull never tools-browser build-preview --renderer mermaid
 ```
 
 Open images for visual review only when explicitly requested. These handwritten
 UML sequences remain separate from generated C4 definitions; their Markdown
-previews require successful browser completion. See the
-[build guide](../../../documentation/build.md#lightweight-handoffs-and-completion)
+previews require successful Mermaid preview generation. See the
+[build guide](../../../documentation/build.md#source-handoffs-and-independent-previews)
 for artifact reuse and freshness checks.
 
 

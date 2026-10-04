@@ -1,0 +1,39 @@
+@startuml
+title <size:24>Component - Cloud Sync provisioning agent: logical responsibilities</size>\n<size:24>Component - Cloud Sync provisioning agent: logical responsibilities</size>
+
+set separator none
+left to right direction
+
+<style>
+  root {
+    BackgroundColor: #ffffff
+    FontColor: #444444
+  }
+</style>
+
+!include <C4/C4>
+!include <C4/C4_Context>
+!include <C4/C4_Container>
+!include <C4/C4_Component>
+
+System_Boundary("MicrosoftEntraID_boundary", "Microsoft Entra ID", $tags="") {
+  Container_Boundary("MicrosoftEntraID.CloudSyncprovisioningagent_boundary", "Cloud Sync provisioning agent", $tags="") {
+    Component(MicrosoftEntraID.CloudSyncprovisioningagent.Outboundservicechannel, "Outbound service channel", $techn="Provisioning agent logical responsibility", $descr="Logical reference: Receives synchronization requests through the agent-established service connection.", $tags="", $link="https://learn.microsoft.com/en-us/entra/identity/hybrid/cloud-sync/what-is-cloud-sync")
+    Component(MicrosoftEntraID.CloudSyncprovisioningagent.ADqueryconnector, "AD query connector", $techn="Provisioning agent logical responsibility", $descr="Logical reference: Queries scoped AD objects and returns requested attributes.", $tags="", $link="https://learn.microsoft.com/en-us/entra/identity/hybrid/cloud-sync/what-is-cloud-sync")
+    Component(MicrosoftEntraID.CloudSyncprovisioningagent.Synchronizationresponse, "Synchronization response", $techn="Provisioning agent logical responsibility", $descr="Logical reference: Returns directory data and progress information to cloud provisioning.", $tags="", $link="https://learn.microsoft.com/en-us/entra/identity/hybrid/cloud-sync/what-is-cloud-sync")
+  }
+
+  Container(MicrosoftEntraID.CloudSyncprovisioningservice, "Cloud Sync provisioning service", $techn="Microsoft Entra managed service (logical)", $descr="Orchestrates selected AD object synchronization and commits directory changes.", $tags="", $link="https://learn.microsoft.com/en-us/entra/identity/hybrid/cloud-sync/what-is-cloud-sync")
+}
+
+Rel(MicrosoftEntraID.CloudSyncprovisioningagent.ADqueryconnector, MicrosoftActiveDirectoryDomainServices.Domaincontrollerservices, "Queries selected users, groups, contacts and requested attributes", $techn="LDAP / protected domain connection", $tags="", $link="")
+Rel(MicrosoftEntraID.CloudSyncprovisioningagent.Outboundservicechannel, MicrosoftEntraID.CloudSyncprovisioningagent.ADqueryconnector, "Passes requested directory scope and attribute query", $techn="In-process logical interface", $tags="", $link="")
+Rel(MicrosoftEntraID.CloudSyncprovisioningagent.ADqueryconnector, MicrosoftEntraID.CloudSyncprovisioningagent.Synchronizationresponse, "Supplies selected object attributes and query outcome", $techn="In-process logical interface", $tags="", $link="")
+Rel(MicrosoftEntraID.CloudSyncprovisioningagent.Synchronizationresponse, MicrosoftEntraID.CloudSyncprovisioningagent.Outboundservicechannel, "Returns synchronization data for the established service channel", $techn="In-process logical interface", $tags="", $link="")
+Rel(MicrosoftEntraID.CloudSyncprovisioningagent.Outboundservicechannel, MicrosoftEntraID.CloudSyncprovisioningservice, "Establishes outbound channel and returns requested directory attributes", $techn="TLS / Cloud Sync service channel via Azure Service Bus", $tags="", $link="")
+Rel(MicrosoftEntraID.CloudSyncprovisioningservice, MicrosoftEntraID.CloudSyncprovisioningagent.Outboundservicechannel, "Delivers scoped synchronization requests over the agent-established channel", $techn="SCIM / established Cloud Sync channel", $tags="", $link="")
+Rel(MicrosoftActiveDirectoryDomainServices.Domaincontrollerservices, MicrosoftEntraID.CloudSyncprovisioningagent.ADqueryconnector, "Returns scoped directory object attributes and change information", $techn="LDAP / protected domain connection", $tags="", $link="")
+
+SHOW_LEGEND(true)
+hide stereotypes
+@enduml

@@ -77,34 +77,28 @@ class Renderers(unittest.TestCase):
 
 
 class CompleteBuild(unittest.TestCase):
-    def test_real_build_and_failed_rebuild_preserve_previous_outputs(self):
+    def test_real_previews_and_failed_rebuild_preserve_previous_outputs(self):
         with checkout() as root:
             paths.REFERENCE.write_text(BASE)
             source = root / 'uml/patterns/request/sequence.puml'
             source.parent.mkdir(parents=True)
-            source.write_text('@startuml\nA -> B: Request\n@enduml')
+            (source.parent / 'participants.pumlinc').write_text('participant A\nparticipant B')
+            source.write_text('@startuml\n!include participants.pumlinc\nA -> B: Request\n@enduml')
             local = root / 'workspaces/team/uml/sequence.mmd'
             local.parent.mkdir(parents=True)
             local.write_text('sequenceDiagram\nA->>B: Request\n')
-            cli.build()
+            cli.build_source()
+            cli.build_preview('plantuml')
             if renderer.has_capability('mermaid'):
-                cli.build_browser()
-            status = json.loads((cli.BUILD / 'build.json').read_text())
-            self.assertTrue(status['passed'])
-            self.assertIn('uml/patterns/request/sequence.puml', status['sources'])
-            self.assertIn('workspaces/team/uml/sequence.mmd', status['sources'])
-            images = [root / output for output in status['outputs'] if output.endswith(('.svg', '.png'))]
+                cli.build_preview('mermaid')
+            images = [cli.BUILD / i['output'] for i in cli.inventory() if i['format'] in ('svg', 'png')]
             self.assertEqual(10 if renderer.has_capability('mermaid') else 8, len(images))
-            for image in images:
-                renderer.check_image(image)
-            for entry in cli.inventory():
-                if entry['format'] in ('svg', 'png'):
-                    self.assertIn('plantuml', entry['renderers'])
+            for image in images: renderer.check_image(image)
             previous = {image: image.read_bytes() for image in images}
             with patch.object(cli, 'render', side_effect=RuntimeError('renderer unavailable')):
                 with self.assertRaisesRegex(RuntimeError, 'renderer unavailable'):
-                    cli.build()
-            self.assertFalse(json.loads((cli.BUILD / 'build.json').read_text())['passed'])
+                    cli.build_preview('plantuml')
+            self.assertFalse(json.loads((cli.BUILD / '.reports/preview-plantuml.json').read_text())['passed'])
             self.assertEqual(previous, {image: image.read_bytes() for image in images})
 
     def test_discovery_rejects_collisions_and_keeps_workspace_namespaces(self):
@@ -122,18 +116,18 @@ class CompleteBuild(unittest.TestCase):
     def test_build_source_mutation_keeps_previous_artifacts(self):
         with checkout() as root:
             paths.REFERENCE.write_text(BASE)
-            previous = cli.BUILD / 'uml/existing.svg'
-            previous.parent.mkdir(parents=True)
-            previous.write_text('previous success')
-            def simulated_render(source, output, logs):
-                output.parent.mkdir(parents=True, exist_ok=True)
-                output.write_text('staged image')
+            cli.build_source()
+            before = (cli.BUILD / 'source/flow.puml').read_bytes()
+            original = cli.stage_c4
+            def mutate(*args):
+                result = original(*args)
                 (root / 'model.dsl').write_text('Changed during build')
-            with patch.object(cli, 'render', side_effect=simulated_render):
-                with self.assertRaisesRegex(ValueError, 'Sources changed during build'):
-                    cli.build()
-            self.assertEqual('previous success', previous.read_text())
-            self.assertFalse(json.loads((cli.BUILD / 'build.json').read_text())['passed'])
+                return result
+            with patch.object(cli, 'stage_c4', side_effect=mutate):
+                with self.assertRaisesRegex(ValueError, 'Sources changed'):
+                    cli.build_source()
+            self.assertEqual(before, (cli.BUILD / 'source/flow.puml').read_bytes())
+            self.assertFalse(json.loads((cli.BUILD / '.reports/source.json').read_text())['passed'])
 
     def test_multi_destination_publication_rolls_back(self):
         with checkout():
@@ -244,8 +238,8 @@ class RootAndIsolation(unittest.TestCase):
                 self.assertEqual(2 if workspace == experiment else 1, len(systems))
                 self.assertEqual(workspace == experiment, 'Future' in systems[0]['tags'])
             for workspace in (paths.REFERENCE, experiment):
-                cli.export(workspace, 'plantuml')
-                diagrams = cli.BUILD / workspace.relative_to(root).parent
+                cli.build_source([workspace])
+                diagrams = cli.BUILD / 'source' / workspace.relative_to(root).parent
                 text = next(diagrams.glob('*.puml')).read_text()
                 self.assertEqual(workspace == experiment, 'Experimental system' in text)
             self.assertNotIn('Future', (root / 'model.dsl').read_text())

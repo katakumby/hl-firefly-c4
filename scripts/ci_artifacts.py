@@ -1,79 +1,66 @@
-"""Copy only successful current build outputs, or diagnostic reports, to /artifacts."""
+"""Package verified source/preview handoffs or diagnostics, without local state."""
 import argparse
-import hashlib
 import json
 from pathlib import Path
 import shutil
 
-from architecture import BUILD, TOOLCHAIN, command_lock, inventory, source_fingerprint, verify_light_handoff
-from artifact_store import confined, atomic_json
+import architecture as cli
+from artifact_store import atomic_json, confined
 from diagram_renderers import check_toolchain
 
 
-def package(destination, diagnostics=False, stage='light'):
+def package(destination, diagnostics=False, stage='source', renderer=None):
     destination = Path(destination)
-    if not destination.is_dir():
+    if not destination.is_dir() or any(destination.iterdir()):
         raise ValueError('Mount an empty writable artifact directory at /artifacts')
-    if any(destination.iterdir()):
-        raise ValueError('Artifact directory must be empty (use isolated CI staging)')
     selected = set()
-    packaged_entries = []
-    with command_lock():
-        if not diagnostics:
-            if stage not in ('light', 'full'):
-                raise ValueError('Package stage must be light or full')
-            light, digest = verify_light_handoff()
-            status = light
-            selected.update(confined(BUILD, path) for path in light['reports'])
-            selected.update(BUILD / '.reports' / name for name in ('build-light.json', 'build-light.log'))
-            if stage == 'full':
-                status = json.loads((BUILD / '.reports/build-browser.json').read_text())
-                if (not status.get('complete') or status.get('light_sha256') != digest
-                        or status.get('source_revision') != light['source_revision']):
-                    raise ValueError('Refusing to package an incomplete or stale browser build')
-                check_toolchain(TOOLCHAIN, status.get('renderers', {}))
-                selected.update(BUILD / '.reports' / name for name in ('build-browser.json', 'build-browser.log'))
-            fingerprint = source_fingerprint()
-            if not status['passed'] or status.get('in_progress') or status['source_sha256'] != fingerprint:
-                raise ValueError('Refusing to package a failed or stale build as successful')
-            entries = {entry['output']: entry for entry in inventory()}
-            if stage == 'full':
-                expected = {(item['source'], item['output'], item['format']) for item in light['deferred']}
-                actual = {(item['source'], item['output'], item['format']) for item in status['artifacts']}
-                if (actual != expected or len(actual) != len(status['artifacts'])
-                        or status['outputs'] != light['outputs'] + ['build/' + item['output'] for item in status['artifacts']]
-                        or any(entries.get(item['output']) != item for item in status['artifacts'])):
-                    raise ValueError('Refusing to package incomplete or modified browser artifacts')
-            # Only the chosen stage's verified outputs belong in this handoff.
-            for output in status['outputs']:
-                relative = Path(output).relative_to('build').as_posix()
-                entry = entries[relative]
-                file = confined(BUILD, relative)
-                if entry['source_sha256'] != fingerprint or hashlib.sha256(file.read_bytes()).hexdigest() != entry['output_sha256']:
-                    raise ValueError(f'Refusing to package stale or modified artifact: {relative}')
-                selected.add(file)
-                packaged_entries.append(entry)
+    with cli.command_lock():
+        if diagnostics:
+            selected.update(p for p in (cli.BUILD / '.reports').rglob('*') if p.is_file() and p.suffix in ('.json', '.log'))
         else:
-            selected.update(p for p in (BUILD / '.reports').rglob('*') if p.is_file() and p.suffix in ('.json', '.log'))
-            selected.update(p for p in (BUILD / 'build.json', BUILD / 'build.log') if p.is_file())
-        selected.update(p for p in (BUILD / '.reports').glob('tests*.log') if p.is_file())
+            if stage not in ('source', 'preview') or (stage == 'preview' and renderer not in ('plantuml', 'mermaid')):
+                raise ValueError('Use --stage source or --stage preview --renderer plantuml|mermaid')
+            if stage == 'source' and renderer:
+                raise ValueError('--renderer applies only to preview packaging')
+            source, source_digest = cli.verify_source_handoff()
+            name, status = 'source', source
+            if stage == 'preview':
+                name = 'preview-' + renderer
+                report = cli.BUILD / '.reports' / (name + '.json')
+                if not report.is_file():
+                    raise ValueError('Missing preview report; run the selected preview stage first')
+                status = json.loads(report.read_text())
+                if (not status.get('passed') or status.get('in_progress') or status.get('source_handoff_sha256') != source_digest):
+                    raise ValueError('Refusing to package an incomplete or stale preview')
+                check_toolchain(cli.TOOLCHAIN, status['renderers'])
+                cli.verify_coverage(source['selection'], status['selection'], source['artifacts'])
+                expected = {item['output'] for item in cli.preview_plan(source['artifacts'], renderer)
+                            if cli.in_scope(item, status['selection'])}
+                if expected != set(status['outputs']) or status['outputs'] != sorted(i['output'] for i in status['artifacts']):
+                    raise ValueError('Incomplete preview inventory')
+            else:
+                selected.update(confined(cli.BUILD, path) for path in source['reports'])
+            indexed = {item['output']: item for item in cli.inventory(name)}
+            for item in status['artifacts']:
+                path = confined(cli.BUILD, item['output'])
+                if (indexed.get(item['output']) != item or not path.is_file() or cli.digest(path) != item['output_sha256']):
+                    raise ValueError(f'Refusing to package missing or modified output: {item["output"]}')
+                selected.add(path)
+            selected.update(cli.BUILD / '.reports' / (name + suffix) for suffix in ('.json', '.log'))
+            # Each package owns a unique inventory; preview packages can be combined.
+            atomic_json(destination / (name + '.json'), {'schema_version': 2,
+                        'artifacts': sorted(status['artifacts'], key=lambda item: item['output'])})
+        selected.update(p for p in (cli.BUILD / '.reports').glob('tests*.log') if p.is_file())
         for file in sorted(selected):
-            relative = file.relative_to(BUILD)
-            confined(BUILD, relative)
-            target = destination / relative
+            target = destination / file.relative_to(cli.BUILD)
             target.parent.mkdir(parents=True, exist_ok=True)
             shutil.copyfile(file, target)
-        if not diagnostics:
-            atomic_json(destination / 'artifacts.json', {'schema_version': 1,
-                        'artifacts': sorted(packaged_entries, key=lambda item: item['output'])})
-            atomic_json(destination / 'build.json', status)
-            shutil.copyfile(BUILD / '.reports' / ('build-light.log' if stage == 'light' else 'build-browser.log'),
-                            destination / 'build.log')
 
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--diagnostics', action='store_true')
-    parser.add_argument('--stage', choices=('light', 'full'), default='light')
+    parser.add_argument('--stage', choices=('source', 'preview'), default='source')
+    parser.add_argument('--renderer', choices=('plantuml', 'mermaid'))
     args = parser.parse_args()
-    package('/artifacts', args.diagnostics, args.stage)
+    package('/artifacts', args.diagnostics, args.stage, args.renderer)

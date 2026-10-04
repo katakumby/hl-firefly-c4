@@ -1,0 +1,55 @@
+@startuml
+title <size:24>Component - FireFly Core: Persistence and operational support</size>\n<size:24>Component - FireFly Core: Persistence and operational support</size>
+
+set separator none
+left to right direction
+
+<style>
+  root {
+    BackgroundColor: #ffffff
+    FontColor: #444444
+  }
+</style>
+
+!include <C4/C4>
+!include <C4/C4_Context>
+!include <C4/C4_Container>
+!include <C4/C4_Component>
+
+System_Boundary("HyperledgerFireFly_boundary", "Hyperledger FireFly", $tags="") {
+  Container_Boundary("HyperledgerFireFly.FireFlyCore_boundary", "FireFly Core", $tags="") {
+    Component(HyperledgerFireFly.FireFlyCore.Orchestrator, "Orchestrator", $techn="Go", $descr="Coordinates API operations and subsystem lifecycles.", $tags="", $link="https://github.com/hyperledger-firefly/firefly/tree/9d20f3081c9074d5b012427e5572ebc03da8d95d/internal/orchestrator")
+    Component(HyperledgerFireFly.FireFlyCore.Datamanager, "Data manager", $techn="Go", $descr="Validates, hashes and retrieves structured data and blob references.", $tags="", $link="https://github.com/hyperledger-firefly/firefly/tree/9d20f3081c9074d5b012427e5572ebc03da8d95d/internal/data")
+    Component(HyperledgerFireFly.FireFlyCore.Shareddownloadmanager, "Shared download manager", $techn="Go", $descr="Retrieves referenced broadcast batches and blobs.", $tags="", $link="https://github.com/hyperledger-firefly/firefly/tree/9d20f3081c9074d5b012427e5572ebc03da8d95d/internal/shareddownload")
+    Component(HyperledgerFireFly.FireFlyCore.Contractmanager, "Contract manager", $techn="Go", $descr="Maps FFIs and APIs to contract calls and event listeners.", $tags="", $link="https://github.com/hyperledger-firefly/firefly/tree/9d20f3081c9074d5b012427e5572ebc03da8d95d/internal/contracts")
+    Component(HyperledgerFireFly.FireFlyCore.Operationsmanager, "Operations manager", $techn="Go", $descr="Tracks asynchronous connector requests and results.", $tags="", $link="https://github.com/hyperledger-firefly/firefly/tree/9d20f3081c9074d5b012427e5572ebc03da8d95d/internal/operations")
+    Component(HyperledgerFireFly.FireFlyCore.Transactionwriter, "Transaction writer", $techn="Go", $descr="Batches transaction persistence and submission work.", $tags="", $link="https://github.com/hyperledger-firefly/firefly/tree/9d20f3081c9074d5b012427e5572ebc03da8d95d/internal/txwriter")
+    Component(HyperledgerFireFly.FireFlyCore.Cachemanager, "Cache manager", $techn="Go", $descr="Caches reusable namespace resources and lookups.", $tags="", $link="https://github.com/hyperledger-firefly/firefly/tree/9d20f3081c9074d5b012427e5572ebc03da8d95d/internal/cache")
+    Component(HyperledgerFireFly.FireFlyCore.Metrics, "Metrics", $techn="Go", $descr="Exposes runtime and operation measurements.", $tags="", $link="https://github.com/hyperledger-firefly/firefly/tree/9d20f3081c9074d5b012427e5572ebc03da8d95d/internal/metrics")
+    Component(HyperledgerFireFly.FireFlyCore.Databaseplugin, "Database plugin", $techn="Go", $descr="Defines transactional persistence and dispatches to the selected SQL adapter.", $tags="", $link="https://github.com/hyperledger-firefly/firefly/tree/9d20f3081c9074d5b012427e5572ebc03da8d95d/internal/database")
+    Component(HyperledgerFireFly.FireFlyCore.Sharedstorageplugin, "Shared storage plugin", $techn="Go", $descr="Publishes and retrieves content through IPFS APIs.", $tags="", $link="https://github.com/hyperledger-firefly/firefly/tree/9d20f3081c9074d5b012427e5572ebc03da8d95d/internal/sharedstorage")
+  }
+
+  Container(HyperledgerFireFly.IPFSKubo, "IPFS Kubo", $techn="Go / Kubo", $descr="Publishes and retrieves consortium-shared content.", $tags="", $link="https://docs.ipfs.tech/concepts/how-ipfs-works/")
+  ContainerDb(HyperledgerFireFly.CorePostgreSQLdatabase, "Core PostgreSQL database", $techn="PostgreSQL", $descr="Stores Core resources and offsets in its own logical database; server placement and replication are outside this model.", $tags="", $link="https://github.com/hyperledger-firefly/firefly/tree/9d20f3081c9074d5b012427e5572ebc03da8d95d/internal/database/postgres")
+}
+
+Rel(HyperledgerFireFly.FireFlyCore.Orchestrator, HyperledgerFireFly.FireFlyCore.Datamanager, "Submits payloads and datatype definitions", $techn="In-process calls / Go", $tags="", $link="")
+Rel(HyperledgerFireFly.FireFlyCore.Datamanager, HyperledgerFireFly.FireFlyCore.Databaseplugin, "Persists payload metadata and hashes", $techn="In-process calls / Go", $tags="", $link="")
+Rel(HyperledgerFireFly.FireFlyCore.Orchestrator, HyperledgerFireFly.FireFlyCore.Contractmanager, "Submits contract queries and invocations", $techn="In-process calls / Go", $tags="", $link="")
+Rel(HyperledgerFireFly.FireFlyCore.Contractmanager, HyperledgerFireFly.FireFlyCore.Operationsmanager, "Tracks contract operation completion", $techn="In-process calls / Go", $tags="", $link="")
+Rel(HyperledgerFireFly.FireFlyCore.Transactionwriter, HyperledgerFireFly.FireFlyCore.Databaseplugin, "Flushes transaction records", $techn="In-process calls / Go", $tags="", $link="")
+Rel(HyperledgerFireFly.FireFlyCore.Operationsmanager, HyperledgerFireFly.FireFlyCore.Databaseplugin, "Persists operation state and retries", $techn="In-process calls / Go", $tags="", $link="")
+Rel(HyperledgerFireFly.FireFlyCore.Shareddownloadmanager, HyperledgerFireFly.FireFlyCore.Sharedstorageplugin, "Fetches content-addressed batches and blobs", $techn="In-process calls / Go", $tags="", $link="")
+Rel(HyperledgerFireFly.FireFlyCore.Shareddownloadmanager, HyperledgerFireFly.FireFlyCore.Datamanager, "Validates downloaded data and stores metadata", $techn="In-process calls / Go", $tags="", $link="")
+Rel(HyperledgerFireFly.FireFlyCore.Datamanager, HyperledgerFireFly.FireFlyCore.Cachemanager, "Caches reusable data and schema lookups", $techn="In-process calls / Go", $tags="", $link="")
+Rel(HyperledgerFireFly.FireFlyCore.Contractmanager, HyperledgerFireFly.FireFlyCore.Cachemanager, "Caches contract definitions", $techn="In-process calls / Go", $tags="", $link="")
+Rel(HyperledgerFireFly.FireFlyCore.Orchestrator, HyperledgerFireFly.FireFlyCore.Metrics, "Records API and subsystem measurements", $techn="In-process calls / Go", $tags="", $link="")
+Rel(HyperledgerFireFly.FireFlyCore.Operationsmanager, HyperledgerFireFly.FireFlyCore.Metrics, "Records operation outcomes", $techn="In-process calls / Go", $tags="", $link="")
+Rel(HyperledgerFireFly.FireFlyCore.Databaseplugin, HyperledgerFireFly.CorePostgreSQLdatabase, "Persists Core resources and offsets", $techn="PostgreSQL wire / TLS", $tags="", $link="")
+Rel(HyperledgerFireFly.FireFlyCore.Sharedstorageplugin, HyperledgerFireFly.IPFSKubo, "Publishes and retrieves CIDs", $techn="IPFS HTTP RPC", $tags="", $link="")
+Rel(HyperledgerFireFly.IPFSKubo, HyperledgerFireFly.IPFSKubo, "Retrieves shared content blocks from peers by CID", $techn="IPFS / libp2p", $tags="", $link="")
+
+SHOW_LEGEND(true)
+hide stereotypes
+@enduml

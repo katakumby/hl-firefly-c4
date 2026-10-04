@@ -42,12 +42,12 @@ Open [the foundation diagrams](http://127.0.0.1:8082). Edit the DSL and refresh.
 
 ```text
 docker compose run --rm --pull never tools validate --workspace workspaces/blockchain-foundation/workspace.dsl
-docker compose run --rm --pull never tools export --workspace workspaces/blockchain-foundation/workspace.dsl
+docker compose run --rm --pull never tools build-source --workspace workspaces/blockchain-foundation/workspace.dsl
 ```
 
 Acquire the approved tools image first; see the [corporate build guide](../../documentation/build.md).
-The default C4-PlantUML definitions live under `build/workspaces/blockchain-foundation/views/`.
-Add `--format svg` or `--format png` when image exports are needed.
+The default C4-PlantUML definitions live under `build/source/workspaces/blockchain-foundation/views/`.
+Generate SVG/PNG previews separately with `tools build-preview --renderer plantuml --workspace workspaces/blockchain-foundation/workspace.dsl`; images appear under the matching `build/preview/` tree.
 
 ## Design and implementation plan
 

@@ -1,0 +1,76 @@
+@startuml
+title <size:24>01 - Azure platform deployment - three availability zones</size>\n<size:24>Pool capacity and shared dependencies. Summary boxes represent the same resources detailed in subsequent views. HSM gate H1 prevents an unconditional HA claim.</size>
+
+set separator none
+top to bottom direction
+
+<style>
+  root {
+    BackgroundColor: #ffffff
+    FontColor: #444444
+  }
+</style>
+
+!include <C4/C4>
+!include <C4/C4_Context>
+!include <C4/C4_Deployment>
+
+Deployment_Node(ProductionthreeAZ.Azureregionselectionpending, "Azure region - selection pending", $type="Microsoft Azure", $descr="One region with three AZs and qualified service SKUs. HSM zone resilience remains admission gate H1.", $tags="", $link="") {
+  Deployment_Node(ProductionthreeAZ.Azureregionselectionpending.RegionalnetworkingandAKScontrol, "Regional networking and AKS control", $type="Azure VNet / private AKS Standard", $descr="VNet and subnets span zones; Azure subnets are not zonal.", $tags="", $link="") {
+    Deployment_Node(ProductionthreeAZ.Azureregionselectionpending.RegionalnetworkingandAKScontrol.PrivateAKScontrolplane, "Private AKS control plane", $type="Azure-managed Kubernetes", $descr="Standard tier; zone-resilient API server; OIDC and Workload Identity enabled.", $tags="", $link="")
+    Deployment_Node(ProductionthreeAZ.Azureregionselectionpending.RegionalnetworkingandAKScontrol.Privatememberingress, "Private member ingress", $type="Azure Standard LB / Gateway API", $descr="Zone-redundant Standard internal LB; three mTLS gateway replicas, one per AZ. Core API and DX peer endpoints have separate routes.", $tags="", $link="")
+    Deployment_Node(ProductionthreeAZ.Azureregionselectionpending.RegionalnetworkingandAKScontrol.PrivateDNSandegress, "Private DNS and egress", $type="Azure Private DNS / CoreDNS / Azure Firewall", $descr="Azure private zones; CoreDNS spread across AZs; zone-redundant firewall path for allowed Azure endpoints.", $tags="", $link="")
+  }
+
+  Deployment_Node(ProductionthreeAZ.Azureregionselectionpending.PrivateAKSclusteronemember, "Private AKS cluster - one member", $type="AKS Standard / Azure CNI Overlay + Cilium", $descr="System, ledger and middleware pools; explicit zonal capacity and separate Kubernetes namespaces.", $tags="", $link="") {
+    Deployment_Node(ProductionthreeAZ.Azureregionselectionpending.PrivateAKSclusteronemember.AvailabilityZone1, "Availability Zone 1", $type="Azure AZ 1", $descr="Independent power, cooling and network failure domain.", $tags="", $link="") {
+      Deployment_Node(ProductionthreeAZ.Azureregionselectionpending.PrivateAKSclusteronemember.AvailabilityZone1.AZ1nodepoolcapacity, "AZ1 node-pool capacity", $type="Zonal AKS pools / VM scale sets", $descr="1 system node; 3 ledger nodes; 2 middleware nodes initially. On-demand VMs; reserve measured recovery capacity.", $tags="", $link="")
+    }
+
+    Deployment_Node(ProductionthreeAZ.Azureregionselectionpending.PrivateAKSclusteronemember.AvailabilityZone2, "Availability Zone 2", $type="Azure AZ 2", $descr="Independent power, cooling and network failure domain.", $tags="", $link="") {
+      Deployment_Node(ProductionthreeAZ.Azureregionselectionpending.PrivateAKSclusteronemember.AvailabilityZone2.AZ2nodepoolcapacity, "AZ2 node-pool capacity", $type="Zonal AKS pools / VM scale sets", $descr="1 system node; 3 ledger nodes; 2 middleware nodes initially. On-demand VMs; reserve measured recovery capacity.", $tags="", $link="")
+    }
+
+    Deployment_Node(ProductionthreeAZ.Azureregionselectionpending.PrivateAKSclusteronemember.AvailabilityZone3, "Availability Zone 3", $type="Azure AZ 3", $descr="Independent power, cooling and network failure domain.", $tags="", $link="") {
+      Deployment_Node(ProductionthreeAZ.Azureregionselectionpending.PrivateAKSclusteronemember.AvailabilityZone3.AZ3nodepoolcapacity, "AZ3 node-pool capacity", $type="Zonal AKS pools / VM scale sets", $descr="1 system node; 3 ledger nodes; 2 middleware nodes initially. On-demand VMs; reserve measured recovery capacity.", $tags="", $link="")
+    }
+
+  }
+
+  Deployment_Node(ProductionthreeAZ.Azureregionselectionpending.ManagedpersistenceoutsideAKS, "Managed persistence - outside AKS", $type="Azure data services", $descr="Azure-managed resources; ZRS disks are region-scoped. Database engines occupy two AZs.", $tags="", $link="") {
+    Deployment_Node(ProductionthreeAZ.Azureregionselectionpending.ManagedpersistenceoutsideAKS.PostgreSQLHApair, "PostgreSQL HA pair", $type="Azure PostgreSQL Flexible Server", $descr="Same server shown in detail: primary AZ2, synchronous standby AZ3; two isolated logical databases.", $tags="", $link="")
+    Deployment_Node(ProductionthreeAZ.Azureregionselectionpending.ManagedpersistenceoutsideAKS.Protectedrecoverystorage, "Protected recovery storage", $type="Azure Blob / Backup / snapshots", $descr="Blob ZRS backups plus database PITR; versioned genesis, configs, volume snapshots and HSM recovery material under separate access.", $tags="", $link="")
+  }
+
+  Deployment_Node(ProductionthreeAZ.Azureregionselectionpending.AzurekeyservicesoutsideAKS, "Azure key services - outside AKS", $type="Azure HSM services / Entra", $descr="Separate validator, transaction and TLS/secrets key domains.", $tags="", $link="") {
+    Deployment_Node(ProductionthreeAZ.Azureregionselectionpending.AzurekeyservicesoutsideAKS.ValidatorHSMclusterGATEH1, "Validator HSM cluster - GATE H1", $type="Candidate Azure Cloud HSM / PKCS#11", $descr="Azure Cloud HSM candidate: three service nodes, AZ placement NOT established. Require secp256k1 signing + ECDH, PKCS#11 and AZ-outage proof.", $tags="", $link="")
+    Deployment_Node(ProductionthreeAZ.Azureregionselectionpending.AzurekeyservicesoutsideAKS.KeyVaultPremium, "Key Vault Premium", $type="Azure Key Vault Premium / HTTPS", $descr="AZ-redundant in a supported region. EC-HSM transaction keys; separate secrets/certificates vault. Private endpoints and least-privilege roles.", $tags="", $link="")
+  }
+
+  Deployment_Node(ProductionthreeAZ.Azureregionselectionpending.Platformoperations, "Platform operations", $type="Azure managed services", $descr="Supporting services are not consensus participants.", $tags="", $link="") {
+    Deployment_Node(ProductionthreeAZ.Azureregionselectionpending.Platformoperations.Privateimageregistry, "Private image registry", $type="Azure Container Registry", $descr="ACR Premium; admit only a region/SKU with documented zone resilience; pin and pre-pull approved images in every AZ.", $tags="", $link="")
+    Deployment_Node(ProductionthreeAZ.Azureregionselectionpending.Platformoperations.Metricslogsandalerts, "Metrics, logs and alerts", $type="Azure Monitor", $descr="Managed Prometheus, Azure Monitor and Grafana; alert on quorum, block age, nonce backlog, replay lag, disk and HSM failures.", $tags="", $link="")
+  }
+
+}
+
+Rel(ProductionthreeAZ.Azureregionselectionpending.RegionalnetworkingandAKScontrol.PrivateAKScontrolplane, ProductionthreeAZ.Azureregionselectionpending.PrivateAKSclusteronemember.AvailabilityZone1.AZ1nodepoolcapacity, "Schedules workloads and reconciles node pools", $techn="Kubernetes API", $tags="", $link="")
+Rel(ProductionthreeAZ.Azureregionselectionpending.PrivateAKSclusteronemember.AvailabilityZone1.AZ1nodepoolcapacity, ProductionthreeAZ.Azureregionselectionpending.RegionalnetworkingandAKScontrol.PrivateDNSandegress, "Resolves private services and reaches permitted Azure endpoints", $techn="DNS / TLS", $tags="", $link="")
+Rel(ProductionthreeAZ.Azureregionselectionpending.PrivateAKSclusteronemember.AvailabilityZone1.AZ1nodepoolcapacity, ProductionthreeAZ.Azureregionselectionpending.Platformoperations.Privateimageregistry, "Pulls approved pinned images", $techn="HTTPS 443", $tags="", $link="")
+Rel(ProductionthreeAZ.Azureregionselectionpending.PrivateAKSclusteronemember.AvailabilityZone1.AZ1nodepoolcapacity, ProductionthreeAZ.Azureregionselectionpending.Platformoperations.Metricslogsandalerts, "Exports metrics and operational logs", $techn="HTTPS 443", $tags="", $link="")
+Rel(ProductionthreeAZ.Azureregionselectionpending.RegionalnetworkingandAKScontrol.PrivateAKScontrolplane, ProductionthreeAZ.Azureregionselectionpending.PrivateAKSclusteronemember.AvailabilityZone2.AZ2nodepoolcapacity, "Schedules workloads and reconciles node pools", $techn="Kubernetes API", $tags="", $link="")
+Rel(ProductionthreeAZ.Azureregionselectionpending.PrivateAKSclusteronemember.AvailabilityZone2.AZ2nodepoolcapacity, ProductionthreeAZ.Azureregionselectionpending.RegionalnetworkingandAKScontrol.PrivateDNSandegress, "Resolves private services and reaches permitted Azure endpoints", $techn="DNS / TLS", $tags="", $link="")
+Rel(ProductionthreeAZ.Azureregionselectionpending.PrivateAKSclusteronemember.AvailabilityZone2.AZ2nodepoolcapacity, ProductionthreeAZ.Azureregionselectionpending.Platformoperations.Privateimageregistry, "Pulls approved pinned images", $techn="HTTPS 443", $tags="", $link="")
+Rel(ProductionthreeAZ.Azureregionselectionpending.PrivateAKSclusteronemember.AvailabilityZone2.AZ2nodepoolcapacity, ProductionthreeAZ.Azureregionselectionpending.Platformoperations.Metricslogsandalerts, "Exports metrics and operational logs", $techn="HTTPS 443", $tags="", $link="")
+Rel(ProductionthreeAZ.Azureregionselectionpending.RegionalnetworkingandAKScontrol.PrivateAKScontrolplane, ProductionthreeAZ.Azureregionselectionpending.PrivateAKSclusteronemember.AvailabilityZone3.AZ3nodepoolcapacity, "Schedules workloads and reconciles node pools", $techn="Kubernetes API", $tags="", $link="")
+Rel(ProductionthreeAZ.Azureregionselectionpending.PrivateAKSclusteronemember.AvailabilityZone3.AZ3nodepoolcapacity, ProductionthreeAZ.Azureregionselectionpending.RegionalnetworkingandAKScontrol.PrivateDNSandegress, "Resolves private services and reaches permitted Azure endpoints", $techn="DNS / TLS", $tags="", $link="")
+Rel(ProductionthreeAZ.Azureregionselectionpending.PrivateAKSclusteronemember.AvailabilityZone3.AZ3nodepoolcapacity, ProductionthreeAZ.Azureregionselectionpending.Platformoperations.Privateimageregistry, "Pulls approved pinned images", $techn="HTTPS 443", $tags="", $link="")
+Rel(ProductionthreeAZ.Azureregionselectionpending.PrivateAKSclusteronemember.AvailabilityZone3.AZ3nodepoolcapacity, ProductionthreeAZ.Azureregionselectionpending.Platformoperations.Metricslogsandalerts, "Exports metrics and operational logs", $techn="HTTPS 443", $tags="", $link="")
+Rel(ProductionthreeAZ.Azureregionselectionpending.AzurekeyservicesoutsideAKS.KeyVaultPremium, ProductionthreeAZ.Azureregionselectionpending.ManagedpersistenceoutsideAKS.Protectedrecoverystorage, "Stores protected key and secret recovery artifacts", $techn="Controlled backup job", $tags="", $link="")
+Rel(ProductionthreeAZ.Azureregionselectionpending.AzurekeyservicesoutsideAKS.ValidatorHSMclusterGATEH1, ProductionthreeAZ.Azureregionselectionpending.ManagedpersistenceoutsideAKS.Protectedrecoverystorage, "Exports vendor-protected recovery material after qualification", $techn="Encrypted HSM backup", $tags="", $link="")
+Rel(ProductionthreeAZ.Azureregionselectionpending.RegionalnetworkingandAKScontrol.Privatememberingress, ProductionthreeAZ.Azureregionselectionpending.ManagedpersistenceoutsideAKS.PostgreSQLHApair, "Depends on durable member state through Core", $techn="Dependency summary", $tags="", $link="")
+Rel(ProductionthreeAZ.Azureregionselectionpending.ManagedpersistenceoutsideAKS.PostgreSQLHApair, ProductionthreeAZ.Azureregionselectionpending.ManagedpersistenceoutsideAKS.Protectedrecoverystorage, "Maintains database point-in-time recovery", $techn="Azure-managed backup", $tags="", $link="")
+
+SHOW_LEGEND(true)
+hide stereotypes
+@enduml

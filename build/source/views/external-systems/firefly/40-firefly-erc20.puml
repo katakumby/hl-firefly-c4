@@ -1,0 +1,50 @@
+@startuml
+title <size:24>Component - FireFly ERC-20 / ERC-721</size>\n<size:24>Component - FireFly ERC-20 / ERC-721</size>
+
+set separator none
+left to right direction
+
+<style>
+  root {
+    BackgroundColor: #ffffff
+    FontColor: #444444
+  }
+</style>
+
+!include <C4/C4>
+!include <C4/C4_Context>
+!include <C4/C4_Container>
+!include <C4/C4_Component>
+
+System_Boundary("HyperledgerFireFly_boundary", "Hyperledger FireFly", $tags="") {
+  Container_Boundary("HyperledgerFireFly.ERC20ERC721connector_boundary", "ERC-20 / ERC-721 connector", $tags="") {
+    Component(HyperledgerFireFly.ERC20ERC721connector.TokenRESTcontroller, "Token REST controller", $techn="TypeScript / NestJS", $descr="Accepts pool, mint, burn, transfer and approval requests.", $tags="", $link="https://github.com/hyperledger-firefly/tokens-erc20-erc721/tree/7993b308284a396950587b5206370f7f254073d9/src/tokens/tokens.controller.ts")
+    Component(HyperledgerFireFly.ERC20ERC721connector.Tokenservice, "Token service", $techn="TypeScript / NestJS", $descr="Applies token-specific behavior and tracks pools.", $tags="", $link="https://github.com/hyperledger-firefly/tokens-erc20-erc721/tree/7993b308284a396950587b5206370f7f254073d9/src/tokens/tokens.service.ts")
+    Component(HyperledgerFireFly.ERC20ERC721connector.ABIandstandardadapters, "ABI and standard adapters", $techn="TypeScript / NestJS", $descr="Maps token operations to contract ABIs.", $tags="", $link="https://github.com/hyperledger-firefly/tokens-erc20-erc721/tree/7993b308284a396950587b5206370f7f254073d9/src/tokens")
+    Component(HyperledgerFireFly.ERC20ERC721connector.Blockchainconnectorclient, "Blockchain connector client", $techn="TypeScript / NestJS", $descr="Submits contract calls through EVMConnect.", $tags="", $link="https://github.com/hyperledger-firefly/tokens-erc20-erc721/tree/7993b308284a396950587b5206370f7f254073d9/src/tokens/blockchain.service.ts")
+    Component(HyperledgerFireFly.ERC20ERC721connector.Tokeneventlistener, "Token event listener", $techn="TypeScript / NestJS", $descr="Interprets contract logs as standard token events.", $tags="", $link="https://github.com/hyperledger-firefly/tokens-erc20-erc721/tree/7993b308284a396950587b5206370f7f254073d9/src/tokens/tokens.listener.ts")
+    Component(HyperledgerFireFly.ERC20ERC721connector.Connectoreventstream, "Connector event stream", $techn="TypeScript / NestJS", $descr="Receives ordered blockchain events and acknowledges batches.", $tags="", $link="https://github.com/hyperledger-firefly/tokens-erc20-erc721/tree/7993b308284a396950587b5206370f7f254073d9/src/event-stream")
+    Component(HyperledgerFireFly.ERC20ERC721connector.Coreeventproxy, "Core event proxy", $techn="TypeScript / NestJS", $descr="Delivers token events to Core over WebSocket.", $tags="", $link="https://github.com/hyperledger-firefly/tokens-erc20-erc721/tree/7993b308284a396950587b5206370f7f254073d9/src/eventstream-proxy")
+  }
+
+  Container(HyperledgerFireFly.FireFlyCore, "FireFly Core", $techn="Go", $descr="Exposes member APIs, serves Explorer assets and orchestrates multiparty operations.", $tags="", $link="https://github.com/hyperledger-firefly/firefly/tree/9d20f3081c9074d5b012427e5572ebc03da8d95d/internal/orchestrator")
+  Container(HyperledgerFireFly.EVMConnectFFTM, "EVMConnect + FFTM", $techn="Go", $descr="Submits Ethereum transactions and streams confirmed events; one nonce writer.", $tags="", $link="https://github.com/hyperledger-firefly/evmconnect/tree/6e12bb4c050677780cf5dd975a926923868b0cb8/cmd/evmconnect.go")
+}
+
+Rel(HyperledgerFireFly.FireFlyCore, HyperledgerFireFly.EVMConnectFFTM, "Submits contract calls, pins and listeners", $techn="HTTP REST / JSON", $tags="", $link="")
+Rel(HyperledgerFireFly.ERC20ERC721connector.TokenRESTcontroller, HyperledgerFireFly.ERC20ERC721connector.Tokenservice, "Submits standard token operations", $techn="In-process calls / TypeScript", $tags="", $link="")
+Rel(HyperledgerFireFly.ERC20ERC721connector.Tokenservice, HyperledgerFireFly.ERC20ERC721connector.ABIandstandardadapters, "Encodes token contract calls", $techn="In-process calls / TypeScript", $tags="", $link="")
+Rel(HyperledgerFireFly.ERC20ERC721connector.ABIandstandardadapters, HyperledgerFireFly.ERC20ERC721connector.Blockchainconnectorclient, "Passes encoded contract requests", $techn="In-process calls / TypeScript", $tags="", $link="")
+Rel(HyperledgerFireFly.ERC20ERC721connector.Blockchainconnectorclient, HyperledgerFireFly.ERC20ERC721connector.Connectoreventstream, "Registers contract event listeners", $techn="In-process calls / TypeScript", $tags="", $link="")
+Rel(HyperledgerFireFly.ERC20ERC721connector.Connectoreventstream, HyperledgerFireFly.ERC20ERC721connector.Tokeneventlistener, "Delivers token contract logs", $techn="In-process calls / TypeScript", $tags="", $link="")
+Rel(HyperledgerFireFly.ERC20ERC721connector.Tokeneventlistener, HyperledgerFireFly.ERC20ERC721connector.Tokenservice, "Updates token pool state", $techn="In-process calls / TypeScript", $tags="", $link="")
+Rel(HyperledgerFireFly.ERC20ERC721connector.Tokeneventlistener, HyperledgerFireFly.ERC20ERC721connector.Coreeventproxy, "Publishes normalized token events", $techn="In-process calls / TypeScript", $tags="", $link="")
+Rel(HyperledgerFireFly.ERC20ERC721connector.Coreeventproxy, HyperledgerFireFly.ERC20ERC721connector.Connectoreventstream, "Acknowledges consumed event batches", $techn="In-process calls / TypeScript", $tags="", $link="")
+Rel(HyperledgerFireFly.ERC20ERC721connector.Blockchainconnectorclient, HyperledgerFireFly.EVMConnectFFTM, "Submits contract calls and listeners", $techn="HTTP REST / JSON", $tags="", $link="")
+Rel(HyperledgerFireFly.ERC20ERC721connector.Coreeventproxy, HyperledgerFireFly.FireFlyCore, "Delivers token events and receives ACKs", $techn="WebSocket / JSON", $tags="", $link="")
+Rel(HyperledgerFireFly.EVMConnectFFTM, HyperledgerFireFly.FireFlyCore, "Streams confirmed events and transaction results", $techn="WebSocket / JSON", $tags="", $link="")
+Rel(HyperledgerFireFly.EVMConnectFFTM, HyperledgerFireFly.ERC20ERC721connector.Connectoreventstream, "Streams confirmed token logs", $techn="WebSocket / JSON", $tags="", $link="")
+
+SHOW_LEGEND(true)
+hide stereotypes
+@enduml

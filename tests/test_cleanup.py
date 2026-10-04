@@ -38,11 +38,11 @@ class SourceFreshness(unittest.TestCase):
             diagram = root / 'uml/.draft/sequence.mmd'
             diagram.parent.mkdir(parents=True)
             diagram.write_text('sequenceDiagram\nA->>B: Original\n')
-            cli.build()
+            cli.build_source()
             diagram.write_text('sequenceDiagram\nA->>B: Changed\n')
             with patch.object(cli, 'require_capability'), patch.object(cli, 'render') as render:
                 with self.assertRaisesRegex(ValueError, 'stale'):
-                    cli.build_browser()
+                    cli.build_preview('mermaid')
                 render.assert_not_called()
 
     def test_fingerprint_follows_custom_local_includes_and_extension_chains(self):
@@ -144,25 +144,25 @@ class ExportCapabilities(unittest.TestCase):
             for selection in (None, ['future']):
                 with self.subTest(selection=selection), patch.object(cli, 'stage_c4') as export:
                     with self.assertRaisesRegex(ValueError, 'filtered views: future.*tools-browser export-native'):
-                        cli.export(workspace, 'plantuml', selection)
+                        cli.build_source([workspace], selection)
                     export.assert_not_called()
-            cli.export(workspace, 'plantuml', ['base'])
-            self.assertTrue((cli.BUILD / 'base.puml').is_file())
+            cli.build_source([workspace], ['base'])
+            self.assertTrue((cli.BUILD / 'source/base.puml').is_file())
 
     @patch.object(cli, 'render', side_effect=quick_render)
     def test_filtered_build_fails_before_render_and_preserves_previous_outputs(self, _):
         with checkout() as root:
             workspace = root / 'workspace.dsl'
             workspace.write_text(BASE)
-            cli.build()
-            inventory = (cli.BUILD / 'artifacts.json').read_bytes()
+            cli.build_source()
+            inventory = (cli.BUILD / 'source.json').read_bytes()
             files = {item['output']: (cli.BUILD / item['output']).read_bytes() for item in cli.inventory()}
             workspace.write_text(FILTERED)
             with patch.object(cli, 'stage_c4') as export:
                 with self.assertRaisesRegex(ValueError, 'filtered views: future'):
-                    cli.build()
+                    cli.build_source()
                 export.assert_not_called()
-            self.assertEqual(inventory, (cli.BUILD / 'artifacts.json').read_bytes())
+            self.assertEqual(inventory, (cli.BUILD / 'source.json').read_bytes())
             self.assertEqual(files, {item['output']: (cli.BUILD / item['output']).read_bytes()
                                      for item in cli.inventory()})
 

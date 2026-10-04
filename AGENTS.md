@@ -1,51 +1,41 @@
 # Architecture work and review
 
-Structurizr DSL is the authoring source. Run validation and export through the
-Docker Compose tools service; generated files under `build/` stay
-ignored by Git and must not be edited as source.
+Structurizr DSL is the C4 authoring source. PlantUML and Mermaid under shared or
+workspace-local `uml/` are authored behavioral diagrams. Run validation and generation
+through the approved Docker tools. Generated text under `build/source/` and images
+under `build/preview/` are versioned deliverables; never edit them as authoring sources.
+Saved `workspace.json` beside DSL is versioned and authoritative for manual coordinates
+and routing. DSL remains authoritative for model, views and animations.
 
 ## Final review order
 
-1. Regenerate C4-PlantUML for every affected workspace or selected diagram before
-   final architecture review. Shared changes may affect multiple workspaces.
-2. Read the fresh `.puml` exports first, then inspect relevant DSL definitions for
-   correctness and details omitted by the exporter. Focus on affected diagrams
-   and definitions to keep review context small.
-3. Review images only when the user explicitly requests it. Do not render or open
-   images for routine architecture reviews.
-4. If review corrections change DSL, regenerate the affected exports and repeat
-   the relevant checks before completing the review.
-5. A failed validation or export can leave older successful artifacts in place.
-   Report the failure and do not present those older files as current evidence.
-   Use only exports from a successful command against the current sources.
+1. Generate fresh C4-PlantUML for affected workspaces or selected views. Shared
+   model/tooling changes can affect every workspace.
+2. Read fresh `.puml` text first, then relevant DSL and parsed JSON for details
+   omitted by the exporter. Keep review context focused.
+3. Do not render or open images for routine architecture reviews. Rendering is
+   appropriate when verifying the build pipeline; do not open images unless requested.
+4. After DSL corrections, regenerate affected text and repeat relevant checks.
+5. Failed commands preserve previous files. Never present those files as current
+   evidence; inspect the stage's latest report for successful current generation.
 
-## Commands from the repository root
+## Commands
 
 ```text
-docker compose run --rm --pull never tools export
-docker compose run --rm --pull never tools export --workspace workspaces/ignition/workspace.dsl
-docker compose run --rm --pull never tools export --workspace workspace.dsl --view 01-landscape
-docker compose run --rm --pull never tools export --all-workspaces
+docker compose run --rm --pull never tools build-source
+docker compose run --rm --pull never tools build-source --workspace workspaces/ignition/workspace.dsl
+docker compose run --rm --pull never tools build-source --workspace workspace.dsl --view 01-landscape
+docker compose run --rm --pull never tools build-source --all-workspaces
 ```
 
-C4-PlantUML is the primary agent review output and the default export format.
-Read its compact C4 macro definitions as text. Omit `--workspace` for the reference
-workspace; omit `--view` for all diagrams in the selected workspace.
-Repeat `--view` to select several keys. `--all-workspaces` cannot be combined
-with workspace or view selection. A selected batch publishes as one transaction.
+Source generation defaults to all workspaces and UML. Repeat `--view` for several
+C4 keys; view selection without a workspace targets the root. Workspace-wide selection
+includes its UML; view selection includes only C4. `--all-workspaces` conflicts with
+workspace/view selection. View keys define stable filenames beneath `build/source/`.
+See [selection and filtered-view limitations](README.md#build-diagram-sources).
+C4 exports use ordinary native C4-PlantUML only, with no custom identity enrichment.
 
-Both plain `export` and explicit `--format plantuml` use native C4-PlantUML.
-Find `<view-key>.puml` in the source-mirrored folder listed in `build/artifacts.json`. See the
-[format table](README.md#export-c4-plantuml-default-mermaid-svg-or-png) and
-[output reference](README.md#outputs-and-maintenance) for optional Mermaid,
-SVG/PNG, paths and freshness metadata. Routine text review needs no renderer.
-
-For filtered views, follow the README's
-[filtered-view export limitations](README.md#filtered-view-export-limitations).
-Inspect parsed JSON for filter membership and report missing C4 output explicitly;
-native image exports remain on demand under the review rules above.
-
-After tooling changes, validate all workspaces and run the containerized tests:
+After tooling changes, run strict validation and both containerized test suites:
 
 ```text
 docker compose run --rm --pull never tools validate
@@ -53,36 +43,39 @@ docker compose run --rm --pull never --entrypoint python3 tools -B -m unittest d
 docker compose run --rm --pull never --entrypoint python3 tools-browser -B -m unittest discover -s tests -v
 ```
 
-Use `--clean` only when explicitly rebuilding all generated architecture output:
-it clears inventory-managed C4/UML outputs and build reports before export, preserving
-`build/.layouts/` manual snapshots, `local.env`, the writer lock, and historical or
-unrelated build directories. Routine reviews do not need it.
+Tests use container temporary checkouts, not tracked repository deliverables.
+`validate` remains strict. Generation reports inspection findings without blocking;
+parsing, native model validation, inspector failures, naming collisions and renderer
+failures still block. Report existing Ignition findings separately from tooling failures.
 
-The lightweight `docker compose run --rm --pull never tools build` command renders
-C4 and standalone `.puml` sources to SVG and PNG. Complete Mermaid images with
-`docker compose run --rm --pull never tools-browser build-browser`, which requires
-a matching successful lightweight build and does not repeat its rendering. Rendering is appropriate when
-verifying this build pipeline; routine architecture reviews still use text only.
+## Preview and layout workflows
 
-Acquire approved images before running commands; normal Compose execution never
-builds or pulls them. See [corporate Docker instructions](documentation/build.md).
+```text
+docker compose run --rm --pull never tools build-preview --renderer plantuml
+docker compose run --rm --pull never tools-browser build-preview --renderer mermaid
+```
 
-`build`, `build-browser`, `export` and `export-native` report inspection errors/warnings without blocking output.
-The standalone `validate` command remains strict. Parsing, native model validation,
-inspector execution failures, output naming errors and rendering failures still block.
+Both stages consume a successful source handoff independently. They never re-export
+C4, render from authored originals, or modify source evidence. Verify fingerprints,
+installed toolchain compatibility, selection coverage and CI commit/output hashes.
+Use `build/source.json` and renderer-specific `build/preview-*.json` inventories;
+latest attempt reports and frozen validation evidence are under ignored `build/.reports/`.
+Do not treat a committed source tree alone as a runnable handoff.
 
-`capture-layout` and `export-native` are explicit on-demand operations; normal
-builds and CI do not invoke them. Native SVG/PNG/GIF exports reuse captured manual
-layouts and use `.structurizr` filename suffixes. Read the
-[native export workflow](README.md#on-demand-structurizr-layouts-and-animations)
-before handling layout snapshots. Do not treat captured JSON as model source.
+`export-native` remains explicitly on demand through `tools-browser`. It merges current
+DSL with adjacent saved JSON, then writes `.structurizr` / `.structurizr-key` images
+directly under `build/preview/`. Normal builds never invoke it. No `capture-layout`
+command or persistent `.layouts` copy remains. See the
+[native workflow](README.md#on-demand-structurizr-layouts-and-animations).
 
-The separately named project images are `dlt-architecture-tools-light` and
-`dlt-architecture-tools-browser`, without explicit tags. Use `tools-browser` for
-`export-native`; keep `capture-layout`, ordinary exports and validation on `tools`.
-`build.json` distinguishes light-stage success from `complete: true`. Preserve
-stage reports and per-artifact freshness when handling browser handoffs.
-Handoffs check source fingerprints, installed toolchain compatibility and output
-hashes before rendering. Source scanning includes accepted hidden authoring paths;
-do not treat all dot-directories as caches. If installed tools are incompatible,
-reacquire approved images under the same names and rerun the lightweight build.
+`clean` explicitly wipes generated build contents while preserving the mountpoint and
+writer lock. Run it only when resetting the build, before source generation or handoff
+restoration. Never clean between source and preview stages. Saved JSON survives because
+it lives beside DSL. Keep local settings in ignored `docker/local.env`.
+
+The image names remain `dlt-architecture-tools-light` and
+`dlt-architecture-tools-browser`, with no explicit tags. Normal commands never build
+or pull images; acquire them separately. See the [Docker guide](documentation/build.md).
+Browser dependencies are required only for Mermaid previews and native exports.
+Source scanning includes accepted hidden authoring paths and local includes; it excludes
+outputs, Git/agent configuration, caches, saved layout JSON and local overrides.

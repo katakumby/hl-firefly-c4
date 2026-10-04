@@ -1,0 +1,55 @@
+@startuml
+title <size:24>Component - Besu node: Execution, contracts and storage</size>\n<size:24>Component - Besu node: Execution, contracts and storage</size>
+
+set separator none
+left to right direction
+
+<style>
+  root {
+    BackgroundColor: #ffffff
+    FontColor: #444444
+  }
+</style>
+
+!include <C4/C4>
+!include <C4/C4_Context>
+!include <C4/C4_Component>
+
+System_Boundary("PrivateBesunetwork_boundary", "Private Besu network", $tags="") {
+  Container_Boundary("PrivateBesunetwork.Besunode_boundary", "Besu node", $tags="") {
+    AddBoundaryTag("Besu client implementation", $borderColor="#444444", $fontColor="#444444", $borderStyle="dashed")
+    Boundary(group_1, "Besu client implementation", $tags="Besu client implementation") {
+      Component(PrivateBesunetwork.Besunode.JSONRPCandsubscriptions, "JSON-RPC and subscriptions", $techn="Java", $descr="Accepts private-network queries and signed transactions.", $tags="", $link="https://github.com/besu-eth/besu/tree/7e05c2342404d27bd06a992e336c5e0c86a5d8d1/ethereum/api")
+      Component(PrivateBesunetwork.Besunode.Blockprocessor, "Block processor", $techn="Java", $descr="Validates blocks and applies state transitions.", $tags="", $link="https://github.com/besu-eth/besu/tree/7e05c2342404d27bd06a992e336c5e0c86a5d8d1/ethereum/core")
+      Component(PrivateBesunetwork.Besunode.EVMexecution, "EVM execution", $techn="Java", $descr="Executes smart-contract bytecode deterministically.", $tags="", $link="https://github.com/besu-eth/besu/tree/7e05c2342404d27bd06a992e336c5e0c86a5d8d1/evm")
+      Component(PrivateBesunetwork.Besunode.Worldstateandtrie, "World state and trie", $techn="Java", $descr="Tracks account balances, storage and contract state.", $tags="", $link="https://github.com/besu-eth/besu/tree/7e05c2342404d27bd06a992e336c5e0c86a5d8d1/ethereum/core/src/main/java/org/hyperledger/besu/ethereum/worldstate")
+      Component(PrivateBesunetwork.Besunode.Storageprovider, "Storage provider", $techn="Java", $descr="Persists blockchain data and world-state records.", $tags="", $link="https://github.com/besu-eth/besu/tree/7e05c2342404d27bd06a992e336c5e0c86a5d8d1/plugins/rocksdb")
+    }
+
+    AddBoundaryTag("Hosted application contracts", $borderColor="#444444", $fontColor="#444444", $borderStyle="dashed")
+    Boundary(group_2, "Hosted application contracts", $tags="Hosted application contracts") {
+      Component(PrivateBesunetwork.Besunode.FireFlymultipartycontract, "FireFly multiparty contract", $techn="Solidity / EVM", $descr="Executes batch pinning and emits sequencing events.", $tags="", $link="https://github.com/hyperledger-firefly/firefly/tree/9d20f3081c9074d5b012427e5572ebc03da8d95d/smart_contracts/ethereum/solidity_firefly/contracts/Firefly.sol")
+      Component(PrivateBesunetwork.Besunode.Tokencontracts, "Token contracts", $techn="Solidity / EVM", $descr="Executes ERC-20, ERC-721 and ERC-1155 application contracts; not a Besu implementation module.", $tags="", $link="https://github.com/hyperledger-firefly/tokens-erc20-erc721/tree/7993b308284a396950587b5206370f7f254073d9/src/abi")
+      Component(PrivateBesunetwork.Besunode.Applicationcontracts, "Application contracts", $techn="Solidity / EVM", $descr="Executes member-defined business rules; example extension.", $tags="", $link="https://hyperledger-firefly.github.io/firefly/head/architecture/node_component_architecture/")
+    }
+
+  }
+
+}
+
+Rel(PrivateBesunetwork.Besunode.JSONRPCandsubscriptions, PrivateBesunetwork.Besunode.Worldstateandtrie, "Queries account and contract state", $techn="In-process calls / Java", $tags="", $link="")
+Rel(PrivateBesunetwork.Besunode.JSONRPCandsubscriptions, PrivateBesunetwork.Besunode.Blockprocessor, "Reads receipts and contract logs", $techn="In-process calls / Java", $tags="", $link="")
+Rel(PrivateBesunetwork.Besunode.Blockprocessor, PrivateBesunetwork.Besunode.EVMexecution, "Executes transactions and validates results", $techn="In-process calls / Java", $tags="", $link="")
+Rel(PrivateBesunetwork.Besunode.EVMexecution, PrivateBesunetwork.Besunode.Worldstateandtrie, "Reads and updates contract and account state", $techn="EVM execution", $tags="", $link="")
+Rel(PrivateBesunetwork.Besunode.Worldstateandtrie, PrivateBesunetwork.Besunode.Storageprovider, "Persists world-state updates", $techn="In-process calls / Java", $tags="", $link="")
+Rel(PrivateBesunetwork.Besunode.Blockprocessor, PrivateBesunetwork.Besunode.Storageprovider, "Persists blocks, receipts and logs", $techn="In-process calls / Java", $tags="", $link="")
+Rel(PrivateBesunetwork.Besunode.EVMexecution, PrivateBesunetwork.Besunode.FireFlymultipartycontract, "Executes batch pinning calls", $techn="EVM execution", $tags="", $link="")
+Rel(PrivateBesunetwork.Besunode.EVMexecution, PrivateBesunetwork.Besunode.Tokencontracts, "Executes standard token operations", $techn="EVM execution", $tags="", $link="")
+Rel(PrivateBesunetwork.Besunode.EVMexecution, PrivateBesunetwork.Besunode.Applicationcontracts, "Executes application business calls", $techn="EVM execution", $tags="", $link="")
+Rel(PrivateBesunetwork.Besunode.FireFlymultipartycontract, PrivateBesunetwork.Besunode.Worldstateandtrie, "Writes pinning state and log results", $techn="In-process calls / Java", $tags="", $link="")
+Rel(PrivateBesunetwork.Besunode.Tokencontracts, PrivateBesunetwork.Besunode.Worldstateandtrie, "Writes token balances and log results", $techn="In-process calls / Java", $tags="", $link="")
+Rel(PrivateBesunetwork.Besunode.Applicationcontracts, PrivateBesunetwork.Besunode.Worldstateandtrie, "Writes application state and log results", $techn="In-process calls / Java", $tags="", $link="")
+
+SHOW_LEGEND(true)
+hide stereotypes
+@enduml

@@ -1,0 +1,32 @@
+@startuml
+title <size:24>Container - Optional embedded Core and EVM persistence</size>\n<size:24>Container - Optional embedded Core and EVM persistence</size>
+
+set separator none
+left to right direction
+
+<style>
+  root {
+    BackgroundColor: #ffffff
+    FontColor: #444444
+  }
+</style>
+
+!include <C4/C4>
+!include <C4/C4_Context>
+!include <C4/C4_Container>
+
+System_Boundary("HyperledgerFireFly_boundary", "Hyperledger FireFly", $tags="") {
+  Container(HyperledgerFireFly.FireFlyCore, "FireFly Core", $techn="Go", $descr="Exposes member APIs, serves Explorer assets and orchestrates multiparty operations.", $tags="", $link="https://github.com/hyperledger-firefly/firefly/tree/9d20f3081c9074d5b012427e5572ebc03da8d95d/internal/orchestrator")
+  Container(HyperledgerFireFly.EVMConnectFFTM, "EVMConnect + FFTM", $techn="Go", $descr="Submits Ethereum transactions and streams confirmed events; one nonce writer.", $tags="", $link="https://github.com/hyperledger-firefly/evmconnect/tree/6e12bb4c050677780cf5dd975a926923868b0cb8/cmd/evmconnect.go")
+  ContainerDb(HyperledgerFireFly.FFTMLevelDBfiles, "FFTM LevelDB files", $techn="LevelDB / filesystem", $descr="Optional embedded transaction and stream persistence.", $tags="", $link="https://github.com/hyperledger-firefly/transaction-manager/tree/5915cbc4e0e30dea25068b770dadbcc8bdfa9321/internal/persistence/leveldb")
+  ContainerDb(HyperledgerFireFly.CoreSQLitefile, "Core SQLite file", $techn="SQLite / filesystem", $descr="Optional embedded Core database; no independent database server.", $tags="", $link="https://github.com/hyperledger-firefly/firefly/tree/9d20f3081c9074d5b012427e5572ebc03da8d95d/internal/database/sqlite3")
+}
+
+Rel(HyperledgerFireFly.FireFlyCore, HyperledgerFireFly.EVMConnectFFTM, "Submits contract calls, pins and listeners", $techn="HTTP REST / JSON", $tags="", $link="")
+Rel(HyperledgerFireFly.FireFlyCore, HyperledgerFireFly.CoreSQLitefile, "Persists Core state when SQLite is selected", $techn="Embedded SQLite / filesystem", $tags="", $link="")
+Rel(HyperledgerFireFly.EVMConnectFFTM, HyperledgerFireFly.FireFlyCore, "Streams confirmed events and transaction results", $techn="WebSocket / JSON", $tags="", $link="")
+Rel(HyperledgerFireFly.EVMConnectFFTM, HyperledgerFireFly.FFTMLevelDBfiles, "Persists transaction state when LevelDB is selected", $techn="Embedded LevelDB / filesystem", $tags="", $link="")
+
+SHOW_LEGEND(true)
+hide stereotypes
+@enduml

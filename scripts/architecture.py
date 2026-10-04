@@ -1,4 +1,4 @@
-"""Offline architecture validation, exports and light/browser build stages. Standard library only."""
+"""Offline source generation, independent previews, and on-demand native exports."""
 import argparse
 from contextlib import contextmanager
 from copy import deepcopy
@@ -18,19 +18,11 @@ import tempfile
 from workspace_paths import ROOT, BUILD, REFERENCE, VERSION, TOOLCHAIN, discover_workspaces, output_directory, workspace_path
 from diagram_renderers import render, renderer_versions, require_capability, check_toolchain
 from view_sources import index_views, safe_name
-from artifact_store import atomic_json, staging, publish, recover, confined, prune_empty
+from artifact_store import atomic_json, staging, publish, recover, confined
 from source_inputs import input_files, source_files
 import native_exports
 
 JAVA = ['java', '-Dio.netty.noUnsafe=true', '--enable-native-access=ALL-UNNAMED', '-jar', '/usr/local/structurizr.war']
-# Native exporter, filename prefix and extension for each public export format.
-EXPORT_FORMATS = {
-    'plantuml': ('plantuml/c4plantuml', 'structurizr-', 'puml'),
-    'mermaid': ('mermaid', 'structurizr-', 'mmd'),
-    'svg': ('plantuml/c4plantuml', '', 'svg'),
-    'png': ('plantuml/c4plantuml', '', 'png'),
-}
-
 
 def timestamp():
     return datetime.now(timezone.utc).isoformat()
@@ -102,54 +94,6 @@ def inspect_workspace(path, logs):
 
 def inspection_message(finding):
     return f'{finding["severity"]} | {finding["rule"]} | {finding["message"]}'
-
-
-def inventory():
-    file = BUILD / 'artifacts.json'
-    return json.loads(file.read_text())['artifacts'] if file.exists() else []
-
-
-def legacy_files():
-    """Recognize the prior managed layout without deleting unrelated historical files."""
-    selected = set()
-    for metadata in (BUILD / 'c4').rglob('export.json'):
-        report = json.loads(metadata.read_text())
-        for name in report.get('outputs', []):
-            if Path(name).name != name:
-                raise ValueError(f'Unsafe legacy output name: {name}')
-            selected.add(metadata.parent / name)
-        selected.add(metadata)
-    for report in (BUILD / 'c4').rglob('validation.json'):
-        if 'workspace' in json.loads(report.read_text()):
-            for name in ('workspace.json', 'validation.json', 'validation.log', 'export-status.json', 'export.log'):
-                selected.add(report.parent / name)
-    manifest = BUILD / 'build.json'
-    if manifest.exists() and json.loads(manifest.read_text()).get('layout_version') != 2:
-        for output in json.loads(manifest.read_text()).get('outputs', []):
-            relative = Path(output).relative_to('build')
-            if relative.parts[0] in ('c4', 'uml', 'workspaces'):
-                selected.add(confined(BUILD, relative))
-    cache = BUILD / '.reports/legacy.json'
-    if cache.exists():
-        selected.update(confined(BUILD, item) for item in json.loads(cache.read_text()))
-        selected.add(cache)
-    return {p for p in selected if p.is_file()}
-
-
-def clean_build():
-    """Explicitly remove inventory-managed artifacts, preserving unrelated files."""
-    if BUILD.resolve() != ROOT.resolve() / 'build':
-        raise ValueError('Refusing to clean outside build')
-    managed = {confined(BUILD, item['output']) for item in inventory()} | legacy_files()
-    for file in managed:
-        file.unlink(missing_ok=True)
-    for name in ('artifacts.json', 'build.json', 'build.log'):
-        (BUILD / name).unlink(missing_ok=True)
-    reports = confined(BUILD, '.reports')
-    if reports.exists():
-        shutil.rmtree(reports)
-    prune_empty(BUILD, managed)
-    print('Cleaned managed artifacts (preserved local settings, unrelated files and writer lock)', flush=True)
 
 
 def validate(paths=None, inspections_blocking=True):
@@ -244,56 +188,9 @@ def select_view(raw, key):
     return raw
 
 
-def produce_diagrams(raw, format, stage, logs, c4_source=None):
-    native_format, _, _ = EXPORT_FORMATS[format]
-    diagrams = stage / 'diagrams'
-    if format in ('svg', 'png'):
-        if c4_source is None:
-            c4_source = stage / 'c4'
-            atomic_json(stage / 'workspace.json', raw)
-            run_java(['export', '-workspace', str(stage / 'workspace.json'), '-format', native_format,
-                      '-output', str(c4_source)], logs, timeout=600)
-        diagrams.mkdir()
-        for key in view_keys(raw):
-            render(c4_source / f'structurizr-{key}.puml', diagrams / f'{key}.{format}', logs)
-    else:
-        atomic_json(stage / 'workspace.json', raw)
-        run_java(['export', '-workspace', str(stage / 'workspace.json'), '-format', native_format,
-                  '-output', str(diagrams)], logs, timeout=600)
-    return diagrams
-
-
 def view_keys(raw):
     return [diagram['key'] for kind, views in raw['views'].items()
             if kind.endswith('Views') for diagram in views]
-
-
-def stage_export(raw, format, stage, logs, c4_source=None):
-    stage.mkdir(parents=True, exist_ok=True)
-    diagrams = produce_diagrams(raw, format, stage, logs, c4_source)
-    _, prefix, extension = EXPORT_FORMATS[format]
-    expected = [diagrams / f'{prefix}{key}.{extension}' for key in view_keys(raw)]
-    if not expected or any(not file.is_file() or file.stat().st_size == 0 for file in expected):
-        raise ValueError('Exporter did not produce every requested diagram')
-    return diagrams
-
-
-def artifact(output, source, workspace, format, fingerprint, key=None):
-    confined(BUILD, output)
-    return {'output': output.as_posix(), 'source': source.relative_to(ROOT).as_posix(),
-            'workspace': workspace.relative_to(ROOT).as_posix() if workspace else None,
-            'view': key, 'format': format, 'source_sha256': fingerprint,
-            'structurizr_version': VERSION if key else None,
-            'renderers': renderer_versions() if format in ('svg', 'png') else {},
-            'completed_at': timestamp()}
-
-
-def c4_plan(path, raw, formats, fingerprint, mapping=None):
-    if mapping is None:
-        mapping = index_views(path, ROOT, view_keys(raw))
-    return [artifact(stem.with_suffix(stem.suffix + '.' + EXPORT_FORMATS[format][2]),
-                     source, path, format, fingerprint, key)
-            for key, (source, stem) in mapping.items() for format in formats]
 
 
 def check_collisions(entries):
@@ -307,23 +204,6 @@ def check_collisions(entries):
         seen[folded] = entry['source']
 
 
-def stage_c4(path, raw, formats, entries, stage, logs):
-    replacements = []
-    c4_source = None
-    for format in formats:
-        diagrams = stage_export(raw, format, stage / format, logs, c4_source)
-        if format == 'plantuml':
-            c4_source = diagrams
-        _, prefix, extension = EXPORT_FORMATS[format]
-        for entry in entries:
-            if entry['format'] == format:
-                source = diagrams / f'{prefix}{entry["view"]}.{extension}'
-                entry['output_sha256'] = hashlib.sha256(source.read_bytes()).hexdigest()
-                replacements.append((source, BUILD / entry['output']))
-        print(f'Generated {path.relative_to(ROOT)}: {format}', flush=True)
-    return replacements
-
-
 def check_c4_views(raw):
     filtered = [view['key'] for view in raw['views'].get('filteredViews', [])]
     if filtered:
@@ -332,182 +212,52 @@ def check_c4_views(raw):
                          'tools-browser export-native for filtered views and saved layouts.')
 
 
-def commit_artifacts(entries, retained, replacements, removed, stage):
-    check_collisions(entries + retained)
-    staged_inventory = stage / 'artifacts.json'
-    atomic_json(staged_inventory, {'schema_version': 1,
-                'artifacts': sorted(entries + retained, key=lambda item: item['output'])})
-    replacements.extend((None, path) for path in sorted(removed)
-                        if path not in {destination for _, destination in replacements})
-    replacements.append((staged_inventory, BUILD / 'artifacts.json'))
-    publish(replacements, stage / 'previous')
+
+INVENTORIES = ('source', 'preview-plantuml', 'preview-mermaid', 'preview-native')
 
 
-def capture_layout(path):
-    """Explicitly preserve viewer-authored layout; never put it in the artifact inventory."""
-    check_toolchain(TOOLCHAIN)
-    source = path.with_suffix('.json')
-    if not source.is_file():
-        raise ValueError(f'Save the workspace in the Structurizr viewer first: {source.relative_to(ROOT)}')
-    original = source.read_bytes()
-    raw = json.loads(original)
-    if not isinstance(raw.get('model'), dict) or not isinstance(raw.get('views'), dict):
-        raise ValueError('Saved layout must be a complete Structurizr JSON workspace')
-    destination = native_exports.layout_path(path, ROOT, BUILD)
-    logs = []
-    with staging(BUILD) as stage:
-        saved = stage / 'workspace.json'
-        saved.write_bytes(original)
-        run_java(['validate', '-workspace', str(saved)], logs)
-        if source.read_bytes() != original:
-            raise ValueError('Viewer workspace changed during capture; save again and retry')
-        metadata = stage / 'capture.json'
-        atomic_json(metadata, {'workspace': path.relative_to(ROOT).as_posix(),
-                    'source': source.relative_to(ROOT).as_posix(), 'captured_at': timestamp(),
-                    'layout_sha256': hashlib.sha256(original).hexdigest(), 'structurizr_version': VERSION})
-        publish([(saved, destination), (metadata, destination.with_name('capture.json'))], stage / 'previous')
-    print(f'Captured layout: {destination.relative_to(ROOT)}', flush=True)
+def inventory(stage=None):
+    if stage is None:
+        return [item for name in INVENTORIES for item in inventory(name)]
+    file = BUILD / (stage + '.json')
+    if not file.exists():
+        return []
+    value = json.loads(file.read_text())
+    if value.get('schema_version') != 2 or not isinstance(value.get('artifacts'), list):
+        raise ValueError(f'Incompatible inventory: {file}; run clean and build-source')
+    return value['artifacts']
 
 
-def export(path, format, view=None):
-    """Retain the single-workspace Python entrypoint for existing callers."""
-    return export_batch([path], format, view)
+def digest(file):
+    return hashlib.sha256(file.read_bytes()).hexdigest()
 
 
-def export_batch(paths, format, views=None, native=False, frame_duration=3):
-    if native:
-        require_capability('native')
-    paths = [workspace_path(path) for path in paths]
-    keys = selected_keys(views)
-    command = 'export-native' if native else 'export'
-    renderer = 'structurizr' if native else 'c4plantuml'
-    statuses, logs = {}, {path: [] for path in paths}
-    selection = {'workspaces': [p.relative_to(ROOT).as_posix() for p in paths], 'views': keys}
-    batch = {'selection': selection, 'format': format, 'renderer': renderer,
-             'passed': False, 'errors': [], 'outputs': [], 'started_at': timestamp()}
-    batch_file = BUILD / '.reports' / f'{command}-status.json'
-    for path in paths:
-        directory = output_directory(path)
-        directory.mkdir(parents=True, exist_ok=True)
-        statuses[path] = {'workspace': path.relative_to(ROOT).as_posix(), 'format': format,
-                          'view': keys[0] if keys and len(keys) == 1 else None, 'views': keys,
-                          'renderer': renderer, 'passed': False, 'errors': [], 'outputs': [],
-                          'selection': selection, 'started_at': batch['started_at']}
-        atomic_json(directory / f'{command}-status.json', statuses[path] | {'in_progress': True})
-    atomic_json(batch_file, batch | {'in_progress': True})
-    try:
-        with staging(BUILD) as stage:
-            entries, jobs, layout_inputs = [], {}, {}
-            # Preflight every selection before invoking any image/text renderer.
-            for path in paths:
-                raw, report = fresh_workspace(path)
-                status = statuses[path]
-                status.update(source_sha256=report['source_sha256'],
-                              inspection_findings=report.get('inspection_findings', []))
-                selected = select_view(raw, keys)
-                workspace_stage = stage / command / path.relative_to(ROOT)
-                if native:
-                    mapping = index_views(path, ROOT, view_keys(raw))
-                    request = native_exports.prepare(path, raw, view_keys(selected), keys is not None,
-                        format, frame_duration, ROOT, BUILD, workspace_stage, logs[path], run_java)
-                    layout_inputs[path] = request['layout_sha256']
-                    status.update({key: request[key] for key in ('layout_sha256', 'skipped_views', 'warnings')})
-                    status['frame_duration'] = frame_duration if format == 'gif' else None
-                    versions = native_exports.versions()
-                    plan = []
-                    for key in request['keys']:
-                        source, stem = mapping[key]
-                        for role in ('diagram', 'key') if format != 'gif' else ('diagram',):
-                            output = native_exports.output_path(stem, format, role)
-                            entry = artifact(output, source, path, format, report['source_sha256'], key)
-                            entry.update(renderer='structurizr', role=role, renderers=versions,
-                                         layout_sha256=request['layout_sha256'],
-                                         frame_duration=frame_duration if format == 'gif' else None)
-                            plan.append(entry)
-                    jobs[path] = (request, report, plan, workspace_stage)
-                else:
-                    if format != 'mermaid':
-                        check_c4_views(selected)
-                    plan = [entry for entry in c4_plan(path, raw, [format], report['source_sha256'])
-                            if keys is None or entry['view'] in keys]
-                    jobs[path] = (selected, report, plan, workspace_stage)
-                entries.extend(plan)
-            old = inventory()
-            replaced = [item for item in old if item['workspace'] in selection['workspaces']
-                        and item['view'] is not None and item['format'] == format
-                        and (item.get('renderer') == 'structurizr') == native
-                        and (keys is None or item['view'] in keys)]
-            retained = [item for item in old if item not in replaced]
-            check_collisions(entries + retained)
-            replacements, generated = [], []
-            for path, (request, report, plan, workspace_stage) in jobs.items():
-                if native:
-                    print(f'Rendering native {format.upper()}: {path.relative_to(ROOT)} '
-                          f'({len(request["keys"])} views)', flush=True)
-                    results = native_exports.render_native(request, workspace_stage, logs[path], run_java)
-                    for entry in plan:
-                        result = results.get((entry['view'], entry['role']))
-                        if result is None:
-                            if entry['role'] == 'key':
-                                continue  # Image views have no native diagram key.
-                            raise ValueError(f'Native renderer omitted view {entry["view"]}')
-                        source, details = result
-                        entry.update(details, output_sha256=hashlib.sha256(source.read_bytes()).hexdigest())
-                        replacements.append((source, BUILD / entry['output']))
-                        generated.append(entry)
-                else:
-                    replacements.extend(stage_c4(path, request, [format], plan, workspace_stage, logs[path]))
-                    generated.extend(plan)
-            if any(source_fingerprint() != report['source_sha256'] for _, report, _, _ in jobs.values()):
-                raise ValueError('Sources changed during export')
-            for path, fingerprint in layout_inputs.items():
-                if native_exports.layout_fingerprint(path, ROOT, BUILD) != fingerprint:
-                    raise ValueError(f'Captured layout changed during export: {path.relative_to(ROOT)}')
-            commit_artifacts(generated, retained, replacements,
-                             {BUILD / item['output'] for item in replaced}, stage)
-        batch.update(passed=True, outputs=[entry['output'] for entry in generated])
-        for path, status in statuses.items():
-            status.update(passed=True, outputs=[entry['output'] for entry in generated
-                                               if entry['workspace'] == status['workspace']])
-        print(f'Exported {format.upper()}: {len(generated)} canonical files under build/ (see artifacts.json)', flush=True)
-    except (ValueError, OSError, RuntimeError, subprocess.SubprocessError) as exc:
-        batch['errors'].append(str(exc))
-        for status in statuses.values():
-            status['errors'].append(f'Export batch not published: {exc}')
-        raise
-    finally:
-        for path, status in statuses.items():
-            directory = output_directory(path)
-            atomic_json(directory / f'{command}-status.json', status | {'in_progress': False, 'completed_at': timestamp()})
-            (directory / f'{command}.log').write_text('\n'.join(logs[path] + status['errors']), encoding='utf-8')
-        atomic_json(batch_file, batch | {'in_progress': False, 'completed_at': timestamp()})
-
-
-def discover_uml():
-    selected, stems = [], {}
-    sources = set(input_files(ROOT / 'uml'))
-    sources.update(path for path in input_files(ROOT / 'workspaces')
-                   if 'uml' in path.relative_to(ROOT / 'workspaces').parts[:-1])
-    for source in sorted(sources):
-        if not source.is_file() or source.suffix not in ('.puml', '.mmd'):
+def clean_build():
+    """Caller owns the lock; do not unlink its inode or the mounted build root."""
+    if BUILD.resolve() != ROOT.resolve() / 'build':
+        raise ValueError('Refusing to clean outside build')
+    if (BUILD / 'local.env').exists():
+        raise ValueError('Move build/local.env to docker/local.env before clean; sources are read-only here.')
+    for path in BUILD.iterdir():
+        if path.name == '.tools.lock':
             continue
-        source.resolve().relative_to(ROOT.resolve())
-        relative = source.relative_to(ROOT)
-        stem = relative.with_suffix('').as_posix().casefold()
-        if stem in stems:
-            raise ValueError(f'Diagram output collision: {stems[stem]} and {relative}')
-        stems[stem] = relative
-        selected.append(source)
-    return selected
+        if path.is_dir() and not path.is_symlink():
+            shutil.rmtree(path)
+        else:
+            path.unlink()
+    print('Cleaned generated build contents; saved workspace JSON and writer lock preserved', flush=True)
 
 
-def browser_artifact(item):
-    return item.get('view') is None and Path(item['source']).suffix == '.mmd'
+def artifact(output, source, workspace, format, fingerprint, key=None, **details):
+    confined(BUILD, output)
+    return {'output': Path(output).as_posix(), 'source': source.relative_to(ROOT).as_posix(),
+            'workspace': workspace.relative_to(ROOT).as_posix() if workspace else None,
+            'view': key, 'format': format, 'source_sha256': fingerprint, **details}
 
 
-def phase_status(phase):
-    return {'layout_version': 2, 'handoff_version': 1, 'stage': phase, 'complete': False,
-            'passed': False, 'errors': [], 'outputs': [], 'sources': [], 'artifacts': [],
+def phase_status(stage, selection=None):
+    return {'handoff_version': 2, 'stage': stage, 'passed': False, 'errors': [],
+            'outputs': [], 'artifacts': [], 'reports': {}, 'selection': selection,
             'inspection_findings': [], 'started_at': timestamp(), 'toolchain': TOOLCHAIN,
             'source_revision': os.environ.get('ARCHITECTURE_SOURCE_REVISION') or None,
             'ci_run': os.environ.get('ARCHITECTURE_CI_RUN') or None}
@@ -517,253 +267,428 @@ def write_phase(status, logs, in_progress=False):
     value = status | {'in_progress': in_progress}
     if not in_progress:
         value['completed_at'] = timestamp()
-    report = BUILD / '.reports' / f'build-{status["stage"]}.json'
-    atomic_json(report, value)
-    report.with_suffix('.log').write_text('\n'.join(logs + status['errors']), encoding='utf-8')
-    atomic_json(BUILD / 'build.json', value)
-    (BUILD / 'build.log').write_text('\n'.join(logs + status['errors']), encoding='utf-8')
+    file = BUILD / '.reports' / (status['stage'] + '.json')
+    atomic_json(file, value)
+    file.with_suffix('.log').write_text('\n'.join(logs + status['errors']), encoding='utf-8')
 
 
-def verify_light_handoff():
-    """Verify an earlier light build without reparsing DSL or regenerating its files."""
+def selection(paths=None, views=None):
+    keys = selected_keys(views)
+    all_workspaces = paths is None and keys is None
+    selected = discover_workspaces() if all_workspaces else [workspace_path(p) for p in (paths or [REFERENCE])]
+    if keys is not None and len(selected) != 1:
+        raise ValueError('Select one workspace when selecting view keys')
+    return {'all_workspaces': all_workspaces,
+            'workspaces': [p.relative_to(ROOT).as_posix() for p in selected], 'views': keys}
+
+
+def in_scope(item, selected):
+    return (selected['all_workspaces'] or item['workspace'] in selected['workspaces']) and (
+        selected['views'] is None or item['view'] in selected['views'])
+
+
+def commit_artifacts(name, entries, retained, replacements, removed, stage):
+    combined = sorted(entries + retained, key=lambda item: item['output'])
+    check_collisions(combined)
+    metadata = stage / (name + '.json')
+    atomic_json(metadata, {'schema_version': 2, 'artifacts': combined})
+    destinations = {destination for _, destination in replacements}
+    replacements.extend((None, path) for path in sorted(removed) if path not in destinations)
+    replacements.append((metadata, BUILD / (name + '.json')))
+    publish(replacements, stage / 'previous')
+
+
+def discover_uml():
+    candidates = set(input_files(ROOT / 'uml'))
+    candidates.update(path for path in input_files(ROOT / 'workspaces')
+                      if 'uml' in path.relative_to(ROOT / 'workspaces').parts[:-1])
+    candidates = sorted(p for p in candidates if p.is_file() and p.suffix in ('.puml', '.mmd'))
+    included = set()
+    for source in candidates:
+        source.resolve().relative_to(ROOT.resolve())
+        if source.suffix == '.puml':
+            included.update(diagram_dependencies(source))
+    selected, stems = [], {}
+    for source in candidates:
+        if source in included and source.suffix == '.puml' and '@startuml' not in source.read_text():
+            continue  # A referenced text fragment is not a standalone diagram.
+        relative = source.relative_to(ROOT)
+        stem = relative.with_suffix('').as_posix().casefold()
+        if stem in stems:
+            raise ValueError(f'Diagram output collision: {stems[stem]} and {relative}')
+        stems[stem] = relative
+        selected.append(source)
+    return selected
+
+
+def diagram_dependencies(source):
+    """Portable literal local includes; keep original bytes and relative paths."""
+    from source_inputs import REFERENCE as INCLUDE, BLOCK_COMMENT, include_files
+    pending, visited = [source], set()
+    while pending:
+        path = pending.pop()
+        if path in visited:
+            continue
+        visited.add(path)
+        for match in INCLUDE.finditer(BLOCK_COMMENT.sub('', path.read_text(encoding='utf-8-sig'))):
+            value = match.group(1) or match.group(2)
+            if '://' in value or value.startswith('<'):
+                continue  # Installed libraries remain supplied by the pinned image.
+            value = value.split('!', 1)[0]
+            if Path(value).is_absolute():
+                raise ValueError(f'Use a relative local diagram include for portable sources: {value}')
+            dependency = (path.parent / value).resolve()
+            if not dependency.exists():
+                raise ValueError(f'Missing local diagram include: {value} in {path.relative_to(ROOT)}')
+            pending.extend(include_files(dependency, ROOT))
+    return sorted(visited - {source})
+
+
+def uml_owner(source):
+    owners = [workspace for workspace in discover_workspaces() if source.is_relative_to(workspace.parent)]
+    return max(owners, key=lambda path: len(path.parts)) if owners else REFERENCE
+
+
+def preview_plan(entries, renderer=None):
+    return [item | {'output': (Path('preview') / Path(item['output']).relative_to('source')).with_suffix('.' + format).as_posix(),
+                    'format': format, 'generated_source': item['output'], 'input_sha256': item.get('output_sha256')}
+            for item in entries if item.get('kind') != 'include' and (renderer is None or item['renderer'] == renderer)
+            for format in ('svg', 'png')]
+
+
+def stage_c4(path, raw, entries, stage, logs):
+    if not entries:
+        return []
+    stage.mkdir(parents=True, exist_ok=True)
+    atomic_json(stage / 'workspace.json', raw)
+    diagrams = stage / 'diagrams'
+    run_java(['export', '-workspace', str(stage / 'workspace.json'), '-format', 'plantuml/c4plantuml',
+              '-output', str(diagrams)], logs, timeout=600)
+    replacements = []
+    for item in entries:
+        file = diagrams / ('structurizr-' + item['view'] + '.puml')
+        if not file.is_file() or not file.stat().st_size:
+            raise ValueError('Exporter did not produce every requested diagram')
+        item['output_sha256'] = digest(file)
+        replacements.append((file, BUILD / item['output']))
+    print(f'Generated C4 text: {path.relative_to(ROOT)} ({len(entries)} views)', flush=True)
+    return replacements
+
+
+def build_source(paths=None, views=None):
+    selected = selection(paths, views)
+    status, logs = phase_status('source', selected), []
+    write_phase(status, logs, True)
     try:
-        return _verify_light_handoff()
-    except (KeyError, TypeError, AttributeError) as exc:
-        raise ValueError('Malformed lightweight handoff; run tools build first.') from exc
-
-
-def _verify_light_handoff():
-    file = BUILD / '.reports/build-light.json'
-    if not file.is_file():
-        raise ValueError('Missing lightweight handoff. Run tools build for this checkout/commit first.')
-    report = json.loads(file.read_text())
-    if (report.get('handoff_version') != 1 or report.get('stage') != 'light'
-            or not report.get('passed') or report.get('in_progress')
-            or report.get('source_sha256') != source_fingerprint() or report.get('toolchain') != TOOLCHAIN):
-        raise ValueError('Lightweight handoff is incompatible, failed or stale; run tools build first.')
-    check_toolchain(TOOLCHAIN, report.get('renderers', {}))
-    revision = os.environ.get('ARCHITECTURE_SOURCE_REVISION') or None
-    if revision and report.get('source_revision') != revision:
-        raise ValueError('Lightweight handoff belongs to a different commit; run the light job for this commit.')
-    entries = {item['output']: item for item in inventory()}
-    if not report.get('artifacts') or report['outputs'] != ['build/' + item['output'] for item in report['artifacts']]:
-        raise ValueError('Incomplete lightweight artifact manifest')
-    for item in report['artifacts']:
-        path = confined(BUILD, item['output'])
-        if (entries.get(item['output']) != item or not path.is_file()
-                or hashlib.sha256(path.read_bytes()).hexdigest() != item['output_sha256']):
-            raise ValueError(f'Lightweight artifact is missing or modified: {item["output"]}')
-    if not report.get('reports'):
-        raise ValueError('Lightweight handoff is missing its workspace reports')
-    for relative, digest in report['reports'].items():
-        path = confined(BUILD, relative)
-        if not path.is_file() or hashlib.sha256(path.read_bytes()).hexdigest() != digest:
-            raise ValueError(f'Lightweight report is missing or modified: {relative}')
-    # Re-discover authored paths to verify the deferred plan, including collisions.
-    expected = {(p.relative_to(ROOT).as_posix(), p.relative_to(ROOT).with_suffix('.' + f).as_posix(), f)
-                for p in discover_uml() if p.suffix == '.mmd' for f in ('svg', 'png')}
-    actual = {(item['source'], item['output'], item['format']) for item in report['deferred']}
-    if actual != expected or len(actual) != len(report['deferred']):
-        raise ValueError('Deferred Mermaid manifest does not match current sources')
-    check_collisions(report['artifacts'] + report['deferred'])
-    return report, hashlib.sha256(file.read_bytes()).hexdigest()
-
-
-def build():
-    """Publish non-browser diagrams; retain Mermaid outputs for browser completion."""
-    require_capability('plantuml')
-    status = phase_status('light') | {'deferred': [], 'reports': {}}
-    logs = []
-    BUILD.mkdir(parents=True, exist_ok=True)
-    # Capture legacy inventory before replacing the old attempt manifest.
-    legacy = legacy_files()
-    if legacy:
-        cache = BUILD / '.reports/legacy.json'
-        atomic_json(cache, sorted(p.relative_to(BUILD).as_posix() for p in legacy if p != cache))
-        legacy.add(cache)
-    write_phase(status, logs, in_progress=True)
-    try:
+        versions = check_toolchain(TOOLCHAIN)
         with staging(BUILD) as stage:
-            sources = discover_uml()
-            reports = validate(inspections_blocking=False)
-            status['inspection_findings'] = [finding | {'workspace': report['workspace']}
-                                             for report in reports.values()
-                                             for finding in report['inspection_findings']]
-            logs.extend(f'Inspection {finding["workspace"]}: {inspection_message(finding)}'
-                        for finding in status['inspection_findings'])
+            authored = discover_uml()  # Check cross-format collisions before publication.
+            reports = validate(selected['workspaces'], inspections_blocking=False)
             if not reports or not all(report['passed'] for report in reports.values()):
-                raise ValueError('Validation failed. Previous build artifacts were not updated.')
+                raise ValueError('Validation failed. Previous source artifacts were not updated.')
             fingerprint = next(iter(reports.values()))['source_sha256']
-            status.update(source_sha256=fingerprint, structurizr_version=VERSION, renderers=renderer_versions())
-            entries, workspaces, possible, possible_native = [], {}, set(), set()
+            status.update(source_sha256=fingerprint, renderers=versions)
+            entries, jobs = [], {}
             for path, report in reports.items():
-                raw = select_view(json.loads((output_directory(path) / 'workspace.json').read_text()), None)
-                check_c4_views(raw)
+                status['inspection_findings'].extend(f | {'workspace': report['workspace']} for f in report['inspection_findings'])
+                raw = json.loads((output_directory(path) / 'workspace.json').read_text())
+                chosen = select_view(raw, selected['views'])
+                check_c4_views(chosen)
                 mapping = index_views(path, ROOT, view_keys(raw))
-                plan = c4_plan(path, raw, EXPORT_FORMATS, fingerprint, mapping)
-                possible.update((item['output'], item['source'], item['workspace'], item['view'], item['format']) for item in plan)
-                for key, (source, stem) in mapping.items():
-                    for format in ('svg', 'png', 'gif'):
-                        if format == 'gif' and not native_exports.is_animated(raw, key):
-                            continue
-                        for role in ('diagram', 'key') if format != 'gif' else ('diagram',):
-                            possible_native.add((native_exports.output_path(stem, format, role).as_posix(),
-                                source.relative_to(ROOT).as_posix(), path.relative_to(ROOT).as_posix(), key, format))
-                selected = [item for item in plan if item['format'] != 'mermaid']
-                workspaces[path] = (raw, selected)
-                entries.extend(selected)
-                status['sources'].append(path.relative_to(ROOT).as_posix())
-            for source in sources:
-                relative = source.relative_to(ROOT)
-                owners = [p for p in reports if source.is_relative_to(p.parent)]
-                owner = max(owners, key=lambda p: len(p.parts)) if owners else None
-                target = status['deferred'] if source.suffix == '.mmd' else entries
-                target.extend(artifact(relative.with_suffix('.' + format), source, owner, format, fingerprint)
-                              for format in ('svg', 'png'))
-                status['sources'].append(relative.as_posix())
-            old = inventory()
-            replaced_paths = {item['output'] for item in entries}
-            retained = [item for item in old if item['output'] not in replaced_paths
-                        and (browser_artifact(item) or (item.get('renderer') == 'structurizr' and
-                             (item['output'], item['source'], item['workspace'], item['view'], item['format']) in possible_native)
-                            or (item.get('renderer') != 'structurizr' and item['format'] == 'mermaid' and
-                                (item['output'], item['source'], item['workspace'], item['view'], item['format']) in possible))]
-            check_collisions(entries + status['deferred'])
-            check_collisions(entries + retained)
-            replacements = []
-            for path, (raw, plan) in workspaces.items():
-                replacements.extend(stage_c4(path, raw, ('plantuml', 'svg', 'png'),
-                                    plan, stage / 'c4' / path.relative_to(ROOT), logs))
-            for entry in entries:
-                if entry['view'] is not None:
+                plan = [artifact(Path('source') / (stem.as_posix() + '.puml'), source, path, 'plantuml', fingerprint,
+                                 key, kind='c4', renderer='plantuml', dependencies=[], structurizr_version=VERSION)
+                        for key, (source, stem) in mapping.items() if key in view_keys(chosen)]
+                jobs[path] = (chosen, plan)
+                entries.extend(plan)
+            includes = {}
+            for source in authored:
+                owner = uml_owner(source)
+                item = artifact(Path('source') / source.relative_to(ROOT), source, owner,
+                                'mermaid' if source.suffix == '.mmd' else 'plantuml', fingerprint,
+                                kind='uml', renderer='mermaid' if source.suffix == '.mmd' else 'plantuml')
+                if not in_scope(item, selected):
                     continue
-                output = stage / 'authored' / entry['output']
-                render(ROOT / entry['source'], output, logs)
-                entry['output_sha256'] = hashlib.sha256(output.read_bytes()).hexdigest()
-                replacements.append((output, BUILD / entry['output']))
-                print(f'Generated {entry["source"]}: {entry["format"]}', flush=True)
-            if source_fingerprint() != fingerprint:
-                raise ValueError('Sources changed during build')
-            kept = {item['output'] for item in entries + retained}
-            removed = {BUILD / item['output'] for item in old if item['output'] not in kept} | legacy
-            # Deleted workspace reports must not linger as apparently active workspaces.
-            report_directories = {output_directory(path) for path in reports}
-            for file in (BUILD / '.reports').rglob('validation.json'):
-                if file.parent not in report_directories:
-                    removed.update(p for p in file.parent.iterdir() if p.is_file())
-            status['outputs'] = ['build/' + item['output'] for item in entries]
-            status['artifacts'] = entries
-            for directory in report_directories:
+                dependencies = diagram_dependencies(source) if source.suffix == '.puml' else []
+                item['dependencies'] = [(Path('source') / p.relative_to(ROOT)).as_posix() for p in dependencies]
+                for dependency in dependencies:
+                    output = Path('source') / dependency.relative_to(ROOT)
+                    includes[output.as_posix()] = artifact(output, dependency, None, 'include', fingerprint,
+                                                          kind='include', renderer=None, dependencies=[])
+                entries.append(item)
+            old = inventory('source')
+            retained = [item for item in old if item.get('kind') != 'include' and not in_scope(item, selected)]
+            # A dependency can itself be a separately renderable entrypoint.
+            by_output = {item['output']: item for item in entries + retained}
+            for output, item in includes.items():
+                if output in by_output:
+                    if by_output[output]['source'] != item['source'] or by_output[output]['kind'] == 'c4':
+                        raise ValueError(f'Diagram output collision: {output}')
+                    if by_output[output] in retained:
+                        # A previously exported diagram can also supply an include
+                        # section. Refresh its text as part of this dependency closure.
+                        retained.remove(by_output[output])
+                        entries.append(by_output[output] | {'source_sha256': fingerprint})
+                else:
+                    entries.append(item)
+            needed = {name for item in entries + retained for name in item['dependencies']}
+            retained.extend(item for item in old if item.get('kind') == 'include' and item['output'] in needed
+                            and item['output'] not in includes)
+            check_collisions(entries + retained)
+            check_collisions(preview_plan(entries + retained))
+            replacements = []
+            for path, (raw, plan) in jobs.items():
+                replacements.extend(stage_c4(path, raw, plan, stage / 'c4' / path.relative_to(ROOT), logs))
+            for item in entries:
+                if item['kind'] == 'c4':
+                    continue
+                file = stage / 'copied' / item['output']
+                file.parent.mkdir(parents=True, exist_ok=True)
+                shutil.copyfile(ROOT / item['source'], file)
+                item['output_sha256'] = digest(file)
+                replacements.append((file, BUILD / item['output']))
+            for path in reports:
                 for name in ('workspace.json', 'validation.json', 'validation.log'):
-                    file = directory / name
-                    # Keep handoff reports separate from the latest ad-hoc export
-                    # diagnostics, which native/manual commands may overwrite.
-                    relative = Path('.reports/light') / directory.relative_to(BUILD / '.reports') / name
-                    frozen = stage / 'reports' / relative
-                    frozen.parent.mkdir(parents=True, exist_ok=True)
-                    shutil.copyfile(file, frozen)
-                    status['reports'][relative.as_posix()] = hashlib.sha256(frozen.read_bytes()).hexdigest()
-                    replacements.append((frozen, confined(BUILD, relative)))
-            removed.update(file for file in (BUILD / '.reports/light').rglob('*')
+                    relative = Path('.reports/source') / path.relative_to(ROOT) / name
+                    file = stage / relative
+                    file.parent.mkdir(parents=True, exist_ok=True)
+                    shutil.copyfile(output_directory(path) / name, file)
+                    status['reports'][relative.as_posix()] = digest(file)
+                    replacements.append((file, BUILD / relative))
+            if source_fingerprint() != fingerprint:
+                raise ValueError('Sources changed during source generation')
+            kept = {item['output'] for item in entries + retained}
+            removed = {BUILD / item['output'] for item in old if item['output'] not in kept}
+            removed.update(file for file in (BUILD / '.reports/source').rglob('*')
                            if file.is_file() and file.relative_to(BUILD).as_posix() not in status['reports'])
-            commit_artifacts(entries, retained, replacements, removed, stage)
-        status['passed'] = True
-        print(f'Built lightweight diagrams: build/build.json ({len(status["deferred"]) // 2} Mermaid sources deferred; '
-              f'{len(status["inspection_findings"])} inspection findings)', flush=True)
+            commit_artifacts('source', entries, retained, replacements, removed, stage)
+            status.update(passed=True, artifacts=sorted(entries, key=lambda item: item['output']),
+                          outputs=sorted(item['output'] for item in entries))
+            logs.extend(inspection_message(f) for f in status['inspection_findings'])
+        print(f'Generated {len(entries)} source files; previews remain separate', flush=True)
     except (ValueError, OSError, RuntimeError, subprocess.SubprocessError) as exc:
         status['errors'].append(str(exc))
-        status['outputs'] = []
         raise
     finally:
         write_phase(status, logs)
 
 
-def build_browser():
-    """Complete only deferred Mermaid outputs from a verified light handoff."""
-    status, logs = phase_status('browser'), []
-    write_phase(status, logs, in_progress=True)
+def verify_source_handoff():
+    """Never parse DSL or regenerate text when accepting a source handoff."""
     try:
-        require_capability('mermaid')
+        file = BUILD / '.reports/source.json'
+        if not file.is_file():
+            raise ValueError('Missing source handoff. Run tools build-source for this checkout/commit first.')
+        report = json.loads(file.read_text())
+        if (report.get('handoff_version') != 2 or report.get('stage') != 'source'
+                or not report.get('passed') or report.get('in_progress')
+                or report.get('source_sha256') != source_fingerprint() or report.get('toolchain') != TOOLCHAIN):
+            raise ValueError('Source handoff is incompatible, failed or stale; run tools build-source first.')
+        check_toolchain(TOOLCHAIN, report['renderers'])
+        revision = os.environ.get('ARCHITECTURE_SOURCE_REVISION') or None
+        if revision and report.get('source_revision') != revision:
+            raise ValueError('Source handoff belongs to a different commit; run the source job for this commit.')
+        entries = {item['output']: item for item in inventory('source')}
+        if report['outputs'] != sorted(item['output'] for item in report['artifacts']):
+            raise ValueError('Incomplete source artifact manifest')
+        check_collisions(report['artifacts'])
+        check_collisions(preview_plan(report['artifacts']))
+        recorded = {item['output'] for item in report['artifacts']}
+        for item in report['artifacts']:
+            path = confined(BUILD, item['output'])
+            if (not item['output'].startswith('source/') or entries.get(item['output']) != item
+                    or item['source_sha256'] != report['source_sha256'] or not path.is_file()
+                    or digest(path) != item['output_sha256'] or not set(item['dependencies']) <= recorded):
+                raise ValueError(f'Source artifact is missing or modified: {item["output"]}')
+        if not report['reports'] or not report['selection']['workspaces']:
+            raise ValueError('Source handoff is missing its workspace reports')
+        for relative, expected in report['reports'].items():
+            path = confined(BUILD, relative)
+            if not relative.startswith('.reports/source/') or not path.is_file() or digest(path) != expected:
+                raise ValueError(f'Source report is missing or modified: {relative}')
+        return report, digest(file)
+    except (KeyError, TypeError, AttributeError) as exc:
+        raise ValueError('Malformed source handoff; run tools build-source first.') from exc
+
+
+def verify_coverage(recorded, requested, artifacts):
+    if requested['all_workspaces'] and not recorded['all_workspaces']:
+        raise ValueError('Source handoff covers only a selection; run build-source for all workspaces first.')
+    if not set(requested['workspaces']) <= set(recorded['workspaces']):
+        raise ValueError('Requested workspace is missing from source handoff; rerun build-source.')
+    if requested['views'] is None and recorded['views'] is not None:
+        raise ValueError('Source handoff covers only selected views; rerun build-source for this workspace.')
+    if requested['views'] is not None:
+        known = {i['view'] for i in artifacts if i['workspace'] in requested['workspaces']}
+        missing = [key for key in requested['views'] if key not in known]
+        if missing:
+            raise ValueError('Unknown or unavailable view keys in source handoff: ' + ', '.join(missing))
+
+
+def build_preview(renderer, paths=None, views=None):
+    if renderer not in ('plantuml', 'mermaid'):
+        raise ValueError('Preview renderer must be plantuml or mermaid')
+    if renderer == 'mermaid' and views is not None:
+        raise ValueError('Mermaid previews do not have C4 view keys; use workspace selection')
+    selected = selection(paths, views)
+    name = 'preview-' + renderer
+    status, logs = phase_status(name, selected), []
+    write_phase(status, logs, True)
+    try:
+        require_capability(renderer)
         with staging(BUILD) as stage:
-            light, digest = verify_light_handoff()
-            status.update(source_sha256=light['source_sha256'], light_sha256=digest,
-                          source_revision=light['source_revision'], renderers=renderer_versions(),
-                          inspection_findings=light['inspection_findings'])
-            entries = deepcopy(light['deferred'])
+            source, handoff_digest = verify_source_handoff()
+            verify_coverage(source['selection'], selected, source['artifacts'])
+            status.update(source_sha256=source['source_sha256'], source_handoff_sha256=handoff_digest,
+                          renderers=renderer_versions(), source_revision=source['source_revision'],
+                          inspection_findings=source['inspection_findings'])
+            entries = [item for item in preview_plan(source['artifacts'], renderer) if in_scope(item, selected)]
             for item in entries:
-                item.update(renderers=renderer_versions(), completed_at=timestamp())
-            old = inventory()
-            retained = [item for item in old if not browser_artifact(item)]
-            check_collisions(entries + retained)
+                item['renderers'] = status['renderers']
+            old = inventory(name)
+            retained = [item for item in old if not in_scope(item, selected)]
+            check_collisions(entries + retained + inventory('preview-native'))
             replacements = []
             for item in entries:
-                output = stage / 'browser' / item['output']
-                render(ROOT / item['source'], output, logs)
-                item['output_sha256'] = hashlib.sha256(output.read_bytes()).hexdigest()
+                output = stage / item['output']
+                render(confined(BUILD, item['generated_source']), output, logs)
+                item['output_sha256'] = digest(output)
                 replacements.append((output, BUILD / item['output']))
-                print(f'Generated {item["source"]}: {item["format"]}', flush=True)
-            if verify_light_handoff()[1] != digest:
-                raise ValueError('Lightweight handoff changed during browser rendering')
-            removed = {BUILD / item['output'] for item in old if browser_artifact(item)}
-            commit_artifacts(entries, retained, replacements, removed, stage)
-            status.update(artifacts=entries, outputs=light['outputs'] + ['build/' + item['output'] for item in entries],
-                          sources=light['sources'], passed=True, complete=True)
-        print('Completed ordinary diagrams: build/build.json (native exports remain on demand)', flush=True)
+                print(f'Generated preview: {item["output"]}', flush=True)
+            if verify_source_handoff()[1] != handoff_digest:
+                raise ValueError('Source handoff changed during preview rendering')
+            # Another renderer may now own a stem after a .puml/.mmd format change.
+            other = 'mermaid' if renderer == 'plantuml' else 'plantuml'
+            protected = {item['output'] for item in preview_plan(inventory('source'), other)}
+            removed = {BUILD / item['output'] for item in old if in_scope(item, selected) and item['output'] not in protected}
+            commit_artifacts(name, entries, retained, replacements, removed, stage)
+            status.update(passed=True, artifacts=entries, outputs=sorted(item['output'] for item in entries))
     except (ValueError, OSError, RuntimeError, subprocess.SubprocessError) as exc:
         status['errors'].append(str(exc))
-        status.update(passed=False, complete=False, outputs=[])
         raise
     finally:
+        write_phase(status, logs)
+
+
+def export_native(paths, format='svg', views=None, frame_duration=3, all_workspaces=False):
+    require_capability('native')
+    check_toolchain(TOOLCHAIN)
+    paths = [workspace_path(path) for path in paths]
+    keys = selected_keys(views)
+    selected = {'all_workspaces': all_workspaces, 'workspaces': [p.relative_to(ROOT).as_posix() for p in paths], 'views': keys}
+    status, logs = phase_status('preview-native', selected) | {'format': format}, []
+    diagnostics = {}
+    write_phase(status, logs, True)
+    try:
+        with staging(BUILD) as stage:
+            entries, jobs, layouts = [], {}, {}
+            versions = native_exports.versions()
+            for path in paths:
+                raw, report = fresh_workspace(path)
+                status.update(source_sha256=report['source_sha256'], renderers=versions)
+                status['inspection_findings'].extend(f | {'workspace': report['workspace']}
+                                                     for f in report['inspection_findings'])
+                diagnostics[path] = {'workspace': report['workspace'], 'passed': False,
+                                     'inspection_findings': report['inspection_findings'], 'outputs': [], 'errors': []}
+                chosen = select_view(raw, keys)
+                mapping = index_views(path, ROOT, view_keys(raw))
+                workspace_stage = stage / 'native' / path.relative_to(ROOT)
+                request = native_exports.prepare(path, raw, view_keys(chosen), keys is not None, format,
+                    frame_duration, ROOT, BUILD, workspace_stage, logs, run_java)
+                layouts[path] = request['layout_sha256']
+                diagnostics[path].update({k: request[k] for k in ('layout_sha256', 'skipped_views', 'warnings')})
+                plan = []
+                for key in request['keys']:
+                    source, stem = mapping[key]
+                    for role in ('diagram', 'key') if format != 'gif' else ('diagram',):
+                        output = Path('preview') / native_exports.output_path(stem, format, role)
+                        plan.append(artifact(output, source, path, format, report['source_sha256'], key,
+                            renderer='structurizr', kind='native', role=role, renderers=versions,
+                            layout_sha256=request['layout_sha256'],
+                            frame_duration=frame_duration if format == 'gif' else None))
+                jobs[path] = (request, report, plan, workspace_stage)
+                entries.extend(plan)
+            old = inventory('preview-native')
+            replaced = [item for item in old if in_scope(item, selected) and item['format'] == format]
+            retained = [item for item in old if item not in replaced]
+            check_collisions(entries + retained + preview_plan(inventory('source')))
+            replacements, generated = [], []
+            for path, (request, report, plan, workspace_stage) in jobs.items():
+                results = native_exports.render_native(request, workspace_stage, logs, run_java)
+                for entry in plan:
+                    result = results.get((entry['view'], entry['role']))
+                    if result is None:
+                        if entry['role'] == 'key':
+                            continue
+                        raise ValueError(f'Native renderer omitted view {entry["view"]}')
+                    file, details = result
+                    entry.update(details, output_sha256=digest(file))
+                    replacements.append((file, BUILD / entry['output']))
+                    generated.append(entry)
+            if any(source_fingerprint() != report['source_sha256'] for _, report, _, _ in jobs.values()):
+                raise ValueError('Sources changed during native export')
+            for path, fingerprint in layouts.items():
+                if native_exports.layout_fingerprint(path, ROOT, BUILD) != fingerprint:
+                    raise ValueError(f'Saved layout changed during export: {path.relative_to(ROOT)}')
+            commit_artifacts('preview-native', generated, retained, replacements,
+                             {BUILD / item['output'] for item in replaced}, stage)
+            status.update(passed=True, artifacts=generated, outputs=sorted(item['output'] for item in generated))
+            for path, diagnostic in diagnostics.items():
+                diagnostic.update(passed=True, outputs=[i['output'] for i in generated if i['workspace'] == diagnostic['workspace']])
+        print(f'Exported native {format.upper()}: {len(generated)} files under build/preview', flush=True)
+    except (ValueError, OSError, RuntimeError, subprocess.SubprocessError) as exc:
+        status['errors'].append(str(exc))
+        for diagnostic in diagnostics.values():
+            diagnostic['errors'].append(f'Native batch not published: {exc}')
+        raise
+    finally:
+        for path, diagnostic in diagnostics.items():
+            atomic_json(output_directory(path) / 'export-native-status.json', diagnostic)
         write_phase(status, logs)
 
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     commands = parser.add_subparsers(dest='command', required=True)
-    commands.add_parser('build', help='Validate and render C4/PlantUML; defer Mermaid images')
-    commands.add_parser('build-browser', help='Complete Mermaid images from a matching successful lightweight build')
-    for name in ('validate', 'export', 'export-native', 'capture-layout'):
+    commands.add_parser('clean', help='Clear generated output before generation or handoff restoration')
+    for name in ('validate', 'build-source', 'build-preview', 'export-native'):
         command = commands.add_parser(name)
-        selection = command.add_mutually_exclusive_group()
-        selection.add_argument('--workspace', help='Workspace DSL path (exports default to workspace.dsl)')
-        if name in ('export', 'export-native'):
-            selection.add_argument('--all-workspaces', action='store_true', help='Export every discovered workspace')
-            command.add_argument('--format', choices=EXPORT_FORMATS if name == 'export' else ('svg', 'png', 'gif'),
-                                 default='plantuml' if name == 'export' else 'svg')
-            command.add_argument('--view', action='append', help='View key; repeat to select several (default: all views)')
-        if name == 'export':
-            command.add_argument('--clean', action='store_true',
-                                 help='Clear inventory-managed outputs before export, preserving local settings and unrelated files')
+        choice = command.add_mutually_exclusive_group()
+        choice.add_argument('--workspace', help='Workspace DSL path')
+        if name != 'validate':
+            choice.add_argument('--all-workspaces', action='store_true')
+            command.add_argument('--view', action='append', help='C4 view key; repeat for several views')
+        if name == 'build-preview':
+            command.add_argument('--renderer', choices=('plantuml', 'mermaid'), required=True)
         if name == 'export-native':
-            command.add_argument('--frame-duration', type=float, help='GIF seconds per frame (default: 3)')
+            command.add_argument('--format', choices=('svg', 'png', 'gif'), default='svg')
+            command.add_argument('--frame-duration', type=float)
     args = parser.parse_args()
-    if args.command in ('export', 'export-native') and args.all_workspaces and args.view:
+    if getattr(args, 'all_workspaces', False) and args.view:
         parser.error('--all-workspaces cannot be combined with --view; select one workspace')
-    if args.command == 'export-native' and args.frame_duration is not None:
-        if args.format != 'gif':
+    if args.command == 'build-preview' and args.renderer == 'mermaid' and args.view:
+        parser.error('Mermaid previews do not have C4 view keys; use workspace selection')
+    if args.command == 'export-native':
+        if args.format != 'gif' and args.frame_duration is not None:
             parser.error('--frame-duration applies only to --format gif')
+        if args.frame_duration is None:
+            args.frame_duration = 3
         if not math.isfinite(args.frame_duration) or not 0.01 <= args.frame_duration <= 655.35:
             parser.error('--frame-duration must be between 0.01 and 655.35 seconds')
     try:
         if not Path('/usr/local/structurizr.war').is_file():
             raise RuntimeError('Run this command through the Docker Compose tools service')
         with command_lock():
-            if args.command == 'validate':
-                return 0 if all(r['passed'] for r in validate([args.workspace] if args.workspace else None).values()) else 1
-            if args.command == 'build':
-                build()
-                return 0
-            if args.command == 'build-browser':
-                build_browser()
-                return 0
-            if args.command == 'capture-layout':
-                capture_layout(workspace_path(args.workspace or REFERENCE))
-                return 0
-            if args.command == 'export' and args.clean:
+            if args.command == 'clean':
                 clean_build()
-            selected = discover_workspaces() if args.all_workspaces else [workspace_path(args.workspace or REFERENCE)]
-            export_batch(selected, args.format, args.view, native=args.command == 'export-native',
-                         frame_duration=round(getattr(args, 'frame_duration', None) or 3, 2))
+            elif args.command == 'validate':
+                return 0 if all(r['passed'] for r in validate([args.workspace] if args.workspace else None).values()) else 1
+            elif args.command == 'build-source':
+                build_source([args.workspace] if args.workspace else None, args.view)
+            elif args.command == 'build-preview':
+                build_preview(args.renderer, [args.workspace] if args.workspace else None, args.view)
+            else:
+                selected = discover_workspaces() if args.all_workspaces else [workspace_path(args.workspace or REFERENCE)]
+                export_native(selected, args.format, args.view, round(args.frame_duration, 2), args.all_workspaces)
         return 0
     except (ValueError, OSError, RuntimeError, subprocess.SubprocessError) as exc:
         print(str(exc), file=sys.stderr)

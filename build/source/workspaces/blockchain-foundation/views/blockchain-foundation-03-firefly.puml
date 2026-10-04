@@ -1,0 +1,119 @@
+@startuml
+title <size:24>03 - FireFly deployment - one member with fenced cross-zone recovery</size>\n<size:24>One active member; three controller candidates with AZ2 illustrating the elected leader. The signing service summarizes three replicas detailed in view 04. Slots labelled recovery capacity are not running replicas.</size>
+
+set separator none
+top to bottom direction
+
+<style>
+  root {
+    BackgroundColor: #ffffff
+    FontColor: #444444
+  }
+</style>
+
+!include <C4/C4>
+!include <C4/C4_Context>
+!include <C4/C4_Container>
+!include <C4/C4_Deployment>
+
+Deployment_Node(ProductionthreeAZ.Azureregionselectionpending, "Azure region - selection pending", $type="Microsoft Azure", $descr="One region with three AZs and qualified service SKUs. HSM zone resilience remains admission gate H1.", $tags="", $link="") {
+  Deployment_Node(ProductionthreeAZ.Azureregionselectionpending.RegionalnetworkingandAKScontrol, "Regional networking and AKS control", $type="Azure VNet / private AKS Standard", $descr="VNet and subnets span zones; Azure subnets are not zonal.", $tags="", $link="") {
+    Deployment_Node(ProductionthreeAZ.Azureregionselectionpending.RegionalnetworkingandAKScontrol.Privatememberingress, "Private member ingress", $type="Azure Standard LB / Gateway API", $descr="Zone-redundant Standard internal LB; three mTLS gateway replicas, one per AZ. Core API and DX peer endpoints have separate routes.", $tags="", $link="")
+    Deployment_Node(ProductionthreeAZ.Azureregionselectionpending.RegionalnetworkingandAKScontrol.Transactionsigningservice, "Transaction signing service", $type="ClusterIP / mTLS JSON-RPC", $descr="Three stateless gateway replicas across AZ1/2/3; detail in view 04. FFTM remains the sole nonce owner.", $tags="", $link="")
+    Deployment_Node(ProductionthreeAZ.Azureregionselectionpending.RegionalnetworkingandAKScontrol.BesuRPCroutingservice, "Besu RPC routing service", $type="ClusterIP / session-aware JSON-RPC proxy", $descr="Three proxy replicas, one per AZ. Pin connector filter sessions to one healthy backend; rebuild filters after failover.", $tags="", $link="")
+  }
+
+  Deployment_Node(ProductionthreeAZ.Azureregionselectionpending.PrivateAKSclusteronemember, "Private AKS cluster - one member", $type="AKS Standard / Azure CNI Overlay + Cilium", $descr="System, ledger and middleware pools; explicit zonal capacity and separate Kubernetes namespaces.", $tags="", $link="") {
+    Deployment_Node(ProductionthreeAZ.Azureregionselectionpending.PrivateAKSclusteronemember.AvailabilityZone1, "Availability Zone 1", $type="Azure AZ 1", $descr="Independent power, cooling and network failure domain.", $tags="", $link="") {
+      Deployment_Node(ProductionthreeAZ.Azureregionselectionpending.PrivateAKSclusteronemember.AvailabilityZone1.MiddlewarepoolAZ1, "Middleware pool - AZ1", $type="AKS user pool", $descr="Separate taint and namespace. mTLS gateway, RPC proxy and stateless signer have one replica per zone.", $tags="", $link="") {
+        Deployment_Node(ProductionthreeAZ.Azureregionselectionpending.PrivateAKSclusteronemember.AvailabilityZone1.MiddlewarepoolAZ1.Signinggatewayreplica1, "Signing gateway replica 1", $type="Deployment / one replica per AZ", $descr="Stateless transaction signing only; the connector owns nonces.", $tags="", $link="") {
+        }
+
+        Deployment_Node(ProductionthreeAZ.Azureregionselectionpending.PrivateAKSclusteronemember.AvailabilityZone1.MiddlewarepoolAZ1.RecoverycontrollercandidateAZ1, "Recovery controller candidate - AZ1", $type="Deployment / one replica per AZ", $descr="One of three candidates; only the elected leader coordinates recovery. Gate F1.", $tags="", $link="") {
+          Container(ProductionthreeAZ.Azureregionselectionpending.PrivateAKSclusteronemember.AvailabilityZone1.MiddlewarepoolAZ1.RecoverycontrollercandidateAZ1.Fencedrecoverycontroller_1, "Fenced recovery controller", $techn="Kubernetes API / Azure Compute API / Workload Identity", $descr="Proposed automation: confirms old VM termination before replacing singleton member workers or reusing a validator identity.", $tags="", $link="")
+        }
+
+        Deployment_Node(ProductionthreeAZ.Azureregionselectionpending.PrivateAKSclusteronemember.AvailabilityZone1.MiddlewarepoolAZ1.MemberAactiverecoveryunit, "Member A - active recovery unit", $type="Singleton StatefulSet / replicas 1", $descr="One active pod, four product containers. Baseline moves this unit after fencing; no unqualified active-active workers.", $tags="", $link="") {
+          Container(ProductionthreeAZ.Azureregionselectionpending.PrivateAKSclusteronemember.AvailabilityZone1.MiddlewarepoolAZ1.MemberAactiverecoveryunit.FireFlyCore_1, "FireFly Core", $techn="Go", $descr="Exposes member APIs, serves Explorer assets and orchestrates multiparty operations.", $tags="", $link="https://github.com/hyperledger-firefly/firefly/tree/9d20f3081c9074d5b012427e5572ebc03da8d95d/internal/orchestrator")
+          Container(ProductionthreeAZ.Azureregionselectionpending.PrivateAKSclusteronemember.AvailabilityZone1.MiddlewarepoolAZ1.MemberAactiverecoveryunit.EVMConnectFFTM_1, "EVMConnect + FFTM", $techn="Go", $descr="Submits Ethereum transactions and streams confirmed events; one nonce writer.", $tags="", $link="https://github.com/hyperledger-firefly/evmconnect/tree/6e12bb4c050677780cf5dd975a926923868b0cb8/cmd/evmconnect.go")
+          Container(ProductionthreeAZ.Azureregionselectionpending.PrivateAKSclusteronemember.AvailabilityZone1.MiddlewarepoolAZ1.MemberAactiverecoveryunit.HTTPSDataExchange_1, "HTTPS Data Exchange", $techn="TypeScript / Node.js", $descr="Exchanges private envelopes and blobs with authenticated members.", $tags="", $link="https://github.com/hyperledger-firefly/dataexchange-https/tree/b6a212d531da1ff1c24e762e7156e2593c73d052/src")
+          Container(ProductionthreeAZ.Azureregionselectionpending.PrivateAKSclusteronemember.AvailabilityZone1.MiddlewarepoolAZ1.MemberAactiverecoveryunit.IPFSKubo_1, "IPFS Kubo", $techn="Go / Kubo", $descr="Publishes and retrieves consortium-shared content.", $tags="", $link="https://docs.ipfs.tech/concepts/how-ipfs-works/")
+        }
+
+      }
+
+    }
+
+    Deployment_Node(ProductionthreeAZ.Azureregionselectionpending.PrivateAKSclusteronemember.AvailabilityZone2, "Availability Zone 2", $type="Azure AZ 2", $descr="Independent power, cooling and network failure domain.", $tags="", $link="") {
+      Deployment_Node(ProductionthreeAZ.Azureregionselectionpending.PrivateAKSclusteronemember.AvailabilityZone2.MiddlewarepoolAZ2, "Middleware pool - AZ2", $type="AKS user pool", $descr="Separate taint and namespace. mTLS gateway, RPC proxy and stateless signer have one replica per zone.", $tags="", $link="") {
+        Deployment_Node(ProductionthreeAZ.Azureregionselectionpending.PrivateAKSclusteronemember.AvailabilityZone2.MiddlewarepoolAZ2.Signinggatewayreplica2, "Signing gateway replica 2", $type="Deployment / one replica per AZ", $descr="Stateless transaction signing only; the connector owns nonces.", $tags="", $link="") {
+        }
+
+        Deployment_Node(ProductionthreeAZ.Azureregionselectionpending.PrivateAKSclusteronemember.AvailabilityZone2.MiddlewarepoolAZ2.RecoverycontrollercandidateAZ2, "Recovery controller candidate - AZ2", $type="Deployment / one replica per AZ", $descr="One of three candidates; only the elected leader coordinates recovery. Gate F1.", $tags="", $link="") {
+          Container(ProductionthreeAZ.Azureregionselectionpending.PrivateAKSclusteronemember.AvailabilityZone2.MiddlewarepoolAZ2.RecoverycontrollercandidateAZ2.Fencedrecoverycontroller_1, "Fenced recovery controller", $techn="Kubernetes API / Azure Compute API / Workload Identity", $descr="Proposed automation: confirms old VM termination before replacing singleton member workers or reusing a validator identity.", $tags="", $link="")
+        }
+
+        Deployment_Node(ProductionthreeAZ.Azureregionselectionpending.PrivateAKSclusteronemember.AvailabilityZone2.MiddlewarepoolAZ2.MemberArecoveryslotAZ2, "Member A recovery slot - AZ2", $type="AKS scheduling capacity", $descr="Reserved capacity, not a running FireFly replica. Start the same member identity only after old-node fencing and volume reattachment.", $tags="", $link="")
+      }
+
+    }
+
+    Deployment_Node(ProductionthreeAZ.Azureregionselectionpending.PrivateAKSclusteronemember.AvailabilityZone3, "Availability Zone 3", $type="Azure AZ 3", $descr="Independent power, cooling and network failure domain.", $tags="", $link="") {
+      Deployment_Node(ProductionthreeAZ.Azureregionselectionpending.PrivateAKSclusteronemember.AvailabilityZone3.MiddlewarepoolAZ3, "Middleware pool - AZ3", $type="AKS user pool", $descr="Separate taint and namespace. mTLS gateway, RPC proxy and stateless signer have one replica per zone.", $tags="", $link="") {
+        Deployment_Node(ProductionthreeAZ.Azureregionselectionpending.PrivateAKSclusteronemember.AvailabilityZone3.MiddlewarepoolAZ3.Signinggatewayreplica3, "Signing gateway replica 3", $type="Deployment / one replica per AZ", $descr="Stateless transaction signing only; the connector owns nonces.", $tags="", $link="") {
+        }
+
+        Deployment_Node(ProductionthreeAZ.Azureregionselectionpending.PrivateAKSclusteronemember.AvailabilityZone3.MiddlewarepoolAZ3.RecoverycontrollercandidateAZ3, "Recovery controller candidate - AZ3", $type="Deployment / one replica per AZ", $descr="One of three candidates; only the elected leader coordinates recovery. Gate F1.", $tags="", $link="") {
+          Container(ProductionthreeAZ.Azureregionselectionpending.PrivateAKSclusteronemember.AvailabilityZone3.MiddlewarepoolAZ3.RecoverycontrollercandidateAZ3.Fencedrecoverycontroller_1, "Fenced recovery controller", $techn="Kubernetes API / Azure Compute API / Workload Identity", $descr="Proposed automation: confirms old VM termination before replacing singleton member workers or reusing a validator identity.", $tags="", $link="")
+        }
+
+        Deployment_Node(ProductionthreeAZ.Azureregionselectionpending.PrivateAKSclusteronemember.AvailabilityZone3.MiddlewarepoolAZ3.MemberArecoveryslotAZ3, "Member A recovery slot - AZ3", $type="AKS scheduling capacity", $descr="Reserved capacity, not a running FireFly replica. Start the same member identity only after old-node fencing and volume reattachment.", $tags="", $link="")
+      }
+
+    }
+
+  }
+
+  Deployment_Node(ProductionthreeAZ.Azureregionselectionpending.ManagedpersistenceoutsideAKS, "Managed persistence - outside AKS", $type="Azure data services", $descr="Azure-managed resources; ZRS disks are region-scoped. Database engines occupy two AZs.", $tags="", $link="") {
+    Deployment_Node(ProductionthreeAZ.Azureregionselectionpending.ManagedpersistenceoutsideAKS.PostgreSQLFlexibleServerprimaryAZ2, "PostgreSQL Flexible Server - primary AZ2", $type="Azure Database for PostgreSQL", $descr="General Purpose or Memory Optimized; zone-redundant HA; stable private server FQDN.", $tags="", $link="") {
+      ContainerDb(ProductionthreeAZ.Azureregionselectionpending.ManagedpersistenceoutsideAKS.PostgreSQLFlexibleServerprimaryAZ2.CorePostgreSQLdatabase_1, "Core PostgreSQL database", $techn="PostgreSQL", $descr="Stores Core resources and offsets in its own logical database; server placement and replication are outside this model.", $tags="", $link="https://github.com/hyperledger-firefly/firefly/tree/9d20f3081c9074d5b012427e5572ebc03da8d95d/internal/database/postgres")
+      ContainerDb(ProductionthreeAZ.Azureregionselectionpending.ManagedpersistenceoutsideAKS.PostgreSQLFlexibleServerprimaryAZ2.FFTMPostgreSQLdatabase_1, "FFTM PostgreSQL database", $techn="PostgreSQL", $descr="Stores EVMConnect transaction state, nonces and checkpoints in a separate logical database with separate credentials.", $tags="", $link="https://github.com/hyperledger-firefly/transaction-manager/tree/5915cbc4e0e30dea25068b770dadbcc8bdfa9321/internal/persistence/postgres")
+    }
+
+    Deployment_Node(ProductionthreeAZ.Azureregionselectionpending.ManagedpersistenceoutsideAKS.PostgreSQLstandbyAZ3, "PostgreSQL standby - AZ3", $type="Azure-managed PostgreSQL standby", $descr="Synchronous standby for both logical databases; automatic promotion behind the same FQDN; no client reads.", $tags="", $link="")
+    Deployment_Node(ProductionthreeAZ.Azureregionselectionpending.ManagedpersistenceoutsideAKS.MemberstatedisksZRSacrossAZ123, "Member state disks - ZRS across AZ1/2/3", $type="Azure Disk CSI", $descr="Two separate Premium_ZRS data PVCs; one writer and one attachment each. Retain policy; tested CSI detach/attach.", $tags="", $link="") {
+      ContainerDb(ProductionthreeAZ.Azureregionselectionpending.ManagedpersistenceoutsideAKS.MemberstatedisksZRSacrossAZ123.Privateblobandpeerstore_1, "Private blob and peer store", $techn="Filesystem", $descr="Stores private binary payloads and peer metadata; storage-class placement is deferred.", $tags="", $link="https://github.com/hyperledger-firefly/dataexchange-https/tree/b6a212d531da1ff1c24e762e7156e2593c73d052/src/handlers/blobs.ts")
+      ContainerDb(ProductionthreeAZ.Azureregionselectionpending.ManagedpersistenceoutsideAKS.MemberstatedisksZRSacrossAZ123.IPFSrepository_1, "IPFS repository", $techn="Filesystem", $descr="Stores Kubo identity, pins and content blocks; storage-class placement is deferred.", $tags="", $link="https://docs.ipfs.tech/concepts/how-ipfs-works/")
+    }
+
+  }
+
+  Deployment_Node(ProductionthreeAZ.Azureregionselectionpending.AzurekeyservicesoutsideAKS, "Azure key services - outside AKS", $type="Azure HSM services / Entra", $descr="Separate validator, transaction and TLS/secrets key domains.", $tags="", $link="") {
+    Deployment_Node(ProductionthreeAZ.Azureregionselectionpending.AzurekeyservicesoutsideAKS.KeyVaultPremium, "Key Vault Premium", $type="Azure Key Vault Premium / HTTPS", $descr="AZ-redundant in a supported region. EC-HSM transaction keys; separate secrets/certificates vault. Private endpoints and least-privilege roles.", $tags="", $link="")
+  }
+
+}
+
+Rel(ProductionthreeAZ.Azureregionselectionpending.PrivateAKSclusteronemember.AvailabilityZone1.MiddlewarepoolAZ1.MemberAactiverecoveryunit.EVMConnectFFTM_1, ProductionthreeAZ.Azureregionselectionpending.PrivateAKSclusteronemember.AvailabilityZone1.MiddlewarepoolAZ1.MemberAactiverecoveryunit.FireFlyCore_1, "Streams confirmed events and transaction results", $techn="WebSocket / JSON", $tags="", $link="")
+Rel(ProductionthreeAZ.Azureregionselectionpending.PrivateAKSclusteronemember.AvailabilityZone1.MiddlewarepoolAZ1.MemberAactiverecoveryunit.FireFlyCore_1, ProductionthreeAZ.Azureregionselectionpending.PrivateAKSclusteronemember.AvailabilityZone1.MiddlewarepoolAZ1.MemberAactiverecoveryunit.EVMConnectFFTM_1, "Submits contract calls, pins and listeners", $techn="HTTP REST / JSON", $tags="", $link="")
+Rel(ProductionthreeAZ.Azureregionselectionpending.PrivateAKSclusteronemember.AvailabilityZone1.MiddlewarepoolAZ1.MemberAactiverecoveryunit.HTTPSDataExchange_1, ProductionthreeAZ.Azureregionselectionpending.PrivateAKSclusteronemember.AvailabilityZone1.MiddlewarepoolAZ1.MemberAactiverecoveryunit.FireFlyCore_1, "Delivers transfer notifications and awaits ACKs", $techn="WebSocket / JSON", $tags="", $link="")
+Rel(ProductionthreeAZ.Azureregionselectionpending.PrivateAKSclusteronemember.AvailabilityZone1.MiddlewarepoolAZ1.MemberAactiverecoveryunit.FireFlyCore_1, ProductionthreeAZ.Azureregionselectionpending.PrivateAKSclusteronemember.AvailabilityZone1.MiddlewarepoolAZ1.MemberAactiverecoveryunit.HTTPSDataExchange_1, "Submits private messages, blobs and peer configuration", $techn="HTTP REST / JSON + binary", $tags="", $link="")
+Rel(ProductionthreeAZ.Azureregionselectionpending.PrivateAKSclusteronemember.AvailabilityZone1.MiddlewarepoolAZ1.MemberAactiverecoveryunit.FireFlyCore_1, ProductionthreeAZ.Azureregionselectionpending.PrivateAKSclusteronemember.AvailabilityZone1.MiddlewarepoolAZ1.MemberAactiverecoveryunit.IPFSKubo_1, "Adds shared content and retrieves CIDs", $techn="IPFS HTTP RPC / gateway", $tags="", $link="")
+Rel(ProductionthreeAZ.Azureregionselectionpending.PrivateAKSclusteronemember.AvailabilityZone2.MiddlewarepoolAZ2.RecoverycontrollercandidateAZ2.Fencedrecoverycontroller_1, ProductionthreeAZ.Azureregionselectionpending.PrivateAKSclusteronemember.AvailabilityZone1.MiddlewarepoolAZ1.MemberAactiverecoveryunit.FireFlyCore_1, "Restarts one member only when elected leader and after old-host fencing", $techn="Kubernetes / Azure Compute APIs", $tags="", $link="")
+Rel(ProductionthreeAZ.Azureregionselectionpending.PrivateAKSclusteronemember.AvailabilityZone1.MiddlewarepoolAZ1.MemberAactiverecoveryunit.FireFlyCore_1, ProductionthreeAZ.Azureregionselectionpending.ManagedpersistenceoutsideAKS.PostgreSQLFlexibleServerprimaryAZ2.CorePostgreSQLdatabase_1, "Reads and writes the private Core database", $techn="PostgreSQL wire / TLS", $tags="", $link="")
+Rel(ProductionthreeAZ.Azureregionselectionpending.PrivateAKSclusteronemember.AvailabilityZone1.MiddlewarepoolAZ1.MemberAactiverecoveryunit.EVMConnectFFTM_1, ProductionthreeAZ.Azureregionselectionpending.ManagedpersistenceoutsideAKS.PostgreSQLFlexibleServerprimaryAZ2.FFTMPostgreSQLdatabase_1, "Reads and writes the separate FFTM database", $techn="PostgreSQL wire / TLS", $tags="", $link="")
+Rel(ProductionthreeAZ.Azureregionselectionpending.PrivateAKSclusteronemember.AvailabilityZone1.MiddlewarepoolAZ1.MemberAactiverecoveryunit.HTTPSDataExchange_1, ProductionthreeAZ.Azureregionselectionpending.ManagedpersistenceoutsideAKS.MemberstatedisksZRSacrossAZ123.Privateblobandpeerstore_1, "Reads and writes private blobs and peer records", $techn="Filesystem I/O", $tags="", $link="")
+Rel(ProductionthreeAZ.Azureregionselectionpending.PrivateAKSclusteronemember.AvailabilityZone1.MiddlewarepoolAZ1.MemberAactiverecoveryunit.IPFSKubo_1, ProductionthreeAZ.Azureregionselectionpending.ManagedpersistenceoutsideAKS.MemberstatedisksZRSacrossAZ123.IPFSrepository_1, "Reads and writes Kubo keys, pins and blocks", $techn="Filesystem I/O", $tags="", $link="")
+Rel(ProductionthreeAZ.Azureregionselectionpending.RegionalnetworkingandAKScontrol.Privatememberingress, ProductionthreeAZ.Azureregionselectionpending.PrivateAKSclusteronemember.AvailabilityZone1.MiddlewarepoolAZ1.MemberAactiverecoveryunit.FireFlyCore_1, "Routes authenticated member API requests and event sessions", $techn="HTTPS / WebSocket", $tags="", $link="")
+Rel(ProductionthreeAZ.Azureregionselectionpending.RegionalnetworkingandAKScontrol.Privatememberingress, ProductionthreeAZ.Azureregionselectionpending.PrivateAKSclusteronemember.AvailabilityZone1.MiddlewarepoolAZ1.MemberAactiverecoveryunit.HTTPSDataExchange_1, "Passes through peer-authenticated private exchange traffic", $techn="mTLS / HTTPS", $tags="", $link="")
+Rel(ProductionthreeAZ.Azureregionselectionpending.ManagedpersistenceoutsideAKS.PostgreSQLFlexibleServerprimaryAZ2.CorePostgreSQLdatabase_1, ProductionthreeAZ.Azureregionselectionpending.ManagedpersistenceoutsideAKS.PostgreSQLstandbyAZ3, "Replicates Core WAL before commit acknowledgement", $techn="Managed synchronous replication", $tags="", $link="")
+Rel(ProductionthreeAZ.Azureregionselectionpending.ManagedpersistenceoutsideAKS.PostgreSQLFlexibleServerprimaryAZ2.FFTMPostgreSQLdatabase_1, ProductionthreeAZ.Azureregionselectionpending.ManagedpersistenceoutsideAKS.PostgreSQLstandbyAZ3, "Replicates FFTM WAL before commit acknowledgement", $techn="Managed synchronous replication", $tags="", $link="")
+Rel(ProductionthreeAZ.Azureregionselectionpending.PrivateAKSclusteronemember.AvailabilityZone2.MiddlewarepoolAZ2.RecoverycontrollercandidateAZ2.Fencedrecoverycontroller_1, ProductionthreeAZ.Azureregionselectionpending.PrivateAKSclusteronemember.AvailabilityZone2.MiddlewarepoolAZ2.MemberArecoveryslotAZ2, "Activates one slot only as leader after fencing and volume attachment", $techn="Controller reconciliation", $tags="", $link="")
+Rel(ProductionthreeAZ.Azureregionselectionpending.PrivateAKSclusteronemember.AvailabilityZone2.MiddlewarepoolAZ2.RecoverycontrollercandidateAZ2.Fencedrecoverycontroller_1, ProductionthreeAZ.Azureregionselectionpending.PrivateAKSclusteronemember.AvailabilityZone3.MiddlewarepoolAZ3.MemberArecoveryslotAZ3, "Activates one slot only as leader after fencing and volume attachment", $techn="Controller reconciliation", $tags="", $link="")
+Rel(ProductionthreeAZ.Azureregionselectionpending.PrivateAKSclusteronemember.AvailabilityZone1.MiddlewarepoolAZ1.MemberAactiverecoveryunit.EVMConnectFFTM_1, ProductionthreeAZ.Azureregionselectionpending.RegionalnetworkingandAKScontrol.Transactionsigningservice, "Sends nonce-assigned transactions and RPC requests", $techn="JSON-RPC / mTLS", $tags="", $link="")
+Rel(ProductionthreeAZ.Azureregionselectionpending.RegionalnetworkingandAKScontrol.Transactionsigningservice, ProductionthreeAZ.Azureregionselectionpending.RegionalnetworkingandAKScontrol.BesuRPCroutingservice, "Submits signed transactions and forwards pinned reads", $techn="JSON-RPC / private TLS", $tags="", $link="")
+Rel(ProductionthreeAZ.Azureregionselectionpending.RegionalnetworkingandAKScontrol.Transactionsigningservice, ProductionthreeAZ.Azureregionselectionpending.AzurekeyservicesoutsideAKS.KeyVaultPremium, "Signs with authorized EC-HSM transaction keys", $techn="HTTPS 443", $tags="", $link="")
+
+SHOW_LEGEND(true)
+hide stereotypes
+@enduml

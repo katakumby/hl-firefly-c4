@@ -19,10 +19,10 @@ def quick_render(source, output, logs):
 class Provenance(unittest.TestCase):
     def test_recursive_views_multiple_per_file_and_nested_inheritance(self):
         with checkout() as root:
-            source = root / 'views/nested/all.dsl'
+            source = root / 'views/nested/all.inc'
             source.parent.mkdir(parents=True)
             source.write_text(BASE.split(' views {', 1)[1].rsplit('}', 1)[0].rsplit('}', 1)[0])
-            paths.REFERENCE.write_text(BASE.split(' views {', 1)[0] + '\n views {\n !include views/nested\n }\n}')
+            paths.REFERENCE.write_text(BASE.split(' views {', 1)[0] + '\n views {\n !include views\n }\n}')
             parent = root / 'workspaces/team/workspace.dsl'
             variant = root / 'workspaces/team/variants/future/workspace.dsl'
             variant.parent.mkdir(parents=True)

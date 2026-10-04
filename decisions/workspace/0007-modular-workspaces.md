@@ -16,6 +16,10 @@ The execution and evidence-maintenance portions are subsequently superseded by
 Decision 9 also retires custom validation enforcement. The conventions below
 remain authoring guidance while teams initially rely on native Structurizr checks.
 
+[Decision 10](0010-scoped-folder-includes.md) replaces per-file include lists with
+scoped directory includes while preserving the actor, system and relationship
+declaration phases.
+
 The directory names and tooling below record the original decision. Sources now
 live at the repository root, with approved definitions in `model/platform/` and
 isolated initiatives in `workspaces/`. See the [current layout](../../README.md#layout-and-ownership).

@@ -35,9 +35,11 @@ The repository root is the architecture workspace; there is no enclosing
 ├── model.dsl                     # Extendable model and styles; no authored diagrams
 ├── model/
 │   ├── people.dsl                # Shared actors
-│   ├── external-systems/         # Product catalog, internals and reference examples
+│   ├── external-systems/         # Product references, organized by DSL scope
+│   │   ├── systems/             # One software-system definition per file
+│   │   └── containers/          # Per-system container folders, with inline components
 │   ├── platform/                 # Approved platform definitions; currently empty of DSL
-│   └── relationships/            # Explicit, ordered relationship fragments
+│   └── relationships/            # Relationship fragments, included recursively after elements
 ├── views/
 │   ├── external-systems/         # Shared C4 reference views
 │   └── platform/                 # Approved platform views; currently a placeholder
@@ -436,7 +438,8 @@ Inherited views retain their relative view folders within the consuming workspac
 views into `build/workspaces/team/variants/future/views/`. Inline views use the
 workspace directory. Named noncanonical entrypoints get their own stem namespace.
 Local include/extension provenance is cross-checked with native Structurizr view
-keys. Ambiguous declarations, generated keys, unsafe filenames and collisions
+keys, following directory includes recursively. Ambiguous declarations, generated
+keys, unsafe filenames and collisions
 (including case-only differences) fail before publication. Keep view keys literal
 and include/extends paths local; plugin/script-generated views cannot be mapped.
 
@@ -486,6 +489,8 @@ agent configuration and known caches are excluded; a leading dot alone does not
 exclude an authoring input. Native Structurizr viewers write ignored `workspace.json`
 and `.structurizr/` caches beside DSL.
 Local includes must stay inside the checkout and outside those excluded directories.
+Directory includes follow nested files of any extension, just as the native parser
+does; excluded directories and escaping or cyclic directory symlinks fail explicitly.
 DSL remains the source of truth.
 
 Tooling lives in [scripts](scripts), with containerized tests in [tests](tests):
@@ -520,8 +525,9 @@ rules is deferred until teams choose to introduce it.
    `model.dsl` and `views/main.dsl`; keep proposals local.
 3. Prefix view keys with `<epic-id>-`. Give elements stable, meaningful
    `architecture.id` values; do not duplicate shared systems.
-4. Use explicit ordered includes: actors and systems first, relationships
-   afterward. Label arrows with their action and protocol. Use descriptive
+4. Keep explicit declaration phases: actors and systems first, relationships
+   afterward. Use folder includes for independent fragments valid in the same
+   DSL scope. Label arrows with their action and protocol. Use descriptive
    relationship identifiers for partial selections between the same endpoints.
 5. Add use cases when behavior is agreed. Validate your workspace and validate
    all workspaces for shared model, style or tooling changes.
@@ -534,8 +540,33 @@ Containers/components require technology metadata.
 
 Relationships are declared after all elements. FireFly relationships are split
 by source container; cross-system relationships are split by source system,
-with actor-originated relationships together. Keep the explicit ordered include
-entrypoints, and define each relationship once.
+with actor-originated relationships together. The shared model loads these phases:
+
+```dsl
+model {
+    !include model/people.dsl
+    !include model/external-systems/systems
+    !include model/relationships
+}
+```
+
+Add reference systems as `model/external-systems/systems/<system>.dsl`. Each file
+declares one system and, where applicable, its ecosystem `group` wrapper.
+Use the same group name in separate system files to retain one shared boundary.
+Systems with internals load `!include ../containers/<system>` inside their
+`softwareSystem` block. Put their container fragments in
+`model/external-systems/containers/<system>/`; components stay inside their
+containers. Systems without containers omit the include and have no empty
+container folder. Adding system, container or relationship fragments then needs
+no per-file include list.
+
+Directory includes are recursive and read **every file**, regardless of extension;
+`*.dsl` and `**/*.dsl` paths are not supported. Keep imported folders free of
+README files, backups, and other non-DSL content. Do not place an include wrapper
+beside or above fragments it includes: recursive traversal would load them twice.
+Every fragment in an imported tree must be valid in the receiving DSL scope and
+independent of sibling discovery order. Keep order-sensitive phases explicit.
+See [decision 10](decisions/workspace/0010-scoped-folder-includes.md).
 
 Reference diagrams use the directory include `!include views/external-systems` in
 `workspace.dsl`. Add a self-contained `.dsl` view fragment there;
@@ -583,7 +614,8 @@ inherited keys stay unchanged.
 After explicit approval, **move** accepted definitions into `model/platform/`
 and shared relationship fragments,
 preserving identifiers. Remove initiative-local definitions in the same change,
-add explicit shared includes, and validate every entrypoint. Promote approved C4 views into `views/platform/` and reusable
+connect the approved module in the systems phase before shared relationships,
+and validate every entrypoint. Promote approved C4 views into `views/platform/` and reusable
 behavioral diagrams into `uml/` with the model. Keep shared files independent of initiative folders
 as an authoring convention reviewed by the team.
 

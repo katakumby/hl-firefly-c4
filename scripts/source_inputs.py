@@ -23,6 +23,36 @@ def input_files(directory):
         yield from (Path(parent) / name for name in files)
 
 
+def include_files(path, root):
+    """Expand local directory includes like Structurizr: sorted, recursive, any suffix.
+
+    Unlike broad source discovery, an explicit include cannot silently skip a
+    cache or an escaping symlink: the native parser would read it as source.
+    Keep repeated files so provenance can reject duplicate declarations.
+    """
+    root = Path(root).resolve()
+    active = set()
+
+    def visit(target):
+        target = target.resolve()
+        if not target.is_relative_to(root):
+            raise ValueError(f'Local architecture dependency must stay inside the repository: {target}')
+        if any(part in EXCLUDED_DIRECTORIES for part in target.relative_to(root).parts):
+            raise ValueError('Local architecture dependency uses an excluded generated/cache/agent directory: '
+                             f'{target}')
+        if target.is_dir():
+            if target in active:
+                raise ValueError(f'Cyclic local include directory: {target}')
+            active.add(target)
+            for child in sorted(target.iterdir()):
+                yield from visit(child)
+            active.remove(target)
+        elif target.is_file():
+            yield target
+
+    yield from visit(Path(path))
+
+
 def source_files(root, discovered=()):
     """Keep unrelated checkout files out, but follow includes beyond standard trees.
 
@@ -60,15 +90,8 @@ def source_files(root, discovered=()):
             included = (source.parent / value).resolve()
             if not included.exists():
                 continue
-            if not included.is_relative_to(root):
-                raise ValueError(f'Local architecture dependency must stay inside the repository: {source}: {value}')
-            if not allowed(included):
-                raise ValueError(f'Local architecture dependency uses an excluded generated/cache/agent directory: '
-                                 f'{source}: {value}')
-            targets = sorted(included.iterdir()) if included.is_dir() else [included]
-            for target in targets:
-                if target.is_file() and allowed(target):
-                    paths.add(target)
-                    # Included fragments need not use one of the usual extensions.
-                    pending.append(target)
+            for target in include_files(included, root):
+                paths.add(target)
+                # Included fragments need not use one of the usual extensions.
+                pending.append(target)
     return paths

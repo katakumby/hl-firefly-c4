@@ -5,6 +5,7 @@ fail the comparison with native view keys instead of guessing a destination.
 """
 from pathlib import Path
 import re
+from source_inputs import include_files
 
 # Argument position of the explicit key, including the declaration keyword.
 KEY_POSITION = {'systemlandscape': 1, 'systemcontext': 2, 'container': 2,
@@ -52,10 +53,8 @@ def index_views(workspace, root, native_keys):
             keyword = values[0].lower()
             if keyword == '!include' and len(values) == 2:
                 included = local(values[1], source)
-                targets = sorted(included.iterdir()) if included.is_dir() else [included]
-                for target in targets:
-                    if target.is_file():
-                        visit(target, owner, stack)
+                for target in include_files(included, root):
+                    visit(target, owner, stack)
             elif keyword == 'workspace' and len(values) > 2 and values[1].lower() == 'extends':
                 parent = local(values[2], source)
                 visit(parent, parent.parent, [])

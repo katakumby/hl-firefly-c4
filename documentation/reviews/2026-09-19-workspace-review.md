@@ -223,10 +223,16 @@ signals, not evidence that a diagram is redundant.
 
 ### O1 — High value: Reduce relationship editing hotspots
 
-[firefly.dsl](../../model/relationships/firefly.dsl) contains 282 relationships
-across 1,973 lines; [integrations.dsl](../../model/relationships/integrations.dsl)
+The historical `firefly.dsl` contains 282 relationships
+across 1,973 lines; `integrations.dsl`
 contains 253 across 1,770 lines. Together they hold 77% of all relationships.
 These files are likely to attract overlapping edits as the team grows.
+
+These measurements describe the files at review time. Current definitions live
+in the [FireFly fragments](../../model/relationships/firefly) and
+[integration fragments](../../model/relationships/integrations).
+[Decision 10](../../decisions/workspace/0010-scoped-folder-includes.md) subsequently
+replaces the explicit fragment lists recommended below with scoped folder includes.
 
 Split FireFly relationships by container or coherent runtime responsibility.
 Split integrations by participating domain or owning integration scenario, with

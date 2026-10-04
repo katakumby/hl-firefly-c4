@@ -51,6 +51,8 @@ class SourceFreshness(unittest.TestCase):
                 'workspace.dsl': 'workspace extends dependencies/base.dsl {\n}\n',
                 'dependencies/base.dsl': 'workspace {\n model {\n !include fragments\n }\n}\n',
                 'dependencies/fragments/model.inc': 'a = softwareSystem "A"\n',
+                'dependencies/fragments/nested/model.inc': '!include ../../extra\n',
+                'dependencies/extra/.draft/model.inc': 'b = softwareSystem "B"\n',
                 'uml/sequence.puml': '@startuml\n!include_once "../dependencies/plant uml.inc"\n@enduml\n',
                 'dependencies/plant uml.inc': '!include_many participants.inc!shared\n',
                 'dependencies/participants.inc': 'participant A\n!include "plant uml.inc"\n',
@@ -60,12 +62,25 @@ class SourceFreshness(unittest.TestCase):
                 file = root / name
                 file.parent.mkdir(parents=True, exist_ok=True)
                 file.write_text(contents)
-            for name in ('dependencies/fragments/model.inc', 'dependencies/participants.inc',
+            for name in ('dependencies/fragments/model.inc', 'dependencies/fragments/nested/model.inc',
+                         'dependencies/extra/.draft/model.inc', 'dependencies/participants.inc',
                          'workspaces/.experiment/workspace.dsl'):
                 before = cli.source_fingerprint()
                 file = root / name
                 file.write_text(file.read_text() + '\n// changed\n')
                 self.assertNotEqual(before, cli.source_fingerprint(), name)
+
+    def test_nested_directory_additions_and_removals_change_fingerprint(self):
+        with checkout() as root:
+            paths = root / 'dependencies/fragments/nested'
+            paths.mkdir(parents=True)
+            (root / 'workspace.dsl').write_text('workspace {\n model {\n !include dependencies/fragments\n }\n}\n')
+            before = cli.source_fingerprint()
+            fragment = paths / 'system.inc'
+            fragment.write_text('a = softwareSystem "A"\n')
+            self.assertNotEqual(before, cli.source_fingerprint())
+            fragment.unlink()
+            self.assertEqual(before, cli.source_fingerprint())
 
     def test_fingerprint_excludes_caches_outputs_and_unrelated_files(self):
         with checkout() as root:

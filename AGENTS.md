@@ -25,11 +25,14 @@ ignored by Git and must not be edited as source.
 docker compose run --rm --pull never tools export
 docker compose run --rm --pull never tools export --workspace workspaces/ignition/workspace.dsl
 docker compose run --rm --pull never tools export --workspace workspace.dsl --view 01-landscape
+docker compose run --rm --pull never tools export --all-workspaces
 ```
 
 C4-PlantUML is the primary agent review output and the default export format.
 Read its compact C4 macro definitions as text. Omit `--workspace` for the reference
 workspace; omit `--view` for all diagrams in the selected workspace.
+Repeat `--view` to select several keys. `--all-workspaces` cannot be combined
+with workspace or view selection. A selected batch publishes as one transaction.
 
 Both plain `export` and explicit `--format plantuml` use native C4-PlantUML.
 Find `<view-key>.puml` in the source-mirrored folder listed in `build/artifacts.json`. See the
@@ -46,7 +49,8 @@ docker compose run --rm --pull never --entrypoint python3 tools -B -m unittest d
 
 Use `--clean` only when explicitly rebuilding all generated architecture output:
 it clears inventory-managed C4/UML outputs and build reports before export, preserving
-`local.env`, the writer lock, and historical or unrelated build directories. Routine reviews do not need it.
+`build/.layouts/` manual snapshots, `local.env`, the writer lock, and historical or
+unrelated build directories. Routine reviews do not need it.
 
 The full `docker compose run --rm --pull never tools build` command renders C4 and
 standalone `.puml`/`.mmd` sources to SVG and PNG. Rendering is appropriate when
@@ -55,6 +59,12 @@ verifying this build pipeline; routine architecture reviews still use text only.
 Acquire approved images before running commands; normal Compose execution never
 builds or pulls them. See [corporate Docker instructions](documentation/build.md).
 
-`build` and `export` report inspection errors/warnings without blocking output.
+`build`, `export` and `export-native` report inspection errors/warnings without blocking output.
 The standalone `validate` command remains strict. Parsing, native model validation,
 inspector execution failures, output naming errors and rendering failures still block.
+
+`capture-layout` and `export-native` are explicit on-demand operations; normal
+builds and CI do not invoke them. Native SVG/PNG/GIF exports reuse captured manual
+layouts and use `.structurizr` filename suffixes. Read the
+[native export workflow](README.md#on-demand-structurizr-layouts-and-animations)
+before handling layout snapshots. Do not treat captured JSON as model source.

@@ -7,9 +7,10 @@ diagram application is required. `build` and `export` report inspection findings
 without failing; use `validate` for the separate strict quality check. The [Dockerfile](../docker/Dockerfile), version pins, npm lock
 and PlantUML checksum define the platform team's toolchain build.
 
-Chromium is required for Mermaid image rendering. Structurizr validation and text
-exports, and PlantUML/C4 image rendering, do not use it. The complete tools image
-includes the browser so a full build can render both authoring formats offline.
+Chromium is required for Mermaid image rendering and explicit `export-native`
+commands. Structurizr validation, text exports and PlantUML/C4 image rendering do
+not use it. Native exports use the image's bundled Structurizr renderer and Gifshot
+encoder through Puppeteer; no additional dependency or image rebuild is required.
 
 ## Acquire approved images explicitly
 
@@ -112,6 +113,8 @@ same flags, resolves paths relative to itself, and checks that the image is load
 docker/run.sh validate
 docker/run.sh test
 docker/run.sh export --view 01-landscape
+docker/run.sh export --all-workspaces
+docker/run.sh export-native --workspace workspaces/ignition/workspace.dsl --view example-container-animation --view stable_key_name --format gif
 docker/run.sh build
 ```
 
@@ -119,6 +122,61 @@ The wrapper reads exported environment variables; it does not load `.env` or
 `build/local.env` as shell settings. Export `ARCHITECTURE_TOOLS_IMAGE` and any
 UID/GID overrides before using it. The Python tooling still reads the committed
 version pins from `.env` inside the mounted checkout.
+
+## Manual layout snapshots
+
+Manual positions belong to saved Structurizr JSON. In the viewer, arrange views
+that have no `autoLayout` and explicitly save; then capture the result:
+
+```text
+docker compose run --rm --pull never tools capture-layout --workspace workspaces/ignition/workspace.dsl
+docker compose run --rm --pull never tools export-native --workspace workspaces/ignition/workspace.dsl --format png
+```
+
+The equivalent plain-Docker launcher is `docker/run.sh capture-layout ...` or
+`docker/run.sh export-native ...`. Both export commands accept `--all-workspaces`,
+one `--workspace`, and repeatable `--view` within a selected workspace. See the
+[selection examples](../README.md#export-c4-plantuml-default-mermaid-svg-or-png).
+
+The captured file is
+`build/.layouts/workspaces/ignition/workspace.dsl/workspace.json`, with adjacent
+`capture.json` metadata. Root-workspace snapshots use
+`build/.layouts/workspace.dsl/workspace.json`. The snapshot is a full saved JSON
+workspace for compatibility with native merging, but only its layout is reused;
+current DSL supplies architecture and animation content.
+
+Snapshots stay ignored by Git and survive ordinary builds and `--clean`. Copy the
+snapshot directory to back it up or transfer it to another checkout at the same
+relative path. A fresh clone cannot reproduce a manual layout without this state.
+Deleting all of `build/` deletes it too.
+
+To restore a captured layout to the viewer, stop that viewer, back up any newer
+local `workspace.json`, then copy the captured file beside its `workspace.dsl`.
+For Ignition on a POSIX shell:
+
+```sh
+docker compose stop ignition
+cp build/.layouts/workspaces/ignition/workspace.dsl/workspace.json workspaces/ignition/workspace.json
+docker compose up -d ignition
+```
+
+Refresh the browser. The viewer reparses DSL and merges saved layout information.
+Keep explicit view keys stable; renames and substantial model changes can require
+manual adjustment. Capture again after saving those adjustments.
+
+Native export needs no running viewer: it serves temporary static assets on
+container loopback, with Docker networking still disabled. External browser
+resources are rejected; supply local/embedded icons, themes and fonts. Temporary
+pages and animation frames are removed afterward. Sources remain read-only and
+only `build/` is writable. The entire selected batch publishes atomically, using
+the existing writer lock and recovery journal.
+
+Use `--format svg|png|gif` and optional GIF `--frame-duration <seconds>`.
+Native images have `.structurizr` filename suffixes; they coexist with ordinary
+exports. Inspection findings remain report-only. Rendering errors or missing
+required layouts fail the batch while retaining earlier successful artifacts.
+Normal CI builds do not generate or package these optional native images; export
+and collect them explicitly when needed.
 
 ## Platform-team image maintenance
 

@@ -8,6 +8,54 @@ import xml.etree.ElementTree as ET
 RENDERERS = Path('/opt/renderers')
 
 
+def check_gif(path):
+    """Inspect GIF structure and timing without opening images or adding dependencies."""
+    data = Path(path).read_bytes()
+    if len(data) < 14 or data[:6] not in (b'GIF87a', b'GIF89a'):
+        raise ValueError(f'Invalid GIF: {path}')
+    width, height = struct.unpack('<HH', data[6:10])
+    if not width or not height:
+        raise ValueError(f'Empty GIF canvas: {path}')
+    offset = 13 + (3 * 2 ** ((data[10] & 7) + 1) if data[10] & 128 else 0)
+    frames, delays, delay = 0, [], None
+
+    def blocks(position):
+        while position < len(data) and data[position]:
+            position += 1 + data[position]
+        if position >= len(data):
+            raise ValueError(f'Truncated GIF: {path}')
+        return position + 1
+
+    while offset < len(data):
+        kind = data[offset]
+        offset += 1
+        if kind == 0x3B:
+            if offset != len(data) or not frames:
+                raise ValueError(f'Incomplete or multiple GIF images: {path}')
+            return {'width': width, 'height': height, 'frames': frames, 'delays_centiseconds': delays}
+        if kind == 0x21 and offset < len(data):
+            label = data[offset]
+            offset += 1
+            if label == 0xF9:
+                if offset + 6 > len(data) or data[offset] != 4:
+                    raise ValueError(f'Invalid GIF control block: {path}')
+                delay = int.from_bytes(data[offset + 2:offset + 4], 'little')
+            offset = blocks(offset)
+        elif kind == 0x2C and offset + 10 <= len(data):
+            left, top, frame_width, frame_height = struct.unpack('<HHHH', data[offset:offset + 8])
+            if not frame_width or not frame_height or left + frame_width > width or top + frame_height > height:
+                raise ValueError(f'GIF frame outside canvas: {path}')
+            packed = data[offset + 8]
+            offset += 9 + (3 * 2 ** ((packed & 7) + 1) if packed & 128 else 0)
+            offset = blocks(offset + 1)  # Skip LZW minimum code size, then image data.
+            frames += 1
+            delays.append(delay)
+            delay = None
+        else:
+            raise ValueError(f'Invalid GIF block: {path}')
+    raise ValueError(f'Truncated GIF: {path}')
+
+
 def renderer_versions():
     return json.loads((RENDERERS / 'versions.json').read_text())
 

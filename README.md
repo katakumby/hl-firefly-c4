@@ -167,12 +167,27 @@ paths so generated files have deterministic destinations.
 ### Export C4-PlantUML (default), Mermaid, SVG or PNG
 
 Export validates fresh sources first. Omit `--workspace` for the reference
-workspace and `--view` for all diagrams in that workspace:
+workspace and `--view` for all diagrams in that workspace. Both `export` and
+`export-native` support the same selection options:
+
+| Selection | Arguments |
+|---|---|
+| Every discovered workspace, including nested variants | `--all-workspaces` |
+| One workspace, all its views | `--workspace <path>` |
+| One view | `--workspace <path> --view <key>` |
+| Several views | `--workspace <path> --view <key1> --view <key2>` |
+
+Repeated keys are deduplicated. `--all-workspaces` cannot be combined with
+`--workspace` or `--view`. Unknown keys are reported together before rendering.
+Each selected workspace is validated once, and the whole request is staged before
+publication: a later workspace failure preserves all previous successful exports.
 
 ```text
 docker compose run --rm --pull never tools export
 docker compose run --rm --pull never tools export --workspace workspaces/ignition/workspace.dsl
 docker compose run --rm --pull never tools export --view 01-landscape
+docker compose run --rm --pull never tools export --all-workspaces
+docker compose run --rm --pull never tools export --workspace workspaces/ignition/workspace.dsl --view ignition-example-containers --view stable_key_name
 ```
 
 Add `--format` to any selection to choose an output:
@@ -204,21 +219,72 @@ selection and format. Other diagrams and formats retain their files and freshnes
 The command reports the file count; `build/artifacts.json` lists the exact output paths. See
 [outputs and maintenance](#outputs-and-maintenance) for directories and metadata.
 
-To refresh C4-PlantUML text for all three workspaces:
+To refresh C4-PlantUML text for every discovered workspace:
 
 ```text
-docker compose run --rm --pull never tools export
-docker compose run --rm --pull never tools export --workspace workspaces/ignition/workspace.dsl
-docker compose run --rm --pull never tools export --workspace workspaces/blockchain-foundation/workspace.dsl
+docker compose run --rm --pull never tools export --all-workspaces
 ```
 
 Use [`build`](#build-all-diagrams) to regenerate all diagrams, including images
 and authored UML. For an intentional reset, add `--clean` to the **first export
 only**. This removes all inventory-managed diagram formats and reports before validation;
 the exports above then restore C4-PlantUML text only.
-It preserves `local.env`, the writer lock, and unrelated or historical artifacts.
+It preserves captured manual layouts in `build/.layouts/`, `local.env`, the writer
+lock, and unrelated or historical artifacts.
 A failed rebuild cannot restore explicitly cleared files. Ordinary full builds
 already prune obsolete managed files after successful generation.
+
+### On-demand Structurizr layouts and animations
+
+Use `export-native` for images that preserve Structurizr's saved manual positions,
+relationship routing and canvas size, or for animated GIFs. It uses Structurizr's
+own browser renderer; ordinary `export --format svg|png` continues to render
+C4-PlantUML. Normal `build` and the CI examples do not run native exports.
+
+For manual views, omit `autoLayout`, arrange the diagram in the viewer, and
+explicitly save it. The viewer writes `workspace.json` beside the DSL. Capture
+that saved state before exporting:
+
+```text
+docker compose run --rm --pull never tools capture-layout --workspace workspaces/ignition/workspace.dsl
+docker compose run --rm --pull never tools export-native --workspace workspaces/ignition/workspace.dsl --format svg
+docker compose run --rm --pull never tools export-native --workspace workspaces/ignition/workspace.dsl --view ignition-example-containers --format png
+docker compose run --rm --pull never tools export-native --workspace workspaces/ignition/workspace.dsl --view example-container-animation --view stable_key_name --format gif
+docker compose run --rm --pull never tools export-native --all-workspaces --format svg
+```
+
+Capture stores the saved JSON and capture metadata in
+`build/.layouts/<workspace-entrypoint>/`. Native export parses current DSL and
+merges this snapshot's layout into it. Model contents, view selections and
+animation definitions continue to come from DSL. Automatic views need no snapshot;
+a missing required manual layout fails the request. Capture again after saving
+new layout edits. Keep explicit view keys stable; native matching may recover
+renamed views, but unmatched keys are reported for review.
+
+Native formats are `svg` (default), `png` and `gif`. A workspace-wide GIF export
+skips nonanimated views and reports them; explicitly selecting a nonanimated view
+as GIF fails before rendering. Static animations reveal DSL animation steps;
+dynamic GIFs follow relationship playback and finish with the complete overview.
+The pinned renderer's dynamic batch-export limitation is handled through its
+playback API. GIFs use the same bundled Gifshot encoder as the web application.
+Use `--frame-duration 3` to control seconds per frame (default 3; range
+0.01–655.35, rounded to hundredths). Exports use light mode, include metadata,
+preserve canvas dimensions and do not crop frames.
+
+Native files use the same mirrored folders with distinct, stable suffixes:
+`<view-key>.structurizr.svg`, `.structurizr.png` or `.structurizr.gif`.
+Separate native legends use `<view-key>.structurizr-key.svg` or `.png`.
+The inventory records renderer versions, layout fingerprint and GIF timing.
+Native reports use `export-native-status.json` and `export-native.log` in each
+workspace's report directory; `.reports/export-native-status.json` summarizes
+the whole request. Ordinary exports similarly have `.reports/export-status.json`.
+
+Selected exports replace only requested views and formats. Normal builds preserve
+native files still belonging to current sources/views, without refreshing their
+metadata; successful builds prune obsolete destinations. Layout snapshots survive
+`--clean`, but deleting the entire `build/` directory removes them. They are ignored
+by Git: back them up or copy them explicitly to share manual work. See the
+[capture and restore instructions](documentation/build.md#manual-layout-snapshots).
 
 ### Build all diagrams
 
@@ -355,6 +421,7 @@ build/
 ├── .reports/
 │   ├── workspace.dsl/            # Reports and parsed JSON for the shared workspace
 │   └── workspaces/<epic-id>/workspace.dsl/  # Reports for each workstream
+├── .layouts/<workspace-entrypoint>/  # Captured manual layouts; preserved by --clean
 ├── artifacts.json                # Inventory of managed files and per-format freshness
 ├── build.json                    # Latest complete-build attempt and findings
 ├── build.log                     # Latest complete-build diagnostics
@@ -370,7 +437,8 @@ The parsed JSON remains the last successful validation if a later attempt fails.
 `build/artifacts.json` inventories each diagram's source, workspace, view key,
 format, source/output fingerprints, versions and generation time. A retained
 format is current only when its fingerprint matches current inputs; exporting
-PlantUML does not refresh older SVG metadata. Hashes never determine filenames.
+PlantUML does not refresh older SVG metadata. Native exports also require a matching
+captured-layout fingerprint. Hashes never determine filenames.
 
 One writer lock protects `build/.staging/`. Publication updates individual files
 and an on-disk journal allows the next command to recover interrupted publication.

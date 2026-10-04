@@ -2,7 +2,7 @@
 // type -> shape -> ownership -> deployment status.
 styles {
     element "Element" {
-        shape Box
+        shape RoundedBox
         background #DDDDDD
         color #000000
         stroke #8A8A8A

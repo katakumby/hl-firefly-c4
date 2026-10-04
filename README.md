@@ -587,6 +587,7 @@ once by the shared model. Initiatives and variants inherit them automatically.
 
 Native exports and the web UI share the classic C4 palette: dark-blue people,
 blue software systems, medium-blue containers and light-blue components.
+Boxes use rounded corners; people retain the person shape.
 `Database` changes only the shape to a cylinder. `External` changes only the
 colours to grey/white, preserving the element's shape; it denotes an explicit
 external integration/ownership boundary, not every reference in the catalogue.

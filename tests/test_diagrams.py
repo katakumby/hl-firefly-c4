@@ -24,10 +24,28 @@ class Renderers(unittest.TestCase):
             for format in ('svg', 'png'):
                 renderer.render(source, source.with_suffix('.' + format), [])
             svg = ET.parse(source.with_suffix('.svg')).getroot()
-            svg_height = int(svg.attrib['height'].removesuffix('px'))
-            _, png_height = struct.unpack('>II', source.with_suffix('.png').read_bytes()[16:24])
+            svg_width, svg_height = (int(svg.attrib[axis].removesuffix('px')) for axis in ('width', 'height'))
+            png_width, png_height = struct.unpack('>II', source.with_suffix('.png').read_bytes()[16:24])
             self.assertGreater(svg_height, 4096)
-            self.assertLessEqual(abs(svg_height - png_height), 2)
+            self.assertLessEqual(abs(2 * svg_width - png_width), 2)
+            self.assertLessEqual(abs(2 * svg_height - png_height), 2)
+
+    def test_png_has_double_resolution_without_changing_svg_or_source(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            source = Path(temporary) / 'sequence.puml'
+            text = '@startuml\nArchitect -> Platform: Propose change\n@enduml\n'
+            source.write_text(text)
+            default_svg = subprocess.run(
+                ['java', '-Djava.awt.headless=true', '-jar', '/opt/plantuml/plantuml.jar',
+                 '-tsvg', '-pipe'], input=text.encode(), capture_output=True, check=True).stdout
+            for format in ('svg', 'png'):
+                renderer.render(source, source.with_suffix('.' + format), [])
+            self.assertEqual(default_svg, source.with_suffix('.svg').read_bytes())
+            self.assertEqual(text, source.read_text())
+            svg = ET.fromstring(default_svg)
+            png_size = struct.unpack('>II', source.with_suffix('.png').read_bytes()[16:24])
+            for axis, pixels in zip(('width', 'height'), png_size):
+                self.assertLessEqual(abs(2 * int(svg.attrib[axis].removesuffix('px')) - pixels), 2)
 
     def test_offline_formats_and_local_plantuml_includes(self):
         with tempfile.TemporaryDirectory() as temporary:

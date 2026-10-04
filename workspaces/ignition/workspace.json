@@ -11,7 +11,7 @@
     } ]
   },
   "id" : 1,
-  "lastModifiedDate" : "2026-10-04T18:39:33Z",
+  "lastModifiedDate" : "2026-10-04T19:00:38Z",
   "model" : {
     "people" : [ {
       "description" : "Builds and tests member business integrations.",

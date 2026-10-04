@@ -243,6 +243,10 @@ Mermaid previews use `dlt-architecture-tools-browser`. Both project image names
 have no explicit tag. Neither preview stage regenerates C4, reparses DSL, or renders
 from authored originals. They read generated text under `build/source/`.
 
+PlantUML PNG previews default to 192 DPI (2× resolution) for sharper text on
+high-density displays. SVG previews remain vector output and scale without losing
+quality. The higher-resolution PNGs have larger file sizes.
+
 PlantUML previews support C4 view selection. Mermaid previews support workspace
 selection and reject `--view`, since C4 source output is PlantUML only.
 Source hashes, installed toolchain compatibility, handoff coverage, and CI commit

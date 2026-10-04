@@ -103,6 +103,10 @@ docker compose run --rm --pull never tools build-source --workspace workspaces/i
 docker compose run --rm --pull never tools build-preview --renderer plantuml --workspace workspaces/ignition/workspace.dsl --view ignition-dapp-platform-context
 ```
 
+PlantUML PNG rendering uses `-Sdpi=192` for twice the default pixel resolution;
+SVG rendering retains its original vector dimensions. This setting applies to C4
+and authored PlantUML previews and needs no additional dependencies or image rebuild.
+
 Inspection findings remain nonblocking during generation. Parsing/model validation,
 inspector failures, collisions and renderer errors remain failures. Selection defaults
 and native exports are described in the [README](../README.md#build-diagram-sources).

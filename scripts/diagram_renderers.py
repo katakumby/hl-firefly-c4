@@ -181,6 +181,9 @@ def render(source, output, logs, timeout=180):
         command = ['java', '-Djava.awt.headless=true', '-DPLANTUML_LIMIT_SIZE=16384',
                    '-jar', '/opt/plantuml/plantuml.jar',
                    '-failfast2', '-charset', 'UTF-8', '-t' + format, '-pipe']
+        if format == 'png':
+            # Twice PlantUML's default 96 DPI, without changing vector output or sources.
+            command.append('-Sdpi=192')
         stdin = source.read_bytes()
     elif source.suffix == '.mmd':
         command = ['node', str(RENDERERS / 'node_modules/@mermaid-js/mermaid-cli/src/cli.js'),

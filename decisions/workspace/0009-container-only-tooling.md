@@ -11,6 +11,17 @@ Modular authoring remains the workspace structure. Custom validation enforcement
 from those decisions is retired; identifier, ownership and other team conventions
 are advisory until teams agree to progressively automate them.
 
+**Current implementation note (2026-10-04):** the decision below retains its
+historical paths and execution details. Sources now live at the repository root;
+Docker assets live in `docker/`. Normal execution uses approved preloaded images.
+Outputs mirror source directories under `build/`, with fixed-name metadata and
+reports. C4 images render through PlantUML; Chromium renders authored Mermaid.
+`build` and `export` report inspection findings without blocking generation;
+`validate` remains strict. CI examples and complete rendering are now provided.
+Use the [README](../../README.md#docker-only-workflow) and
+[corporate build guide](../../documentation/build.md) for current commands,
+viewer configuration and output paths.
+
 ## Context
 
 The workspace will be maintained in a corporate environment using Docker.
@@ -128,7 +139,7 @@ remain available for image requests. All generated exports stay ignored by Git.
 ## Consequences
 
 The public interface is the Docker Compose commands in the
-[root README](../../../README.md#docker-only-workflow). The viewer requires only
+[root README](../../README.md#docker-only-workflow). The viewer requires only
 the prebuilt Structurizr image and authored sources. Validation/export require
 the tools image; no host Python, Java or project shell scripts are needed.
 

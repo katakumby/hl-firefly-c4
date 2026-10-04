@@ -7,6 +7,10 @@ diagram application is required. `build` and `export` report inspection findings
 without failing; use `validate` for the separate strict quality check. The [Dockerfile](../docker/Dockerfile), version pins, npm lock
 and PlantUML checksum define the platform team's toolchain build.
 
+Chromium is required for Mermaid image rendering. Structurizr validation and text
+exports, and PlantUML/C4 image rendering, do not use it. The complete tools image
+includes the browser so a full build can render both authoring formats offline.
+
 ## Acquire approved images explicitly
 
 Obtain `ARCHITECTURE_TOOLS_IMAGE` and `ARCHITECTURE_VIEWER_IMAGE` from your platform
@@ -71,6 +75,12 @@ ports. Viewer source mounts remain writable for Structurizr's native ignored cac
 For persistent local settings, put image references, UID/GID and optional ports
 in ignored `build/local.env`. Invoke Compose with
 `--env-file .env --env-file build/local.env`. Do not commit credentials.
+For example:
+
+```text
+docker compose --env-file .env --env-file build/local.env run --rm --pull never tools build
+```
+
 For a checkout nested beneath another repository, use its explicit paths:
 
 ```text
@@ -104,6 +114,11 @@ docker/run.sh test
 docker/run.sh export --view 01-landscape
 docker/run.sh build
 ```
+
+The wrapper reads exported environment variables; it does not load `.env` or
+`build/local.env` as shell settings. Export `ARCHITECTURE_TOOLS_IMAGE` and any
+UID/GID overrides before using it. The Python tooling still reads the committed
+version pins from `.env` inside the mounted checkout.
 
 ## Platform-team image maintenance
 

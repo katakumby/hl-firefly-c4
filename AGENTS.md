@@ -41,7 +41,7 @@ After tooling changes, validate all workspaces and run the containerized tests:
 
 ```text
 docker compose run --rm --pull never tools validate
-docker compose run --rm --entrypoint python3 tools -B -m unittest discover -s tests -v
+docker compose run --rm --pull never --entrypoint python3 tools -B -m unittest discover -s tests -v
 ```
 
 Use `--clean` only when explicitly rebuilding all generated architecture output:

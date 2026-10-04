@@ -3,8 +3,9 @@
 Reviewed: 2026-09-19. Input: the reference `workspace.dsl`. Review scope:
 all modeled systems, containers, components, relationships and static view
 selections. The corrections below predate the modular migration. Current
-maintenance edits DSL fragments directly; Python generates only derived
-catalogs and reports from the parsed workspace.
+maintenance edits DSL fragments directly; containerized Python tooling validates,
+exports and builds derived diagrams and reports. Historical catalog and evidence
+automation is retired; see the [current workflow](../../README.md#docker-only-workflow).
 
 ## Findings corrected
 

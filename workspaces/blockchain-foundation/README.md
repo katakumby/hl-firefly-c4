@@ -39,8 +39,8 @@ docker compose up -d blockchain-foundation
 Open [the foundation diagrams](http://127.0.0.1:8082). Edit the DSL and refresh.
 
 ```text
-docker compose run --rm tools validate --workspace workspaces/blockchain-foundation/workspace.dsl
-docker compose run --rm tools export --workspace workspaces/blockchain-foundation/workspace.dsl
+docker compose run --rm --pull never tools validate --workspace workspaces/blockchain-foundation/workspace.dsl
+docker compose run --rm --pull never tools export --workspace workspaces/blockchain-foundation/workspace.dsl
 ```
 
 Acquire the approved tools image first; see the [corporate build guide](../../documentation/build.md).
@@ -48,6 +48,12 @@ The default C4-PlantUML definitions live under `build/workspaces/blockchain-foun
 Add `--format svg` or `--format png` when image exports are needed.
 
 ## Design and implementation plan
+
+`workspace.dsl` extends the root model and assembles local `model.dsl`,
+`deployment.dsl`, `failure.dsl`, `styles.dsl` and `views/main.dsl` fragments.
+Keep deployment and failure definitions here until reviewed promotion; shared
+product definitions stay in `model/external-systems/`. The `docs/` directory holds
+the design below, and `uml/` is reserved for standalone local behavioral/code diagrams.
 
 - [Scope, decisions and quorum](docs/01-design.md)
 - [Deployment inventory, network and persistence](docs/02-deployment.md)

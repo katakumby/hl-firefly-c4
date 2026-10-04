@@ -14,8 +14,8 @@ artifacts stay under ignored `build/`.
   quorum calculations, persistence, key services and explicit HA qualification gates.
 - [Unleash reference](documentation/system/unleash/01-boundary-and-components.md):
   OSS server and optional OSS Edge, with containers, components and all internal data flows.
-- [Ignition](workspaces/ignition/README.md): the proposed **DApp Platform** system
-  boundary, with no internal architecture or integrations yet.
+- [Ignition](workspaces/ignition/README.md): the proposed **DApp Platform** boundary
+  and separate API/Backend examples for container views, animation and interactions.
 - [Shared model](model.dsl): reusable actors, external systems,
   relationships and styles, without authored diagrams.
 - [Architecture documentation](documentation/workspace/01-logical-architecture.md)
@@ -26,23 +26,88 @@ artifacts stay under ignored `build/`.
 
 ## Layout and ownership
 
-| Location | Purpose |
-|---|---|
-| `workspace.dsl` | Reference entrypoint, alongside the extendable `model.dsl` |
-| `compose.yaml` | Named `global`, `ignition` and `blockchain-foundation` viewers, plus optional Docker tools |
-| `model/external-systems/` | Reference systems, each with a folder and container fragments |
-| `model/platform/` | Reviewed platform systems; initially no definitions |
-| `model/relationships/` | Relationships grouped by system, plus cross-system integrations |
-| `views/external-systems/` | Reference view fragments, automatically included by the reference workspace |
-| `styles/styles.dsl` | Global styles inherited by reference, initiative and variant workspaces |
-| `documentation/` | Explanations and system boundaries |
-| `uml/patterns/`, `uml/use-cases/`, `uml/code/` | Standalone reference patterns, behavioral and code diagrams |
-| `views/platform/` | Approved platform C4 views |
-| `workspaces/<epic-id>/` | Goals, ownership, proposed model, focused views and use cases |
-| `scripts/` | Containerized validation and diagram export |
-| `docker/` | Tools image, renderer dependencies, maintenance override and `run.sh` launcher |
-| `templates/initiative/` | Incomplete authoring templates; excluded from workspace discovery |
-| `build/` | Generated artifacts; ignored by Git |
+The repository root is the architecture workspace; there is no enclosing
+`architecture/` source directory. The main directories are:
+
+```text
+.
+├── workspace.dsl                 # Shared workspace: reusable model plus published views
+├── model.dsl                     # Extendable model and styles; no authored diagrams
+├── model/
+│   ├── people.dsl                # Shared actors
+│   ├── external-systems/         # Product catalog, internals and reference examples
+│   ├── platform/                 # Approved platform definitions; currently empty of DSL
+│   └── relationships/            # Explicit, ordered relationship fragments
+├── views/
+│   ├── external-systems/         # Shared C4 reference views
+│   └── platform/                 # Approved platform views; currently a placeholder
+├── styles/styles.dsl             # Shared C4 styling
+├── uml/
+│   ├── patterns/                 # Generic UML patterns and optional concrete examples
+│   ├── use-cases/firefly-besu/    # Numbered use cases with README and .mmd sources
+│   └── code/                     # Shared code diagrams
+├── workspaces/
+│   ├── ignition/                 # DApp proposal and independent example diagrams
+│   └── blockchain-foundation/    # Besu/FireFly deployment proposal and recovery views
+├── documentation/
+│   ├── build.md                  # Corporate Docker setup and offline execution
+│   ├── workspace/                # Shared model explanations, attached to the viewer
+│   ├── system/                   # Product-specific explanations and evidence
+│   └── reviews/                  # Dated review records
+├── decisions/
+│   ├── adr/                      # Architecture decisions
+│   └── workspace/                # Authoring and tooling decisions
+├── templates/initiative/         # Starter files ending in .template
+├── scripts/                      # Validation, export, rendering, publication and CI packaging
+├── docker/
+│   ├── Dockerfile                # Complete tools image
+│   ├── .dockerignore             # Image-build context allowlist
+│   ├── compose.maintenance.yaml  # Explicit image-construction override
+│   ├── run.sh                    # Optional plain-Docker launcher
+│   └── renderers/                # Pinned dependencies, npm lockfile and browser setup
+├── tests/                        # Containerized tooling regression tests
+├── ci/examples/                  # GitHub Actions and Azure DevOps examples and setup guide
+├── compose.yaml                  # Viewer services and image-only tools service
+├── .env                          # Committed toolchain version pins; no secrets
+├── .gitignore                    # Generated outputs and cache exclusions
+├── AGENTS.md                     # Validation and final-review instructions
+├── README.md                     # Repository navigation and authoring workflow
+└── build/                        # Ignored generated diagrams, reports and local settings
+```
+
+`model.dsl` assembles shared definitions and styles for reuse. `workspace.dsl`
+extends it and adds the published views from `views/`. A workstream extends the
+model to reuse definitions while choosing its own views; it does not need to
+inherit the shared workspace's entire view catalog. Shared model fragments belong
+in `model/`, never in a second "shared" directory under `workspaces/`.
+
+Each `workspaces/<epic-id>/` normally has the following shape. The two current
+workspaces follow it; blockchain-foundation also owns `deployment.dsl`,
+`failure.dsl` and `styles.dsl` beside its entrypoint.
+
+```text
+workspaces/<epic-id>/
+├── workspace.dsl     # Extends the shared model; includes local model and views
+├── model.dsl         # Local proposals and inherited-element annotations
+├── views/            # Focused C4 views; inline views in workspace.dsl are also supported
+├── uml/              # Local standalone .puml/.mmd diagrams, with any nested folders
+├── docs/             # Local explanations, evidence and design notes
+└── README.md         # Scope, status, owners and navigation
+```
+
+Every workspace loads its own model instance. Local additions and annotations,
+including `Future` tags on inherited elements, stay local; include/exclude
+expressions choose what its views show. Optional nested variants extend their
+parent workspace. See [variants and promotion](#variants-and-promotion) for the
+reviewed move of accepted definitions, views and behavioral diagrams into shared folders.
+
+Architects own shared C4 definitions and reference patterns. Technical leads
+primarily own use-case and code diagrams. Generic patterns go in `uml/patterns/`;
+existing product-specific C4 reference examples stay in `views/external-systems/`.
+PlantUML and Mermaid sources can be nested freely under shared or workspace-local
+`uml/`. Keep explanations in Markdown beside diagrams or in the appropriate
+`documentation/` / workspace `docs/` directory. The build does not extract diagrams
+from Markdown fences. [Output paths](#outputs-and-maintenance) mirror these source folders.
 
 Existing application and operations examples remain reference choices, not
 adopted platform systems. Catalog membership records available or potential
@@ -135,19 +200,22 @@ reviews read exported text directly. C4 SVG/PNG exports render the same
 C4-PlantUML definitions; their layout can differ from the native Structurizr viewer.
 
 A successful export updates the canonical files for its requested workspace,
-selection and format. Other diagrams and formats retain their files and freshness metadata. The command prints the output path; see
+selection and format. Other diagrams and formats retain their files and freshness metadata.
+The command reports the file count; `build/artifacts.json` lists the exact output paths. See
 [outputs and maintenance](#outputs-and-maintenance) for directories and metadata.
 
-For an intentional full rebuild of all three workspaces, add `--clean` to the
-**first export only**:
+To refresh C4-PlantUML text for all three workspaces:
 
 ```text
-docker compose run --rm --pull never tools export --clean
+docker compose run --rm --pull never tools export
 docker compose run --rm --pull never tools export --workspace workspaces/ignition/workspace.dsl
 docker compose run --rm --pull never tools export --workspace workspaces/blockchain-foundation/workspace.dsl
 ```
 
-`--clean` explicitly removes inventory-managed diagrams and reports before validation.
+Use [`build`](#build-all-diagrams) to regenerate all diagrams, including images
+and authored UML. For an intentional reset, add `--clean` to the **first export
+only**. This removes all inventory-managed diagram formats and reports before validation;
+the exports above then restore C4-PlantUML text only.
 It preserves `local.env`, the writer lock, and unrelated or historical artifacts.
 A failed rebuild cannot restore explicitly cleared files. Ordinary full builds
 already prune obsolete managed files after successful generation.
@@ -167,7 +235,7 @@ workspace's `validation.json` / `validation.log`, plus `build/build.json` and
 `passed` result and declare the `strict` or `report-only` inspection policy.
 Inspection findings keep their original severity; they do not block publication.
 Explicit stable view keys and collision-free output paths are still required.
-Each source contains one diagram. Use `.pumlinc` for local PlantUML includes;
+Each standalone `.puml` or `.mmd` source contains one diagram. Use `.pumlinc` for local PlantUML includes;
 paths resolve relative to the including source. Remote includes require replacing
 URLs with repository files or bundled PlantUML libraries. A `.puml` and `.mmd`
 with the same relative stem are rejected because their image outputs would collide.
@@ -262,6 +330,7 @@ Diagram outputs mirror their source directories recursively, with formats side b
 |---|---|
 | `views/external-systems/01-landscape.dsl` | `build/views/external-systems/01-landscape.{puml,svg,png}` |
 | `workspaces/blockchain-foundation/views/main.dsl` | `build/workspaces/blockchain-foundation/views/<view-key>.{puml,svg,png}` |
+| Inline view in `workspaces/ignition/workspace.dsl` | `build/workspaces/ignition/<view-key>.{puml,svg,png}` |
 | `uml/patterns/messaging/claim-check/sequence.puml` | `build/uml/patterns/messaging/claim-check/sequence.{svg,png}` |
 | `workspaces/ignition/uml/payments/submit.mmd` | `build/workspaces/ignition/uml/payments/submit.{svg,png}` |
 
@@ -275,6 +344,24 @@ Local include/extension provenance is cross-checked with native Structurizr view
 keys. Ambiguous declarations, generated keys, unsafe filenames and collisions
 (including case-only differences) fail before publication. Keep view keys literal
 and include/extends paths local; plugin/script-generated views cannot be mapped.
+
+The generated tree separates mirrored diagrams from reports and local execution state:
+
+```text
+build/
+├── views/                        # Shared C4 files, mirroring views/
+├── uml/                          # Shared UML images, mirroring uml/
+├── workspaces/<epic-id>/          # Local/inherited C4 files and local UML images
+├── .reports/
+│   ├── workspace.dsl/            # Reports and parsed JSON for the shared workspace
+│   └── workspaces/<epic-id>/workspace.dsl/  # Reports for each workstream
+├── artifacts.json                # Inventory of managed files and per-format freshness
+├── build.json                    # Latest complete-build attempt and findings
+├── build.log                     # Latest complete-build diagnostics
+├── .tools.lock                   # Persistent writer-lock file
+├── .staging/                     # Temporary publication state; cleaned after completion
+└── local.env                     # Optional local Compose settings; never an artifact
+```
 
 `build/.reports/<workspace-entrypoint>/` holds `workspace.json`, `validation.json`,
 `validation.log`, and the latest `export-status.json` / `export.log` when exported.
@@ -395,12 +482,16 @@ add explicit shared includes, and validate every entrypoint. Promote approved C4
 behavioral diagrams into `uml/` with the model. Keep shared files independent of initiative folders
 as an authoring convention reviewed by the team.
 
-Ignition currently contains only the proposed DApp boundary. Its disconnected
-inspection is informational through a native DSL property. Review that setting
-when the design introduces children or integrations. There is no custom rule
-preventing the proposal from evolving.
+Ignition's DApp proposal still contains only a system boundary; its separate
+Example System adds API/Backend container, animation and dynamic-view experiments.
+The DApp boundary's disconnected inspection is informational through a native DSL
+property. Review that setting when the DApp design introduces children or
+integrations. Other local examples keep their own inspection findings.
 
 See [decision 7](decisions/workspace/0007-modular-workspaces.md) and
 [decision 9](decisions/workspace/0009-container-only-tooling.md)
-for policy, the [review implementation status](documentation/reviews/2026-09-19-workspace-review.md#implementation-status)
-for historical findings. Removed scripts and evidence inventories remain in Git history.
+for the original authoring decisions, and the
+[review implementation status](documentation/reviews/2026-09-19-workspace-review.md#implementation-status)
+for historical findings. Dated decisions and reviews retain former directory names,
+commands and evidence paths; this README and the [build guide](documentation/build.md)
+describe the current workflow. Removed scripts and evidence inventories remain in Git history.

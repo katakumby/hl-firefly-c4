@@ -16,6 +16,10 @@ The execution and evidence-maintenance portions are subsequently superseded by
 Decision 9 also retires custom validation enforcement. The conventions below
 remain authoring guidance while teams initially rely on native Structurizr checks.
 
+The directory names and tooling below record the original decision. Sources now
+live at the repository root, with approved definitions in `model/platform/` and
+isolated initiatives in `workspaces/`. See the [current layout](../../README.md#layout-and-ownership).
+
 ## Decision
 
 The shared model is an extendable DSL workspace with ordered local includes

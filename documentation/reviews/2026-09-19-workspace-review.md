@@ -1,16 +1,19 @@
 # Workspace consistency, duplication and maintainability review
 
 > Historical review. Findings and evidence describe the earlier tooling; the
-> implementation status at the end records the current maintenance scope.
+> implementation status at the end records the maintenance scope as of 2026-09-20.
 > [Decision 9](../../decisions/workspace/0009-container-only-tooling.md) subsequently
 > replaces host scripts, run history, evidence automation and product-specific audits
 > with containerized validation/export and a Docker viewer. Retired source files can
-> be inspected in Git history; current commands are in the [root README](../../../README.md).
+> be inspected in Git history; current commands are in the [root README](../../README.md).
 > The current workflow explicitly runs native Structurizr `validate` and `inspect`.
 > Historical links below may target removed source files or disposable build
 > artifacts. Use Git history for removed files; generated evidence is not retained.
 > All custom architecture validation is now removed. Team conventions are
 > advisory; native inspection properties control findings while teams mature.
+> Later changes added deterministic mirrored outputs, standalone UML rendering
+> and CI examples. `build`/`export` now report inspection findings without blocking;
+> `validate` remains strict. See the [current output layout](../../README.md#outputs-and-maintenance).
 
 Reviewed: 2026-09-19. Scope: the current working tree, including the uncommitted
 modular migration. This report records findings and proposed changes; it does
@@ -320,7 +323,7 @@ command so teams do not copy ignition's DApp-specific exception accidentally.
 ## Evidence, reproducibility and limits
 
 The original review used the following commands, which are now retired.
-Use the [Docker-only workflow](../../../README.md#docker-only-workflow) for current commands.
+Use the [Docker-only workflow](../../README.md#docker-only-workflow) for current commands.
 
 ```powershell
 ./architecture/scripts/validate.ps1
@@ -374,11 +377,11 @@ to native-only validation preserved the parsed model and views. Current tests
 cover native severity settings, workspace selection, flexible inheritance and
 artifact safety. They do not enforce retired architecture policies.
 
-Use the current [workflow](../../../README.md#docker-only-workflow).
+Use the current [workflow](../../README.md#docker-only-workflow).
 Reports from the earlier implementation were selected by the historical
 [reference status](../../../build/architecture/reference/status.json) and
 [ignition status](../../../build/architecture/initiatives/ignition/workspace/status.json).
-The simplified Docker workflow now writes the latest
-[reference validation](../../../build/architecture/workspaces/reference/validation.json)
-and [ignition validation](../../../build/architecture/workspaces/workspaces/ignition/workspace/validation.json)
-directly.
+The current Docker workflow writes the latest
+[reference validation](../../build/.reports/workspace.dsl/validation.json)
+and [ignition validation](../../build/.reports/workspaces/ignition/workspace.dsl/validation.json)
+directly. The original evidence links above are historical and may be unavailable.

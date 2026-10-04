@@ -75,9 +75,9 @@ do not download executable dependencies as an incidental diagram edit.
 
 The parser can also be used from Java: create `StructurizrDslParser`, parse the
 file, then obtain `parser.getWorkspace()` and extend it through the Java API.
-For another language, a JSON export can be an interchange input. In this repository
-DSL remains the authoring source; generated JSON is not a second hand-maintained
-architecture model.
+For another language, a JSON export can be an interchange input. For a DSL-authored
+model, make architecture corrections in the DSL and regenerate derived JSON rather
+than maintaining conflicting source and generated models.
 
 ## Image sources and documentation diagram plugins
 

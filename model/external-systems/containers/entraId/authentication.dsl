@@ -1,5 +1,4 @@
 authentication = container "Authentication and token service" "Logical identity-platform service for user and application authentication and token issuance." "Microsoft Entra managed service (logical)" {
-    tags "SecurityCatalog,LogicalReference"
     url "https://learn.microsoft.com/en-us/entra/identity-platform/v2-protocols-oidc"
     properties {
         "architecture.id" "entraId.authentication"
@@ -7,7 +6,6 @@ authentication = container "Authentication and token service" "Logical identity-
         "architecture.sources" "[\"https://learn.microsoft.com/en-us/entra/identity-platform/v2-protocols-oidc\"]"
     }
     endpoints = component "Identity protocol endpoints" "Logical reference: Accepts OIDC authorization and OAuth token requests." "Identity-platform responsibility / implementation undisclosed" {
-        tags "SecurityCatalog,LogicalReference"
         url "https://learn.microsoft.com/en-us/entra/identity-platform/v2-protocols-oidc"
         properties {
             "architecture.id" "entraId.authentication.endpoints"
@@ -16,7 +14,6 @@ authentication = container "Authentication and token service" "Logical identity-
         }
     }
     credentials = component "Identity authentication" "Logical reference: Validates configured user or application authentication proof." "Identity-platform responsibility / implementation undisclosed" {
-        tags "SecurityCatalog,LogicalReference"
         url "https://learn.microsoft.com/en-us/entra/identity-platform/v2-protocols-oidc"
         properties {
             "architecture.id" "entraId.authentication.credentials"
@@ -25,7 +22,6 @@ authentication = container "Authentication and token service" "Logical identity-
         }
     }
     policy = component "Access-policy evaluation" "Logical reference: Applies applicable sign-in and access requirements for this identity and resource." "Identity-platform responsibility / implementation undisclosed" {
-        tags "SecurityCatalog,LogicalReference"
         url "https://learn.microsoft.com/en-us/entra/identity-platform/v2-protocols-oidc"
         properties {
             "architecture.id" "entraId.authentication.policy"
@@ -34,7 +30,6 @@ authentication = container "Authentication and token service" "Logical identity-
         }
     }
     tokens = component "Token issuance" "Logical reference: Issues signed ID and access tokens with audience-specific claims." "Identity-platform responsibility / implementation undisclosed" {
-        tags "SecurityCatalog,LogicalReference"
         url "https://learn.microsoft.com/en-us/entra/identity-platform/v2-protocols-oidc"
         properties {
             "architecture.id" "entraId.authentication.tokens"

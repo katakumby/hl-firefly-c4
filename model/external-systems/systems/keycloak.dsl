@@ -1,6 +1,5 @@
 group "Identity and federation" {
     keycloak = softwareSystem "Keycloak" "Identity and access management: SSO, federation, brokering and token issuance." {
-        tags "SecurityCatalog"
         url "https://www.keycloak.org/docs/latest/server_admin/index.html"
         properties {
             "architecture.id" "keycloak"

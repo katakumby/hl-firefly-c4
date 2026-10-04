@@ -1,5 +1,4 @@
 service = container "Conjur service" "Logical enterprise runtime for policy, workload authentication and secret APIs; no leader/follower placement is specified." "Conjur Enterprise / HTTPS API" {
-    tags "SecurityCatalog,LogicalReference"
     url "https://docs.cyberark.com/secrets-manager-sh/latest/en/content/resources/_topnav/cc_home.htm"
     properties {
         "architecture.id" "conjur.service"
@@ -7,7 +6,6 @@ service = container "Conjur service" "Logical enterprise runtime for policy, wor
         "architecture.sources" "[\"https://docs.cyberark.com/secrets-manager-sh/latest/en/content/resources/_topnav/cc_home.htm\"]"
     }
     api = component "Secret and policy API" "Logical reference: Accepts authenticated secret and policy operations." "Conjur responsibility / logical reference" {
-        tags "SecurityCatalog,LogicalReference"
         url "https://docs.cyberark.com/secrets-manager-sh/latest/en/content/resources/_topnav/cc_home.htm"
         properties {
             "architecture.id" "conjur.service.api"
@@ -16,7 +14,6 @@ service = container "Conjur service" "Logical enterprise runtime for policy, wor
         }
     }
     authentication = component "Workload authentication" "Logical reference: Validates the configured workload identity proof and issues a short-lived Conjur access token." "Conjur responsibility / logical reference" {
-        tags "SecurityCatalog,LogicalReference"
         url "https://docs.cyberark.com/secrets-manager-sh/latest/en/content/resources/_topnav/cc_home.htm"
         properties {
             "architecture.id" "conjur.service.authentication"
@@ -25,7 +22,6 @@ service = container "Conjur service" "Logical enterprise runtime for policy, wor
         }
     }
     policy = component "Policy authorization" "Logical reference: Evaluates workload permissions for the requested secret variable or policy resource." "Conjur responsibility / logical reference" {
-        tags "SecurityCatalog,LogicalReference"
         url "https://docs.cyberark.com/secrets-manager-sh/latest/en/content/resources/_topnav/cc_home.htm"
         properties {
             "architecture.id" "conjur.service.policy"
@@ -34,7 +30,6 @@ service = container "Conjur service" "Logical enterprise runtime for policy, wor
         }
     }
     secrets = component "Secret access" "Logical reference: Returns only authorized secret values and accepts permitted updates." "Conjur responsibility / logical reference" {
-        tags "SecurityCatalog,LogicalReference"
         url "https://docs.cyberark.com/secrets-manager-sh/latest/en/content/resources/_topnav/cc_home.htm"
         properties {
             "architecture.id" "conjur.service.secrets"
@@ -43,7 +38,6 @@ service = container "Conjur service" "Logical enterprise runtime for policy, wor
         }
     }
     audit = component "Access auditing" "Logical reference: Records workload, variable identifier and operation outcome without secret values." "Conjur responsibility / logical reference" {
-        tags "SecurityCatalog,LogicalReference"
         url "https://docs.cyberark.com/secrets-manager-sh/latest/en/content/resources/_topnav/cc_home.htm"
         properties {
             "architecture.id" "conjur.service.audit"

@@ -1,5 +1,4 @@
 cordaconnect = container "Corda connector starter" "Spring Boot reference starter; application CorDapps and a Core binding require customization." "Java / Spring Boot" {
-    tags "Optional"
     url "https://github.com/hyperledger-firefly/cordaconnect/tree/6579ca46e0d46c9c330c8b2b95f1dd83f0804640/connector"
     properties {
         "architecture.id" "firefly.cordaconnect"

@@ -1,5 +1,4 @@
 gateway = container "Gateway / ingress" "Routes API traffic; preserves peer mTLS with TLS passthrough." "Envoy Gateway / Kubernetes" {
-    tags "Operational"
     url "https://hyperledger-firefly.github.io/firefly/head/architecture/node_component_architecture/"
     properties {
         "architecture.id" "ops.gateway"

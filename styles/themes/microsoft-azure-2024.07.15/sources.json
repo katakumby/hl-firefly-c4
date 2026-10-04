@@ -1,0 +1,52 @@
+{
+  "repository": "https://github.com/structurizr/themes",
+  "revision": "67da2b503abc708f941e5aa2ea35dd553f742c3a",
+  "theme": "microsoft-azure-2024.07.15/icons.json",
+  "upstream_theme_sha256": "2ecb5a55674c95faafb1a89a8558378122452a5ed9af670a94f56da1aa028b6e",
+  "icons": [
+    {
+      "file": "azure-database-postgresql-server.png",
+      "sha256": "dfb73f10416c8131891dffd94f7a8234730e2e68e73e6e19f449cb2dfa0ddc5e"
+    },
+    {
+      "file": "container-registries.png",
+      "sha256": "514024681322b48ec891a61cdab646029655624d8f72ab0f7412e879651571a9"
+    },
+    {
+      "file": "disks.png",
+      "sha256": "73f8b71f23277793746ded0471ce06c47c0ad5c39e8345741fbe45cea707ee58"
+    },
+    {
+      "file": "dns-zones.png",
+      "sha256": "b51a95f773f78a00a97127f7fd29915822aa5b779b693bb54273c5fbfa749745"
+    },
+    {
+      "file": "key-vaults.png",
+      "sha256": "231a4b6a861fad39e76fdd476f68de90c1f9a247efe721e894123c040ba48b0c"
+    },
+    {
+      "file": "kubernetes-services.png",
+      "sha256": "5ff9df447f48623f3bccfd743feb41009f25d6be6b442c44b0d0da3c74011e02"
+    },
+    {
+      "file": "load-balancers.png",
+      "sha256": "8ffe10044f074ee373985e5786fa7008569d0dbf27e4e850be05d84667914c96"
+    },
+    {
+      "file": "monitor.png",
+      "sha256": "00c673133a6dcf91c4a88623fb69b4ce7083a75a4a4af1556e80c44d4aa87850"
+    },
+    {
+      "file": "storage-accounts.png",
+      "sha256": "6b62fc2b17a465dd0c5030695dceb8b33b9f31cb0609b1628b2416abffdec63c"
+    },
+    {
+      "file": "virtual-networks.png",
+      "sha256": "cbc3c8d12d8fe73db25a061ccdc6ecb2d35df573795f7b7e75bdf028dd1d4be5"
+    },
+    {
+      "file": "vm-scale-sets.png",
+      "sha256": "430f2e88c64afae3d66431f8f0c57c7b94012fa87ac0900218ba7df143b69954"
+    }
+  ]
+}

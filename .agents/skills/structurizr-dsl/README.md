@@ -6,9 +6,8 @@ official source coverage and version-sensitive limitations.
 
 The [starter workspace](assets/workspace-template.dsl) is a small syntax example;
 adapt its domain and technologies, and add documentation/decisions required by
-the target repository. Validate with the configured Structurizr runtime. In this
-repository, follow the root `AGENTS.md` and Compose tools workflow.
+the target project. Follow its authoring and review instructions where provided,
+and validate with its configured tools or the installed Structurizr launcher.
 
-This skill originated from [fedemagnani/structurizr-skill](https://github.com/fedemagnani/structurizr-skill)
-and is maintained here for the repository's architecture work. The existing
-`demo.png` is a historical illustration, not current validation evidence.
+This skill originated from [fedemagnani/structurizr-skill](https://github.com/fedemagnani/structurizr-skill).
+The existing `demo.png` is a historical illustration, not current validation evidence.

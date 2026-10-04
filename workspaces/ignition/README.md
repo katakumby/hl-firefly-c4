@@ -7,7 +7,7 @@ to be defined; this initiative starts with its identity and boundary.
 | Field | Value |
 |---|---|
 | Epic ID | ignition |
-| Status | Proposed |
+| Status | Planned |
 | Architect | TBD |
 | Technical lead | TBD |
 | Team | TBD |

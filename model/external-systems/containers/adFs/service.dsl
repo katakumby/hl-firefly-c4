@@ -1,5 +1,4 @@
 service = container "AD FS federation service" "Authenticates users and issues claims under configured relying-party trust policy." "Windows Server / AD FS" {
-    tags "SecurityCatalog"
     url "https://learn.microsoft.com/en-us/windows-server/identity/ad-fs/ad-fs-overview"
     properties {
         "architecture.id" "adFs.service"
@@ -7,7 +6,6 @@ service = container "AD FS federation service" "Authenticates users and issues c
         "architecture.sources" "[\"https://learn.microsoft.com/en-us/windows-server/identity/ad-fs/ad-fs-overview\"]"
     }
     endpoints = component "Federation protocol endpoints" "Logical reference: Accepts relying-party requests and returns browser-mediated federation responses." "AD FS logical responsibility" {
-        tags "SecurityCatalog,LogicalReference"
         url "https://learn.microsoft.com/en-us/windows-server/identity/ad-fs/technical-reference/the-role-of-the-claims-engine"
         properties {
             "architecture.id" "adFs.service.endpoints"
@@ -16,7 +14,6 @@ service = container "AD FS federation service" "Authenticates users and issues c
         }
     }
     authentication = component "Authentication adapters" "Logical reference: Validates user authentication through configured domain mechanisms." "AD FS logical responsibility" {
-        tags "SecurityCatalog,LogicalReference"
         url "https://learn.microsoft.com/en-us/windows-server/identity/ad-fs/technical-reference/the-role-of-the-claims-engine"
         properties {
             "architecture.id" "adFs.service.authentication"
@@ -25,7 +22,6 @@ service = container "AD FS federation service" "Authenticates users and issues c
         }
     }
     claims = component "Claims engine" "Logical reference: Transforms incoming claims and directory attributes using configured claim rules." "AD FS logical responsibility" {
-        tags "SecurityCatalog,LogicalReference"
         url "https://learn.microsoft.com/en-us/windows-server/identity/ad-fs/technical-reference/the-role-of-the-claims-engine"
         properties {
             "architecture.id" "adFs.service.claims"
@@ -34,7 +30,6 @@ service = container "AD FS federation service" "Authenticates users and issues c
         }
     }
     tokens = component "Token issuance" "Logical reference: Signs and issues claims tokens for the configured relying party." "AD FS logical responsibility" {
-        tags "SecurityCatalog,LogicalReference"
         url "https://learn.microsoft.com/en-us/windows-server/identity/ad-fs/technical-reference/the-role-of-the-claims-engine"
         properties {
             "architecture.id" "adFs.service.tokens"
@@ -43,7 +38,6 @@ service = container "AD FS federation service" "Authenticates users and issues c
         }
     }
     configuration = component "Trust and configuration access" "Logical reference: Loads relying-party trusts, claims rules and signing configuration." "AD FS logical responsibility" {
-        tags "SecurityCatalog,LogicalReference"
         url "https://learn.microsoft.com/en-us/windows-server/identity/ad-fs/technical-reference/the-role-of-the-claims-engine"
         properties {
             "architecture.id" "adFs.service.configuration"
@@ -52,7 +46,6 @@ service = container "AD FS federation service" "Authenticates users and issues c
         }
     }
     audit = component "Federation auditing" "Logical reference: Records authentication, claims issuance outcome and request context." "AD FS logical responsibility" {
-        tags "SecurityCatalog,LogicalReference"
         url "https://learn.microsoft.com/en-us/windows-server/identity/ad-fs/technical-reference/the-role-of-the-claims-engine"
         properties {
             "architecture.id" "adFs.service.audit"

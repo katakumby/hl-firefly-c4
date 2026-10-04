@@ -1,6 +1,5 @@
 group "Azure cryptographic services" {
     managedHsm = softwareSystem "Azure Managed HSM" "Protects cryptographic keys and performs authorized cryptographic operations; not a general secret or certificate store." {
-        tags "SecurityCatalog"
         url "https://learn.microsoft.com/en-us/azure/key-vault/managed-hsm/access-control"
         properties {
             "architecture.id" "managedHsm"

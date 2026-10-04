@@ -77,10 +77,9 @@ entry. Exporter support differs; check the actual exported view inventory rather
 than assuming a filtered view was flattened correctly.
 
 In tested `2026.06.28`, native C4-PlantUML export omits filtered views while returning
-success. This repository's full-workspace export detects that missing output and
-fails. Export supported view keys individually, inspect the filter in parsed JSON,
-and explicitly report that the filtered diagram has no C4 export. If an exported
-filtered diagram is required, use an explicitly selected ordinary view with
+success. Inspect the filter in parsed JSON and explicitly report that the filtered
+diagram has no C4 export. Recheck exporter support on the target version. If an
+exported filtered diagram is required, use an explicitly selected ordinary view with
 equivalent membership or a verified supporting format; do not silently drop it.
 
 ## Dynamic interactions
@@ -137,5 +136,5 @@ An image view has title/description/properties/default metadata, not model
 selection or auto-layout. There is no native `code` view keyword; an image view is
 one way to attach a UML/class diagram. See [documentation and extensions](documentation-and-extensions.md)
 for service URL configuration and [tooling](tooling-and-review.md) for browser
-parser and export limitations. Authoring an image view does not require rendering
-or opening images during routine review.
+parser and export limitations. Choose source or rendered-output checks according
+to the task and the target project's review process.

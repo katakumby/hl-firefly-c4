@@ -1,5 +1,4 @@
 pvwa = container "Password Vault Web Access" "Provides the web interface and APIs for privileged-account access and administration." "CyberArk PAM / proprietary service" {
-    tags "SecurityCatalog"
     url "https://docs.cyberark.com/pam-self-hosted/latest/en/content/pas%20inst/installationoverview.htm"
     properties {
         "architecture.id" "cyberarkPam.pvwa"
@@ -7,7 +6,6 @@ pvwa = container "Password Vault Web Access" "Provides the web interface and API
         "architecture.sources" "[\"https://docs.cyberark.com/pam-self-hosted/latest/en/content/pas%20inst/installationoverview.htm\"]"
     }
     portal = component "Web portal and API" "Logical reference: Accepts account access, session-launch and administration requests." "PVWA responsibility / proprietary implementation" {
-        tags "SecurityCatalog,LogicalReference"
         url "https://docs.cyberark.com/pam-self-hosted/latest/en/content/pas%20inst/installationoverview.htm"
         properties {
             "architecture.id" "cyberarkPam.pvwa.portal"
@@ -16,7 +14,6 @@ pvwa = container "Password Vault Web Access" "Provides the web interface and API
         }
     }
     approval = component "Access request workflow" "Logical reference: Evaluates configured request and approval requirements." "PVWA responsibility / proprietary implementation" {
-        tags "SecurityCatalog,LogicalReference"
         url "https://docs.cyberark.com/pam-self-hosted/latest/en/content/pas%20inst/installationoverview.htm"
         properties {
             "architecture.id" "cyberarkPam.pvwa.approval"
@@ -25,7 +22,6 @@ pvwa = container "Password Vault Web Access" "Provides the web interface and API
         }
     }
     vaultClient = component "Vault client" "Logical reference: Retrieves permitted account metadata or credentials and submits administration changes." "PVWA responsibility / proprietary implementation" {
-        tags "SecurityCatalog,LogicalReference"
         url "https://docs.cyberark.com/pam-self-hosted/latest/en/content/pas%20inst/installationoverview.htm"
         properties {
             "architecture.id" "cyberarkPam.pvwa.vaultClient"
@@ -34,7 +30,6 @@ pvwa = container "Password Vault Web Access" "Provides the web interface and API
         }
     }
     sessions = component "Session launch" "Logical reference: Creates authorized session connection details for the session manager." "PVWA responsibility / proprietary implementation" {
-        tags "SecurityCatalog,LogicalReference"
         url "https://docs.cyberark.com/pam-self-hosted/latest/en/content/pas%20inst/installationoverview.htm"
         properties {
             "architecture.id" "cyberarkPam.pvwa.sessions"

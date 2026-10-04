@@ -88,7 +88,7 @@ in `model/`, never in a second "shared" directory under `workspaces/`.
 
 Each `workspaces/<epic-id>/` normally has the following shape. The two current
 workspaces follow it; blockchain-foundation also owns `deployment.dsl`,
-`failure.dsl` and `styles.dsl` beside its entrypoint.
+`failure.dsl` beside its entrypoint and uses the shared Azure icons theme.
 
 ```text
 workspaces/<epic-id>/
@@ -101,7 +101,7 @@ workspaces/<epic-id>/
 ```
 
 Every workspace loads its own model instance. Local additions and annotations,
-including `Future` tags on inherited elements, stay local; include/exclude
+including `Planned` tags on inherited elements, stay local; include/exclude
 expressions choose what its views show. Optional nested variants extend their
 parent workspace. See [variants and promotion](#variants-and-promotion) for the
 reviewed move of accepted definitions, views and behavioral diagrams into shared folders.
@@ -171,6 +171,13 @@ paths so generated files have deterministic destinations.
 
 ### Export C4-PlantUML (default), Mermaid, SVG or PNG
 
+The commands below use this repository's tools wrapper, whose options include
+`--workspace`, `--view`, and `--format`. Official Structurizr subcommands use
+single-dash options such as `-workspace` and `-format`; do not interchange the two
+interfaces. The wrapper's `--format plantuml` selects native C4-PlantUML. In
+official Structurizr tooling, `-format plantuml` selects Structurizr-style
+PlantUML and `-format plantuml/c4plantuml` selects C4-PlantUML.
+
 Export validates fresh sources first. Omit `--workspace` for the reference
 workspace and `--view` for all diagrams in that workspace. Both `export` and
 `export-native` support the same selection options:
@@ -219,9 +226,12 @@ Consumers rendering its HTML labels need `"securityLevel": "loose"`. Routine
 reviews read exported text directly. C4 SVG/PNG exports render the same
 C4-PlantUML definitions; their layout can differ from the native Structurizr viewer.
 
-The pinned C4 exporter does not support Structurizr `filtered` views. An ordinary
-C4 export or lightweight build containing them fails before rendering and lists
-their keys. Select supported diagrams with `--view`, or use `tools-browser
+<a id="filtered-view-export-limitations"></a>
+
+**Filtered-view export limitations:** The pinned C4 exporter does not support
+Structurizr `filtered` views. An ordinary C4 export or lightweight build containing
+them fails before rendering and lists their keys. Select supported diagrams with
+`--view`, or use `tools-browser
 export-native` for filtered views with native layout. No views are silently omitted.
 
 A successful export updates the canonical files for its requested workspace,
@@ -535,7 +545,7 @@ rules is deferred until teams choose to introduce it.
 Keep `architecture.id` and `evidence` on elements. Reference elements and
 relationships retain `architecture.sources` as a JSON array of evidence URLs;
 the element `url` is its primary source. Proposals use
-`evidence "Proposed architecture"` and `architecture.status "proposed"`.
+`evidence "Proposed architecture"`, `architecture.status "planned"`, and the `Planned` tag.
 Containers/components require technology metadata.
 
 Relationships are declared after all elements. FireFly relationships are split
@@ -572,8 +582,37 @@ Reference diagrams use the directory include `!include views/external-systems` i
 `workspace.dsl`. Add a self-contained `.dsl` view fragment there;
 no new entrypoint include is needed. Approved platform views are included
 from `views/platform/` in the same way. Global element and relationship styles,
-including the `Proposed` tag, live in `styles/styles.dsl` and are included
+including the `Planned` and `Available` tags, live in `styles/styles.dsl` and are included
 once by the shared model. Initiatives and variants inherit them automatically.
+
+Native exports and the web UI share the classic C4 palette: dark-blue people,
+blue software systems, medium-blue containers and light-blue components.
+`Database` changes only the shape to a cylinder. `External` changes only the
+colours to grey/white, preserving the element's shape; it denotes an explicit
+external integration/ownership boundary, not every reference in the catalogue.
+The external-systems directory alone is not a styling rule. Parent software-system
+tags do not automatically tag its containers/components; classify those explicitly
+when their ownership needs to be shown. Deployment instances inherit their logical
+element's notation, with instance tags used for a different deployment status.
+
+`Available` means confirmed deployed in at least one environment; `Planned` means
+a planned deployment. Use exactly one status when known, and leave unconfirmed
+reference deployments untagged. `Planned` adds a dashed border; `Available` uses a
+solid border. An untagged solid border makes no deployment claim. Optional product
+features are described in text, independently of deployment status. Relationships
+use one neutral style; their labels and protocols explain their purpose.
+
+Azure deployment elements use official Microsoft Azure 2024.07.15 icons only,
+with shared colours and shapes. The locally embedded theme and provenance are in
+`styles/themes/microsoft-azure-2024.07.15/`; apply its service tags only to deployment
+nodes/infrastructure. Elements without a matching service icon keep the shared
+notation. Product-specific sizing, domain palettes and flow tags are not used.
+The shared styles use Structurizr's default element dimensions and font size.
+Compare the UI in light mode with native exports, which use light mode.
+
+C4-PlantUML exports intentionally retain their compact default macros and palette;
+`c4plantuml.tags` stays disabled. Use native exports for visual fidelity. Level-4
+PlantUML/Mermaid authoring remains independent of these Structurizr styles.
 
 Use `element.parent==<identifier>` when a view should show every child of a
 system or container. Relationships between included elements appear automatically;
@@ -603,7 +642,7 @@ Create `variants/interim/workspace.dsl` or `variants/target/workspace.dsl`
 only when designs differ. Each extends `../../workspace.dsl` and includes
 variant-local fragments. Use view keys such as `<epic-id>-interim-...`.
 Each workspace loads an independent model instance. Local `!element` or
-`!elements` annotations (for example, adding `Future` tags) do not edit the
+`!elements` annotations (for example, adding `Planned` tags) do not edit the
 shared definitions or affect sibling workspaces. Use include/exclude expressions
 to select local alternatives. Extension inherits parent models and views;
 variants are additive. Select the

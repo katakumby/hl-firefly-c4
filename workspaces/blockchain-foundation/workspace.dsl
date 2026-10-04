@@ -13,9 +13,14 @@ workspace extends ../../model.dsl {
         !include model.dsl
         !include deployment.dsl
         !include failure.dsl
+        // These are planned placements, including the illustrative recovery snapshot.
+        !elements "element.type==DeploymentNode || element.type==InfrastructureNode || element.type==ContainerInstance" {
+            tags "Planned"
+        }
     }
     views {
         !include views/main.dsl
-        !include styles.dsl
+        // Official Azure service icons; C4 colours and shapes remain shared.
+        theme ../../styles/themes/microsoft-azure-2024.07.15/icons.json
     }
 }

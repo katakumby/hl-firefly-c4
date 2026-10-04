@@ -1,5 +1,4 @@
 cpm = container "Central Policy Manager" "Verifies, rotates and reconciles managed target-account passwords." "CyberArk PAM / proprietary service" {
-    tags "SecurityCatalog"
     url "https://docs.cyberark.com/pam-self-hosted/latest/en/content/pas%20inst/installationoverview.htm"
     properties {
         "architecture.id" "cyberarkPam.cpm"
@@ -7,7 +6,6 @@ cpm = container "Central Policy Manager" "Verifies, rotates and reconciles manag
         "architecture.sources" "[\"https://docs.cyberark.com/pam-self-hosted/latest/en/content/pas%20inst/installationoverview.htm\"]"
     }
     scheduler = component "Password management scheduler" "Logical reference: Selects target accounts requiring verification, change or reconciliation." "CPM responsibility / proprietary implementation" {
-        tags "SecurityCatalog,LogicalReference"
         url "https://docs.cyberark.com/pam-self-hosted/latest/en/content/pas%20inst/installationoverview.htm"
         properties {
             "architecture.id" "cyberarkPam.cpm.scheduler"
@@ -16,7 +14,6 @@ cpm = container "Central Policy Manager" "Verifies, rotates and reconciles manag
         }
     }
     rotation = component "Password rotation orchestration" "Logical reference: Coordinates target password change and Vault credential update." "CPM responsibility / proprietary implementation" {
-        tags "SecurityCatalog,LogicalReference"
         url "https://docs.cyberark.com/pam-self-hosted/latest/en/content/pas%20inst/installationoverview.htm"
         properties {
             "architecture.id" "cyberarkPam.cpm.rotation"
@@ -25,7 +22,6 @@ cpm = container "Central Policy Manager" "Verifies, rotates and reconciles manag
         }
     }
     target = component "Target platform connector" "Logical reference: Runs the configured target-specific password verification or change operation." "CPM responsibility / proprietary implementation" {
-        tags "SecurityCatalog,LogicalReference"
         url "https://docs.cyberark.com/pam-self-hosted/latest/en/content/pas%20inst/installationoverview.htm"
         properties {
             "architecture.id" "cyberarkPam.cpm.target"
@@ -34,7 +30,6 @@ cpm = container "Central Policy Manager" "Verifies, rotates and reconciles manag
         }
     }
     vaultClient = component "Vault credential client" "Logical reference: Reads current credentials and writes successfully changed credentials." "CPM responsibility / proprietary implementation" {
-        tags "SecurityCatalog,LogicalReference"
         url "https://docs.cyberark.com/pam-self-hosted/latest/en/content/pas%20inst/installationoverview.htm"
         properties {
             "architecture.id" "cyberarkPam.cpm.vaultClient"

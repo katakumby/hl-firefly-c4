@@ -1,5 +1,4 @@
 edge = container "Unleash Edge (OSS, optional)" "Caches configuration and evaluates frontend requests; online polling or offline file mode." "Rust / Axum / Tokio" {
-    tags "UnleashCatalog,Optional"
     url "https://github.com/Unleash/unleash-edge/blob/c947878de70214235c79eeb5ebe5f35b77ecc075/crates/oss/unleash-edge/src/lib.rs"
     properties {
         "architecture.id" "unleash.edge"
@@ -8,7 +7,6 @@ edge = container "Unleash Edge (OSS, optional)" "Caches configuration and evalua
     }
 
     http = component "HTTP endpoints" "Exposes Client, Frontend, Edge validation and operational routes with request middleware." "Rust / Axum" {
-        tags "UnleashCatalog"
         url "https://github.com/Unleash/unleash-edge/blob/c947878de70214235c79eeb5ebe5f35b77ecc075/crates/oss/unleash-edge/src/lib.rs"
         properties {
             "architecture.id" "unleash.edge.http"
@@ -18,7 +16,6 @@ edge = container "Unleash Edge (OSS, optional)" "Caches configuration and evalua
     }
 
     tokens = component "Token validation and cache" "Validates tokens upstream or against offline configuration and caches authorized scopes." "Rust / Tokio" {
-        tags "UnleashCatalog"
         url "https://github.com/Unleash/unleash-edge/blob/c947878de70214235c79eeb5ebe5f35b77ecc075/crates/oss/unleash-edge-auth/src/token_validator.rs"
         properties {
             "architecture.id" "unleash.edge.tokens"
@@ -28,7 +25,6 @@ edge = container "Unleash Edge (OSS, optional)" "Caches configuration and evalua
     }
 
     upstream = component "Upstream HTTP client" "Fetches full feature payloads, validates tokens and posts registration/metric batches." "Rust / reqwest" {
-        tags "UnleashCatalog"
         url "https://github.com/Unleash/unleash-edge/blob/c947878de70214235c79eeb5ebe5f35b77ecc075/crates/oss/unleash-edge-http-client/src/lib.rs"
         properties {
             "architecture.id" "unleash.edge.upstream"
@@ -38,7 +34,6 @@ edge = container "Unleash Edge (OSS, optional)" "Caches configuration and evalua
     }
 
     refresh = component "Polling and refresh" "Hydrates scoped configuration and periodically refreshes features and compiled evaluation state." "Rust / Tokio" {
-        tags "UnleashCatalog"
         url "https://github.com/Unleash/unleash-edge/blob/c947878de70214235c79eeb5ebe5f35b77ecc075/crates/oss/unleash-edge-feature-refresh/src/lib.rs"
         properties {
             "architecture.id" "unleash.edge.refresh"
@@ -48,7 +43,6 @@ edge = container "Unleash Edge (OSS, optional)" "Caches configuration and evalua
     }
 
     cache = component "Feature cache and filtering" "Stores in-memory feature payloads and applies token, environment and request filters." "Rust / Tokio" {
-        tags "UnleashCatalog"
         url "https://github.com/Unleash/unleash-edge/blob/c947878de70214235c79eeb5ebe5f35b77ecc075/crates/oss/unleash-edge-feature-cache/src/lib.rs"
         properties {
             "architecture.id" "unleash.edge.cache"
@@ -58,7 +52,6 @@ edge = container "Unleash Edge (OSS, optional)" "Caches configuration and evalua
     }
 
     evaluation = component "Evaluation engine" "Evaluates context against compiled strategies and returns enabled flags and variants." "Rust / unleash-yggdrasil" {
-        tags "UnleashCatalog"
         url "https://github.com/Unleash/unleash-edge/blob/c947878de70214235c79eeb5ebe5f35b77ecc075/crates/oss/unleash-edge-frontend-api/src/frontend.rs"
         properties {
             "architecture.id" "unleash.edge.evaluation"
@@ -68,7 +61,6 @@ edge = container "Unleash Edge (OSS, optional)" "Caches configuration and evalua
     }
 
     metrics = component "Registration and metrics aggregation" "Buffers SDK registrations and flag/variant counts, batches them and forwards usage upstream." "Rust / Tokio" {
-        tags "UnleashCatalog"
         url "https://github.com/Unleash/unleash-edge/blob/c947878de70214235c79eeb5ebe5f35b77ecc075/crates/oss/unleash-edge-client-api/src/register.rs"
         properties {
             "architecture.id" "unleash.edge.metrics"
@@ -78,7 +70,6 @@ edge = container "Unleash Edge (OSS, optional)" "Caches configuration and evalua
     }
 
     persistence = component "Snapshot persistence and recovery" "Saves validated tokens and feature snapshots; restores caches using a configured backend." "Rust / Tokio" {
-        tags "UnleashCatalog"
         url "https://github.com/Unleash/unleash-edge/blob/c947878de70214235c79eeb5ebe5f35b77ecc075/crates/oss/unleash-edge-persistence/src/lib.rs"
         properties {
             "architecture.id" "unleash.edge.persistence"
@@ -88,7 +79,6 @@ edge = container "Unleash Edge (OSS, optional)" "Caches configuration and evalua
     }
 
     offline = component "Offline bootstrap and reload" "Loads local feature JSON and configured tokens; optionally reloads file changes without upstream calls." "Rust / Tokio" {
-        tags "UnleashCatalog"
         url "https://github.com/Unleash/unleash-edge/blob/c947878de70214235c79eeb5ebe5f35b77ecc075/crates/oss/unleash-edge/src/offline_builder.rs"
         properties {
             "architecture.id" "unleash.edge.offline"
@@ -98,7 +88,6 @@ edge = container "Unleash Edge (OSS, optional)" "Caches configuration and evalua
     }
 
     health = component "Health and operational metrics" "Exposes readiness and health, and measures requests, refresh and metric delivery." "Rust / Tokio" {
-        tags "UnleashCatalog"
         url "https://github.com/Unleash/unleash-edge/blob/c947878de70214235c79eeb5ebe5f35b77ecc075/crates/oss/unleash-edge-backstage/src/lib.rs"
         properties {
             "architecture.id" "unleash.edge.health"

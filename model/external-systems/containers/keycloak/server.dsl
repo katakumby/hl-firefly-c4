@@ -1,5 +1,4 @@
 server = container "Keycloak server" "Hosts login, administration, federation and protocol services; cache is embedded." "Java / Keycloak" {
-    tags "SecurityCatalog"
     url "https://www.keycloak.org/docs/latest/server_admin/index.html"
     properties {
         "architecture.id" "keycloak.server"
@@ -7,7 +6,6 @@ server = container "Keycloak server" "Hosts login, administration, federation an
         "architecture.sources" "[\"https://www.keycloak.org/docs/latest/server_admin/index.html\"]"
     }
     endpoints = component "OIDC and SAML endpoints" "Accepts authorization, token and federation requests and returns protocol responses." "Java / Keycloak" {
-        tags "SecurityCatalog"
         url "https://www.keycloak.org/docs/latest/server_admin/index.html"
         properties {
             "architecture.id" "keycloak.server.endpoints"
@@ -16,7 +14,6 @@ server = container "Keycloak server" "Hosts login, administration, federation an
         }
     }
     authentication = component "Authentication flows" "Evaluates configured authenticators and required authentication steps." "Java / Keycloak" {
-        tags "SecurityCatalog"
         url "https://www.keycloak.org/docs/latest/server_admin/index.html"
         properties {
             "architecture.id" "keycloak.server.authentication"
@@ -25,7 +22,6 @@ server = container "Keycloak server" "Hosts login, administration, federation an
         }
     }
     broker = component "Identity broker" "Delegates login to an external OIDC or SAML identity provider through the browser." "Java / Keycloak" {
-        tags "SecurityCatalog"
         url "https://www.keycloak.org/docs/latest/server_admin/index.html"
         properties {
             "architecture.id" "keycloak.server.broker"
@@ -34,7 +30,6 @@ server = container "Keycloak server" "Hosts login, administration, federation an
         }
     }
     ldap = component "LDAP user federation" "Queries AD user attributes and validates credentials by LDAP bind; never imports AD passwords." "Java / Keycloak" {
-        tags "SecurityCatalog"
         url "https://www.keycloak.org/docs/latest/server_admin/index.html"
         properties {
             "architecture.id" "keycloak.server.ldap"
@@ -43,7 +38,6 @@ server = container "Keycloak server" "Hosts login, administration, federation an
         }
     }
     tokens = component "Token and claim mapping" "Builds and signs tokens or assertions with mapped roles and attributes." "Java / Keycloak" {
-        tags "SecurityCatalog"
         url "https://www.keycloak.org/docs/latest/server_admin/index.html"
         properties {
             "architecture.id" "keycloak.server.tokens"
@@ -52,7 +46,6 @@ server = container "Keycloak server" "Hosts login, administration, federation an
         }
     }
     admin = component "Administration" "Manages realms, clients, users, roles and identity-provider configuration." "Java / Keycloak" {
-        tags "SecurityCatalog"
         url "https://www.keycloak.org/docs/latest/server_admin/index.html"
         properties {
             "architecture.id" "keycloak.server.admin"
@@ -61,7 +54,6 @@ server = container "Keycloak server" "Hosts login, administration, federation an
         }
     }
     sessions = component "Session and embedded cache management" "Tracks login sessions and cached realm or user data in the server runtime." "Java / Keycloak" {
-        tags "SecurityCatalog"
         url "https://www.keycloak.org/docs/latest/server_admin/index.html"
         properties {
             "architecture.id" "keycloak.server.sessions"
@@ -70,7 +62,6 @@ server = container "Keycloak server" "Hosts login, administration, federation an
         }
     }
     persistence = component "Persistence adapter" "Reads and writes realm, user and persistent session records." "Java / Keycloak" {
-        tags "SecurityCatalog"
         url "https://www.keycloak.org/docs/latest/server_admin/index.html"
         properties {
             "architecture.id" "keycloak.server.persistence"

@@ -92,7 +92,8 @@ options; there is no general-purpose DSL `legend` block.
 `theme name|url|file` or `themes ...` references one or several themes. Named themes
 must be installed; URL themes load dynamically; file themes are inlined by parsing.
 Apply the exact tags defined by a theme. Do not assume a named cloud theme exists
-because an example uses it; preserve the repository's offline/pinned assets.
+because an example uses it; preserve any existing pinned or local assets required
+by the target project.
 
 `terminology` overrides displayed terms for person/softwareSystem/container/
 component/deploymentNode/infrastructureNode/relationship. Its `metadata` option

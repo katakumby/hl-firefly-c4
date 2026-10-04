@@ -1,7 +1,7 @@
 // Named internal flows. Request/response results are documented on the initiating arrow.
 // Container and component projections describe the same exchanges at different C4 levels.
 
-unleash_edgeFeatures = unleash.edge -> unleash.server "Polls scoped feature configuration" "HTTP(S) / JSON" "Dataflow,UnleashCatalog" {
+unleash_edgeFeatures = unleash.edge -> unleash.server "Polls scoped feature configuration" "HTTP(S) / JSON" {
     properties {
         "architecture.id" "unleash.flow.edgeFeatures"
         "evidence" "Architecture dataflow inferred from pinned implementation"
@@ -9,7 +9,7 @@ unleash_edgeFeatures = unleash.edge -> unleash.server "Polls scoped feature conf
     }
 }
 
-unleash_edgeValidation = unleash.edge -> unleash.server "Validates tokens and refreshes their scopes" "HTTP(S) / JSON" "Dataflow,UnleashCatalog" {
+unleash_edgeValidation = unleash.edge -> unleash.server "Validates tokens and refreshes their scopes" "HTTP(S) / JSON" {
     properties {
         "architecture.id" "unleash.flow.edgeValidation"
         "evidence" "Architecture dataflow inferred from pinned implementation"
@@ -17,7 +17,7 @@ unleash_edgeValidation = unleash.edge -> unleash.server "Validates tokens and re
     }
 }
 
-unleash_edgeUsage = unleash.edge -> unleash.server "Forwards registration and usage batches" "HTTP(S) / JSON" "Dataflow,UnleashCatalog" {
+unleash_edgeUsage = unleash.edge -> unleash.server "Forwards registration and usage batches" "HTTP(S) / JSON" {
     properties {
         "architecture.id" "unleash.flow.edgeUsage"
         "evidence" "Architecture dataflow inferred from pinned implementation"
@@ -25,7 +25,7 @@ unleash_edgeUsage = unleash.edge -> unleash.server "Forwards registration and us
     }
 }
 
-unleash_edgeFileSnapshots = unleash.edge -> unleash.files "Saves and restores local recovery snapshots" "Filesystem / JSON" "Dataflow,UnleashCatalog" {
+unleash_edgeFileSnapshots = unleash.edge -> unleash.files "Saves and restores local recovery snapshots" "Filesystem / JSON" {
     properties {
         "architecture.id" "unleash.flow.edgeFileSnapshots"
         "evidence" "Architecture dataflow inferred from pinned implementation"
@@ -33,7 +33,7 @@ unleash_edgeFileSnapshots = unleash.edge -> unleash.files "Saves and restores lo
     }
 }
 
-unleash_edgeRedisSnapshots = unleash.edge -> unleash.redis "Saves and restores Redis recovery snapshots" "Redis protocol / JSON" "Dataflow,UnleashCatalog" {
+unleash_edgeRedisSnapshots = unleash.edge -> unleash.redis "Saves and restores Redis recovery snapshots" "Redis protocol / JSON" {
     properties {
         "architecture.id" "unleash.flow.edgeRedisSnapshots"
         "evidence" "Architecture dataflow inferred from pinned implementation"
@@ -41,7 +41,7 @@ unleash_edgeRedisSnapshots = unleash.edge -> unleash.redis "Saves and restores R
     }
 }
 
-unleash_edgeS3Snapshots = unleash.edge -> unleash.s3 "Saves and restores S3 recovery snapshots" "HTTPS / S3 API" "Dataflow,UnleashCatalog" {
+unleash_edgeS3Snapshots = unleash.edge -> unleash.s3 "Saves and restores S3 recovery snapshots" "HTTPS / S3 API" {
     properties {
         "architecture.id" "unleash.flow.edgeS3Snapshots"
         "evidence" "Architecture dataflow inferred from pinned implementation"
@@ -49,7 +49,7 @@ unleash_edgeS3Snapshots = unleash.edge -> unleash.s3 "Saves and restores S3 reco
     }
 }
 
-unleash_edgeBootstrapFiles = unleash.edge -> unleash.files "Loads and reloads offline feature JSON" "Filesystem / JSON" "Dataflow,UnleashCatalog" {
+unleash_edgeBootstrapFiles = unleash.edge -> unleash.files "Loads and reloads offline feature JSON" "Filesystem / JSON" {
     properties {
         "architecture.id" "unleash.flow.edgeBootstrapFiles"
         "evidence" "Architecture dataflow inferred from pinned implementation"
@@ -57,7 +57,7 @@ unleash_edgeBootstrapFiles = unleash.edge -> unleash.files "Loads and reloads of
     }
 }
 
-unleash_edgeClientFetch = unleash.edge -> unleash.server.clientApi "Requests full scoped feature definitions" "HTTP(S) / JSON" "Dataflow,UnleashCatalog" {
+unleash_edgeClientFetch = unleash.edge -> unleash.server.clientApi "Requests full scoped feature definitions" "HTTP(S) / JSON" {
     properties {
         "architecture.id" "unleash.flow.edgeClientFetch"
         "evidence" "Architecture dataflow inferred from pinned implementation"
@@ -65,7 +65,7 @@ unleash_edgeClientFetch = unleash.edge -> unleash.server.clientApi "Requests ful
     }
 }
 
-unleash_edgeClientMetrics = unleash.edge -> unleash.server.clientApi "Posts registration and aggregated usage" "HTTP(S) / JSON" "Dataflow,UnleashCatalog" {
+unleash_edgeClientMetrics = unleash.edge -> unleash.server.clientApi "Posts registration and aggregated usage" "HTTP(S) / JSON" {
     properties {
         "architecture.id" "unleash.flow.edgeClientMetrics"
         "evidence" "Architecture dataflow inferred from pinned implementation"
@@ -73,7 +73,7 @@ unleash_edgeClientMetrics = unleash.edge -> unleash.server.clientApi "Posts regi
     }
 }
 
-unleash_edgeTokenValidation = unleash.edge -> unleash.server.edgeApi "Validates token batches and receives scopes" "HTTP(S) / JSON" "Dataflow,UnleashCatalog" {
+unleash_edgeTokenValidation = unleash.edge -> unleash.server.edgeApi "Validates token batches and receives scopes" "HTTP(S) / JSON" {
     properties {
         "architecture.id" "unleash.flow.edgeTokenValidation"
         "evidence" "Architecture dataflow inferred from pinned implementation"
@@ -81,7 +81,7 @@ unleash_edgeTokenValidation = unleash.edge -> unleash.server.edgeApi "Validates 
     }
 }
 
-unleash_edgeRequestAuth = unleash.edge.http -> unleash.edge.tokens "Checks request token and resolves authorized scope" "In-process" "Dataflow,UnleashCatalog" {
+unleash_edgeRequestAuth = unleash.edge.http -> unleash.edge.tokens "Checks request token and resolves authorized scope" "In-process" {
     properties {
         "architecture.id" "unleash.flow.edgeRequestAuth"
         "evidence" "Architecture dataflow inferred from pinned implementation"
@@ -89,7 +89,7 @@ unleash_edgeRequestAuth = unleash.edge.http -> unleash.edge.tokens "Checks reque
     }
 }
 
-unleash_edgeRequestFeatures = unleash.edge.http -> unleash.edge.cache "Reads and filters full feature configurations" "In-process" "Dataflow,UnleashCatalog" {
+unleash_edgeRequestFeatures = unleash.edge.http -> unleash.edge.cache "Reads and filters full feature configurations" "In-process" {
     properties {
         "architecture.id" "unleash.flow.edgeRequestFeatures"
         "evidence" "Architecture dataflow inferred from pinned implementation"
@@ -97,7 +97,7 @@ unleash_edgeRequestFeatures = unleash.edge.http -> unleash.edge.cache "Reads and
     }
 }
 
-unleash_edgeRequestEvaluation = unleash.edge.http -> unleash.edge.evaluation "Evaluates frontend context and returns results" "In-process" "Dataflow,UnleashCatalog" {
+unleash_edgeRequestEvaluation = unleash.edge.http -> unleash.edge.evaluation "Evaluates frontend context and returns results" "In-process" {
     properties {
         "architecture.id" "unleash.flow.edgeRequestEvaluation"
         "evidence" "Architecture dataflow inferred from pinned implementation"
@@ -105,7 +105,7 @@ unleash_edgeRequestEvaluation = unleash.edge.http -> unleash.edge.evaluation "Ev
     }
 }
 
-unleash_edgeRequestUsage = unleash.edge.http -> unleash.edge.metrics "Buffers SDK registrations and usage counts" "In-process" "Dataflow,UnleashCatalog" {
+unleash_edgeRequestUsage = unleash.edge.http -> unleash.edge.metrics "Buffers SDK registrations and usage counts" "In-process" {
     properties {
         "architecture.id" "unleash.flow.edgeRequestUsage"
         "evidence" "Architecture dataflow inferred from pinned implementation"
@@ -113,7 +113,7 @@ unleash_edgeRequestUsage = unleash.edge.http -> unleash.edge.metrics "Buffers SD
     }
 }
 
-unleash_edgeRequestHealth = unleash.edge.http -> unleash.edge.health "Returns health, readiness and operational metrics" "In-process" "Dataflow,UnleashCatalog" {
+unleash_edgeRequestHealth = unleash.edge.http -> unleash.edge.health "Returns health, readiness and operational metrics" "In-process" {
     properties {
         "architecture.id" "unleash.flow.edgeRequestHealth"
         "evidence" "Architecture dataflow inferred from pinned implementation"
@@ -121,7 +121,7 @@ unleash_edgeRequestHealth = unleash.edge.http -> unleash.edge.health "Returns he
     }
 }
 
-unleash_edgeFilterScope = unleash.edge.cache -> unleash.edge.tokens "Reads authorized projects and environment" "In-process" "Dataflow,UnleashCatalog" {
+unleash_edgeFilterScope = unleash.edge.cache -> unleash.edge.tokens "Reads authorized projects and environment" "In-process" {
     properties {
         "architecture.id" "unleash.flow.edgeFilterScope"
         "evidence" "Architecture dataflow inferred from pinned implementation"
@@ -129,7 +129,7 @@ unleash_edgeFilterScope = unleash.edge.cache -> unleash.edge.tokens "Reads autho
     }
 }
 
-unleash_edgeEvaluationScope = unleash.edge.evaluation -> unleash.edge.tokens "Reads token scope for engine selection" "In-process" "Dataflow,UnleashCatalog" {
+unleash_edgeEvaluationScope = unleash.edge.evaluation -> unleash.edge.tokens "Reads token scope for engine selection" "In-process" {
     properties {
         "architecture.id" "unleash.flow.edgeEvaluationScope"
         "evidence" "Architecture dataflow inferred from pinned implementation"
@@ -137,7 +137,7 @@ unleash_edgeEvaluationScope = unleash.edge.evaluation -> unleash.edge.tokens "Re
     }
 }
 
-unleash_edgeReadyCache = unleash.edge.health -> unleash.edge.cache "Inspects cache state for readiness" "In-process" "Dataflow,UnleashCatalog" {
+unleash_edgeReadyCache = unleash.edge.health -> unleash.edge.cache "Inspects cache state for readiness" "In-process" {
     properties {
         "architecture.id" "unleash.flow.edgeReadyCache"
         "evidence" "Architecture dataflow inferred from pinned implementation"
@@ -145,7 +145,7 @@ unleash_edgeReadyCache = unleash.edge.health -> unleash.edge.cache "Inspects cac
     }
 }
 
-unleash_edgeTokenUpstream = unleash.edge.tokens -> unleash.edge.upstream "Validates and revalidates token batches" "In-process" "Dataflow,UnleashCatalog" {
+unleash_edgeTokenUpstream = unleash.edge.tokens -> unleash.edge.upstream "Validates and revalidates token batches" "In-process" {
     properties {
         "architecture.id" "unleash.flow.edgeTokenUpstream"
         "evidence" "Architecture dataflow inferred from pinned implementation"
@@ -153,7 +153,7 @@ unleash_edgeTokenUpstream = unleash.edge.tokens -> unleash.edge.upstream "Valida
     }
 }
 
-unleash_edgeTokenRefresh = unleash.edge.tokens -> unleash.edge.refresh "Registers validated scopes for feature refresh" "In-process" "Dataflow,UnleashCatalog" {
+unleash_edgeTokenRefresh = unleash.edge.tokens -> unleash.edge.refresh "Registers validated scopes for feature refresh" "In-process" {
     properties {
         "architecture.id" "unleash.flow.edgeTokenRefresh"
         "evidence" "Architecture dataflow inferred from pinned implementation"
@@ -161,7 +161,7 @@ unleash_edgeTokenRefresh = unleash.edge.tokens -> unleash.edge.refresh "Register
     }
 }
 
-unleash_edgePoll = unleash.edge.refresh -> unleash.edge.upstream "Fetches full configuration with conditional polling" "In-process" "Dataflow,UnleashCatalog" {
+unleash_edgePoll = unleash.edge.refresh -> unleash.edge.upstream "Fetches full configuration with conditional polling" "In-process" {
     properties {
         "architecture.id" "unleash.flow.edgePoll"
         "evidence" "Architecture dataflow inferred from pinned implementation"
@@ -169,7 +169,7 @@ unleash_edgePoll = unleash.edge.refresh -> unleash.edge.upstream "Fetches full c
     }
 }
 
-unleash_edgeRefreshCache = unleash.edge.refresh -> unleash.edge.cache "Updates scoped feature definitions" "In-process" "Dataflow,UnleashCatalog" {
+unleash_edgeRefreshCache = unleash.edge.refresh -> unleash.edge.cache "Updates scoped feature definitions" "In-process" {
     properties {
         "architecture.id" "unleash.flow.edgeRefreshCache"
         "evidence" "Architecture dataflow inferred from pinned implementation"
@@ -177,7 +177,7 @@ unleash_edgeRefreshCache = unleash.edge.refresh -> unleash.edge.cache "Updates s
     }
 }
 
-unleash_edgeRefreshEngine = unleash.edge.refresh -> unleash.edge.evaluation "Rebuilds evaluation state from refreshed features" "In-process" "Dataflow,UnleashCatalog" {
+unleash_edgeRefreshEngine = unleash.edge.refresh -> unleash.edge.evaluation "Rebuilds evaluation state from refreshed features" "In-process" {
     properties {
         "architecture.id" "unleash.flow.edgeRefreshEngine"
         "evidence" "Architecture dataflow inferred from pinned implementation"
@@ -185,7 +185,7 @@ unleash_edgeRefreshEngine = unleash.edge.refresh -> unleash.edge.evaluation "Reb
     }
 }
 
-unleash_edgeSendUsage = unleash.edge.metrics -> unleash.edge.upstream "Sends aggregated registrations and usage batches" "In-process" "Dataflow,UnleashCatalog" {
+unleash_edgeSendUsage = unleash.edge.metrics -> unleash.edge.upstream "Sends aggregated registrations and usage batches" "In-process" {
     properties {
         "architecture.id" "unleash.flow.edgeSendUsage"
         "evidence" "Architecture dataflow inferred from pinned implementation"
@@ -193,7 +193,7 @@ unleash_edgeSendUsage = unleash.edge.metrics -> unleash.edge.upstream "Sends agg
     }
 }
 
-unleash_edgeUpstreamFeatures = unleash.edge.upstream -> unleash.server "Calls the Client API for feature configuration" "HTTP(S) / JSON" "Dataflow,UnleashCatalog" {
+unleash_edgeUpstreamFeatures = unleash.edge.upstream -> unleash.server "Calls the Client API for feature configuration" "HTTP(S) / JSON" {
     properties {
         "architecture.id" "unleash.flow.edgeUpstreamFeatures"
         "evidence" "Architecture dataflow inferred from pinned implementation"
@@ -201,7 +201,7 @@ unleash_edgeUpstreamFeatures = unleash.edge.upstream -> unleash.server "Calls th
     }
 }
 
-unleash_edgeUpstreamTokens = unleash.edge.upstream -> unleash.server "Calls the Edge API to validate tokens" "HTTP(S) / JSON" "Dataflow,UnleashCatalog" {
+unleash_edgeUpstreamTokens = unleash.edge.upstream -> unleash.server "Calls the Edge API to validate tokens" "HTTP(S) / JSON" {
     properties {
         "architecture.id" "unleash.flow.edgeUpstreamTokens"
         "evidence" "Architecture dataflow inferred from pinned implementation"
@@ -209,7 +209,7 @@ unleash_edgeUpstreamTokens = unleash.edge.upstream -> unleash.server "Calls the 
     }
 }
 
-unleash_edgeUpstreamUsage = unleash.edge.upstream -> unleash.server "Posts SDK registration and usage batches" "HTTP(S) / JSON" "Dataflow,UnleashCatalog" {
+unleash_edgeUpstreamUsage = unleash.edge.upstream -> unleash.server "Posts SDK registration and usage batches" "HTTP(S) / JSON" {
     properties {
         "architecture.id" "unleash.flow.edgeUpstreamUsage"
         "evidence" "Architecture dataflow inferred from pinned implementation"
@@ -217,7 +217,7 @@ unleash_edgeUpstreamUsage = unleash.edge.upstream -> unleash.server "Posts SDK r
     }
 }
 
-unleash_edgeTokenSnapshot = unleash.edge.tokens -> unleash.edge.persistence "Persists newly validated token metadata" "In-process" "Dataflow,UnleashCatalog" {
+unleash_edgeTokenSnapshot = unleash.edge.tokens -> unleash.edge.persistence "Persists newly validated token metadata" "In-process" {
     properties {
         "architecture.id" "unleash.flow.edgeTokenSnapshot"
         "evidence" "Architecture dataflow inferred from pinned implementation"
@@ -225,7 +225,7 @@ unleash_edgeTokenSnapshot = unleash.edge.tokens -> unleash.edge.persistence "Per
     }
 }
 
-unleash_edgeSnapshotTokens = unleash.edge.persistence -> unleash.edge.tokens "Reads and restores validated-token snapshots" "In-process" "Dataflow,UnleashCatalog" {
+unleash_edgeSnapshotTokens = unleash.edge.persistence -> unleash.edge.tokens "Reads and restores validated-token snapshots" "In-process" {
     properties {
         "architecture.id" "unleash.flow.edgeSnapshotTokens"
         "evidence" "Architecture dataflow inferred from pinned implementation"
@@ -233,7 +233,7 @@ unleash_edgeSnapshotTokens = unleash.edge.persistence -> unleash.edge.tokens "Re
     }
 }
 
-unleash_edgeSnapshotFeatures = unleash.edge.persistence -> unleash.edge.cache "Reads and restores feature snapshots" "In-process" "Dataflow,UnleashCatalog" {
+unleash_edgeSnapshotFeatures = unleash.edge.persistence -> unleash.edge.cache "Reads and restores feature snapshots" "In-process" {
     properties {
         "architecture.id" "unleash.flow.edgeSnapshotFeatures"
         "evidence" "Architecture dataflow inferred from pinned implementation"
@@ -241,7 +241,7 @@ unleash_edgeSnapshotFeatures = unleash.edge.persistence -> unleash.edge.cache "R
     }
 }
 
-unleash_edgeRecoveredEngine = unleash.edge.persistence -> unleash.edge.evaluation "Rebuilds engine state from recovered features" "In-process" "Dataflow,UnleashCatalog" {
+unleash_edgeRecoveredEngine = unleash.edge.persistence -> unleash.edge.evaluation "Rebuilds engine state from recovered features" "In-process" {
     properties {
         "architecture.id" "unleash.flow.edgeRecoveredEngine"
         "evidence" "Architecture dataflow inferred from pinned implementation"
@@ -249,7 +249,7 @@ unleash_edgeRecoveredEngine = unleash.edge.persistence -> unleash.edge.evaluatio
     }
 }
 
-unleash_edgePersistenceFiles = unleash.edge.persistence -> unleash.files "Writes and reads local token/feature snapshots" "Filesystem / JSON" "Dataflow,UnleashCatalog" {
+unleash_edgePersistenceFiles = unleash.edge.persistence -> unleash.files "Writes and reads local token/feature snapshots" "Filesystem / JSON" {
     properties {
         "architecture.id" "unleash.flow.edgePersistenceFiles"
         "evidence" "Architecture dataflow inferred from pinned implementation"
@@ -257,7 +257,7 @@ unleash_edgePersistenceFiles = unleash.edge.persistence -> unleash.files "Writes
     }
 }
 
-unleash_edgePersistenceRedis = unleash.edge.persistence -> unleash.redis "Writes and reads Redis token/feature snapshots" "Redis protocol / JSON" "Dataflow,UnleashCatalog" {
+unleash_edgePersistenceRedis = unleash.edge.persistence -> unleash.redis "Writes and reads Redis token/feature snapshots" "Redis protocol / JSON" {
     properties {
         "architecture.id" "unleash.flow.edgePersistenceRedis"
         "evidence" "Architecture dataflow inferred from pinned implementation"
@@ -265,7 +265,7 @@ unleash_edgePersistenceRedis = unleash.edge.persistence -> unleash.redis "Writes
     }
 }
 
-unleash_edgePersistenceS3 = unleash.edge.persistence -> unleash.s3 "Writes and reads S3 token/feature snapshots" "HTTPS / S3 API" "Dataflow,UnleashCatalog" {
+unleash_edgePersistenceS3 = unleash.edge.persistence -> unleash.s3 "Writes and reads S3 token/feature snapshots" "HTTPS / S3 API" {
     properties {
         "architecture.id" "unleash.flow.edgePersistenceS3"
         "evidence" "Architecture dataflow inferred from pinned implementation"
@@ -273,7 +273,7 @@ unleash_edgePersistenceS3 = unleash.edge.persistence -> unleash.s3 "Writes and r
     }
 }
 
-unleash_edgeOfflineFiles = unleash.edge.offline -> unleash.files "Reads and reloads offline bootstrap JSON" "Filesystem / JSON" "Dataflow,UnleashCatalog" {
+unleash_edgeOfflineFiles = unleash.edge.offline -> unleash.files "Reads and reloads offline bootstrap JSON" "Filesystem / JSON" {
     properties {
         "architecture.id" "unleash.flow.edgeOfflineFiles"
         "evidence" "Architecture dataflow inferred from pinned implementation"
@@ -281,7 +281,7 @@ unleash_edgeOfflineFiles = unleash.edge.offline -> unleash.files "Reads and relo
     }
 }
 
-unleash_edgeOfflineTokens = unleash.edge.offline -> unleash.edge.tokens "Seeds allowed offline tokens from configuration" "In-process" "Dataflow,UnleashCatalog" {
+unleash_edgeOfflineTokens = unleash.edge.offline -> unleash.edge.tokens "Seeds allowed offline tokens from configuration" "In-process" {
     properties {
         "architecture.id" "unleash.flow.edgeOfflineTokens"
         "evidence" "Architecture dataflow inferred from pinned implementation"
@@ -289,7 +289,7 @@ unleash_edgeOfflineTokens = unleash.edge.offline -> unleash.edge.tokens "Seeds a
     }
 }
 
-unleash_edgeOfflineCache = unleash.edge.offline -> unleash.edge.cache "Loads offline feature definitions into memory" "In-process" "Dataflow,UnleashCatalog" {
+unleash_edgeOfflineCache = unleash.edge.offline -> unleash.edge.cache "Loads offline feature definitions into memory" "In-process" {
     properties {
         "architecture.id" "unleash.flow.edgeOfflineCache"
         "evidence" "Architecture dataflow inferred from pinned implementation"
@@ -297,7 +297,7 @@ unleash_edgeOfflineCache = unleash.edge.offline -> unleash.edge.cache "Loads off
     }
 }
 
-unleash_edgeOfflineEngine = unleash.edge.offline -> unleash.edge.evaluation "Compiles offline feature evaluation state" "In-process" "Dataflow,UnleashCatalog" {
+unleash_edgeOfflineEngine = unleash.edge.offline -> unleash.edge.evaluation "Compiles offline feature evaluation state" "In-process" {
     properties {
         "architecture.id" "unleash.flow.edgeOfflineEngine"
         "evidence" "Architecture dataflow inferred from pinned implementation"
@@ -305,7 +305,7 @@ unleash_edgeOfflineEngine = unleash.edge.offline -> unleash.edge.evaluation "Com
     }
 }
 
-unleash_edgeReadyTokens = unleash.edge.health -> unleash.edge.tokens "Inspects token state for readiness and diagnostics" "In-process" "Dataflow,UnleashCatalog" {
+unleash_edgeReadyTokens = unleash.edge.health -> unleash.edge.tokens "Inspects token state for readiness and diagnostics" "In-process" {
     properties {
         "architecture.id" "unleash.flow.edgeReadyTokens"
         "evidence" "Architecture dataflow inferred from pinned implementation"
@@ -313,7 +313,7 @@ unleash_edgeReadyTokens = unleash.edge.health -> unleash.edge.tokens "Inspects t
     }
 }
 
-unleash_edgeHealthMetrics = unleash.edge.health -> unleash.edge.metrics "Reads buffered usage diagnostics" "In-process" "Dataflow,UnleashCatalog" {
+unleash_edgeHealthMetrics = unleash.edge.health -> unleash.edge.metrics "Reads buffered usage diagnostics" "In-process" {
     properties {
         "architecture.id" "unleash.flow.edgeHealthMetrics"
         "evidence" "Architecture dataflow inferred from pinned implementation"

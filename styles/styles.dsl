@@ -1,173 +1,75 @@
-// Global styles inherited by the reference workspace, initiatives and variants.
+// Shared native C4 notation. More specific rules only change their own concern:
+// type -> shape -> ownership -> deployment status.
 styles {
     element "Element" {
-        color #122C43
-        stroke #57718A
+        shape Box
+        background #DDDDDD
+        color #000000
+        stroke #8A8A8A
         strokeWidth 2
-        fontSize 22
-        width 360
-        height 220
+        border Solid
     }
     element "Person" {
         shape Person
-        background #173F5F
+        background #08427B
         color #FFFFFF
+        stroke #073B6F
     }
     element "Software System" {
-        background #176B87
+        background #1168BD
         color #FFFFFF
+        stroke #3C7FC0
     }
     element "Container" {
-        background #DCECF7
+        background #438DD5
+        color #FFFFFF
+        stroke #3C7FC0
     }
     element "Component" {
-        background #EEF5FA
+        background #85BBF0
+        color #000000
+        stroke #78A8D8
+    }
+    element "Deployment Node" {
+        background #FFFFFF
+        color #000000
+        stroke #A2A2A2
+    }
+    element "Infrastructure Node" {
+        background #FFFFFF
+        color #000000
+        stroke #A2A2A2
+    }
+    element "Boundary" {
+        color #444444
+        stroke #444444
+        border Dashed
     }
     element "Group" {
-        color #42566A
-        stroke #8295A7
+        color #444444
+        stroke #444444
         border Dashed
-        fontSize 26
     }
     element "Database" {
         shape Cylinder
-        background #E8E4F5
     }
-    element "Private" {
-        stroke #8C4966
+    element "External" {
+        background #999999
+        color #FFFFFF
+        stroke #8A8A8A
     }
-    element "Shared" {
-        stroke #237A69
+    // Absence of a status tag makes no claim about deployment.
+    element "Available" {
+        border Solid
     }
-    element "Blockchain" {
-        background #EFE4C8
-        stroke #9B782E
-        color #122C43
-    }
-    element "Contract" {
-        background #FFF3D3
-    }
-    element "Optional" {
-        background #F0F0F0
-        stroke #7A7A7A
-        border Dashed
-        color #122C43
-    }
-    element "Operational" {
-        background #E8EEEE
-        stroke #59736C
-    }
-    element "LogicalReference" {
-        stroke #566C82
-        border Dashed
-    }
-    element "ReferenceIntegration" {
-        stroke #8A6623
+    element "Planned" {
         border Dashed
     }
     relationship "Relationship" {
-        color #476177
+        color #666666
         fontSize 18
         thickness 2
         routing Orthogonal
-        dashed false
-    }
-    relationship "PrivateFlow" {
-        color #8C4966
-        fontSize 18
-        thickness 2
-        routing Orthogonal
-        dashed false
-    }
-    relationship "SharedFlow" {
-        color #237A69
-        fontSize 18
-        thickness 2
-        routing Orthogonal
-        dashed false
-    }
-    relationship "BlockchainFlow" {
-        color #967228
-        fontSize 18
-        thickness 2
-        routing Orthogonal
-        dashed false
-    }
-    relationship "Operational" {
-        color #6D817A
-        fontSize 18
-        thickness 2
-        routing Orthogonal
-        dashed true
-    }
-    relationship "Alternative" {
-        color #888888
-        fontSize 18
-        thickness 2
-        routing Orthogonal
-        dashed true
-    }
-    relationship "IdentityFlow" {
-        color #285D9F
-        fontSize 18
-        thickness 2
-        routing Orthogonal
-        dashed false
-    }
-    relationship "DirectoryFlow" {
-        color #277668
-        fontSize 18
-        thickness 2
-        routing Orthogonal
-        dashed false
-    }
-    relationship "SecretFlow" {
-        color #874C84
-        fontSize 18
-        thickness 2
-        routing Orthogonal
-        dashed false
-    }
-    relationship "KeyFlow" {
-        color #946B20
-        fontSize 18
-        thickness 2
-        routing Orthogonal
-        dashed false
-    }
-    relationship "PrivilegedFlow" {
-        color #A34532
-        fontSize 18
-        thickness 2
-        routing Orthogonal
-        dashed false
-    }
-    relationship "SecurityAdminFlow" {
-        color #607080
-        fontSize 18
-        thickness 2
-        routing Orthogonal
-        dashed false
-    }
-    relationship "ReferenceIntegration" {
-        color #8A6623
-        fontSize 18
-        thickness 2
-        routing Orthogonal
-        dashed true
-    }
-    // Preserve the shared palette; give the richer Unleash labels adequate space.
-    element "UnleashCatalog" {
-        width 480
-        height 300
-    }
-    relationship "UnleashCatalog" {
-        routing Curved
-    }
-    element "Proposed" {
-        background #FFF3D3
-        color #122C43
-        stroke #946B20
-        border Dashed
+        style Solid
     }
 }

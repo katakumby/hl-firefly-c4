@@ -1,5 +1,4 @@
 config = container "FireFly configuration migrator" "Migrates configuration files between supported FireFly versions." "Go / CLI" {
-    tags "Optional"
     url "https://github.com/hyperledger-firefly/firefly/tree/9d20f3081c9074d5b012427e5572ebc03da8d95d/ffconfig"
     properties {
         "architecture.id" "tools.config"

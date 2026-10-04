@@ -5,15 +5,16 @@ description: Create, edit, debug, and review Structurizr DSL architecture models
 
 # Structurizr DSL
 
-Maintain one architecture model and derive the requested views from it. DSL is
-the authoring source; generated JSON and diagram exports are evidence, not source
-files to patch. Preserve the user's scope and the repository's modeling conventions.
+Maintain one architecture model and derive the requested views from it. For
+DSL-authored models, correct the DSL and regenerate derived JSON and diagrams.
+Preserve the user's scope and the target project's modeling conventions.
 
 ## Workflow
 
-1. Read the relevant workspace, included fragments, repository instructions, and
-   tool/version configuration. Identify affected workspaces when changing shared
-   fragments or an extended workspace. Keep existing view keys and layout intent.
+1. Read the relevant DSL workspace, included fragments, and any target-project
+   instructions and tool/version configuration. Identify affected workspaces when
+   changing shared fragments or an extended workspace. Keep existing view keys
+   and layout intent.
 2. Read only the references needed for the task from the table below. For a new
    workspace, adapt [the starter](assets/workspace-template.dsl); it illustrates
    syntax, not a prescribed technology stack or component decomposition.
@@ -23,15 +24,16 @@ files to patch. Preserve the user's scope and the repository's modeling conventi
 4. Make the smallest coherent source change. Prefer readable selections and useful
    descriptions; use tags for shared styling. Add dynamic/deployment/documentation
    features only when they serve the requested architecture work.
-5. Validate using the repository's configured parser and commands. Correct source
-   errors and rerun the affected checks. Diagnose missing tools, unsupported syntax,
-   or inaccessible dependencies instead of retrying unchanged commands or silently
-   upgrading the runtime.
-6. Export current affected views and review their contents. In this repository,
-   follow `AGENTS.md`: Compose tools service, fresh C4-PlantUML text first, then DSL;
-   images only when explicitly requested. A failed command leaves older exports
-   unverified. Use parsed JSON when selection, filtering, or details omitted by an
-   exporter need checking. Report validation and material limitations accurately.
+5. Validate with the target project's configured tools, or the installed Structurizr
+   launcher when no project workflow exists; see [tooling](references/tooling-and-review.md).
+   Correct source errors and rerun affected checks. Diagnose missing tools,
+   unsupported syntax, or inaccessible dependencies instead of retrying unchanged
+   commands or silently upgrading the runtime.
+6. Review current affected views using the requested output and the target project's
+   review process, where defined. Check exported contents against the DSL; use
+   parsed JSON when selection, filtering, or details omitted by an exporter need
+   checking. Regenerate outputs after source corrections. A failed command leaves
+   older outputs unverified. Report validation and material limitations accurately.
 
 ## Read by task
 
@@ -44,7 +46,7 @@ files to patch. Preserve the user's scope and the repository's modeling conventi
 | Includes, workspace extension, bulk changes, archetypes | [Reuse](references/reuse.md) |
 | Documentation/ADRs, scripts, plugins, component discovery | [Documentation and extensions](references/documentation-and-extensions.md) |
 | Tags, styles, themes, groups/boundaries, perspectives, layout | [Styling](references/styling.md) |
-| Validation, inspections, parser/runtime differences, exports, repository commands | [Tooling and review](references/tooling-and-review.md) |
+| Validation, inspections, parser/runtime differences, exports, official commands | [Tooling and review](references/tooling-and-review.md) |
 | Documentation coverage, official links, version-sensitive or incomplete upstream guidance | [Documentation map](references/documentation-map.md) |
 
 ## Essential correctness rules

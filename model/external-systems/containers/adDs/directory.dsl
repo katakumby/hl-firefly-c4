@@ -1,5 +1,4 @@
 directory = container "Domain-controller services" "Logical AD DS runtime; no server instances, sites or replication topology are modeled." "Windows Server / AD DS" {
-    tags "SecurityCatalog"
     url "https://learn.microsoft.com/en-us/windows-server/identity/ad-ds/get-started/virtual-dc/active-directory-domain-services-overview"
     properties {
         "architecture.id" "adDs.directory"
@@ -7,7 +6,6 @@ directory = container "Domain-controller services" "Logical AD DS runtime; no se
         "architecture.sources" "[\"https://learn.microsoft.com/en-us/windows-server/identity/ad-ds/get-started/virtual-dc/active-directory-domain-services-overview\"]"
     }
     ldap = component "LDAP directory interface" "Logical reference: Accepts directory searches and authenticated binds." "AD DS logical responsibility" {
-        tags "SecurityCatalog,LogicalReference"
         url "https://learn.microsoft.com/en-us/windows-server/identity/ad-ds/get-started/virtual-dc/active-directory-domain-services-overview"
         properties {
             "architecture.id" "adDs.directory.ldap"
@@ -16,7 +14,6 @@ directory = container "Domain-controller services" "Logical AD DS runtime; no se
         }
     }
     kdc = component "Kerberos KDC" "Logical reference: Validates domain authentication and issues Kerberos tickets." "AD DS logical responsibility" {
-        tags "SecurityCatalog,LogicalReference"
         url "https://learn.microsoft.com/en-us/windows-server/identity/ad-ds/get-started/virtual-dc/active-directory-domain-services-overview"
         properties {
             "architecture.id" "adDs.directory.kdc"
@@ -25,7 +22,6 @@ directory = container "Domain-controller services" "Logical AD DS runtime; no se
         }
     }
     access = component "Directory access and authorization" "Logical reference: Applies directory permissions and resolves requested account attributes." "AD DS logical responsibility" {
-        tags "SecurityCatalog,LogicalReference"
         url "https://learn.microsoft.com/en-us/windows-server/identity/ad-ds/get-started/virtual-dc/active-directory-domain-services-overview"
         properties {
             "architecture.id" "adDs.directory.access"
@@ -34,7 +30,6 @@ directory = container "Domain-controller services" "Logical AD DS runtime; no se
         }
     }
     persistence = component "Directory persistence" "Logical reference: Reads and writes directory objects and account records." "AD DS logical responsibility" {
-        tags "SecurityCatalog,LogicalReference"
         url "https://learn.microsoft.com/en-us/windows-server/identity/ad-ds/get-started/virtual-dc/active-directory-domain-services-overview"
         properties {
             "architecture.id" "adDs.directory.persistence"
@@ -43,7 +38,6 @@ directory = container "Domain-controller services" "Logical AD DS runtime; no se
         }
     }
     replication = component "Directory replication responsibility" "Logical reference: Processes directory change records; controller topology is deliberately omitted." "AD DS logical responsibility" {
-        tags "SecurityCatalog,LogicalReference"
         url "https://learn.microsoft.com/en-us/windows-server/identity/ad-ds/get-started/virtual-dc/active-directory-domain-services-overview"
         properties {
             "architecture.id" "adDs.directory.replication"
@@ -52,7 +46,6 @@ directory = container "Domain-controller services" "Logical AD DS runtime; no se
         }
     }
     policy = component "Group Policy and SYSVOL access" "Logical reference: Supplies domain policy metadata and policy-file references." "AD DS logical responsibility" {
-        tags "SecurityCatalog,LogicalReference"
         url "https://learn.microsoft.com/en-us/windows-server/identity/ad-ds/get-started/virtual-dc/active-directory-domain-services-overview"
         properties {
             "architecture.id" "adDs.directory.policy"

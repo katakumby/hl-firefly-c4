@@ -1,5 +1,4 @@
 fabconnect = container "FabConnect" "Fabric transaction, identity and ledger-event connector." "Go / Fabric SDK" {
-    tags "Optional"
     url "https://github.com/hyperledger-firefly/fabconnect/tree/efab8a2b0ff11863bbd9c5eb8a566820f560546b"
     properties {
         "architecture.id" "firefly.fabconnect"

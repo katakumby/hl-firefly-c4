@@ -1,5 +1,4 @@
 eventAudit = container "FireFly event auditor" "Audits recorded blockchain-event ordering through the Core API." "Go / CLI" {
-    tags "Optional"
     url "https://github.com/hyperledger-firefly/firefly/tree/9d20f3081c9074d5b012427e5572ebc03da8d95d/auditevents"
     properties {
         "architecture.id" "tools.eventAudit"

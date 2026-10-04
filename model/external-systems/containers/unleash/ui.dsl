@@ -1,5 +1,4 @@
 ui = container "Admin UI" "Runs management screens in the browser; the server distributes its static assets." "React / TypeScript / browser" {
-    tags "UnleashCatalog"
     url "https://github.com/Unleash/unleash/tree/66d4a45c1d24c4bc8a08d8c75d205bd61dc3aed0/frontend/src"
     properties {
         "architecture.id" "unleash.ui"
@@ -8,7 +7,6 @@ ui = container "Admin UI" "Runs management screens in the browser; the server di
     }
 
     shell = component "Application shell and session" "Routes screens and shares authenticated user, permissions and UI configuration." "React / TypeScript / browser" {
-        tags "UnleashCatalog"
         url "https://github.com/Unleash/unleash/blob/66d4a45c1d24c4bc8a08d8c75d205bd61dc3aed0/frontend/src/ApplicationRoot.tsx"
         properties {
             "architecture.id" "unleash.ui.shell"
@@ -18,7 +16,6 @@ ui = container "Admin UI" "Runs management screens in the browser; the server di
     }
 
     flags = component "Flag and project screens" "Edits flags, strategies, variants, segments, context fields, projects and environments." "React / TypeScript / browser" {
-        tags "UnleashCatalog"
         url "https://github.com/Unleash/unleash/tree/66d4a45c1d24c4bc8a08d8c75d205bd61dc3aed0/frontend/src/component/feature"
         properties {
             "architecture.id" "unleash.ui.flags"
@@ -28,7 +25,6 @@ ui = container "Admin UI" "Runs management screens in the browser; the server di
     }
 
     admin = component "Administration screens" "Manages OSS user, token, settings, import/export and add-on configuration." "React / TypeScript / browser" {
-        tags "UnleashCatalog"
         url "https://github.com/Unleash/unleash/tree/66d4a45c1d24c4bc8a08d8c75d205bd61dc3aed0/frontend/src/component/admin"
         properties {
             "architecture.id" "unleash.ui.admin"
@@ -38,7 +34,6 @@ ui = container "Admin UI" "Runs management screens in the browser; the server di
     }
 
     reports = component "Reporting and playground screens" "Displays audit history, SDK usage and lifecycle insights; submits evaluation experiments." "React / TypeScript / browser" {
-        tags "UnleashCatalog"
         url "https://github.com/Unleash/unleash/tree/66d4a45c1d24c4bc8a08d8c75d205bd61dc3aed0/frontend/src/component/events"
         properties {
             "architecture.id" "unleash.ui.reports"
@@ -48,7 +43,6 @@ ui = container "Admin UI" "Runs management screens in the browser; the server di
     }
 
     api = component "API clients and query cache" "Sends authenticated requests and caches or invalidates resource queries after mutations." "React / TypeScript / browser" {
-        tags "UnleashCatalog"
         url "https://github.com/Unleash/unleash/tree/66d4a45c1d24c4bc8a08d8c75d205bd61dc3aed0/frontend/src/hooks/api"
         properties {
             "architecture.id" "unleash.ui.api"

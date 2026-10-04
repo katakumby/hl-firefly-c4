@@ -1,5 +1,4 @@
 ethconnect = container "EthConnect (legacy option)" "Original Ethereum connector; REST/direct and optional Kafka bridge configurations." "Go" {
-    tags "Optional"
     url "https://github.com/hyperledger-firefly/ethconnect/tree/e8ae0eda16cc61b8ac256cdbf5f09edeb571b8c0"
     properties {
         "architecture.id" "firefly.ethconnect"

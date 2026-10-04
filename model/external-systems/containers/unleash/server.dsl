@@ -1,5 +1,4 @@
 server = container "Unleash server" "Hosts OSS administration, configuration delivery, evaluation and background services." "Node.js / TypeScript / Express" {
-    tags "UnleashCatalog"
     url "https://github.com/Unleash/unleash/blob/66d4a45c1d24c4bc8a08d8c75d205bd61dc3aed0/src/lib/server-impl.ts"
     properties {
         "architecture.id" "unleash.server"
@@ -8,7 +7,6 @@ server = container "Unleash server" "Hosts OSS administration, configuration del
     }
 
     assets = component "Static asset hosting" "Serves the Admin UI entry document and bundled browser assets." "TypeScript / Node.js" {
-        tags "UnleashCatalog"
         url "https://github.com/Unleash/unleash/blob/66d4a45c1d24c4bc8a08d8c75d205bd61dc3aed0/src/lib/app.ts"
         properties {
             "architecture.id" "unleash.server.assets"
@@ -18,7 +16,6 @@ server = container "Unleash server" "Hosts OSS administration, configuration del
     }
 
     adminApi = component "Admin API" "Validates management and reporting requests and routes them to domain services." "TypeScript / Node.js" {
-        tags "UnleashCatalog"
         url "https://github.com/Unleash/unleash/tree/66d4a45c1d24c4bc8a08d8c75d205bd61dc3aed0/src/lib/routes/admin-api"
         properties {
             "architecture.id" "unleash.server.adminApi"
@@ -28,7 +25,6 @@ server = container "Unleash server" "Hosts OSS administration, configuration del
     }
 
     clientApi = component "Client API" "Serves full feature configurations and accepts SDK registration and usage metrics." "TypeScript / Node.js" {
-        tags "UnleashCatalog"
         url "https://github.com/Unleash/unleash/tree/66d4a45c1d24c4bc8a08d8c75d205bd61dc3aed0/src/lib/routes/client-api"
         properties {
             "architecture.id" "unleash.server.clientApi"
@@ -38,7 +34,6 @@ server = container "Unleash server" "Hosts OSS administration, configuration del
     }
 
     frontendApi = component "Frontend API" "Accepts evaluation context and returns evaluated enabled flags and variants; accepts usage metrics." "TypeScript / Node.js" {
-        tags "UnleashCatalog"
         url "https://github.com/Unleash/unleash/blob/66d4a45c1d24c4bc8a08d8c75d205bd61dc3aed0/src/lib/features/frontend-api/frontend-api-controller.ts"
         properties {
             "architecture.id" "unleash.server.frontendApi"
@@ -48,7 +43,6 @@ server = container "Unleash server" "Hosts OSS administration, configuration del
     }
 
     edgeApi = component "Edge API" "Validates SDK tokens for Edge and returns authorized token metadata." "TypeScript / Node.js" {
-        tags "UnleashCatalog"
         url "https://github.com/Unleash/unleash/blob/66d4a45c1d24c4bc8a08d8c75d205bd61dc3aed0/src/lib/routes/edge-api/index.ts"
         properties {
             "architecture.id" "unleash.server.edgeApi"
@@ -58,7 +52,6 @@ server = container "Unleash server" "Hosts OSS administration, configuration del
     }
 
     identity = component "Users, sessions and access" "Authenticates local users and applies OSS permissions; manages sessions and user records." "TypeScript / Node.js" {
-        tags "UnleashCatalog"
         url "https://github.com/Unleash/unleash/blob/66d4a45c1d24c4bc8a08d8c75d205bd61dc3aed0/src/lib/middleware/oss-authentication.ts"
         properties {
             "architecture.id" "unleash.server.identity"
@@ -68,7 +61,6 @@ server = container "Unleash server" "Hosts OSS administration, configuration del
     }
 
     tokens = component "API-token management" "Creates and validates API tokens and caches their environment and project scopes." "TypeScript / Node.js" {
-        tags "UnleashCatalog"
         url "https://github.com/Unleash/unleash/blob/66d4a45c1d24c4bc8a08d8c75d205bd61dc3aed0/src/lib/services/api-token-service.ts"
         properties {
             "architecture.id" "unleash.server.tokens"
@@ -78,7 +70,6 @@ server = container "Unleash server" "Hosts OSS administration, configuration del
     }
 
     flags = component "Flags, projects and environments" "Manages flag state, variants, metadata and project/environment configuration." "TypeScript / Node.js" {
-        tags "UnleashCatalog"
         url "https://github.com/Unleash/unleash/tree/66d4a45c1d24c4bc8a08d8c75d205bd61dc3aed0/src/lib/features/feature-toggle"
         properties {
             "architecture.id" "unleash.server.flags"
@@ -88,7 +79,6 @@ server = container "Unleash server" "Hosts OSS administration, configuration del
     }
 
     targeting = component "Targeting configuration" "Manages strategy definitions, segments, context fields and constraints used by flag strategies." "TypeScript / Node.js" {
-        tags "UnleashCatalog"
         url "https://github.com/Unleash/unleash/blob/66d4a45c1d24c4bc8a08d8c75d205bd61dc3aed0/src/lib/services/strategy-service.ts"
         properties {
             "architecture.id" "unleash.server.targeting"
@@ -98,7 +88,6 @@ server = container "Unleash server" "Hosts OSS administration, configuration del
     }
 
     configuration = component "Configuration projection and cache" "Builds scoped client payloads; tracks revisions and caches frontend configuration in memory." "TypeScript / Node.js" {
-        tags "UnleashCatalog"
         url "https://github.com/Unleash/unleash/tree/66d4a45c1d24c4bc8a08d8c75d205bd61dc3aed0/src/lib/features/client-feature-toggles"
         properties {
             "architecture.id" "unleash.server.configuration"
@@ -108,7 +97,6 @@ server = container "Unleash server" "Hosts OSS administration, configuration del
     }
 
     evaluation = component "Frontend and playground evaluation" "Evaluates strategy and variant rules using embedded unleash-client and playground logic." "TypeScript / Node.js" {
-        tags "UnleashCatalog"
         url "https://github.com/Unleash/unleash/blob/66d4a45c1d24c4bc8a08d8c75d205bd61dc3aed0/src/lib/features/frontend-api/frontend-api-service.ts"
         properties {
             "architecture.id" "unleash.server.evaluation"
@@ -118,7 +106,6 @@ server = container "Unleash server" "Hosts OSS administration, configuration del
     }
 
     metrics = component "SDK registration and metrics" "Tracks applications and instances; buffers, aggregates and stores flag and variant usage." "TypeScript / Node.js" {
-        tags "UnleashCatalog"
         url "https://github.com/Unleash/unleash/tree/66d4a45c1d24c4bc8a08d8c75d205bd61dc3aed0/src/lib/features/metrics/instance"
         properties {
             "architecture.id" "unleash.server.metrics"
@@ -128,7 +115,6 @@ server = container "Unleash server" "Hosts OSS administration, configuration del
     }
 
     insights = component "Lifecycle and insights" "Updates flag lifecycle from metrics and audit events; supplies OSS usage and project health reports." "TypeScript / Node.js" {
-        tags "UnleashCatalog"
         url "https://github.com/Unleash/unleash/tree/66d4a45c1d24c4bc8a08d8c75d205bd61dc3aed0/src/lib/features/feature-lifecycle"
         properties {
             "architecture.id" "unleash.server.insights"
@@ -138,7 +124,6 @@ server = container "Unleash server" "Hosts OSS administration, configuration del
     }
 
     audit = component "Audit events and publication" "Stores audit history and publishes recorded events to in-process subscribers." "TypeScript / Node.js" {
-        tags "UnleashCatalog"
         url "https://github.com/Unleash/unleash/tree/66d4a45c1d24c4bc8a08d8c75d205bd61dc3aed0/src/lib/features/events"
         properties {
             "architecture.id" "unleash.server.audit"
@@ -148,7 +133,6 @@ server = container "Unleash server" "Hosts OSS administration, configuration del
     }
 
     importExport = component "Import and export" "Transfers flag configuration and validates references to existing segments and custom strategies." "TypeScript / Node.js" {
-        tags "UnleashCatalog"
         url "https://github.com/Unleash/unleash/tree/66d4a45c1d24c4bc8a08d8c75d205bd61dc3aed0/src/lib/features/export-import-toggles"
         properties {
             "architecture.id" "unleash.server.importExport"
@@ -158,7 +142,6 @@ server = container "Unleash server" "Hosts OSS administration, configuration del
     }
 
     addons = component "Add-ons and notifications" "Filters audit events for configured handlers and prepares notifications; recipients are outside this model." "TypeScript / Node.js" {
-        tags "UnleashCatalog"
         url "https://github.com/Unleash/unleash/blob/66d4a45c1d24c4bc8a08d8c75d205bd61dc3aed0/src/lib/services/addon-service.ts"
         properties {
             "architecture.id" "unleash.server.addons"
@@ -168,7 +151,6 @@ server = container "Unleash server" "Hosts OSS administration, configuration del
     }
 
     jobs = component "Settings and background jobs" "Loads settings and schedules cache refresh, event publication, aggregation and maintenance." "TypeScript / Node.js" {
-        tags "UnleashCatalog"
         url "https://github.com/Unleash/unleash/tree/66d4a45c1d24c4bc8a08d8c75d205bd61dc3aed0/src/lib/features/settings"
         properties {
             "architecture.id" "unleash.server.jobs"
@@ -178,7 +160,6 @@ server = container "Unleash server" "Hosts OSS administration, configuration del
     }
 
     health = component "Health and operational metrics" "Reports process/database readiness and gathers HTTP, database and scheduler measurements." "TypeScript / Node.js" {
-        tags "UnleashCatalog"
         url "https://github.com/Unleash/unleash/blob/66d4a45c1d24c4bc8a08d8c75d205bd61dc3aed0/src/lib/routes/health-check.ts"
         properties {
             "architecture.id" "unleash.server.health"
@@ -188,7 +169,6 @@ server = container "Unleash server" "Hosts OSS administration, configuration del
     }
 
     persistence = component "Persistence and migrations" "Groups Knex stores, read models, sessions and schema migration access to PostgreSQL." "TypeScript / Node.js" {
-        tags "UnleashCatalog"
         url "https://github.com/Unleash/unleash/tree/66d4a45c1d24c4bc8a08d8c75d205bd61dc3aed0/src/lib/db"
         properties {
             "architecture.id" "unleash.server.persistence"

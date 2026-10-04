@@ -1,5 +1,4 @@
 sandbox = container "Sandbox server" "Serves Sandbox browser assets and maps UI requests to a selected FireFly API." "Node.js / TypeScript" {
-    tags "Optional"
     url "https://github.com/hyperledger-firefly/sandbox/tree/ef7f240b8acf9c79c8fdf5a8bccb73e9de482069/server/src"
     properties {
         "architecture.id" "tools.sandbox"

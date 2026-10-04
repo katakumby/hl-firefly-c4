@@ -1,5 +1,4 @@
 cardanosigner = container "Cardano Signer" "Signs CBOR transaction bodies using separately stored Cardano keys." "Rust / Axum" {
-    tags "Optional"
     url "https://github.com/hyperledger-firefly/cardano/tree/0300bca6b0b99d2a16a81b94f65496934999346e/firefly-cardanosigner"
     properties {
         "architecture.id" "firefly.cardanosigner"

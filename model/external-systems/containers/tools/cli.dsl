@@ -1,5 +1,4 @@
 cli = container "FireFly CLI" "Creates local stacks and performs development administration." "Go / CLI" {
-    tags "Optional"
     url "https://github.com/hyperledger-firefly/cli/tree/9b868d3326ba4fbadd01c74a36c7e5a92a8c2609/README.md"
     properties {
         "architecture.id" "tools.cli"

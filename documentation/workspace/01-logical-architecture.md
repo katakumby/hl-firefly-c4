@@ -46,20 +46,17 @@ starter requiring CorDapp customization and a Core binding; it is not shown as
 an already registered Core blockchain plugin. EthConnect is the legacy EVM
 option. Alternative configurations are not requirements of the Besu example.
 
-Node fill identifies person/system/container/component; cylinders identify
-stores. Dashed grey boxes/relationships denote optional integrations. Gold
-identifies blockchain/contract responsibilities; purple and green distinguish
-private and shared data. Arrow labels and protocol metadata carry the meaning
-independently of color. Every view contains directed static relationships.
+Native node fill identifies person/system/container/component, with grey for
+explicit external dependencies and cylinders for data stores. `Planned` means a
+planned deployment and uses a dashed border; `Available` means confirmed deployed
+in at least one environment and uses a solid border. Untagged references make no
+deployment claim. All relationships use neutral grey; labels and protocol metadata
+carry their meaning. Optional capabilities remain documented in descriptions.
 Named group outlines organize related systems at the same C4 level; they do not
 assert common ownership, tenancy, trust, deployment or required co-installation.
 Besu's hosted contract responsibilities have a separate group from native client
-implementation components. See the [final review](05-final-review.md).
-Security arrow categories distinguish identity, directory, secret, key,
-privileged-session and administration data. Dashed reference-integration arrows
-identify proposed application examples; dashed logical-reference boxes identify
-inferred proprietary responsibility boundaries. Labels and evidence properties
-remain authoritative; see the security catalog legend.
+implementation components. Labels and evidence properties identify logical
+abstractions and proposed integrations; see the security catalog legend.
 
 The current validation result is in
 `build/.reports/workspace.dsl/validation.json`. The parsed

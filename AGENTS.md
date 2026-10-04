@@ -40,6 +40,11 @@ Find `<view-key>.puml` in the source-mirrored folder listed in `build/artifacts.
 [output reference](README.md#outputs-and-maintenance) for optional Mermaid,
 SVG/PNG, paths and freshness metadata. Routine text review needs no renderer.
 
+For filtered views, follow the README's
+[filtered-view export limitations](README.md#filtered-view-export-limitations).
+Inspect parsed JSON for filter membership and report missing C4 output explicitly;
+native image exports remain on demand under the review rules above.
+
 After tooling changes, validate all workspaces and run the containerized tests:
 
 ```text

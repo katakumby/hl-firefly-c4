@@ -1,5 +1,4 @@
 unleash = softwareSystem "Unleash" "Open-source feature management reference: Admin UI, server, PostgreSQL and optional OSS Edge. No consumer integrations are selected." {
-    tags "UnleashCatalog"
     url "https://github.com/Unleash/unleash/tree/66d4a45c1d24c4bc8a08d8c75d205bd61dc3aed0"
     !docs ../../../documentation/system/unleash
     properties {

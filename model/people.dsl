@@ -26,7 +26,6 @@ business = person "Business user" "Submits consortium business actions through a
 }
 
 securityAdmin = person "Security administrator" "Configures identity, privileged access, secret policies and key permissions in these reference examples." {
-    tags "SecurityCatalog"
     url "https://docs.cyberark.com/pam-self-hosted/latest/en/content/pas%20inst/installationoverview.htm"
     properties {
         "architecture.id" "securityAdmin"

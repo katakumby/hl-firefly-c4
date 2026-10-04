@@ -1,5 +1,4 @@
 sandboxUi = container "Sandbox browser application" "Runs the sample interface in the developer's browser and calls the Sandbox server." "React / TypeScript / browser" {
-    tags "Optional"
     url "https://github.com/hyperledger-firefly/sandbox/tree/ef7f240b8acf9c79c8fdf5a8bccb73e9de482069/ui/src"
     properties {
         "architecture.id" "tools.sandboxUi"

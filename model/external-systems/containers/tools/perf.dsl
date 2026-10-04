@@ -1,5 +1,4 @@
 perf = container "FireFly Performance CLI" "Generates workloads and reports timings against configured FireFly members." "Go" {
-    tags "Optional"
     url "https://github.com/hyperledger-firefly/perf-cli/tree/3d3ec0242b23b30fea41362eb60f0c190dfedde9/README.md"
     properties {
         "architecture.id" "tools.perf"

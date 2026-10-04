@@ -1,5 +1,4 @@
 node = container "Besu node" "Runs the selected validator or non-validator RPC/discovery role; each instance owns its key and ledger." "Java / Besu / RocksDB" {
-    tags "Blockchain"
     url "https://github.com/besu-eth/besu/tree/7e05c2342404d27bd06a992e336c5e0c86a5d8d1"
     properties {
         "architecture.id" "besu.node"
@@ -124,7 +123,6 @@ node = container "Besu node" "Runs the selected validator or non-validator RPC/d
         }
     }
     fireflycontract = component "FireFly multiparty contract" "Executes batch pinning and emits sequencing events." "Solidity / EVM" {
-        tags "Contract"
         group "Hosted application contracts"
         url "https://github.com/hyperledger-firefly/firefly/tree/9d20f3081c9074d5b012427e5572ebc03da8d95d/smart_contracts/ethereum/solidity_firefly/contracts/Firefly.sol"
         properties {
@@ -134,7 +132,6 @@ node = container "Besu node" "Runs the selected validator or non-validator RPC/d
         }
     }
     tokencontracts = component "Token contracts" "Executes ERC-20, ERC-721 and ERC-1155 application contracts; not a Besu implementation module." "Solidity / EVM" {
-        tags "Contract"
         group "Hosted application contracts"
         url "https://github.com/hyperledger-firefly/tokens-erc20-erc721/tree/7993b308284a396950587b5206370f7f254073d9/src/abi"
         properties {
@@ -144,7 +141,6 @@ node = container "Besu node" "Runs the selected validator or non-validator RPC/d
         }
     }
     businesscontracts = component "Application contracts" "Executes member-defined business rules; example extension." "Solidity / EVM" {
-        tags "Contract"
         group "Hosted application contracts"
         url "https://hyperledger-firefly.github.io/firefly/head/architecture/node_component_architecture/"
         properties {

@@ -12,11 +12,16 @@ Sources: [commands](https://docs.structurizr.com/commands),
 
 ## Choose the installed execution context
 
-Check repository configuration, pinned image/version, and existing scripts before
-choosing commands. Official docs now describe consolidated `local`, `server`,
-`export`, `validate`, and other commands; the old standalone CLI/Lite/on-premises
-products are listed as end of life. Do not prescribe `brew install structurizr-cli`
-or upgrade a working repository as part of a diagram edit.
+Check the target project's instructions, tool configuration, and existing scripts
+before choosing commands. If no project workflow exists, use the installed
+Structurizr launcher and identify its version and supported commands. Do not assume
+a container service, wrapper script, or output directory exists. If no suitable
+runtime is available, report what remains unverified.
+
+Official docs now describe consolidated `local`, `server`, `export`, `validate`,
+and other commands; the old standalone CLI/Lite/on-premises products are listed as
+end of life. Do not prescribe `brew install structurizr-cli` or upgrade a working
+toolchain as part of a diagram edit.
 
 The site's current release can be newer than the installed parser. Isolate an
 unfamiliar feature in a small temporary workspace and run the installed parser.
@@ -39,31 +44,6 @@ it. Local includes/assets, scripts/plugins, importers, and other dependencies ca
 make source non-portable. A JSON workspace containing diagrams does not prove the
 original source and all dependencies can be reconstructed elsewhere.
 
-## Repository workflow (hl-firefly-c4)
-
-Follow the current root `AGENTS.md` and `documentation/build.md`; these commands
-are this repository's wrapper contract, not universal Structurizr syntax:
-
-```sh
-docker compose run --rm --pull never tools validate
-docker compose run --rm --pull never tools export
-docker compose run --rm --pull never tools export --workspace workspaces/ignition/workspace.dsl
-docker compose run --rm --pull never tools export --workspace workspace.dsl --view 01-landscape
-```
-
-Use already-approved local images; normal commands must not pull/build them.
-Generated files are under ignored `build/`; locate the source-mirrored paths via
-`build/artifacts.json`. Plain wrapper `export` and `--format plantuml` generate
-**C4-PlantUML**. `--clean` is for explicitly rebuilding all managed output, not
-routine review. Tooling changes require all-workspace validation and containerized
-tests as specified in `AGENTS.md`; ordinary skill/docs edits are not toolchain changes.
-
-Regenerate every affected workspace/view before final review. Read the fresh
-`.puml` C4 macro definitions first, then relevant DSL for information the exporter
-omits. Do not render or open images unless explicitly asked (pipeline rendering
-checks are a separate task). If sources change during review, regenerate again.
-Treat failed validation/export as failed evidence: older files may still exist.
-
 ## Validation is layered
 
 1. Parse/validate: grammar, legal model relationships, view scope, references,
@@ -74,12 +54,17 @@ Treat failed validation/export as failed evidence: older files may still exist.
    scenario order, instance connectivity, and diagram selection.
 4. Check the target export: feature support and emitted contents.
 
-Outside this repository, use its installed launcher with official subcommands:
-`validate -workspace file.dsl`,
-`inspect -workspace file.dsl -severity error,warning`, and
-`export -workspace file.dsl -format json -output directory`.
-Do not confuse official single-dash options with this repository's double-dash
-wrapper options. Inspect's exit code reflects the number of reported violations;
+These are **official Structurizr subcommand arguments**, appended to the installed
+launcher; replace the example input and output paths for the task:
+
+```text
+validate -workspace file.dsl
+inspect -workspace file.dsl -severity error,warning
+export -workspace file.dsl -format json -output directory
+```
+
+Project wrappers may expose a different command interface; follow their documented
+options when present. Inspect's exit code reflects the number of reported violations;
 it is not necessarily a parse error. Read diagnostics before selecting a fix.
 
 Inspection severity is configurable with `structurizr.inspection.<type>` properties
@@ -88,9 +73,9 @@ existing policy. Do not globally suppress all inspections just to make a templat
 or changed workspace pass; explain a justified narrow exception when necessary.
 
 Use parsed JSON for view membership, deployment replication, filters, properties,
-perspectives, docs, and dynamic ordering that exports may omit. Do not edit that
-JSON as architecture source. For selection equivalence use the checks in
-[selections and relationships](selections-and-relationships.md).
+perspectives, docs, and dynamic ordering that exports may omit. For a DSL-authored
+model, make source corrections in DSL and regenerate the JSON. For selection
+equivalence use the checks in [selections and relationships](selections-and-relationships.md).
 
 ## Export differences that change decisions
 
@@ -101,7 +86,7 @@ JSON as architecture source. For selection equivalence use the checks in
 | `mermaid` | Different shape/style/layout capabilities; dynamic collaboration/sequence options |
 | `websequencediagrams` | Dynamic views |
 | `static` | Static HTML workspace presentation |
-| `png`, `svg` | Structurizr browser renderer in official tooling; repository wrapper may use a different pipeline |
+| `png`, `svg` | Structurizr browser renderer in official tooling |
 | `json`, `theme` | Compiled workspace or reusable style theme |
 | Fully qualified exporter class | Requires a compatible installed custom exporter |
 
@@ -109,10 +94,10 @@ Do not promise identical rendering across formats. Filtered/image/custom views,
 icons, perspectives, animations, and styling require checking the selected
 exporter's support. The output inventory matters as much as a successful exit.
 
-Verified on `2026.06.28`: native C4 export omits filtered views, causing this
-repository's all-views wrapper export to fail its completeness check. Export the
-supported keys with `--view` and inspect filtered-view JSON, while reporting the
-missing export; see [views](views.md) for an equivalent-view alternative.
+Verified on `2026.06.28`: native C4 export omits filtered views while returning
+success. Inspect filtered-view JSON and report the missing diagram export;
+see [views](views.md) for an equivalent-view alternative or use a verified
+supporting format. Recheck support on the target version.
 
 [C4-PlantUML options](https://docs.structurizr.com/export/c4plantuml) include
 `c4plantuml.tags` (default false), `c4plantuml.legend` (true),

@@ -1,5 +1,4 @@
 dx = container "HTTPS Data Exchange" "Exchanges private envelopes and blobs with authenticated members." "TypeScript / Node.js" {
-    tags "Private"
     url "https://github.com/hyperledger-firefly/dataexchange-https/tree/b6a212d531da1ff1c24e762e7156e2593c73d052/src"
     properties {
         "architecture.id" "firefly.dx"

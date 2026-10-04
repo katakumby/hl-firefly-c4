@@ -1,5 +1,5 @@
 database = container "Keycloak database" "Persists realm configuration, users, credentials and persistent session state." "PostgreSQL (reference choice)" {
-    tags "SecurityCatalog,Database"
+    tags "Database"
     url "https://www.keycloak.org/server/db"
     properties {
         "architecture.id" "keycloak.database"

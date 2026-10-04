@@ -66,18 +66,16 @@ identity manager or its unfinished identity extension.
 | Convention | Meaning |
 |---|---|
 | Standard C4 fills | Person, software system, container or component |
-| Cylinder | Logical data store; not necessarily a database server |
-| Dashed blue-grey border, `LogicalReference` | Inferred logical responsibility or proprietary boundary |
-| Dashed ochre border/arrow, `ReferenceIntegration` | Proposed or configurable application example |
-| Blue `IdentityFlow` | Authentication proof, claims, token or identity metadata |
-| Green `DirectoryFlow` | Directory objects, attributes, configuration or synchronization |
-| Purple `SecretFlow` | Secret access, authorized values or synchronized credentials |
-| Gold `KeyFlow` | Key identifiers, cryptographic inputs, signatures or wrapped keys |
-| Red `PrivilegedFlow` | Privileged-account operations, sessions or recordings |
-| Grey `SecurityAdminFlow` | Security configuration and administration |
+| Grey fill, `External` | Explicit external integration/ownership boundary |
+| Cylinder, `Database` | Logical data store; not necessarily a database server |
+| Dashed border, `Planned` | Planned deployment, including the custom HSM adapter |
+| Solid border, `Available` | Confirmed deployment in at least one environment |
+| No status tag | Deployment status has not been confirmed |
+| Neutral grey arrow | Its label and protocol describe the interaction |
 
-Reference-integration styling takes precedence over arrow category color.
-Arrow labels and protocol metadata carry meaning without relying on color.
+Descriptions and evidence properties identify inferred proprietary responsibilities
+and configurable integration examples. Identity, directory, secret, key,
+privileged-session and administration flows are distinguished by their labels.
 Reverse arrows name meaningful returned data, not an unlabeled bidirectional
 dependency. Protocol labels marked logical do not assert undocumented wire formats.
 

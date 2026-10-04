@@ -19,9 +19,11 @@ remain local to this initiative. The reference catalog is not a mandatory stack.
 | `blockchain-foundation-04-keys` | Three signing gateway replicas across the AZs; separate validator and transaction keys, identity and recovery material |
 | `blockchain-foundation-05-az-outage` | AZ1 outage: four validators remain and the member recovers in AZ2 |
 
-The native diagram key explains colors and line styles. Orange dashed boxes mark
-unresolved qualification gates. Gray dashed boxes are standby/recovery resources;
-their labels distinguish running standbys from reserved scheduling capacity.
+The native diagram key explains the shared C4 colours and shapes. Deployment
+placements in this proposal carry `Planned` and use dashed borders; their labels
+identify qualification gates, failed resources, running standbys and reserved
+recovery capacity. Official Azure service icons are embedded locally for offline
+native exports and the web UI. They do not change the shared colours or shapes.
 
 View 03 represents the three transaction signing gateways with one **Transaction
 signing service** summary box; view 04 shows their individual AZ placements.
@@ -50,7 +52,8 @@ Add `--format svg` or `--format png` when image exports are needed.
 ## Design and implementation plan
 
 `workspace.dsl` extends the root model and assembles local `model.dsl`,
-`deployment.dsl`, `failure.dsl`, `styles.dsl` and `views/main.dsl` fragments.
+`deployment.dsl`, `failure.dsl` and `views/main.dsl` fragments, plus the shared
+`styles/themes/microsoft-azure-2024.07.15/icons.json` theme.
 Keep deployment and failure definitions here until reviewed promotion; shared
 product definitions stay in `model/external-systems/`. The `docs/` directory holds
 the design below, and `uml/` is reserved for standalone local behavioral/code diagrams.

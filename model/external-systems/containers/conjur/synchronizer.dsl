@@ -1,5 +1,4 @@
 synchronizer = container "Vault Synchronizer" "Reads selected PAM Vault accounts and synchronizes their secret values into Conjur Enterprise." "CyberArk Vault Synchronizer" {
-    tags "SecurityCatalog"
     url "https://docs.cyberark.com/secrets-manager-sh/latest/en/content/conjur/cv_synchronizer-lp.htm"
     properties {
         "architecture.id" "conjur.synchronizer"
@@ -7,7 +6,6 @@ synchronizer = container "Vault Synchronizer" "Reads selected PAM Vault accounts
         "architecture.sources" "[\"https://docs.cyberark.com/secrets-manager-sh/latest/en/content/conjur/cv_synchronizer-lp.htm\"]"
     }
     reader = component "Vault account reader" "Logical reference: Reads selected Vault accounts and changed credentials." "Synchronizer responsibility / proprietary implementation" {
-        tags "SecurityCatalog,LogicalReference"
         url "https://docs.cyberark.com/secrets-manager-sh/latest/en/content/conjur/cv_synchronizer-lp.htm"
         properties {
             "architecture.id" "conjur.synchronizer.reader"
@@ -16,7 +14,6 @@ synchronizer = container "Vault Synchronizer" "Reads selected PAM Vault accounts
         }
     }
     mapping = component "Account-to-variable mapping" "Logical reference: Maps selected Vault account metadata to Conjur variable identifiers." "Synchronizer responsibility / proprietary implementation" {
-        tags "SecurityCatalog,LogicalReference"
         url "https://docs.cyberark.com/secrets-manager-sh/latest/en/content/conjur/cv_synchronizer-lp.htm"
         properties {
             "architecture.id" "conjur.synchronizer.mapping"
@@ -25,7 +22,6 @@ synchronizer = container "Vault Synchronizer" "Reads selected PAM Vault accounts
         }
     }
     writer = component "Conjur update client" "Logical reference: Authenticates to Conjur and writes synchronized secret values." "Synchronizer responsibility / proprietary implementation" {
-        tags "SecurityCatalog,LogicalReference"
         url "https://docs.cyberark.com/secrets-manager-sh/latest/en/content/conjur/cv_synchronizer-lp.htm"
         properties {
             "architecture.id" "conjur.synchronizer.writer"

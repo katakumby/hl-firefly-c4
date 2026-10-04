@@ -4,13 +4,14 @@ Audit date: **2026-10-04**. These references synthesize the official DSL languag
 reference, its companion guides, cookbook, pattern catalog, and the relevant
 workspace/parser/validation/export documentation. They are task guidance, not a
 vendored manual or a guarantee about future releases. The official documentation
-is authoritative for new features; the configured runtime establishes what this
-repository can execute. Check only the relevant sources for ordinary work.
+is authoritative for new features; the target runtime establishes what can
+execute. Check only the relevant sources for ordinary work.
 
-At audit time the website advertised binaries `2026.09.19`. This repository's
-`.env` and tested Compose runtime were `2026.06.28` (Structurizr libraries `6.2.2`).
-Re-read the pin/runtime rather than treating these numbers as permanent requirements.
-Templates should not require an upgrade.
+At audit time the website advertised binaries `2026.09.19`. Compatibility fixtures
+were tested with Structurizr `2026.06.28` (Structurizr libraries `6.2.2`). These
+versions describe the audit evidence, not required versions for using this skill.
+Check the target runtime before applying version-specific findings. Templates
+should not require an upgrade.
 
 ## Coverage by language family
 

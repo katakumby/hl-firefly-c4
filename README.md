@@ -60,14 +60,17 @@ The repository root is the architecture workspace; there is no enclosing
 ├── templates/initiative/         # Starter files ending in .template
 ├── scripts/                      # Validation, export, rendering, publication and CI packaging
 ├── docker/
-│   ├── Dockerfile                # Complete tools image
+│   ├── Dockerfile                # Independent light and browser image targets
 │   ├── .dockerignore             # Image-build context allowlist
 │   ├── compose.maintenance.yaml  # Explicit image-construction override
 │   ├── run.sh                    # Optional plain-Docker launcher
 │   └── renderers/                # Pinned dependencies, npm lockfile and browser setup
 ├── tests/                        # Containerized tooling regression tests
-├── ci/examples/                  # GitHub Actions and Azure DevOps examples and setup guide
-├── compose.yaml                  # Viewer services and image-only tools service
+├── ci/
+│   ├── examples/                 # GitHub Actions and Azure DevOps examples and setup guide
+│   ├── select-light-run.cjs      # GitHub lookup of a matching lightweight artifact
+│   └── select-azure-light-run.cjs # Azure lookup of a matching lightweight artifact
+├── compose.yaml                  # Viewer services and two image-only tools services
 ├── .env                          # Committed toolchain version pins; no secrets
 ├── .gitignore                    # Generated outputs and cache exclusions
 ├── AGENTS.md                     # Validation and final-review instructions
@@ -149,7 +152,7 @@ and [`inspect -severity error,warning`](https://docs.structurizr.com/inspect).
 
 **There are no custom architecture validation rules.** The standalone `validate`
 command is a strict quality check: native inspection errors and warnings fail it.
-`build` and `export` report those findings and continue generating diagrams.
+Build stages and exports report those findings and continue generating diagrams.
 DSL parsing, native model validation, inspector execution failures and rendering
 errors still block generation. Teams control inspection severity using Structurizr's
 [`structurizr.inspection.*` properties](https://docs.structurizr.com/workspaces/inspections);
@@ -214,6 +217,11 @@ Consumers rendering its HTML labels need `"securityLevel": "loose"`. Routine
 reviews read exported text directly. C4 SVG/PNG exports render the same
 C4-PlantUML definitions; their layout can differ from the native Structurizr viewer.
 
+The pinned C4 exporter does not support Structurizr `filtered` views. An ordinary
+C4 export or lightweight build containing them fails before rendering and lists
+their keys. Select supported diagrams with `--view`, or use `tools-browser
+export-native` for filtered views with native layout. No views are silently omitted.
+
 A successful export updates the canonical files for its requested workspace,
 selection and format. Other diagrams and formats retain their files and freshness metadata.
 The command reports the file count; `build/artifacts.json` lists the exact output paths. See
@@ -225,8 +233,8 @@ To refresh C4-PlantUML text for every discovered workspace:
 docker compose run --rm --pull never tools export --all-workspaces
 ```
 
-Use [`build`](#build-all-diagrams) to regenerate all diagrams, including images
-and authored UML. For an intentional reset, add `--clean` to the **first export
+Use the [two-stage build](#build-all-diagrams) to regenerate all ordinary diagrams,
+including images and authored UML. For an intentional reset, add `--clean` to the **first export
 only**. This removes all inventory-managed diagram formats and reports before validation;
 the exports above then restore C4-PlantUML text only.
 It preserves captured manual layouts in `build/.layouts/`, `local.env`, the writer
@@ -306,10 +314,12 @@ records Mermaid sources and expected image paths as deferred. Mermaid syntax is
 checked when the browser stage renders it. Existing Mermaid images retain their
 previous freshness metadata until browser completion.
 
-`build-browser` verifies the light report, current source fingerprint, required
-artifact/report hashes and CI commit when provided. It renders only Mermaid:
+`build-browser` verifies the light report, current source fingerprint, installed
+toolchain compatibility, required artifact/report hashes and CI commit when provided.
+It renders only Mermaid:
 it does not reparse DSL or repeat C4/PlantUML generation. Missing or stale handoffs
-fail with instructions to run the light stage first. Each stage renders offline
+fail before rendering. For incompatible installed tools, reacquire approved images
+under the same image names and rerun the light stage. Each stage renders offline
 and publishes its own selection atomically. Native images and GIFs remain explicit
 `export-native` operations; neither ordinary stage invokes them.
 Inspection errors and warnings are printed during the build and recorded in each
@@ -439,7 +449,10 @@ build/
 ├── workspaces/<epic-id>/          # Local/inherited C4 files and local UML images
 ├── .reports/
 │   ├── workspace.dsl/            # Reports and parsed JSON for the shared workspace
-│   └── workspaces/<epic-id>/workspace.dsl/  # Reports for each workstream
+│   ├── workspaces/<epic-id>/workspace.dsl/  # Reports for each workstream
+│   ├── build-light.{json,log}    # Lightweight handoff status and diagnostics
+│   ├── build-browser.{json,log}  # Browser completion status and diagnostics
+│   └── light/<workspace-entrypoint>/     # Frozen validation evidence for handoffs
 ├── .layouts/<workspace-entrypoint>/  # Captured manual layouts; preserved by --clean
 ├── artifacts.json                # Inventory of managed files and per-format freshness
 ├── build.json                    # Latest stage attempt, completion state and findings
@@ -467,9 +480,12 @@ and removes recognized outputs from the previous `build/c4/` layout. Unrelated
 historical files and local settings remain untouched. Empty generated folders
 are removed. Build twice without source changes to get the same output path set.
 
-Freshness scans architecture sources, documentation and tooling. Generated output,
-Git metadata, agent configuration and caches are excluded. Native Structurizr
-viewers write ignored `workspace.json` and `.structurizr/` caches beside DSL.
+Freshness scans architecture sources, documentation and tooling, including accepted
+inputs in hidden folders and local include fragments. Generated output, Git metadata,
+agent configuration and known caches are excluded; a leading dot alone does not
+exclude an authoring input. Native Structurizr viewers write ignored `workspace.json`
+and `.structurizr/` caches beside DSL.
+Local includes must stay inside the checkout and outside those excluded directories.
 DSL remains the source of truth.
 
 Tooling lives in [scripts](scripts), with containerized tests in [tests](tests):
@@ -484,9 +500,10 @@ docker compose run --rm --pull never --entrypoint python3 tools-browser -B -m un
 See the [corporate Docker guide](documentation/build.md) for approved image
 acquisition, offline image archives, plain Docker commands, permissions and
 explicit platform-team image maintenance. See [CI examples](ci/examples/README.md)
-for GitHub Actions and Azure DevOps Services pipelines. Both run tests and the
-complete offline build and publish only allowlisted artifacts; failure uploads
-contain diagnostics, not a stale diagram set.
+for GitHub Actions and Azure DevOps Services pipelines. Push/PR jobs test and build
+the lightweight outputs. Scheduled or manual browser jobs reuse an available
+lightweight artifact for the exact commit and complete Mermaid rendering. Both
+publish only allowlisted artifacts; failed jobs upload diagnostics only.
 
 ## Contributing an initiative
 

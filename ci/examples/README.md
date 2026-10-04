@@ -17,7 +17,8 @@ Upstream bases, libraries and package versions remain pinned inside the toolchai
 Each job acquires only its selected image. Preloaded images are the default; an
 explicit acquisition option enables registry authentication and pulling. Generation
 and regression containers always have networking disabled. Provider artifact/API
-access and explicit image acquisition use runner networking.
+access and explicit image acquisition use separate network-enabled steps; the
+Azure lookup step uses Node already installed in the browser image.
 
 Push/PR runs execute the lightweight suite and `build`, then publish
 `architecture-light`. This includes C4-PlantUML, C4/authored PlantUML SVG/PNG and the
@@ -74,18 +75,28 @@ Create a pipeline from [azure-pipelines.yaml](azure-pipelines.yaml). Configure
 Docker login/logout tasks use that provider-managed connection.
 
 Successful light runs publish `architecture-light` and receive the CI build tag
-`architecture-light-<commit>`. Browser runs use `DownloadPipelineArtifact@2` to
-select a successful tagged build on the same branch and pipeline; failed/partial
-builds are excluded. The container verifies the source revision and fingerprints
-after download. An unavailable artifact fails without fallback. These are CI build
-tags, not Docker image tags. Keep artifact retention with its successful run and
-configure a minimum 30-day retention target in project/pipeline policy.
+`architecture-light-<commit>`. Browser runs first execute the repository's Azure
+REST lookup with the browser image's Node runtime in a separate, explicitly
+network-enabled container. `SYSTEM_ACCESSTOKEN` supplies the pipeline identity;
+it is used only for that lookup and is not passed to diagram generation.
+
+The lookup selects the newest successful tagged build on the same pipeline,
+branch and exact commit that still has an available `architecture-light` artifact.
+Failed/partial builds and unavailable artifacts are skipped. `DownloadPipelineArtifact@2`
+then downloads from that specific build; the offline container independently
+verifies revision, source fingerprints, installed toolchain compatibility and
+output hashes. If no matching artifact exists, run light for the same commit
+first. These are CI build tags, not Docker image tags. Keep artifact retention
+with its successful run and configure a minimum 30-day retention target in
+project/pipeline policy.
 
 Azure Repos PR validation needs a branch build-validation policy; YAML `pr` applies
 to supported external providers. The schedule uses `always: true` so a browser run
 can complete existing lightweight artifacts even when no code changed. Set the
 scheduled branch explicitly if it differs from `main`. Pipeline identity permissions
-must permit reading prior pipeline artifacts.
+must permit reading prior builds and pipeline artifacts through the REST API and
+download task. The lookup container needs approved access to the Azure DevOps
+service and its TLS trust configuration; generation still uses disabled networking.
 
 ## Packaging, local verification and server editions
 

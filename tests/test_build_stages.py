@@ -97,11 +97,12 @@ class Stages(unittest.TestCase):
                     cli.build_browser()
             report = cli.BUILD / '.reports/build-light.json'
             original = report.read_bytes()
-            for mutation in ('failed', 'version', 'toolchain', 'deferred', 'shape', 'reports'):
+            for mutation in ('failed', 'version', 'toolchain', 'renderers', 'deferred', 'shape', 'reports'):
                 data = json.loads(original)
                 if mutation == 'failed': data['passed'] = False
                 if mutation == 'version': data['handoff_version'] = 99
                 if mutation == 'toolchain': data['toolchain'] = {}
+                if mutation == 'renderers': data['renderers'] = {}
                 if mutation == 'deferred': data['deferred'] = []
                 if mutation == 'shape': data.pop('deferred')
                 if mutation == 'reports': data.pop('reports')

@@ -64,8 +64,8 @@ docker compose run --rm --pull never tools validate --workspace workspaces/ignit
 docker compose run --rm --pull never tools export --workspace workspaces/ignition/workspace.dsl
 ```
 
-`validate` is strict; `export` and the full `build` report inspection findings
-without blocking diagram generation. The Example System currently has incomplete
+`validate` is strict; exports and both [build stages](../../README.md#build-all-diagrams)
+report inspection findings without blocking diagram generation. The Example System currently has incomplete
 technology metadata and coverage/connectivity findings. Reports are under
 `build/.reports/workspaces/ignition/workspace.dsl/`. The DApp context exports into
 `build/workspaces/ignition/views/`; the inline example views export directly into

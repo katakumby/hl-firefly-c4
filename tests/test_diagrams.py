@@ -185,6 +185,9 @@ class RootAndIsolation(unittest.TestCase):
             (parent / '.env').write_text('UNRELATED=1')
             shutil.copytree(cli.ROOT / 'scripts', root / 'scripts')
             shutil.copy(cli.ROOT / '.env', root / '.env')
+            (root / 'docker/renderers').mkdir(parents=True)
+            for name in ('package.json', 'package-lock.json'):
+                shutil.copy(cli.ROOT / 'docker/renderers' / name, root / 'docker/renderers' / name)
             (root / 'workspace.dsl').write_text(BASE)
             result = subprocess.run([sys.executable, '-B', str(root / 'scripts/architecture.py'),
                                      'validate', '--workspace', 'workspace.dsl'], cwd=parent,

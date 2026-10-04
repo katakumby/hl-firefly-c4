@@ -149,7 +149,23 @@ These UML sequences use [Mermaid sequence syntax](https://mermaid.js.org/syntax/
 
 Edit the standalone `system-sequence.mmd` and `container-sequence.mmd` sources in each numbered use-case directory. Each accompanying README links to its sources and generated previews; this index contains no diagram definitions. Keep system views at software-system level and detailed participants at container level; add the canonical model ID whenever a participant changes. Every arrow must retain its technology label.
 
-For a diagram change, follow the [repository review workflow](../../../AGENTS.md): regenerate and read C4-PlantUML for affected workspace views first, then check relevant DSL and the standalone Mermaid sources here. Check relative links and API/source references, and verify paired views describe the same outcome. Run `docker compose run --rm --pull never tools build` to render SVG and PNG previews under `build/uml/use-cases/firefly-besu/`. Open images for visual review only when explicitly requested. These handwritten UML sequences remain separate from generated C4 definitions; their Markdown previews require a successful build.
+Follow the [repository review workflow](../../../AGENTS.md) for affected C4 views,
+then check these Mermaid sources, relative links and API/source references. Verify
+that paired sequence diagrams describe the same outcome.
+
+Generate a matching lightweight result, then complete Mermaid SVG and PNG previews
+under `build/uml/use-cases/firefly-besu/`:
+
+```text
+docker compose run --rm --pull never tools build
+docker compose run --rm --pull never tools-browser build-browser
+```
+
+Open images for visual review only when explicitly requested. These handwritten
+UML sequences remain separate from generated C4 definitions; their Markdown
+previews require successful browser completion. See the
+[build guide](../../../documentation/build.md#lightweight-handoffs-and-completion)
+for artifact reuse and freshness checks.
 
 
 ### Validation completed 2026-09-19

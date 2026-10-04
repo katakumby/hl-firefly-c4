@@ -1,11 +1,16 @@
 """Offline renderers. Sources stay read-only; each source produces one image."""
+from copy import deepcopy
+from functools import lru_cache
+import hashlib
 import json
 from pathlib import Path
+import re
 import struct
 import subprocess
 import xml.etree.ElementTree as ET
 
 RENDERERS = Path('/opt/renderers')
+RENDERER_SOURCES = Path(__file__).resolve().parents[1] / 'docker/renderers'
 
 
 def check_gif(path):
@@ -56,8 +61,79 @@ def check_gif(path):
     raise ValueError(f'Truncated GIF: {path}')
 
 
+def toolchain_error(reason, profile=None):
+    service = 'tools-browser' if profile == 'browser' else 'tools' if profile == 'light' else 'tools/tools-browser'
+    return ValueError(f'{reason}. Acquire an approved {service} image matching this checkout, '
+                      'or ask the platform team to rebuild it with docker/compose.maintenance.yaml.')
+
+
+@lru_cache(maxsize=2)
+def _renderer_versions(path):
+    try:
+        versions = json.loads(path.read_text())
+        if not isinstance(versions, dict):
+            raise ValueError('Expected an object')
+        return versions
+    except (OSError, ValueError) as exc:
+        raise toolchain_error(f'Missing or invalid installed toolchain metadata: {path}') from exc
+
+
 def renderer_versions():
-    return json.loads((RENDERERS / 'versions.json').read_text())
+    # The image filesystem is immutable. Copies keep callers from changing the cache.
+    return deepcopy(_renderer_versions(RENDERERS / 'versions.json'))
+
+
+def _check_metadata(versions):
+    profile = versions.get('profile') if isinstance(versions, dict) else None
+    common = ('structurizr_version', 'structurizr_sha256', 'java', 'python',
+              'plantuml_version', 'plantuml_sha256', 'os_packages')
+    browser = ('node', 'chromium', 'npm_lock_sha256', '@mermaid-js/mermaid-cli', 'mermaid', 'puppeteer')
+    if (not isinstance(versions, dict) or versions.get('metadata_version') != 1
+            or profile not in ('light', 'browser')
+            or any(not isinstance(versions.get(key), str) or not versions[key]
+                   for key in common + (browser if profile == 'browser' else ()))):
+        raise toolchain_error('Missing or incompatible installed toolchain identity metadata', profile)
+    capabilities = versions.get('capabilities')
+    required = ['structurizr', 'plantuml'] + (['mermaid', 'native'] if profile == 'browser' else [])
+    if not isinstance(capabilities, list) or any(item not in capabilities for item in required):
+        raise toolchain_error('Missing installed toolchain capabilities', profile)
+    for key in ('structurizr_sha256', 'plantuml_sha256') + (('npm_lock_sha256',) if profile == 'browser' else ()):
+        if not re.fullmatch(r'[0-9a-f]{64}', versions[key]):
+            raise toolchain_error(f'Invalid installed toolchain checksum: {key}', profile)
+
+
+def check_toolchain(pins, handoff_versions=None):
+    """Verify installed identities against checkout pins and an optional handoff.
+
+    Both approved profiles must agree on shared renderer versions. Their upstream
+    WAR packaging and Java runtimes may differ; compare those only within a profile.
+    """
+    installed = renderer_versions()
+    _check_metadata(installed)
+    expected = {'structurizr_version': pins.get('STRUCTURIZR_VERSION'),
+                'plantuml_version': pins.get('PLANTUML_VERSION')}
+    if installed['profile'] == 'browser':
+        expected['node'] = 'v' + pins.get('NODE_VERSION', '')
+        try:
+            dependencies = json.loads((RENDERER_SOURCES / 'package.json').read_text())['dependencies']
+            expected.update({name: dependencies[name] for name in ('@mermaid-js/mermaid-cli', 'mermaid', 'puppeteer')})
+            expected['npm_lock_sha256'] = hashlib.sha256((RENDERER_SOURCES / 'package-lock.json').read_bytes()).hexdigest()
+        except (OSError, ValueError, KeyError, TypeError) as exc:
+            raise toolchain_error('Missing or invalid checkout renderer dependency pins', installed['profile']) from exc
+    mismatches = [key for key, value in expected.items() if installed.get(key) != value]
+    if mismatches:
+        raise toolchain_error('Installed toolchain does not match checkout pins: ' + ', '.join(mismatches), installed['profile'])
+    if handoff_versions is not None:
+        _check_metadata(handoff_versions)
+        shared = ('structurizr_version', 'plantuml_version', 'plantuml_sha256', 'os_packages')
+        if installed['profile'] == handoff_versions['profile']:
+            shared += ('structurizr_sha256', 'java', 'python')
+            if installed['profile'] == 'browser':
+                shared += ('node', 'chromium', 'npm_lock_sha256', '@mermaid-js/mermaid-cli', 'mermaid', 'puppeteer')
+        mismatches = [key for key in shared if installed[key] != handoff_versions[key]]
+        if mismatches:
+            raise toolchain_error('Recorded build has an incompatible toolchain: ' + ', '.join(mismatches), installed['profile'])
+    return installed
 
 
 def has_capability(name):

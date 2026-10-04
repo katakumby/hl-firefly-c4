@@ -305,19 +305,15 @@ class FailureHandling(unittest.TestCase):
             self.assertEqual('Authored DSL', paths.REFERENCE.read_text())
 
     def test_native_viewer_outputs_do_not_change_source_fingerprint(self):
-        with tempfile.TemporaryDirectory() as temporary:
-            root = Path(temporary)
-            architecture = root
-            (root / 'README.md').write_text('Fixture')
-            (architecture / 'workspace.dsl').write_text('Authored DSL')
-            with patch.object(cli, 'ROOT', root):
-                before = cli.source_fingerprint()
-                (architecture / 'workspace.json').write_text('Native viewer cache')
-                (architecture / '.structurizr').mkdir()
-                (architecture / '.structurizr/structurizr.log').write_text('Native viewer log')
-                self.assertEqual(before, cli.source_fingerprint())
-                (architecture / 'workspace.dsl').write_text('Changed DSL')
-                self.assertNotEqual(before, cli.source_fingerprint())
+        with checkout() as root:
+            (root / 'workspace.dsl').write_text('Authored DSL')
+            before = cli.source_fingerprint()
+            (root / 'workspace.json').write_text('Native viewer cache')
+            (root / '.structurizr').mkdir()
+            (root / '.structurizr/structurizr.log').write_text('Native viewer log')
+            self.assertEqual(before, cli.source_fingerprint())
+            (root / 'workspace.dsl').write_text('Changed DSL')
+            self.assertNotEqual(before, cli.source_fingerprint())
 
     def test_native_validation_failure_prevents_publication(self):
         run_native = cli.run_java
@@ -339,8 +335,11 @@ class FailureHandling(unittest.TestCase):
             self.assertEqual('previous-success', (destination / 'workspace.json').read_text())
 
     def test_command_lock_blocks_a_second_process(self):
-        with cli.command_lock():
-            command = [sys.executable, '-B', '-c', "from architecture import command_lock;\nwith command_lock(): print('unexpected')"]
+        with checkout(), cli.command_lock():
+            command = [sys.executable, '-B', '-c',
+                       "import sys; from pathlib import Path; import architecture; "
+                       "architecture.BUILD = Path(sys.argv[1]);\n"
+                       "with architecture.command_lock(): print('unexpected')", str(cli.BUILD)]
             result = subprocess.run(command, cwd=ROOT / 'scripts', capture_output=True, text=True)
             self.assertNotEqual(0, result.returncode)
             self.assertIn('Another architecture command', result.stderr)

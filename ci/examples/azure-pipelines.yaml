@@ -63,6 +63,26 @@ steps:
       ACQUIRE_IMAGE: ${{ parameters.acquireImage }}
       ARCHITECTURE_TOOLS_IMAGE: $(ARCHITECTURE_TOOLS_IMAGE)
       ARCHITECTURE_BROWSER_IMAGE: $(ARCHITECTURE_BROWSER_IMAGE)
+  - bash: |
+      set -euo pipefail
+      # Provider lookup has network access; no diagram generation runs in this step.
+      docker run --rm --pull never --network bridge --read-only --init \
+        --user "$(id -u):$(id -g)" --cap-drop ALL --security-opt no-new-privileges:true \
+        --env AZURE_COLLECTION_URI --env AZURE_PROJECT_ID --env AZURE_DEFINITION_ID \
+        --env ARCHITECTURE_SOURCE_REVISION --env AZURE_SOURCE_BRANCH --env SYSTEM_ACCESSTOKEN \
+        --mount "type=bind,src=$PWD/ci,dst=/ci,readonly" \
+        --entrypoint node "$ARCHITECTURE_BROWSER_IMAGE" /ci/select-azure-light-run.cjs
+    displayName: Find newest available lightweight artifact for this commit
+    condition: and(succeeded(), eq(variables['architectureStage'], 'browser'))
+    workingDirectory: $(Pipeline.Workspace)/s/architecture
+    env:
+      ARCHITECTURE_BROWSER_IMAGE: $(ARCHITECTURE_BROWSER_IMAGE)
+      AZURE_COLLECTION_URI: $(System.CollectionUri)
+      AZURE_PROJECT_ID: $(System.TeamProjectId)
+      AZURE_DEFINITION_ID: $(System.DefinitionId)
+      ARCHITECTURE_SOURCE_REVISION: $(Build.SourceVersion)
+      AZURE_SOURCE_BRANCH: $(Build.SourceBranch)
+      SYSTEM_ACCESSTOKEN: $(System.AccessToken)
   - task: DownloadPipelineArtifact@2
     displayName: Download prior successful light artifact for this commit (run light first if missing)
     condition: and(succeeded(), eq(variables['architectureStage'], 'browser'))
@@ -70,9 +90,8 @@ steps:
       buildType: specific
       project: $(System.TeamProjectId)
       definition: $(System.DefinitionId)
-      buildVersionToDownload: latestFromBranch
-      branchName: $(Build.SourceBranch)
-      tags: architecture-light-$(Build.SourceVersion)
+      buildVersionToDownload: specific
+      pipelineId: $(architectureLightBuildId)
       allowPartiallySucceededBuilds: false
       allowFailedBuilds: false
       artifactName: architecture-light

@@ -32,7 +32,21 @@ docker login registry.example.com
 docker pull "$ARCHITECTURE_TOOLS_IMAGE"
 docker pull "$ARCHITECTURE_BROWSER_IMAGE"
 docker image inspect "$ARCHITECTURE_TOOLS_IMAGE"
+docker image inspect "$ARCHITECTURE_BROWSER_IMAGE"
 ```
+
+If you also use the interactive viewers, acquire the platform team's approved
+Structurizr viewer image separately and export its reference for Compose:
+
+```sh
+export ARCHITECTURE_VIEWER_IMAGE='registry.example.com/architecture/structurizr-viewer'
+docker pull "$ARCHITECTURE_VIEWER_IMAGE"
+docker image inspect "$ARCHITECTURE_VIEWER_IMAGE"
+```
+
+Without this override, Compose uses the upstream `structurizr/structurizr` image
+with the committed `STRUCTURIZR_VERSION` and `-noble` suffix. The approved mirror
+must supply that pinned viewer version. Viewers are optional for build/export jobs.
 
 The names above are placeholders, not published project images. Supply credentials
 through Docker's approved credential store or CI secrets/service connections.
@@ -48,7 +62,15 @@ docker image save --output architecture-images.tar "$ARCHITECTURE_TOOLS_IMAGE" "
 docker image load --input architecture-images.tar
 ```
 
-Archive loading retains both image names; set image variables to those names.
+For offline viewing, transfer its image too:
+
+```sh
+docker image save --output architecture-viewer.tar "$ARCHITECTURE_VIEWER_IMAGE"
+docker image load --input architecture-viewer.tar
+```
+
+Archive loading retains the recorded image names; set the corresponding variables
+to those names on the receiving workstation.
 The team should supply and verify archive checksums through its trusted channel.
 Image acquisition requires registry/archive access; generation subsequently runs
 with `--network none`. Public dependencies are never downloaded at runtime.
@@ -165,6 +187,13 @@ images, snapshots, local settings, locks and staging. Missing/changed inputs,
 required reports or output hashes fail before rendering; no automatic rebuild or
 fallback to an older commit occurs.
 
+Compatibility checks use installed toolchain evidence, not image names alone.
+The browser image must match the lightweight stage's shared Structurizr/PlantUML,
+Graphviz and font dependencies, and its browser renderers must match the committed
+pins and lockfile. Reacquire approved images under the same two names when an
+installed toolchain is incompatible, then rerun light. Project image tags or
+versions do not need to be introduced.
+
 CI supplies `ARCHITECTURE_SOURCE_REVISION` (the exact checked-out commit) and
 `ARCHITECTURE_CI_RUN`; these are metadata, never directory names. Browser completion
 checks the expected revision in addition to source fingerprints. Local operation
@@ -180,6 +209,10 @@ when browser completion fails; full packaging refuses failed or stale completion
 Changing sources or lightweight artifacts requires a new lightweight build.
 Frozen validation evidence under `build/.reports/light/` stays independent of
 the latest ad-hoc export diagnostics, so native exports do not invalidate it.
+Fingerprints cover architecture sources, documentation and tooling, including
+accepted hidden source folders and local includes. Generated output, Git and agent
+configuration, and known caches are excluded; hidden authoring inputs are not
+automatically excluded.
 
 When migrating, acquire the two new images, update image variables and rerun the
 light stage. Older single-image manifests cannot serve as lightweight handoffs.

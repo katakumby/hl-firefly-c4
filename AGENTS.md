@@ -77,3 +77,7 @@ The separately named project images are `dlt-architecture-tools-light` and
 `export-native`; keep `capture-layout`, ordinary exports and validation on `tools`.
 `build.json` distinguishes light-stage success from `complete: true`. Preserve
 stage reports and per-artifact freshness when handling browser handoffs.
+Handoffs check source fingerprints, installed toolchain compatibility and output
+hashes before rendering. Source scanning includes accepted hidden authoring paths;
+do not treat all dot-directories as caches. If installed tools are incompatible,
+reacquire approved images under the same names and rerun the lightweight build.

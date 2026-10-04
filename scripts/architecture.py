@@ -16,9 +16,10 @@ import sys
 import tempfile
 
 from workspace_paths import ROOT, BUILD, REFERENCE, VERSION, TOOLCHAIN, discover_workspaces, output_directory, workspace_path
-from diagram_renderers import render, renderer_versions, require_capability
+from diagram_renderers import render, renderer_versions, require_capability, check_toolchain
 from view_sources import index_views, safe_name
 from artifact_store import atomic_json, staging, publish, recover, confined, prune_empty
+from source_inputs import input_files, source_files
 import native_exports
 
 JAVA = ['java', '-Dio.netty.noUnsafe=true', '--enable-native-access=ALL-UNNAMED', '-jar', '/usr/local/structurizr.war']
@@ -38,21 +39,7 @@ def timestamp():
 def source_fingerprint():
     """No host Git executable or .git mount is needed."""
     digest = hashlib.sha256()
-    paths = [ROOT / name for name in ('README.md', 'workspace.dsl', 'model.dsl',
-             'compose.yaml', '.env')]
-    # Additional root-level entrypoints and include fragments are valid authoring inputs.
-    for extension in ('dsl', 'puml', 'pumlinc', 'mmd'):
-        paths.extend(ROOT.glob('*.' + extension))
-    for tree in ('model', 'views', 'styles', 'uml', 'workspaces', 'documentation',
-                 'decisions', 'templates', 'scripts', 'tests', 'ci', 'docker'):
-        for directory, directories, files in os.walk(ROOT / tree):
-            directories[:] = [name for name in directories if not name.startswith('.')
-                              and name not in ('__pycache__', 'node_modules', 'build')]
-            paths.extend(Path(directory) / name for name in files
-                         if name not in ('workspace.json', 'workspace.json.bak') and not name.endswith('.pyc'))
-    for path in sorted(set(paths)):
-        if not path.is_file():
-            continue
+    for path in sorted(source_files(ROOT, discover_workspaces())):
         digest.update(path.relative_to(ROOT).as_posix().encode() + b'\0')
         digest.update(hashlib.sha256(path.read_bytes()).digest())
     return digest.hexdigest()
@@ -167,6 +154,7 @@ def clean_build():
 
 def validate(paths=None, inspections_blocking=True):
     """Native parsing/validation always block; inspection policy is caller-specific."""
+    check_toolchain(TOOLCHAIN)
     selected = [workspace_path(p) for p in (paths if paths is not None else discover_workspaces())]
     before = source_fingerprint()
     parsed, reports, logs = {}, {}, {}
@@ -258,17 +246,18 @@ def select_view(raw, key):
 
 def produce_diagrams(raw, format, stage, logs, c4_source=None):
     native_format, _, _ = EXPORT_FORMATS[format]
-    atomic_json(stage / 'workspace.json', raw)
     diagrams = stage / 'diagrams'
     if format in ('svg', 'png'):
         if c4_source is None:
             c4_source = stage / 'c4'
+            atomic_json(stage / 'workspace.json', raw)
             run_java(['export', '-workspace', str(stage / 'workspace.json'), '-format', native_format,
                       '-output', str(c4_source)], logs, timeout=600)
         diagrams.mkdir()
         for key in view_keys(raw):
             render(c4_source / f'structurizr-{key}.puml', diagrams / f'{key}.{format}', logs)
     else:
+        atomic_json(stage / 'workspace.json', raw)
         run_java(['export', '-workspace', str(stage / 'workspace.json'), '-format', native_format,
                   '-output', str(diagrams)], logs, timeout=600)
     return diagrams
@@ -279,18 +268,13 @@ def view_keys(raw):
             if kind.endswith('Views') for diagram in views]
 
 
-def stage_export(raw, report, format, view, stage, logs, c4_source=None):
+def stage_export(raw, format, stage, logs, c4_source=None):
     stage.mkdir(parents=True, exist_ok=True)
     diagrams = produce_diagrams(raw, format, stage, logs, c4_source)
-    native_format, prefix, extension = EXPORT_FORMATS[format]
+    _, prefix, extension = EXPORT_FORMATS[format]
     expected = [diagrams / f'{prefix}{key}.{extension}' for key in view_keys(raw)]
     if not expected or any(not file.is_file() or file.stat().st_size == 0 for file in expected):
         raise ValueError('Exporter did not produce every requested diagram')
-    metadata = report | {'format': format, 'native_format': native_format, 'view': view,
-                         'outputs': [file.name for file in expected]}
-    if format in ('svg', 'png'):
-        metadata['renderers'] = renderer_versions()
-    atomic_json(diagrams / 'export.json', metadata)
     return diagrams
 
 
@@ -304,8 +288,9 @@ def artifact(output, source, workspace, format, fingerprint, key=None):
             'completed_at': timestamp()}
 
 
-def c4_plan(path, raw, formats, fingerprint):
-    mapping = index_views(path, ROOT, view_keys(raw))
+def c4_plan(path, raw, formats, fingerprint, mapping=None):
+    if mapping is None:
+        mapping = index_views(path, ROOT, view_keys(raw))
     return [artifact(stem.with_suffix(stem.suffix + '.' + EXPORT_FORMATS[format][2]),
                      source, path, format, fingerprint, key)
             for key, (source, stem) in mapping.items() for format in formats]
@@ -322,11 +307,11 @@ def check_collisions(entries):
         seen[folded] = entry['source']
 
 
-def stage_c4(path, raw, report, formats, entries, stage, logs):
+def stage_c4(path, raw, formats, entries, stage, logs):
     replacements = []
     c4_source = None
     for format in formats:
-        diagrams = stage_export(raw, report, format, None, stage / format, logs, c4_source)
+        diagrams = stage_export(raw, format, stage / format, logs, c4_source)
         if format == 'plantuml':
             c4_source = diagrams
         _, prefix, extension = EXPORT_FORMATS[format]
@@ -337,6 +322,14 @@ def stage_c4(path, raw, report, formats, entries, stage, logs):
                 replacements.append((source, BUILD / entry['output']))
         print(f'Generated {path.relative_to(ROOT)}: {format}', flush=True)
     return replacements
+
+
+def check_c4_views(raw):
+    filtered = [view['key'] for view in raw['views'].get('filteredViews', [])]
+    if filtered:
+        raise ValueError('C4-PlantUML exports and derived images do not support filtered views: '
+                         + ', '.join(filtered) + '. Export supported views with --view, or use '
+                         'tools-browser export-native for filtered views and saved layouts.')
 
 
 def commit_artifacts(entries, retained, replacements, removed, stage):
@@ -352,6 +345,7 @@ def commit_artifacts(entries, retained, replacements, removed, stage):
 
 def capture_layout(path):
     """Explicitly preserve viewer-authored layout; never put it in the artifact inventory."""
+    check_toolchain(TOOLCHAIN)
     source = path.with_suffix('.json')
     if not source.is_file():
         raise ValueError(f'Save the workspace in the Structurizr viewer first: {source.relative_to(ROOT)}')
@@ -432,6 +426,8 @@ def export_batch(paths, format, views=None, native=False, frame_duration=3):
                             plan.append(entry)
                     jobs[path] = (request, report, plan, workspace_stage)
                 else:
+                    if format != 'mermaid':
+                        check_c4_views(selected)
                     plan = [entry for entry in c4_plan(path, raw, [format], report['source_sha256'])
                             if keys is None or entry['view'] in keys]
                     jobs[path] = (selected, report, plan, workspace_stage)
@@ -460,7 +456,7 @@ def export_batch(paths, format, views=None, native=False, frame_duration=3):
                         replacements.append((source, BUILD / entry['output']))
                         generated.append(entry)
                 else:
-                    replacements.extend(stage_c4(path, request, report, [format], plan, workspace_stage, logs[path]))
+                    replacements.extend(stage_c4(path, request, [format], plan, workspace_stage, logs[path]))
                     generated.extend(plan)
             if any(source_fingerprint() != report['source_sha256'] for _, report, _, _ in jobs.values()):
                 raise ValueError('Sources changed during export')
@@ -488,23 +484,20 @@ def export_batch(paths, format, views=None, native=False, frame_duration=3):
 
 
 def discover_uml():
-    roots = [ROOT / 'uml', *sorted((ROOT / 'workspaces').rglob('uml'))]
     selected, stems = [], {}
-    visited = set()
-    for root in roots:
-        for source in sorted(root.rglob('*')):
-            if not source.is_file() or source.suffix not in ('.puml', '.mmd'):
-                continue
-            if source in visited:
-                continue
-            visited.add(source)
-            source.resolve().relative_to(ROOT.resolve())
-            relative = source.relative_to(ROOT)
-            stem = relative.with_suffix('').as_posix().casefold()
-            if stem in stems:
-                raise ValueError(f'Diagram output collision: {stems[stem]} and {relative}')
-            stems[stem] = relative
-            selected.append(source)
+    sources = set(input_files(ROOT / 'uml'))
+    sources.update(path for path in input_files(ROOT / 'workspaces')
+                   if 'uml' in path.relative_to(ROOT / 'workspaces').parts[:-1])
+    for source in sorted(sources):
+        if not source.is_file() or source.suffix not in ('.puml', '.mmd'):
+            continue
+        source.resolve().relative_to(ROOT.resolve())
+        relative = source.relative_to(ROOT)
+        stem = relative.with_suffix('').as_posix().casefold()
+        if stem in stems:
+            raise ValueError(f'Diagram output collision: {stems[stem]} and {relative}')
+        stems[stem] = relative
+        selected.append(source)
     return selected
 
 
@@ -548,6 +541,7 @@ def _verify_light_handoff():
             or not report.get('passed') or report.get('in_progress')
             or report.get('source_sha256') != source_fingerprint() or report.get('toolchain') != TOOLCHAIN):
         raise ValueError('Lightweight handoff is incompatible, failed or stale; run tools build first.')
+    check_toolchain(TOOLCHAIN, report.get('renderers', {}))
     revision = os.environ.get('ARCHITECTURE_SOURCE_REVISION') or None
     if revision and report.get('source_revision') != revision:
         raise ValueError('Lightweight handoff belongs to a different commit; run the light job for this commit.')
@@ -604,9 +598,10 @@ def build():
             entries, workspaces, possible, possible_native = [], {}, set(), set()
             for path, report in reports.items():
                 raw = select_view(json.loads((output_directory(path) / 'workspace.json').read_text()), None)
-                plan = c4_plan(path, raw, EXPORT_FORMATS, fingerprint)
-                possible.update((item['output'], item['source'], item['workspace'], item['view'], item['format']) for item in plan)
+                check_c4_views(raw)
                 mapping = index_views(path, ROOT, view_keys(raw))
+                plan = c4_plan(path, raw, EXPORT_FORMATS, fingerprint, mapping)
+                possible.update((item['output'], item['source'], item['workspace'], item['view'], item['format']) for item in plan)
                 for key, (source, stem) in mapping.items():
                     for format in ('svg', 'png', 'gif'):
                         if format == 'gif' and not native_exports.is_animated(raw, key):
@@ -637,7 +632,7 @@ def build():
             check_collisions(entries + retained)
             replacements = []
             for path, (raw, plan) in workspaces.items():
-                replacements.extend(stage_c4(path, raw, reports[path], ('plantuml', 'svg', 'png'),
+                replacements.extend(stage_c4(path, raw, ('plantuml', 'svg', 'png'),
                                     plan, stage / 'c4' / path.relative_to(ROOT), logs))
             for entry in entries:
                 if entry['view'] is not None:

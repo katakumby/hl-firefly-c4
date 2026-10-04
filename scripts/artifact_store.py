@@ -36,13 +36,6 @@ def confined(build, relative):
     return path
 
 
-def remove(path):
-    if path.is_dir():
-        shutil.rmtree(path)
-    else:
-        path.unlink(missing_ok=True)
-
-
 def prune_empty(build, paths=()):
     # Only ancestors of managed files are candidates; preserve unrelated empty folders.
     directories = set()

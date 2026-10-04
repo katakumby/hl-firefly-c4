@@ -1,5 +1,6 @@
 """Shared paths for authored workspaces and disposable build outputs."""
 from pathlib import Path
+from source_inputs import input_files
 
 ROOT = Path(__file__).resolve().parents[1]
 REFERENCE = ROOT / 'workspace.dsl'
@@ -24,4 +25,4 @@ def output_directory(path):
 
 
 def discover_workspaces():
-    return [REFERENCE, *sorted((ROOT / 'workspaces').rglob('workspace.dsl'))]
+    return [REFERENCE, *sorted(path for path in input_files(ROOT / 'workspaces') if path.name == 'workspace.dsl')]

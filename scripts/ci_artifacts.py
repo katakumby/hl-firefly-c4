@@ -5,8 +5,9 @@ import json
 from pathlib import Path
 import shutil
 
-from architecture import BUILD, command_lock, inventory, source_fingerprint, verify_light_handoff
+from architecture import BUILD, TOOLCHAIN, command_lock, inventory, source_fingerprint, verify_light_handoff
 from artifact_store import confined, atomic_json
+from diagram_renderers import check_toolchain
 
 
 def package(destination, diagnostics=False, stage='light'):
@@ -30,6 +31,7 @@ def package(destination, diagnostics=False, stage='light'):
                 if (not status.get('complete') or status.get('light_sha256') != digest
                         or status.get('source_revision') != light['source_revision']):
                     raise ValueError('Refusing to package an incomplete or stale browser build')
+                check_toolchain(TOOLCHAIN, status.get('renderers', {}))
                 selected.update(BUILD / '.reports' / name for name in ('build-browser.json', 'build-browser.log'))
             fingerprint = source_fingerprint()
             if not status['passed'] or status.get('in_progress') or status['source_sha256'] != fingerprint:

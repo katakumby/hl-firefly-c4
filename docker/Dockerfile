@@ -10,7 +10,7 @@ RUN npm ci --ignore-scripts --omit=dev --no-audit --no-fund
 FROM structurizr/structurizr:${STRUCTURIZR_VERSION}-noble AS light
 ARG PLANTUML_VERSION
 USER root
-RUN apt-get update && apt-get install -y --no-install-recommends python3 graphviz=2.42.2-9ubuntu0.1 curl fonts-dejavu-core=2.37-8 && rm -rf /var/lib/apt/lists/*
+RUN apt-get update && apt-get install -y --no-install-recommends python3 graphviz=2.42.2-9ubuntu0.1 fonts-dejavu-core=2.37-8 && rm -rf /var/lib/apt/lists/*
 # The jar embeds the C4 standard library; runtime rendering needs no remote includes.
 RUN mkdir -p /opt/plantuml && curl --fail --location --retry 3 \
     "https://repo.maven.apache.org/maven2/net/sourceforge/plantuml/plantuml/${PLANTUML_VERSION}/plantuml-${PLANTUML_VERSION}.jar" \

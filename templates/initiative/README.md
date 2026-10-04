@@ -8,6 +8,10 @@ not discovered as entrypoints.
 
 The workspace extends the shared model and uses native missing-view informational
 settings for inherited elements. Teams can adjust inspection properties in DSL.
+The starter keeps local model definitions and C4 views inline in `workspace.dsl`
+for convenient editing and autocomplete. Extract `model.dsl`, `views/` or other
+fragments with native `!include` only when that helps the workspace grow; those
+files are optional and do not require a preparation script.
 Global styles, including the `Planned` and `Available` tags, are inherited from
 [styles.dsl](../../styles/styles.dsl); no separate style include is needed.
 Stable identifiers, proposal evidence/status properties, connected views and
@@ -39,8 +43,11 @@ Plain `docker compose up -d` from the repository root starts all defined viewers
 For a variant, add a separate service with the variant's workspace directory
 and another unused localhost port.
 
-Keep local C4 views in `views/`, standalone PlantUML/Mermaid diagrams in `uml/`,
-and explanations in `docs/`. `validate` and `build` discover new
+Keep local C4 views inline or in optional `views/` fragments, standalone
+PlantUML/Mermaid diagrams in `uml/`, and explanations in `docs/`.
+The starter's `!docs .` attaches the initiative README to the viewer. Change it to
+`!docs docs` if the workspace should publish those design notes instead.
+`validate` and `build` discover new
 `workspaces/**/workspace.dsl` entrypoints automatically; a Compose service is
 needed only for an interactive viewer. Run validation after replacing placeholders:
 
@@ -55,3 +62,9 @@ Local changes stay isolated until reviewed promotion. See the
 [generated output layout](../../README.md#outputs-and-maintenance).
 
 Follow the [contribution workflow](../../README.md#contributing-an-initiative).
+
+Use explicit view references for required dependencies: deleting a referenced
+element then fails native validation. Generic big-picture views may intentionally
+use `include *` or selectors and change membership with the model. Review those
+artifact changes; no additional build rule enforces membership. A coordinated
+model/view removal is valid when all references are updated in the same change.

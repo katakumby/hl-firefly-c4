@@ -1,4 +1,4 @@
-workspace "Shared architecture model" "Reusable external reference systems; accepted platform modules are added separately." {
+workspace "Shared architecture model" "Reusable external reference systems and approved definitions for one platform system." {
     !identifiers hierarchical
     !impliedRelationships false
     properties {
@@ -9,8 +9,9 @@ workspace "Shared architecture model" "Reusable external reference systems; acce
     }
     model {
         !include model/people.dsl
-        !include model/external-systems/systems
-        !include model/relationships
+        !include model/external-systems
+        !include model/platform
+        !include model/relationships/integrations
     }
     views {
         !include styles/styles.dsl

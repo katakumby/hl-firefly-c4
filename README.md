@@ -35,13 +35,15 @@ The repository root is the architecture workspace; there is no enclosing
 ├── model.dsl                     # Extendable model and styles; no authored diagrams
 ├── model/
 │   ├── people.dsl                # Shared actors
-│   ├── external-systems/         # Product references, organized by DSL scope
-│   │   ├── systems/             # One software-system definition per file
-│   │   └── containers/          # Per-system container folders, with inline components
-│   ├── platform/                 # Approved platform definitions; currently empty of DSL
-│   └── relationships/            # Relationship fragments, included recursively after elements
+│   ├── external-systems/<system>/ # Each product owns its definitions and internal relationships
+│   │   ├── 00-system.dsl         # System boundary, metadata and optional ecosystem group
+│   │   ├── 10-containers/        # Container fragments; components remain inline
+│   │   └── 20-relationships/     # Relationships inside this system
+│   ├── platform/                # One approved platform system; currently only a comment placeholder
+│   │   └── 00-system.dsl         # Same optional 10-containers/ and 20-relationships/ convention
+│   └── relationships/integrations/ # Cross-system and actor relationships, loaded last
 ├── views/
-│   ├── external-systems/         # Shared C4 reference views
+│   ├── external-systems/<subject>/ # Reference views grouped by product; overview/security span products
 │   └── platform/                 # Approved platform views; currently a placeholder
 ├── styles/styles.dsl             # Shared C4 styling
 ├── uml/
@@ -86,15 +88,17 @@ model to reuse definitions while choosing its own views; it does not need to
 inherit the shared workspace's entire view catalog. Shared model fragments belong
 in `model/`, never in a second "shared" directory under `workspaces/`.
 
-Each `workspaces/<epic-id>/` normally has the following shape. The two current
-workspaces follow it; blockchain-foundation also owns `deployment.dsl`,
-`failure.dsl` beside its entrypoint and uses the shared Azure icons theme.
+Each `workspaces/<epic-id>/` starts with a workspace extending the shared model.
+Local definitions and C4 views can stay inline for convenient editing and
+autocomplete; model/view fragments are optional. The two existing workspaces
+retain their current arrangements. Blockchain-foundation also owns `deployment.dsl`
+and `failure.dsl` beside its entrypoint and uses the shared Azure icons theme.
 
 ```text
 workspaces/<epic-id>/
-├── workspace.dsl     # Extends the shared model; includes local model and views
-├── model.dsl         # Local proposals and inherited-element annotations
-├── views/            # Focused C4 views; inline views in workspace.dsl are also supported
+├── workspace.dsl     # Extends the shared model; may contain local model and views inline
+├── model.dsl         # Optional extracted local proposals and annotations
+├── views/            # Optional extracted C4 views
 ├── uml/              # Local standalone .puml/.mmd diagrams, with any nested folders
 ├── docs/             # Local explanations, evidence and design notes
 └── README.md         # Scope, status, owners and navigation
@@ -105,6 +109,12 @@ including `Planned` tags on inherited elements, stay local; include/exclude
 expressions choose what its views show. Optional nested variants extend their
 parent workspace. See [variants and promotion](#variants-and-promotion) for the
 reviewed move of accepted definitions, views and behavioral diagrams into shared folders.
+
+Shared platform views belong in `views/platform/`. External-reference views stay
+separate under `views/external-systems/<subject>/`, using product identifiers such
+as `firefly`, `besu` and `unleash`; `overview` and `security` hold cross-product views.
+C4 view definitions belong in these view trees or their workspace, while documentation
+contains explanations and diagram references.
 
 Architects own shared C4 definitions and reference patterns. Technical leads
 primarily own use-case and code diagrams. Generic patterns go in `uml/patterns/`;
@@ -435,7 +445,7 @@ Diagram outputs mirror their source directories recursively, with formats side b
 
 | Source | Generated output |
 |---|---|
-| `views/external-systems/01-landscape.dsl` | `build/views/external-systems/01-landscape.{puml,svg,png}` |
+| `views/external-systems/overview/01-landscape.dsl` | `build/views/external-systems/overview/01-landscape.{puml,svg,png}` |
 | `workspaces/blockchain-foundation/views/main.dsl` | `build/workspaces/blockchain-foundation/views/<view-key>.{puml,svg,png}` |
 | Inline view in `workspaces/ignition/workspace.dsl` | `build/workspaces/ignition/<view-key>.{puml,svg,png}` |
 | `uml/patterns/messaging/claim-check/sequence.puml` | `build/uml/patterns/messaging/claim-check/sequence.{svg,png}` |
@@ -531,8 +541,8 @@ rules is deferred until teams choose to introduce it.
 2. Start with the [initiative template](templates/initiative/README.md),
    extending `../../model.dsl`. Add an agreed model and focused views. The template
    uses native `model.element.noview` informational settings for inherited elements.
-   Adjust inspection properties in DSL as the initiative needs. Include local
-   `model.dsl` and `views/main.dsl`; keep proposals local.
+   Adjust inspection properties in DSL as the initiative needs. Keep local model
+   definitions and views inline, or extract optional fragments when useful.
 3. Prefix view keys with `<epic-id>-`. Give elements stable, meaningful
    `architecture.id` values; do not duplicate shared systems.
 4. Keep explicit declaration phases: actors and systems first, relationships
@@ -548,38 +558,57 @@ the element `url` is its primary source. Proposals use
 `evidence "Proposed architecture"`, `architecture.status "planned"`, and the `Planned` tag.
 Containers/components require technology metadata.
 
-Relationships are declared after all elements. FireFly relationships are split
-by source container; cross-system relationships are split by source system,
-with actor-originated relationships together. The shared model loads these phases:
+Internal relationships follow their owning system's containers. Cross-system
+relationships follow every system, with actor-originated relationships together.
+The shared model loads these fixed phases:
 
 ```dsl
 model {
     !include model/people.dsl
-    !include model/external-systems/systems
-    !include model/relationships
+    !include model/external-systems
+    !include model/platform
+    !include model/relationships/integrations
 }
 ```
 
-Add reference systems as `model/external-systems/systems/<system>.dsl`. Each file
-declares one system and, where applicable, its ecosystem `group` wrapper.
-Use the same group name in separate system files to retain one shared boundary.
-Systems with internals load `!include ../containers/<system>` inside their
-`softwareSystem` block. Put their container fragments in
-`model/external-systems/containers/<system>/`; components stay inside their
-containers. Systems without containers omit the include and have no empty
-container folder. Adding system, container or relationship fragments then needs
-no per-file include list.
+Add a reference system as `model/external-systems/<system>/00-system.dsl`,
+preserving its stable identifier and any ecosystem `group` wrapper. Use the same
+group name in separate system files to retain one shared boundary. Each container
+fragment in the product's `10-containers/` directory reopens its system at model scope:
+
+```dsl
+!element firefly {
+    core = container "FireFly Core" "Orchestrates member operations." "Go" {
+        // Components stay inside their owning container.
+    }
+}
+```
+
+Put internal relationship fragments in the product's `20-relationships/`, using
+fully qualified element identifiers. FireFly retains its fragments by source
+container. Put relationships crossing system boundaries in
+`model/relationships/integrations/`, after both external and platform definitions.
+The numbered phases load the system, containers, then internal relationships.
+Adding a product, container or relationship fragment needs no per-file import list.
+Create only directories that contain actual fragments.
+
+`model/platform/` represents **one platform software system**, with the same
+`00-system.dsl`, `10-containers/` and `20-relationships/` phases directly beneath it.
+It currently contains only a comment placeholder: Ignition's `dapp_platform` remains
+a proposal until reviewed promotion. FireFly, Besu, security, operations and
+application examples remain references and do not define the platform's ownership.
 
 Directory includes are recursive and read **every file**, regardless of extension;
 `*.dsl` and `**/*.dsl` paths are not supported. Keep imported folders free of
 README files, backups, and other non-DSL content. Do not place an include wrapper
 beside or above fragments it includes: recursive traversal would load them twice.
-Every fragment in an imported tree must be valid in the receiving DSL scope and
-independent of sibling discovery order. Keep order-sensitive phases explicit.
-See [decision 10](decisions/workspace/0010-scoped-folder-includes.md).
+Every fragment in an imported model tree must be valid at model scope. Keep the
+numbered phase names; fragments within each phase must not depend on sibling
+discovery order. Do not add local includes for files already found recursively.
+See [decision 11](decisions/workspace/0011-system-owned-models.md).
 
 Reference diagrams use the directory include `!include views/external-systems` in
-`workspace.dsl`. Add a self-contained `.dsl` view fragment there;
+`workspace.dsl`. Add a self-contained `.dsl` view fragment in its subject subfolder;
 no new entrypoint include is needed. Approved platform views are included
 from `views/platform/` in the same way. Global element and relationship styles,
 including the `Planned` and `Available` tags, live in `styles/styles.dsl` and are included
@@ -621,6 +650,14 @@ reserve explicit relationship selections for focused flows. These expressions
 also include future matching model additions, so review affected diagrams when
 the model changes.
 
+Published views should explicitly name elements whose removal must fail native
+validation. Generic landscape/context views may intentionally use `include *`
+or selection expressions, allowing elements to appear or disappear with the model;
+review those changes in generated artifacts. Removing an element and updating all
+its explicit view references in the same reviewed change is valid. These conventions
+add no membership snapshots or custom build rules. Inspection findings remain
+report-only during builds and exports; missing explicit references remain fatal.
+
 Shared changes are reviewed by affected architects and technical leads.
 Record actual owners in initiative READMEs; CODEOWNERS enforcement is deferred
 until team identities are available. Significant architecture decisions go in
@@ -637,6 +674,11 @@ documents to satisfy inspection checks.
 Store system-specific documentation under
 `documentation/system/<system-id>/`.
 
+The initiative template and Ignition use `!docs .` to attach their root README.
+Blockchain-foundation uses `!docs docs` to publish its design notes. Authors can
+choose the appropriate attachment when substantive documentation is ready; keeping
+a local `docs/` directory does not automatically attach it to the viewer.
+
 ## Variants and promotion
 
 Create `variants/interim/workspace.dsl` or `variants/target/workspace.dsl`
@@ -651,13 +693,16 @@ desired elements in each view instead of deleting inherited definitions.
 Use `<epic-id>-<variant>-` for local variant keys as a naming convention;
 inherited keys stay unchanged.
 
-After explicit approval, **move** accepted definitions into `model/platform/`
-and shared relationship fragments,
-preserving identifiers. Remove initiative-local definitions in the same change,
-connect the approved module in the systems phase before shared relationships,
-and validate every entrypoint. Promote approved C4 views into `views/platform/` and reusable
-behavioral diagrams into `uml/` with the model. Keep shared files independent of initiative folders
-as an authoring convention reviewed by the team.
+After explicit approval, **move** the platform system definition into
+`model/platform/00-system.dsl`, its containers into `10-containers/` and its internal
+relationships into `20-relationships/`. Extend the existing platform boundary for
+later promotions; do not create a platform-per-system subfolder. Move cross-system
+relationships into the shared integrations directory. Preserve identifiers, remove
+the initiative-local definitions in the same change, and validate every entrypoint.
+The fixed folder imports discover approved definitions automatically. Promote C4
+views into `views/platform/` and reusable behavioral diagrams into `uml/`.
+Keep shared files independent of initiative folders as an authoring convention
+reviewed by the team.
 
 Ignition's DApp proposal still contains only a system boundary; its separate
 Example System adds API/Backend container, animation and dynamic-view experiments.

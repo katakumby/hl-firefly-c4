@@ -9,9 +9,13 @@ workspace extends ../../model.dsl {
                 "structurizr.inspection.model.element.noview" "info"
             }
         }
-        !include model.dsl
+        // Add agreed local proposals and inherited-element annotations here.
+        // Keep stable architecture.id values, evidence, and planned status.
+        // Declare elements before their relationships; keep shared definitions inherited.
     }
     views {
-        !include views/main.dsl
+        // Add focused views here using explicit <epic-id>- keys.
+        // Use explicit element references for required dependencies.
+        // Generic big-picture views may intentionally use wildcards or selectors.
     }
 }

@@ -8,6 +8,10 @@ Accepted. Refines the ordered-include authoring guidance in
 [decision 7](0007-modular-workspaces.md). DSL remains the authoring source, and
 initiative proposals remain isolated from the shared model.
 
+[Decision 11](0011-system-owned-models.md) supersedes the systems/containers
+directory split below with system-owned model folders. Native recursive includes
+and explicit declaration phases remain in use. The original decision text is retained.
+
 ## Context
 
 The shared model had 43 includes, with more lists inside systems and relationship
